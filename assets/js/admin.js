@@ -568,7 +568,7 @@ var vaptLog = window.vaptLog || {
 
   const BuildGenerator = ({ domains, features, activeFile, setAlertState }) => {
     const [buildDomain, setBuildDomain] = useState('');
-    const [buildVersion, setBuildVersion] = useState(settings.pluginVersion || '3.5.1');
+    const [buildVersion, setBuildVersion] = useState(settings.pluginVersion || '3.1.0');
     const [includeConfig, setIncludeConfig] = useState(true);
     const [includeData, setIncludeData] = useState(false);
     const [whiteLabel, setWhiteLabel] = useState({
@@ -611,7 +611,7 @@ var vaptLog = window.vaptLog || {
     const [importedAt, setImportedAt] = useState(null);
     const [licenseScope, setLicenseScope] = useState('single');
     const [installationLimit, setInstallationLimit] = useState(1);
-    const [restrictFeatures, setRestrictFeatures] = useState(false); // Default: Open Mode
+    const restrictFeatures = false;
 
     // Auto-Generation Effect — only fires when committed whiteLabel fields or domain/features change
     useEffect(() => {
@@ -622,8 +622,9 @@ var vaptLog = window.vaptLog || {
         f.status === 'Release' || f.status === 'release' || f.status === 'implemented'
       ).length;
 
+      const isUniversalBuild = buildDomain === '*' || (buildDomain || '').indexOf('__universal__:') === 0;
       const domainContext = buildDomain
-        ? `a dedicated security build for ${buildDomain}`
+        ? (isUniversalBuild ? `a universal security hardening package` : `a dedicated security build for ${buildDomain}`)
         : `a universal security hardening package`;
       const desc = `${whiteLabel.name} is ${domainContext}, delivering specialized Vulnerability Assessment and Penetration Testing (VAPT) protection against OWASP Top 10 vulnerabilities. ` +
         `This build integrates ${featCount} active security modules tailored for WordPress environments. ` +
@@ -660,6 +661,7 @@ var vaptLog = window.vaptLog || {
       setDownloadUrl(null);
       const selectedDomain = (Array.isArray(domains) ? domains : []).find(d => d.domain === buildDomain);
       const buildFeatures = selectedDomain ? (Array.isArray(selectedDomain.features) ? selectedDomain.features : []) : (Array.isArray(features) ? features : []).filter(f => f.status === 'implemented').map(f => f.key);
+      const buildLicenseType = selectedDomain && selectedDomain.license_type ? selectedDomain.license_type : 'standard';
 
       apiFetch({
         path: 'vaptsecure/v1/build/generate',
@@ -671,9 +673,10 @@ var vaptLog = window.vaptLog || {
           generate_type: type,
           include_config: includeConfig,
           include_data: includeData,
+          license_type: buildLicenseType,
           license_scope: licenseScope,
           installation_limit: installationLimit,
-          restrict_features: restrictFeatures,
+          restrict_features: false,
           white_label: {
             name: whiteLabel.name.trim(),
             description: whiteLabel.description.trim(),
@@ -687,6 +690,9 @@ var vaptLog = window.vaptLog || {
         if (res && res.download_url) {
           window.location.href = res.download_url;
           setAlertState({ message: __('Build generated and downloading!', 'vaptsecure'), type: 'success' });
+          if (res.next_version) {
+            setBuildVersion(String(res.next_version));
+          }
         } else {
           setAlertState({ message: __('Build failed: No download URL received.', 'vaptsecure'), type: 'error' });
         }
@@ -705,6 +711,7 @@ var vaptLog = window.vaptLog || {
       setGenerating(true);
       const selectedDomain = (Array.isArray(domains) ? domains : []).find(d => d.domain === buildDomain);
       const buildFeatures = selectedDomain ? (Array.isArray(selectedDomain.features) ? selectedDomain.features : []) : [];
+      const buildLicenseType = selectedDomain && selectedDomain.license_type ? selectedDomain.license_type : 'standard';
 
       apiFetch({
         path: 'vaptsecure/v1/build/save-config',
@@ -713,9 +720,10 @@ var vaptLog = window.vaptLog || {
           domain: buildDomain.trim(),
           version: buildVersion.trim(),
           features: buildFeatures,
+          license_type: buildLicenseType,
           license_scope: licenseScope,
           installation_limit: installationLimit,
-          restrict_features: restrictFeatures
+          restrict_features: false
         }
       }).then(res => {
         if (res.success) {
@@ -726,7 +734,8 @@ var vaptLog = window.vaptLog || {
         setGenerating(false);
       }).catch(err => {
         setGenerating(false);
-        setAlertState({ message: 'Save failed: ' + err.message, type: 'error' });
+        const msg = (err && (err.message || (err.data && (err.data.message || err.data.error)))) || 'Unknown error';
+        setAlertState({ message: 'Save failed: ' + msg, type: 'error' });
       });
     };
 
@@ -773,7 +782,7 @@ var vaptLog = window.vaptLog || {
               // LEFT GROUP: Target Domain + Scope Badge
               el('div', { style: { display: 'flex', alignItems: 'center', gap: '15px' } }, [
                 el('label', { style: { fontSize: '12px', fontWeight: '500', color: '#64748b', marginRight: '5px' } }, __('Target Domain', 'vaptsecure')),
-                el('div', { style: { width: '320px' } },
+            el('div', { style: { width: '320px' } },
                   el(SelectControl, {
                     value: buildDomain,
                     options: [
@@ -786,7 +795,10 @@ var vaptLog = window.vaptLog || {
                             .map(f => f.key)
                         );
                         return domainFeatureKeys.some(key => releasedFeatureKeys.has(key));
-                      }).map(d => ({ label: d.domain, value: d.domain }))
+                      }).map(d => ({
+                        label: (d.domain === '*' || (d.domain || '').indexOf('__universal__:') === 0) ? __('Universal (Any Domain)', 'vaptsecure') : d.domain,
+                        value: d.domain
+                      }))
                     ],
                     onChange: (val) => {
                       setBuildDomain(val);
@@ -847,22 +859,7 @@ var vaptLog = window.vaptLog || {
                     el('span', { className: 'dashicons dashicons-editor-help', style: { fontSize: '14px', color: '#94a3b8', cursor: 'help' } })
                   )
                 ]),
-                // Restrict Features Toggle
-                el('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } }, [
-                  el('div', { style: { marginBottom: 0, lineHeight: 1 } },
-                    el(ToggleControl, {
-                      label: __('Restrict Features', 'vaptsecure'),
-                      checked: restrictFeatures,
-                      onChange: (val) => setRestrictFeatures(val),
-                      help: null,
-                      __nextHasNoMarginBottom: true,
-                      style: { marginBottom: 0 }
-                    })
-                  ),
-                  el(Tooltip, { text: __('Restrict plugin to only selected features. When OFF, custom-developed features will also work.', 'vaptsecure') },
-                    el('span', { className: 'dashicons dashicons-editor-help', style: { fontSize: '14px', color: '#94a3b8', cursor: 'help' } })
-                  )
-                ])
+                
               ])
             ]),
 
@@ -972,7 +969,7 @@ var vaptLog = window.vaptLog || {
                     background: buildDomain ? '#e0f2fe' : '#f1f5f9',
                     color: buildDomain ? '#0369a1' : '#64748b'
                   }
-                }, buildDomain || __('None', 'vaptsecure'))
+                }, (buildDomain === '*' || (buildDomain || '').indexOf('__universal__:') === 0) ? __('Universal', 'vaptsecure') : (buildDomain || __('None', 'vaptsecure')))
               ]),
               el('div', { style: { marginBottom: '10px', paddingBottom: '10px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } }, [
                 el('strong', null, __('Active Features', 'vaptsecure')),
@@ -1146,6 +1143,7 @@ var vaptLog = window.vaptLog || {
       formState.license_scope !== (currentDomain.license_scope || 'single') ||
       formState.installation_limit !== (parseInt(currentDomain.installation_limit) || 1)
     ) : false;
+    const isUniversalDomain = (formState.domain === '*') || ((formState.domain || '').indexOf('__universal__:') === 0);
 
     if (!currentDomain) {
       if (loading) {
@@ -1238,7 +1236,7 @@ var vaptLog = window.vaptLog || {
 
         let durationDays = 30;
         if (formState.license_type === 'pro') durationDays = 365;
-        if (formState.license_type === 'developer') durationDays = 36500; // ~100 years
+        if (formState.license_type === 'developer' || formState.license_type === 'developer_unbound') durationDays = 36500; // ~100 years
 
         baseDate.setDate(baseDate.getDate() + durationDays);
 
@@ -1352,13 +1350,13 @@ var vaptLog = window.vaptLog || {
             }),
             el(TextControl, {
               label: __('Expiry Date', 'vaptsecure'),
-              value: currentDomain.license_type === 'developer'
+              value: (currentDomain.license_type === 'developer' || currentDomain.license_type === 'developer_unbound')
                 ? __('Never Expires', 'vaptsecure')
                 : (currentDomain.manual_expiry_date ? formatDate(currentDomain.manual_expiry_date) : ''),
               readOnly: true,
               style: {
                 background: '#f8fafc',
-                color: (currentDomain.license_type !== 'developer' && currentDomain.manual_expiry_date && new Date(currentDomain.manual_expiry_date) < new Date()) ? '#dc2626' : '#64748b'
+                color: (currentDomain.license_type !== 'developer' && currentDomain.license_type !== 'developer_unbound' && currentDomain.manual_expiry_date && new Date(currentDomain.manual_expiry_date) < new Date()) ? '#dc2626' : '#64748b'
               }
             })
           ]),
@@ -1371,7 +1369,7 @@ var vaptLog = window.vaptLog || {
           ]),
 
           el('div', { className: 'vapt-desc-text' },
-            currentDomain.license_type === 'developer'
+            (currentDomain.license_type === 'developer' || currentDomain.license_type === 'developer_unbound')
               ? __('Developer License: Perpetual access with no expiration.', 'vaptsecure')
               : (currentDomain.license_type === 'pro'
                 ? __('Pro License: Annual renewal cycle with premium features.', 'vaptsecure')
@@ -1417,7 +1415,10 @@ var vaptLog = window.vaptLog || {
             (!isCreatingNew && (Array.isArray(domains) && domains.length > 1) ? el('div', { style: { flex: 1, minWidth: '120px' } },
               el(SelectControl, {
                 value: selectedDomainId,
-                options: domains.map(d => ({ label: d.domain, value: d.id })),
+                options: domains.map(d => ({
+                  label: (d.domain === '*' || (d.domain || '').indexOf('__universal__:') === 0) ? __('Universal (Any Domain)', 'vaptsecure') : d.domain,
+                  value: d.id
+                })),
                 onChange: (val) => { setSelectedDomainId(val); fetchData(undefined, true); },
                 disabled: isSaving,
                 style: { marginBottom: 0 }
@@ -1429,11 +1430,11 @@ var vaptLog = window.vaptLog || {
             el('div', { style: { flex: 2 } }, el(TextControl, {
               label: isCreatingNew ? __('New Domain Name', 'vaptsecure') : __('Domain Name (Rename)', 'vaptsecure'),
               value: formState.domain,
-              disabled: isSaving || formState.domain === '*',
-              placeholder: formState.domain === '*' ? __('Universal — applies to any domain', 'vaptsecure') : '',
+              disabled: isSaving || isUniversalDomain,
+              placeholder: isUniversalDomain ? __('Universal — applies to any domain', 'vaptsecure') : '',
               onChange: (val) => setFormState({ ...formState, domain: val }),
-              style: { marginBottom: 0, background: formState.domain === '*' ? '#f1f5f9' : undefined },
-              help: formState.domain === '*'
+              style: { marginBottom: 0, background: isUniversalDomain ? '#f1f5f9' : undefined },
+              help: isUniversalDomain
                 ? __('Universal license — not locked to any specific domain.', 'vaptsecure')
                 : !isCreatingNew ? __('Warning: Changing this will rename the current domain.', 'vaptsecure') : ''
             })
@@ -1441,7 +1442,7 @@ var vaptLog = window.vaptLog || {
 
             el('div', { style: { flex: 1, minWidth: '120px' } }, el(SelectControl, {
               label: __('Domain Type', 'vaptsecure'),
-              value: formState.domain === '*' ? 'universal' : (formState.is_wildcard ? '1' : '0'),
+              value: isUniversalDomain ? 'universal' : (formState.is_wildcard ? '1' : '0'),
               options: [
                 { label: __('Standard', 'vaptsecure'), value: '0' },
                 { label: __('Wildcard', 'vaptsecure'), value: '1' },
@@ -1450,10 +1451,34 @@ var vaptLog = window.vaptLog || {
               disabled: isSaving,
               onChange: (val) => {
                 if (val === 'universal') {
-                  setFormState({ ...formState, domain: '*', is_wildcard: 1 });
-                } else if (formState.domain === '*') {
-                  // Leaving universal mode — clear the * to let user type a real domain
-                  setFormState({ ...formState, domain: '', is_wildcard: val === '1' });
+                  const token = ((formState.domain || '').indexOf('__universal__:') === 0)
+                    ? formState.domain
+                    : `__universal__:${Math.random().toString(36).slice(2, 10).toUpperCase()}`;
+                  setFormState({
+                    ...formState,
+                    domain: token,
+                    is_wildcard: 0,
+                    license_type: 'developer_unbound',
+                    manual_expiry_date: '',
+                    auto_renew: false,
+                    license_scope: 'single',
+                    installation_limit: 1
+                  });
+                } else if (isUniversalDomain) {
+                  const baseDate = new Date();
+                  baseDate.setDate(baseDate.getDate() + 30);
+                  const newExpiry = baseDate.toISOString().split('T')[0];
+
+                  setFormState({
+                    ...formState,
+                    domain: '',
+                    is_wildcard: val === '1',
+                    license_type: 'standard',
+                    manual_expiry_date: newExpiry,
+                    auto_renew: false,
+                    license_scope: 'single',
+                    installation_limit: 1
+                  });
                 } else {
                   setFormState({ ...formState, is_wildcard: val === '1' });
                 }
@@ -1470,7 +1495,7 @@ var vaptLog = window.vaptLog || {
                 { label: __('Single Domain', 'vaptsecure'), value: 'single' },
                 { label: __('Multi-Site', 'vaptsecure'), value: 'multisite' }
               ],
-              disabled: isSaving,
+              disabled: isSaving || isUniversalDomain,
               onChange: (val) => setFormState({ ...formState, license_scope: val }),
               style: { marginBottom: 0 }
             })),
@@ -1478,7 +1503,7 @@ var vaptLog = window.vaptLog || {
               label: __('Limit', 'vaptsecure'),
               type: 'number',
               min: 1,
-              disabled: isSaving || formState.license_scope !== 'multisite',
+              disabled: isSaving || isUniversalDomain || formState.license_scope !== 'multisite' || formState.license_type === 'developer_unbound',
               value: formState.license_scope === 'multisite' ? formState.installation_limit : 1,
               onChange: (val) => setFormState({ ...formState, installation_limit: parseInt(val) || 1 }),
               style: { marginBottom: 0 }
@@ -1496,17 +1521,18 @@ var vaptLog = window.vaptLog || {
             el(SelectControl, {
               label: __('License Type', 'vaptsecure'),
               value: formState.license_type,
-              disabled: isSaving,
+              disabled: isSaving || isUniversalDomain,
               options: [
                 { label: 'Standard (30 Days)', value: 'standard' },
                 { label: 'Pro (One Year)', value: 'pro' },
-                { label: 'Developer (Perpetual)', value: 'developer' }
+                { label: 'Developer (Perpetual)', value: 'developer' },
+                { label: 'Developer (Unbound)', value: 'developer_unbound' }
               ],
               onChange: (val) => {
                 const baseDate = new Date();
                 let durationDays = 30;
                 if (val === 'pro') durationDays = 365;
-                if (val === 'developer') durationDays = 36500;
+                if (val === 'developer' || val === 'developer_unbound') durationDays = 36500;
 
                 baseDate.setDate(baseDate.getDate() + durationDays);
                 const newExpiry = baseDate.toISOString().split('T')[0];
@@ -1514,17 +1540,17 @@ var vaptLog = window.vaptLog || {
                 setFormState({
                   ...formState,
                   license_type: val,
-                  manual_expiry_date: newExpiry
+                  manual_expiry_date: (val === 'developer_unbound') ? '' : newExpiry
                 });
               }
             }),
 
-            formState.license_type !== 'developer'
+            (formState.license_type !== 'developer' && formState.license_type !== 'developer_unbound')
               ? el(TextControl, {
                 label: __('New Expiry Date', 'vaptsecure'),
                 type: 'date',
                 value: formState.manual_expiry_date,
-                disabled: isSaving,
+                disabled: isSaving || isUniversalDomain,
                 onChange: (val) => setFormState({ ...formState, manual_expiry_date: val })
               })
               : el(TextControl, {
@@ -1538,8 +1564,8 @@ var vaptLog = window.vaptLog || {
 
           el(ToggleControl, {
             label: __('Auto Renew', 'vaptsecure'),
-            checked: formState.license_type === 'developer' ? true : formState.auto_renew,
-            disabled: isSaving || formState.license_type === 'developer',
+            checked: (formState.license_type === 'developer') ? true : formState.auto_renew,
+            disabled: isSaving || isUniversalDomain || formState.license_type === 'developer' || formState.license_type === 'developer_unbound',
             onChange: (val) => setFormState({ ...formState, auto_renew: val }),
             help: __('Automatically extend expiry if active.', 'vaptsecure')
           }),
@@ -1563,7 +1589,7 @@ var vaptLog = window.vaptLog || {
             (!isCreatingNew && el(Button, {
               isSecondary: true,
               isBusy: isSaving && localStatus?.message.includes('Manual'),
-              disabled: formState.auto_renew || isSaving,
+              disabled: isUniversalDomain || formState.license_type === 'developer_unbound' || formState.auto_renew || isSaving,
               onClick: () => handleUpdate(true)
             }, __('Manual Renew', 'vaptsecure'))),
 
@@ -1615,11 +1641,11 @@ var vaptLog = window.vaptLog || {
           ])
         ]),
         el('table', { className: 'wp-list-table widefat fixed striped' }, [
-          el('thead', null, el('tr', null, [
+          el('thead', null, el('tr', { style: { tableLayout: 'fixed' } }, [
             el('th', {
               className: `manage-column sortable ${sortBy === 'license_id' ? 'sorted ' + sortOrder : ''}`,
               onClick: () => toggleSort('license_id'),
-              style: { cursor: 'pointer', width: '180px', paddingRight: '10px' }
+              style: { cursor: 'pointer', width: '160px', paddingRight: '10px' }
             }, [
               el('span', null, __('License ID', 'vaptsecure')),
               el('span', { className: 'sorting-indicator' })
@@ -1627,7 +1653,7 @@ var vaptLog = window.vaptLog || {
             el('th', {
               className: `manage-column sortable ${sortBy === 'installation_limit' ? 'sorted ' + sortOrder : ''}`,
               onClick: () => toggleSort('installation_limit'),
-              style: { cursor: 'pointer', width: '20%', paddingRight: '10px' }
+              style: { cursor: 'pointer', width: '140px', paddingRight: '10px' }
             }, [
               el('span', null, __('Usage', 'vaptsecure')),
               el('span', { className: 'sorting-indicator' })
@@ -1643,7 +1669,7 @@ var vaptLog = window.vaptLog || {
             el('th', {
               className: `manage-column sortable ${sortBy === 'version' ? 'sorted ' + sortOrder : ''}`,
               onClick: () => toggleSort('version'),
-              style: { cursor: 'pointer', width: '70px', paddingRight: '10px' }
+              style: { cursor: 'pointer', width: '90px', paddingRight: '10px' }
             }, [
               el('span', null, __('Version', 'vaptsecure')),
               el('span', { className: 'sorting-indicator' })
@@ -1651,7 +1677,7 @@ var vaptLog = window.vaptLog || {
             el('th', {
               className: `manage-column sortable ${sortBy === 'license_type' ? 'sorted ' + sortOrder : ''}`,
               onClick: () => toggleSort('license_type'),
-              style: { cursor: 'pointer', width: '100px', paddingRight: '10px' }
+              style: { cursor: 'pointer', width: '140px', paddingRight: '10px' }
             }, [
               el('span', null, __('License', 'vaptsecure')),
               el('span', { className: 'sorting-indicator' })
@@ -1659,7 +1685,7 @@ var vaptLog = window.vaptLog || {
             el('th', {
               className: `manage-column sortable ${sortBy === 'first_activated_at' ? 'sorted ' + sortOrder : ''}`,
               onClick: () => toggleSort('first_activated_at'),
-              style: { cursor: 'pointer', width: '120px', paddingRight: '10px' }
+              style: { cursor: 'pointer', width: '130px', paddingRight: '10px' }
             }, [
               el('span', null, __('Activated At', 'vaptsecure')),
               el('span', { className: 'sorting-indicator' })
@@ -1667,15 +1693,15 @@ var vaptLog = window.vaptLog || {
             el('th', {
               className: `manage-column sortable ${sortBy === 'manual_expiry_date' ? 'sorted ' + sortOrder : ''}`,
               onClick: () => toggleSort('manual_expiry_date'),
-              style: { cursor: 'pointer', width: '120px', paddingRight: '10px' }
+              style: { cursor: 'pointer', width: '110px', paddingRight: '10px' }
             }, [
               el('span', null, __('Expiry', 'vaptsecure')),
               el('span', { className: 'sorting-indicator' })
             ]),
-            el('th', { style: { width: '80px' } }, __('Renewals', 'vaptsecure')),
+            el('th', { style: { width: '90px' } }, __('Renewals', 'vaptsecure')),
             el('th', { style: { width: '140px', textAlign: 'right' } }, __('Action', 'vaptsecure')),
           ])),
-          el('tbody', null, sortedDomains.length === 0 ? el('tr', null, el('td', { colSpan: 8 }, __('No domains found.', 'vaptsecure'))) :
+          el('tbody', null, sortedDomains.length === 0 ? el('tr', null, el('td', { colSpan: 9 }, __('No domains found.', 'vaptsecure'))) :
             sortedDomains.sort((a, b) => {
               if (sortBy === 'license_id') return sortOrder === 'asc' ? (a.license_id || '').localeCompare(b.license_id || '') : (b.license_id || '').localeCompare(a.license_id || '');
               if (sortBy === 'domain') return sortOrder === 'asc' ? a.domain.localeCompare(b.domain) : b.domain.localeCompare(a.domain);
@@ -1704,9 +1730,15 @@ var vaptLog = window.vaptLog || {
               }
               return 0;
             }).map((dom) => el('tr', { key: dom.id, className: dom.id == selectedDomainId ? 'is-selected' : '' }, [
-              el('td', { style: { width: '180px', paddingRight: '10px' } }, el('span', { style: { fontFamily: 'monospace', fontSize: '11px', color: '#64748b' } }, dom.license_id || '-')),
-              el('td', { style: { width: '20%', paddingRight: '10px' } }, (dom.license_id) ? (() => {
+              el('td', { style: { width: '160px', paddingRight: '10px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, el('span', { style: { fontFamily: 'monospace', fontSize: '11px', color: '#64748b' } }, dom.license_id || '-')),
+              el('td', { style: { width: '140px', paddingRight: '10px' } }, (dom.license_id) ? (() => {
                 const count = licenseUsage[dom.license_id] || 0;
+                if ((dom.license_type || '').toLowerCase() === 'developer_unbound') {
+                  return el('div', { className: 'vapt-usage-directory-wrapper' }, [
+                    el('span', { className: 'vapt-usage-count', style: { color: '#1e293b' } }, `${count}`),
+                    el('span', { className: 'dashicons dashicons-admin-users vapt-usage-icon' })
+                  ]);
+                }
                 const limit = parseInt(dom.installation_limit) || 1;
                 const percent = Math.min(100, Math.round((count / limit) * 100));
                 const status = percent >= 90 ? 'danger' : (percent >= 70 ? 'warning' : 'safe');
@@ -1722,15 +1754,16 @@ var vaptLog = window.vaptLog || {
               el('td', { className: 'column-primary', style: { paddingRight: '10px' } }, [
                 el('div', { style: { display: 'flex', alignItems: 'center', gap: '10px' } }, [
                   el('span', { className: 'dashicons dashicons-networking', style: { color: '#64748b', fontSize: '16px', width: '16px', height: '16px' } }),
-                  el('strong', null, dom.domain),
-                  (dom.is_wildcard == 1) && el('span', { className: 'vapt-license-badge', style: { marginLeft: '4px', background: '#f8fafc', color: '#64748b', border: '1px solid #e2e8f0', fontSize: '9px', padding: '1px 5px' } }, __('Wildcard', 'vaptsecure')),
+                  el('strong', null, (dom.domain === '*' || (dom.domain || '').indexOf('__universal__:') === 0) ? 'Universal' : dom.domain),
+                  (dom.domain === '*' || (dom.domain || '').indexOf('__universal__:') === 0) && el('span', { className: 'vapt-license-badge', style: { marginLeft: '4px', background: '#eef2ff', color: '#4338ca', border: '1px solid #e2e8f0', fontSize: '9px', padding: '1px 5px' } }, __('Universal', 'vaptsecure')),
+                  (dom.is_wildcard == 1) && !((dom.domain === '*' || (dom.domain || '').indexOf('__universal__:') === 0)) && el('span', { className: 'vapt-license-badge', style: { marginLeft: '4px', background: '#f8fafc', color: '#64748b', border: '1px solid #e2e8f0', fontSize: '9px', padding: '1px 5px' } }, __('Wildcard', 'vaptsecure')),
                 ]),
                 el('button', { type: 'button', className: 'toggle-row' }, el('span', { className: 'screen-reader-text' }, __('Show more details', 'vaptsecure')))
               ]),
               el('td', { style: { fontWeight: '500', color: '#475569', paddingRight: '10px' } }, dom.version || '1.0.0'),
               el('td', { style: { paddingRight: '10px' } }, el('span', { className: `vapt-license-badge ${dom.license_type || 'standard'}` }, (dom.license_type || 'Standard').toUpperCase())),
               el('td', { style: { paddingRight: '10px' } }, dom.first_activated_at ? formatDate(dom.first_activated_at) : '-'),
-              el('td', { style: { paddingRight: '10px' } }, dom.license_type === 'developer' ? __('Never', 'vaptsecure') : (dom.manual_expiry_date ? formatDate(dom.manual_expiry_date) : '-')),
+              el('td', { style: { paddingRight: '10px' } }, (dom.license_type === 'developer' || dom.license_type === 'developer_unbound') ? __('Never', 'vaptsecure') : (dom.manual_expiry_date ? formatDate(dom.manual_expiry_date) : '-')),
               el('td', { style: { paddingRight: '10px' } }, `${dom.renewals_count || 0} `),
               el('td', { style: { textAlign: 'right' } }, el('div', { style: { display: 'flex', gap: '8px', justifyContent: 'flex-end', alignItems: 'center' } }, [
                 el('button', {

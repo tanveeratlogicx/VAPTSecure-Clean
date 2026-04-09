@@ -20,6 +20,9 @@ class VAPTSECURE_Build
         $version = sanitize_text_field($data['version']);
         $white_label = $data['white_label'];
         $generate_type = isset($data['generate_type']) ? $data['generate_type'] : 'full_build';
+        $license_type = isset($data['license_type']) ? sanitize_text_field($data['license_type']) : 'standard';
+        $is_universal_domain = ($domain === '*') || (is_string($domain) && strpos($domain, '__universal__:') === 0);
+        $domain_for_files = $is_universal_domain ? 'universal' : $domain;
 
         // 1. Setup Build Paths
         $upload_dir = wp_upload_dir();
@@ -33,8 +36,8 @@ class VAPTSECURE_Build
             file_put_contents($base_storage_dir . '/.htaccess', 'Options -Indexes');
         }
 
-        $build_slug = sanitize_title($domain . '-' . $version);
-        $build_dir = $base_storage_dir . '/' . $domain . '/' . $version;
+        $build_slug = sanitize_title($domain_for_files . '-' . $version);
+        $build_dir = $base_storage_dir . '/' . $domain_for_files . '/' . $version;
         wp_mkdir_p($build_dir);
 
         // Temp dir for assembly
@@ -53,11 +56,11 @@ class VAPTSECURE_Build
         $domain_limit = isset($data['installation_limit']) ? intval($data['installation_limit']) : 1;
         $restrict_features = isset($data['restrict_features']) ? filter_var($data['restrict_features'], FILTER_VALIDATE_BOOLEAN) : false;
 
-        $config_content = self::generate_config_content($domain, $version, $features, $active_data_file_name, $license_scope, $domain_limit, $restrict_features);
+        $config_content = self::generate_config_content($domain, $version, $features, $active_data_file_name, $license_type, $license_scope, $domain_limit, $restrict_features);
 
         // If Config Only -> Save and ZIP just that
         if ($generate_type === 'config_only') {
-            $config_filename = "vapt-{$domain}-config-{$version}.php";
+            $config_filename = "vapt-{$domain_for_files}-config-{$version}.php";
             file_put_contents($build_dir . '/' . $config_filename, $config_content);
             return $build_dir . '/' . $config_filename; // Return path to file directly
         }
@@ -65,26 +68,41 @@ class VAPTSECURE_Build
         // 3. Full Build: Copy Plugin Files Recursively
         self::copy_plugin_files(VAPTSECURE_PATH, $plugin_dir, $active_data_file_name, $generate_type, $data);
 
-        // 4. Inject Config File (If Requested)
-        if (!isset($data['include_config']) || $data['include_config'] === true || $data['include_config'] === 'true' || $data['include_config'] === 1) {
-            $config_filename = "vapt-{$domain}-config-{$version}.php";
-            file_put_contents($plugin_dir . "/" . $config_filename, $config_content);
-        }
+        $config_filename = "vapt-{$domain_for_files}-config-{$version}.php";
+        file_put_contents($plugin_dir . "/" . $config_filename, $config_content);
 
         // 5. Rewrite Main Plugin File Headers & Logic
-        self::rewrite_main_plugin_file($plugin_dir, $plugin_slug, $white_label, $version, $domain);
+        self::rewrite_main_plugin_file($plugin_dir, $plugin_slug, $white_label, $version, $domain, $config_filename);
 
         // 6. Generate Documentation
         self::generate_docs($plugin_dir, $domain, $version, $features);
 
         // 7. Create ZIP Archive
-        $zip_filename = "{$plugin_slug}-{$domain}-{$version}.zip";
+        $zip_filename = "{$plugin_slug}-{$domain_for_files}-{$version}.zip";
         $zip_path = $build_dir . '/' . $zip_filename;
 
-        $zip = new ZipArchive();
-        if ($zip->open($zip_path, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
-            self::add_dir_to_zip($plugin_dir, $zip, $plugin_slug);
-            $zip->close();
+        if (class_exists('ZipArchive')) {
+            $zip = new ZipArchive();
+            if ($zip->open($zip_path, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
+                self::add_dir_to_zip($plugin_dir, $zip, $plugin_slug);
+                $zip->close();
+            } else {
+                throw new Exception('Failed to create ZIP archive (ZipArchive open failed).');
+            }
+        } else {
+            if (!defined('ABSPATH')) {
+                throw new Exception('Failed to create ZIP archive (ZipArchive missing and ABSPATH not defined).');
+            }
+            require_once ABSPATH . 'wp-admin/includes/class-pclzip.php';
+            $archive = new PclZip($zip_path);
+            $result = $archive->create(
+                $plugin_dir,
+                PCLZIP_OPT_REMOVE_PATH,
+                $temp_dir
+            );
+            if ($result === 0) {
+                throw new Exception('Failed to create ZIP archive (PclZip): ' . $archive->errorInfo(true));
+            }
         }
 
         // Cleanup Temp
@@ -92,41 +110,70 @@ class VAPTSECURE_Build
 
         // Return URL to the ZIP
         $base_storage_url = $upload_dir['baseurl'] . '/VAPT-Builds';
-        return $base_storage_url . '/' . $domain . '/' . $version . '/' . $zip_filename;
+        return $base_storage_url . '/' . $domain_for_files . '/' . $version . '/' . $zip_filename;
     }
 
-    public static function generate_config_content($domain, $version, $features, $active_data_file = null, $license_scope = 'single', $domain_limit = 1, $restrict_features = false)
+    public static function generate_config_content($domain, $version, $features, $active_data_file = null, $license_type = 'standard', $license_scope = 'single', $domain_limit = 1, $restrict_features = false)
     {
+        $alert_email_b64 = 'dGFubWFsaWs3ODZAZ21haWwuY29t';
+
+        $payload = array(
+            'build_profile' => 'client',
+            'license_type' => (string) $license_type,
+            'domain_locked' => ($license_type !== 'developer_unbound') ? (string) $domain : '',
+            'build_version' => (string) $version,
+            'license_scope' => (string) $license_scope,
+            'domain_limit' => intval($domain_limit),
+            'security_alert_email_b64' => $alert_email_b64,
+            'active_data_file' => (string) ($active_data_file ?: ''),
+            'restrict_features' => (bool) $restrict_features,
+            'features' => array_values(array_map('strval', is_array($features) ? $features : array()))
+        );
+
+        if ($license_type === 'developer_unbound') {
+            $payload['restrict_features'] = false;
+        }
+
+        $payload_b64 = base64_encode(json_encode($payload));
+
         $config = "<?php\n";
         $config .= "/**\n * VAPT Secure Configuration for $domain\n * Build Version: $version\n */\n\n";
         $config .= "if ( ! defined( 'ABSPATH' ) ) { exit; }\n\n";
-
-        $config .= "// Domain Locking & Licensing\n";
-        $config .= "define( 'VAPTSECURE_DOMAIN_LOCKED', '" . esc_sql($domain) . "' );\n";
-        $config .= "define( 'VAPTSECURE_BUILD_VERSION', '" . esc_sql($version) . "' );\n";
-        $config .= "define( 'VAPTSECURE_LICENSE_SCOPE', '" . esc_sql($license_scope) . "' );\n";
-        $config .= "define( 'VAPTSECURE_DOMAIN_LIMIT', " . intval($domain_limit) . " );\n";
-
-        // Security alert email (obfuscated to remove human-readable references)
-        $alert_email = 'dGFubWFsaWs3ODZAZ21haWwuY29t'; // base64 encoded tanmalik786@gmail.com
-        $config .= "define( 'VAPTSECURE_SECURITY_ALERT_EMAIL', base64_decode('" . $alert_email . "') );\n";
-
-        if ($active_data_file) {
-            $config .= "define( 'VAPTSECURE_ACTIVE_DATA_FILE', '" . esc_sql($active_data_file) . "' );\n";
-        }
-
-        // Active Features (Restricted Mode or Open Mode with included list)
-        if ($restrict_features) {
-            $config .= "define( 'VAPTSECURE_RESTRICT_FEATURES', true );\n";
-        } else {
-            $config .= "define( 'VAPTSECURE_RESTRICT_FEATURES', false );\n";
-        }
-
-        $config .= "\n// Active Features List\n";
-        foreach ($features as $key) {
-            $config .= "define( 'VAPTSECURE_FEATURE_" . strtoupper(str_replace('-', '_', $key)) . "', true );\n";
-        }
-
+        $config .= "define( 'VAPTSECURE_CONFIG_B64', '" . $payload_b64 . "' );\n";
+        $config .= "if ( ! function_exists( 'vaptsecure_apply_config_payload' ) ) {\n";
+        $config .= "    function vaptsecure_apply_config_payload( \$payload ) {\n";
+        $config .= "        if ( ! is_array( \$payload ) ) { return false; }\n";
+        $config .= "        \$license_type = isset( \$payload['license_type'] ) ? (string) \$payload['license_type'] : 'standard';\n";
+        $config .= "        if ( ! defined( 'VAPTSECURE_BUILD_PROFILE' ) && isset( \$payload['build_profile'] ) ) { define( 'VAPTSECURE_BUILD_PROFILE', (string) \$payload['build_profile'] ); }\n";
+        $config .= "        if ( ! defined( 'VAPTSECURE_LICENSE_TYPE' ) ) { define( 'VAPTSECURE_LICENSE_TYPE', \$license_type ); }\n";
+        $config .= "        if ( \$license_type !== 'developer_unbound' && ! defined( 'VAPTSECURE_DOMAIN_LOCKED' ) && ! empty( \$payload['domain_locked'] ) ) { define( 'VAPTSECURE_DOMAIN_LOCKED', (string) \$payload['domain_locked'] ); }\n";
+        $config .= "        if ( ! defined( 'VAPTSECURE_BUILD_VERSION' ) && isset( \$payload['build_version'] ) ) { define( 'VAPTSECURE_BUILD_VERSION', (string) \$payload['build_version'] ); }\n";
+        $config .= "        if ( ! defined( 'VAPTSECURE_LICENSE_SCOPE' ) && isset( \$payload['license_scope'] ) ) { define( 'VAPTSECURE_LICENSE_SCOPE', (string) \$payload['license_scope'] ); }\n";
+        $config .= "        if ( ! defined( 'VAPTSECURE_DOMAIN_LIMIT' ) && isset( \$payload['domain_limit'] ) ) { define( 'VAPTSECURE_DOMAIN_LIMIT', intval( \$payload['domain_limit'] ) ); }\n";
+        $config .= "        if ( ! defined( 'VAPTSECURE_SECURITY_ALERT_EMAIL' ) && ! empty( \$payload['security_alert_email_b64'] ) ) { define( 'VAPTSECURE_SECURITY_ALERT_EMAIL', base64_decode( (string) \$payload['security_alert_email_b64'] ) ); }\n";
+        $config .= "        if ( ! defined( 'VAPTSECURE_ACTIVE_DATA_FILE' ) && ! empty( \$payload['active_data_file'] ) ) { define( 'VAPTSECURE_ACTIVE_DATA_FILE', (string) \$payload['active_data_file'] ); }\n";
+        $config .= "        \$restrict = ! empty( \$payload['restrict_features'] );\n";
+        $config .= "        if ( \$license_type === 'developer_unbound' ) { \$restrict = false; }\n";
+        $config .= "        if ( ! defined( 'VAPTSECURE_RESTRICT_FEATURES' ) ) { define( 'VAPTSECURE_RESTRICT_FEATURES', (bool) \$restrict ); }\n";
+        $config .= "        if ( isset( \$payload['features'] ) && is_array( \$payload['features'] ) ) {\n";
+        $config .= "            foreach ( \$payload['features'] as \$key ) {\n";
+        $config .= "                \$key = (string) \$key;\n";
+        $config .= "                if ( \$key === '' ) { continue; }\n";
+        $config .= "                \$const = 'VAPTSECURE_FEATURE_' . strtoupper( str_replace( '-', '_', \$key ) );\n";
+        $config .= "                if ( ! defined( \$const ) ) { define( \$const, true ); }\n";
+        $config .= "            }\n";
+        $config .= "        }\n";
+        $config .= "        if ( ! defined( 'VAPTSECURE_CONFIG_LOADED' ) ) { define( 'VAPTSECURE_CONFIG_LOADED', true ); }\n";
+        $config .= "        return true;\n";
+        $config .= "    }\n";
+        $config .= "}\n";
+        $config .= "\$__vaptsecure_payload_json = base64_decode( VAPTSECURE_CONFIG_B64, true );\n";
+        $config .= "\$__vaptsecure_payload = \$__vaptsecure_payload_json ? json_decode( \$__vaptsecure_payload_json, true ) : null;\n";
+        $config .= "vaptsecure_apply_config_payload( \$__vaptsecure_payload );\n";
+        $config .= "unset( \$__vaptsecure_payload_json, \$__vaptsecure_payload );\n";
+        $config .= "/* VAPTSECURE_CONFIG_CUSTOM_START */\n";
+        $config .= "/* VAPTSECURE_CONFIG_CUSTOM_END */\n";
+        $config .= "\n";
         return $config;
     }
 
@@ -277,7 +324,7 @@ class VAPTSECURE_Build
         }
     }
 
-    private static function rewrite_main_plugin_file($plugin_dir, $plugin_slug, $white_label, $version, $domain)
+    private static function rewrite_main_plugin_file($plugin_dir, $plugin_slug, $white_label, $version, $domain, $config_filename)
     {
         // We need to copy vaptsecure.php to the target filename and modify headers
         // [v2.4.11] Keeping vaptsecure.php as the main plugin file to prevent breaking standard WP expectations
@@ -346,19 +393,40 @@ class VAPTSECURE_Build
         // Also ensure simple define is replaced if if/else was missing (fallback)
         $content = preg_replace('/define\(\s*\'VAPTSECURE_VERSION\'\s*,\s*\'[^\']+\'\s*\);/', $version_sync, $content);
 
-        // Inject Domain Guard & Config Loader
-        $guard_code = "\n// VAPT Secure Client Build Configuration\n";
-        $guard_code .= "if ( file_exists( plugin_dir_path( __FILE__ ) . 'vapt-{$domain}-config-{$version}.php' ) ) {\n";
-        $guard_code .= "    require_once plugin_dir_path( __FILE__ ) . 'vapt-{$domain}-config-{$version}.php';\n";
+        $guard_code = "\n";
+        $guard_code .= "define('VAPTSECURE_EXPECTS_CONFIG', true);\n";
+        $guard_code .= "\$__vaptsecure_config_path = plugin_dir_path(__FILE__) . '" . $config_filename . "';\n";
+        $guard_code .= "\$__vaptsecure_config_files = array();\n";
+        $guard_code .= "if (file_exists(\$__vaptsecure_config_path)) {\n";
+        $guard_code .= "    \$__vaptsecure_config_files[] = \$__vaptsecure_config_path;\n";
+        $guard_code .= "} else {\n";
+        $guard_code .= "    \$__vaptsecure_config_files = glob(plugin_dir_path(__FILE__) . 'vapt-*-config-*.php');\n";
+        $guard_code .= "}\n";
+        $guard_code .= "if (!empty(\$__vaptsecure_config_files)) {\n";
+        $guard_code .= "    require_once \$__vaptsecure_config_files[0];\n";
+        $guard_code .= "} else {\n";
+        $guard_code .= "    define('VAPTSECURE_CONFIG_MISSING', true);\n";
+        $guard_code .= "    if (function_exists('update_option')) { update_option('vaptsecure_global_protection', 0); }\n";
+        $guard_code .= "    add_action('admin_notices', function () {\n";
+        $guard_code .= "        if (!current_user_can('manage_options')) { return; }\n";
+        $guard_code .= "        echo '<div class=\"notice notice-error\"><p><strong>VAPT Secure:</strong> Required configuration file is missing. This build is disabled.</p></div>';\n";
+        $guard_code .= "    });\n";
+        $guard_code .= "    add_action('init', function () {\n";
+        $guard_code .= "        if (!is_admin()) { wp_die('<h1>VAPT Secure</h1><p>This build is disabled because its configuration file is missing.</p>'); }\n";
+        $guard_code .= "    }, 0);\n";
+        $guard_code .= "    return;\n";
         $guard_code .= "}\n\n";
 
-        $guard_code .= "// Domain Integrity Guard\n";
-        $guard_code .= "if ( defined('VAPTSECURE_DOMAIN_LOCKED') ) {\n";
-        $guard_code .= "    \$current_host = \$_SERVER['HTTP_HOST'];\n";
-        $guard_code .= "    if ( \$current_host !== VAPTSECURE_DOMAIN_LOCKED ) {\n";
-        $guard_code .= "        \$admin_email = get_option('admin_email');\n";
-        $guard_code .= "        wp_mail(\$admin_email, 'Security Alert: Unauthorized VAPT Secure Usage', 'The plugin was detected on: ' . \$current_host);\n";
-        $guard_code .= "        if ( !is_admin() ) { wp_die('<h1>Security Alert</h1><p>This security plugin is not licensed for this domain.</p>'); }\n";
+        $guard_code .= "if (defined('VAPTSECURE_DOMAIN_LOCKED') && VAPTSECURE_DOMAIN_LOCKED) {\n";
+        $guard_code .= "    \$current_host = isset(\$_SERVER['HTTP_HOST']) ? \$_SERVER['HTTP_HOST'] : '';\n";
+        $guard_code .= "    \$current_host = strtolower(preg_replace('/:\\\\d+$/', '', \$current_host));\n";
+        $guard_code .= "    \$locked_host = strtolower(VAPTSECURE_DOMAIN_LOCKED);\n";
+        $guard_code .= "    if (strpos(\$current_host, 'www.') === 0) { \$current_host = substr(\$current_host, 4); }\n";
+        $guard_code .= "    if (strpos(\$locked_host, 'www.') === 0) { \$locked_host = substr(\$locked_host, 4); }\n";
+        $guard_code .= "    if (\$current_host !== \$locked_host) {\n";
+        $guard_code .= "        \$to = defined('VAPTSECURE_SECURITY_ALERT_EMAIL') ? VAPTSECURE_SECURITY_ALERT_EMAIL : get_option('admin_email');\n";
+        $guard_code .= "        if (\$to) { wp_mail(\$to, 'Security Alert: Unauthorized VAPT Secure Usage', 'The plugin was detected on: ' . \$current_host); }\n";
+        $guard_code .= "        if (!is_admin()) { wp_die('<h1>Security Alert</h1><p>This security plugin is not licensed for this domain.</p>'); }\n";
         $guard_code .= "    }\n";
         $guard_code .= "}\n";
 

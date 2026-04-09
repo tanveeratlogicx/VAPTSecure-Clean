@@ -11,6 +11,28 @@ if (! defined('ABSPATH')) {
 class VAPTSECURE_REST
 {
     private static $cached_pattern_library = null;
+    
+    private static function bump_semver_patch($version)
+    {
+        $version = trim((string) $version);
+        if ($version === '') {
+            return '1.0.0';
+        }
+        if (!preg_match('/^(\d+)\.(\d+)\.(\d+)$/', $version, $m)) {
+            return '1.0.0';
+        }
+        $major = (int) $m[1];
+        $minor = (int) $m[2];
+        $patch = (int) $m[3];
+        $patch++;
+        return $major . '.' . $minor . '.' . $patch;
+    }
+
+    private static function domain_version_key($domain)
+    {
+        $domain = strtolower(trim((string) $domain));
+        return 'vaptsecure_last_build_version_' . md5($domain);
+    }
 
     private static function get_cached_pattern_library()
     {
@@ -1575,6 +1597,7 @@ class VAPTSECURE_REST
             ), ARRAY_N);
             $domain['features'] = array_column($feat_rows, 0);
             $domain['imported_at'] = get_option('vaptsecure_imported_at_' . $domain['domain'], null);
+            $domain['version'] = get_option(self::domain_version_key($domain['domain']), null);
         }
 
         return new WP_REST_Response($domains, 200);
@@ -1623,7 +1646,19 @@ class VAPTSECURE_REST
         } else {
             $is_enabled = 1;
         }
-        if ($license_id === null && $current) { $license_id = $current['license_id'];
+        if ($current && ($license_id === null || $license_id === '')) {
+            if (!empty($current['license_id'])) {
+                $license_id = $current['license_id'];
+            } else {
+                $prefix = 'STD-';
+                if ($license_type === 'pro') { $prefix = 'PRO-';
+                }
+                if ($license_type === 'developer') { $prefix = 'DEV-';
+                }
+                if ($license_type === 'developer_unbound') { $prefix = 'DEVU-';
+                }
+                $license_id = $prefix . strtoupper(substr(md5(uniqid()), 0, 9));
+            }
         }
         if ($manual_expiry_date === null && $current) { $manual_expiry_date = $current['manual_expiry_date'];
         }
@@ -1639,7 +1674,14 @@ class VAPTSECURE_REST
             }
             if ($license_type === 'developer') { $prefix = 'DEV-';
             }
+            if ($license_type === 'developer_unbound') { $prefix = 'DEVU-';
+            }
             $license_id = $prefix . strtoupper(substr(md5(uniqid()), 0, 9));
+        }
+
+        if ($license_type === 'developer_unbound') {
+            $manual_expiry_date = null;
+            $auto_renew = 0;
         }
 
         if ($manual_expiry_date) {
@@ -1703,6 +1745,10 @@ class VAPTSECURE_REST
                     $days = 365;
                 }
                 if ($license_type === 'developer') {
+                    $duration = '+100 years';
+                    $days = 36500;
+                }
+                if ($license_type === 'developer_unbound') {
                     $duration = '+100 years';
                     $days = 36500;
                 }
@@ -1805,9 +1851,38 @@ class VAPTSECURE_REST
         // Delegate to Build Class
         include_once VAPTSECURE_PATH . 'includes/class-vaptsecure-build.php';
         try {
+            $domain = isset($data['domain']) ? sanitize_text_field($data['domain']) : '';
+            $version_key = self::domain_version_key($domain);
+            $last_version = (string) get_option($version_key, '');
+            $requested_version = isset($data['version']) ? sanitize_text_field($data['version']) : '';
+
+            if ($requested_version === '') {
+                $data['version'] = ($last_version !== '') ? self::bump_semver_patch($last_version) : '1.0.0';
+            } elseif ($last_version !== '' && $requested_version === $last_version) {
+                $data['version'] = self::bump_semver_patch($last_version);
+            }
+
             $download_url = VAPTSECURE_Build::generate($data);
-            return new WP_REST_Response(array('success' => true, 'download_url' => $download_url), 200);
-        } catch (Exception $e) {
+            $built_version = isset($data['version']) ? (string) $data['version'] : '';
+            if ($domain && $built_version) {
+                update_option($version_key, $built_version);
+                update_option('vaptsecure_last_build_at_' . md5(strtolower(trim((string) $domain))), current_time('mysql'));
+                global $wpdb;
+                $table = $wpdb->prefix . 'vaptsecure_domain_builds';
+                $wpdb->insert(
+                    $table,
+                    array(
+                        'domain' => $domain,
+                        'version' => $built_version,
+                        'features' => json_encode(isset($data['features']) ? $data['features'] : array())
+                    ),
+                    array('%s', '%s', '%s')
+                );
+            }
+
+            $next_version = self::bump_semver_patch($built_version);
+            return new WP_REST_Response(array('success' => true, 'download_url' => $download_url, 'built_version' => $built_version, 'next_version' => $next_version), 200);
+        } catch (Throwable $e) {
             return new WP_REST_Response(array('success' => false, 'message' => $e->getMessage()), 500);
         }
     }
@@ -1817,6 +1892,7 @@ class VAPTSECURE_REST
         $domain = $request->get_param('domain');
         $version = $request->get_param('version');
         $features = $request->get_param('features');
+        $license_type = $request->get_param('license_type') ?: 'standard';
         $license_scope = $request->get_param('license_scope') ?: 'single';
         $installation_limit = $request->get_param('installation_limit') ?: 1;
         $restrict_features = $request->get_param('restrict_features');
@@ -1825,9 +1901,12 @@ class VAPTSECURE_REST
             return new WP_REST_Response(array('error' => 'Missing domain or version'), 400);
         }
 
+        $domain_for_files = ($domain === '*' || (is_string($domain) && strpos($domain, '__universal__:') === 0)) ? 'universal' : sanitize_file_name($domain);
+        $version_for_files = sanitize_file_name($version);
+
         include_once VAPTSECURE_PATH . 'includes/class-vaptsecure-build.php';
-        $config_content = VAPTSECURE_Build::generate_config_content($domain, $version, $features, null, $license_scope, $installation_limit, $restrict_features);
-        $filename = "vapt-{$domain}-config-{$version}.php";
+        $config_content = VAPTSECURE_Build::generate_config_content($domain, $version, $features, null, $license_type, $license_scope, $installation_limit, $restrict_features);
+        $filename = "vapt-{$domain_for_files}-config-{$version_for_files}.php";
         $filepath = VAPTSECURE_PATH . $filename;
 
         $saved = file_put_contents($filepath, $config_content);
@@ -1835,7 +1914,7 @@ class VAPTSECURE_REST
         if ($saved !== false) {
             return new WP_REST_Response(array('success' => true, 'path' => $filepath, 'filename' => $filename), 200);
         } else {
-            return new WP_REST_Response(array('error' => 'Failed to write config file to plugin root'), 500);
+            return new WP_REST_Response(array('error' => 'Failed to write config file to plugin root', 'path' => $filepath), 500);
         }
     }
 
@@ -1846,12 +1925,14 @@ class VAPTSECURE_REST
             return new WP_REST_Response(array('error' => 'Missing domain'), 400);
         }
 
+        $domain_for_files = ($domain === '*' || (is_string($domain) && strpos($domain, '__universal__:') === 0)) ? 'universal' : sanitize_file_name($domain);
+
         $files = glob(VAPTSECURE_PATH . "vapt-*-config-*.php");
         $matched_file = null;
 
         if ($files) {
             foreach ($files as $file) {
-                if (strpos(basename($file), "vapt-{$domain}-config-") !== false) {
+                if (strpos(basename($file), "vapt-{$domain_for_files}-config-") !== false) {
                     $matched_file = $file;
                     break;
                 }

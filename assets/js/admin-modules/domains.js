@@ -281,8 +281,8 @@
                 fontSize: '11px',
                 fontWeight: 600,
                 textTransform: 'capitalize',
-                background: d.license_type === 'developer' ? '#f3e8ff' : (d.license_type === 'pro' ? '#fff1f2' : '#f1f5f9'),
-                color: d.license_type === 'developer' ? '#6b21a8' : (d.license_type === 'pro' ? '#be123c' : '#475569'),
+                background: (d.license_type === 'developer' || d.license_type === 'developer_unbound') ? '#f3e8ff' : (d.license_type === 'pro' ? '#fff1f2' : '#f1f5f9'),
+                color: (d.license_type === 'developer' || d.license_type === 'developer_unbound') ? '#6b21a8' : (d.license_type === 'pro' ? '#be123c' : '#475569'),
                 border: '1px solid transparent'
               }
             }, d.license_type || 'Standard')),
@@ -294,8 +294,8 @@
                 setViewFeaturesModalOpen(true);
               }
             }, `${d.features.length} ${__('Features', 'vaptsecure')} `) : `${(Array.isArray(d.features) ? d.features.length : 0)} ${__('Features', 'vaptsecure')} `),
-            el('td', null, el('span', { style: { fontSize: '12px', color: (d.license_type !== 'developer' && d.manual_expiry_date && new Date(d.manual_expiry_date) < new Date()) ? '#dc2626' : 'inherit' } },
-              d.license_type === 'developer'
+            el('td', null, el('span', { style: { fontSize: '12px', color: (d.license_type !== 'developer' && d.license_type !== 'developer_unbound' && d.manual_expiry_date && new Date(d.manual_expiry_date) < new Date()) ? '#dc2626' : 'inherit' } },
+              (d.license_type === 'developer' || d.license_type === 'developer_unbound')
                 ? __('Never', 'vaptsecure')
                 : (d.manual_expiry_date ? new Date(d.manual_expiry_date).toLocaleDateString() : '-')
             )),

@@ -139,6 +139,9 @@ class VAPTSECURE_License_Manager
         } elseif ($license_type === 'developer') {
             $duration = '+100 years';
             $days = 36500;
+        } elseif ($license_type === 'developer_unbound') {
+            $duration = '+100 years';
+            $days = 36500;
         }
 
         // Calculate new expiry date

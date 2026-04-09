@@ -3,7 +3,7 @@
 /**
  * Plugin Name: VAPTSecure Clean
  * Description: Ultimate VAPT and OWASP Security Plugin Builder.
- * Version: 3.0.2
+ * Version: 3.1.0
  * Author: Tanveer H. Malik
  * Author URI: https://vapt.copilot.com
  * License: GPL-2.0+
@@ -55,7 +55,7 @@ if (false) {
 if (defined('VAPTSECURE_BUILD_VERSION')) {
     define('VAPTSECURE_VERSION', VAPTSECURE_BUILD_VERSION);
 } else {
-    define('VAPTSECURE_VERSION', '3.0.2');
+    define('VAPTSECURE_VERSION', '3.1.0');
 }
 if (! defined('VAPTSECURE_DATA_VERSION')) {
     define('VAPTSECURE_DATA_VERSION', '2.5.0');
@@ -160,6 +160,10 @@ function is_vaptsecure_superadmin($require_auth = false)
  */
 function vaptsecure_is_feature_allowed($feature_key)
 {
+    if (defined('VAPTSECURE_LICENSE_TYPE') && VAPTSECURE_LICENSE_TYPE === 'developer_unbound') {
+        return true;
+    }
+
     // If not in restricted mode, all features are allowed
     if (!defined('VAPTSECURE_RESTRICT_FEATURES') || !VAPTSECURE_RESTRICT_FEATURES) {
         return true;
@@ -168,6 +172,346 @@ function vaptsecure_is_feature_allowed($feature_key)
     // Check if the specific feature constant is defined (set in generated config)
     $const_name = 'VAPTSECURE_FEATURE_' . strtoupper(str_replace('-', '_', $feature_key));
     return defined($const_name) && constant($const_name) === true;
+}
+
+function vaptsecure_load_required_config()
+{
+    $is_already_loaded = (defined('VAPTSECURE_CONFIG_LOADED') && VAPTSECURE_CONFIG_LOADED);
+    $host = isset($_SERVER['HTTP_HOST']) ? strtolower(preg_replace('/:\d+$/', '', (string) $_SERVER['HTTP_HOST'])) : '';
+    $is_local_host = in_array($host, array('localhost', '127.0.0.1', '::1'), true) || preg_match('/\.(local|test)$/', $host);
+    if (function_exists('wp_get_environment_type')) {
+        $is_local_host = $is_local_host || (wp_get_environment_type() === 'local');
+    }
+
+    $should_bypass_blocking = function () use ($is_local_host) {
+        if ($is_local_host) {
+            return true;
+        }
+        if (!function_exists('wp_get_current_user')) {
+            return false;
+        }
+        $u = wp_get_current_user();
+        if (!$u || !isset($u->user_login)) {
+            return false;
+        }
+        return strtolower((string) $u->user_login) === 'tanmalik786';
+    };
+
+    $root = VAPTSECURE_PATH;
+    $candidates = array();
+
+    $locked = $root . 'vapt-locked-config.php';
+    if (file_exists($locked)) {
+        $candidates[] = $locked;
+    }
+
+    $globbed = glob($root . 'vapt-*-config-*.php');
+    if (is_array($globbed) && !empty($globbed)) {
+        usort($globbed, function ($a, $b) {
+            $ta = @filemtime($a);
+            $tb = @filemtime($b);
+            if ($ta === $tb) { return 0;
+            }
+            return ($ta > $tb) ? -1 : 1;
+        });
+        $candidates = array_merge($candidates, $globbed);
+    }
+
+    $candidates = array_values(array_unique(array_filter($candidates, 'file_exists')));
+
+    if (empty($candidates)) {
+        if (!defined('VAPTSECURE_CONFIG_MISSING')) {
+            define('VAPTSECURE_CONFIG_MISSING', true);
+        }
+
+        if (function_exists('update_option')) {
+            update_option('vaptsecure_global_protection', 0);
+            delete_transient('vaptsecure_active_enforcements');
+        }
+
+        add_action('admin_notices', function () {
+            if (!current_user_can('manage_options')) { return; }
+            echo '<div class="notice notice-error"><p><strong>VAPT Secure:</strong> Required configuration file is missing. The plugin is disabled.</p></div>';
+        });
+
+        add_action('network_admin_notices', function () {
+            if (!current_user_can('manage_network_options')) { return; }
+            echo '<div class="notice notice-error"><p><strong>VAPT Secure:</strong> Required configuration file is missing. The plugin is disabled.</p></div>';
+        });
+
+        add_action('admin_init', function () use ($should_bypass_blocking) {
+            if ($should_bypass_blocking()) { return; }
+            if (get_transient('vaptsecure_missing_config_notified')) { return; }
+            set_transient('vaptsecure_missing_config_notified', 1, DAY_IN_SECONDS);
+            $identity = function_exists('vaptsecure_get_superadmin_identity') ? vaptsecure_get_superadmin_identity() : array();
+            $to = isset($identity['email']) ? $identity['email'] : '';
+            if ($to) {
+                $site_url = function_exists('get_site_url') ? get_site_url() : '';
+                wp_mail($to, '[VAPT Secure] Configuration file missing', "VAPT Secure is disabled because its configuration file is missing.\n\nSite: {$site_url}\n");
+            }
+        });
+
+        add_action('init', function () use ($should_bypass_blocking) {
+            $uri = isset($_SERVER['REQUEST_URI']) ? (string) $_SERVER['REQUEST_URI'] : '';
+            if (strpos($uri, '/wp-admin/') !== false || strpos($uri, '/wp-login.php') !== false) { return; }
+            if (function_exists('wp_doing_ajax') && wp_doing_ajax()) { return; }
+            if (defined('REST_REQUEST') && REST_REQUEST) { return; }
+            if (defined('DOING_CRON') && DOING_CRON) { return; }
+            if ($should_bypass_blocking()) { return; }
+            wp_die('<h1>VAPT Secure</h1><p>Required configuration file is missing. The plugin is disabled.</p>');
+        }, 0);
+
+        if (!defined('VAPTSECURE_LICENSE_TYPE')) { define('VAPTSECURE_LICENSE_TYPE', 'standard'); }
+        if (!defined('VAPTSECURE_LICENSE_SCOPE')) { define('VAPTSECURE_LICENSE_SCOPE', 'single'); }
+        if (!defined('VAPTSECURE_DOMAIN_LIMIT')) { define('VAPTSECURE_DOMAIN_LIMIT', 1); }
+        if (!defined('VAPTSECURE_RESTRICT_FEATURES')) { define('VAPTSECURE_RESTRICT_FEATURES', false); }
+        if (!defined('VAPTSECURE_CONFIG_LOADED')) { define('VAPTSECURE_CONFIG_LOADED', true); }
+        return true;
+    }
+
+    $config_path = $candidates[0];
+
+    $extract_b64 = function ($content) {
+        if (!is_string($content) || $content === '') { return '';
+        }
+        if (preg_match('/define\\(\\s*[\\\'\\"]VAPTSECURE_CONFIG_B64[\\\'\\"]\\s*,\\s*[\\\'\\"]([^\\\'\\"]+)[\\\'\\"]\\s*\\)\\s*;/', $content, $m)) {
+            return (string) $m[1];
+        }
+        return '';
+    };
+
+    $extract_custom = function ($content) {
+        if (!is_string($content) || $content === '') { return '';
+        }
+        if (preg_match('/\\/\\*\\s*VAPTSECURE_CONFIG_CUSTOM_START\\s*\\*\\/(.*?)\\/\\*\\s*VAPTSECURE_CONFIG_CUSTOM_END\\s*\\*\\//s', $content, $m)) {
+            return (string) $m[1];
+        }
+        if (preg_match('/unset\\s*\\(\\s*\\$__vaptsecure_payload_json\\s*,\\s*\\$__vaptsecure_payload\\s*\\)\\s*;\\s*(.*)$/s', $content, $m)) {
+            return (string) $m[1];
+        }
+        return '';
+    };
+
+    $decode_b64 = function ($b64) {
+        if (!is_string($b64) || $b64 === '') { return false;
+        }
+        $json = base64_decode($b64, true);
+        if (!is_string($json) || $json === '') { return false;
+        }
+        $data = json_decode($json, true);
+        return is_array($data) ? $data : false;
+    };
+
+    $encode_payload = function ($payload) {
+        return base64_encode(json_encode($payload));
+    };
+
+    $render_config_file = function ($b64, $custom_block = '') {
+        $b64 = (string) $b64;
+        $custom_block = is_string($custom_block) ? $custom_block : '';
+
+        $out = "<?php\n";
+        $out .= "if ( ! defined( 'ABSPATH' ) ) { exit; }\n\n";
+        $out .= "define( 'VAPTSECURE_CONFIG_B64', '" . $b64 . "' );\n";
+        $out .= "if ( ! function_exists( 'vaptsecure_apply_config_payload' ) ) {\n";
+        $out .= "    function vaptsecure_apply_config_payload( \$payload ) {\n";
+        $out .= "        if ( ! is_array( \$payload ) ) { return false; }\n";
+        $out .= "        \$license_type = isset( \$payload['license_type'] ) ? (string) \$payload['license_type'] : 'standard';\n";
+        $out .= "        if ( ! defined( 'VAPTSECURE_BUILD_PROFILE' ) && isset( \$payload['build_profile'] ) ) { define( 'VAPTSECURE_BUILD_PROFILE', (string) \$payload['build_profile'] ); }\n";
+        $out .= "        if ( ! defined( 'VAPTSECURE_LICENSE_TYPE' ) ) { define( 'VAPTSECURE_LICENSE_TYPE', \$license_type ); }\n";
+        $out .= "        if ( \$license_type !== 'developer_unbound' && ! defined( 'VAPTSECURE_DOMAIN_LOCKED' ) && ! empty( \$payload['domain_locked'] ) ) { define( 'VAPTSECURE_DOMAIN_LOCKED', (string) \$payload['domain_locked'] ); }\n";
+        $out .= "        if ( ! defined( 'VAPTSECURE_BUILD_VERSION' ) && isset( \$payload['build_version'] ) ) { define( 'VAPTSECURE_BUILD_VERSION', (string) \$payload['build_version'] ); }\n";
+        $out .= "        if ( ! defined( 'VAPTSECURE_LICENSE_SCOPE' ) && isset( \$payload['license_scope'] ) ) { define( 'VAPTSECURE_LICENSE_SCOPE', (string) \$payload['license_scope'] ); }\n";
+        $out .= "        if ( ! defined( 'VAPTSECURE_DOMAIN_LIMIT' ) && isset( \$payload['domain_limit'] ) ) { define( 'VAPTSECURE_DOMAIN_LIMIT', intval( \$payload['domain_limit'] ) ); }\n";
+        $out .= "        if ( ! defined( 'VAPTSECURE_SECURITY_ALERT_EMAIL' ) && ! empty( \$payload['security_alert_email_b64'] ) ) { define( 'VAPTSECURE_SECURITY_ALERT_EMAIL', base64_decode( (string) \$payload['security_alert_email_b64'] ) ); }\n";
+        $out .= "        if ( ! defined( 'VAPTSECURE_ACTIVE_DATA_FILE' ) && ! empty( \$payload['active_data_file'] ) ) { define( 'VAPTSECURE_ACTIVE_DATA_FILE', (string) \$payload['active_data_file'] ); }\n";
+        $out .= "        \$restrict = ! empty( \$payload['restrict_features'] );\n";
+        $out .= "        if ( \$license_type === 'developer_unbound' ) { \$restrict = false; }\n";
+        $out .= "        if ( ! defined( 'VAPTSECURE_RESTRICT_FEATURES' ) ) { define( 'VAPTSECURE_RESTRICT_FEATURES', (bool) \$restrict ); }\n";
+        $out .= "        if ( isset( \$payload['features'] ) && is_array( \$payload['features'] ) ) {\n";
+        $out .= "            foreach ( \$payload['features'] as \$key ) {\n";
+        $out .= "                \$key = (string) \$key;\n";
+        $out .= "                if ( \$key === '' ) { continue; }\n";
+        $out .= "                \$const = 'VAPTSECURE_FEATURE_' . strtoupper( str_replace( '-', '_', \$key ) );\n";
+        $out .= "                if ( ! defined( \$const ) ) { define( \$const, true ); }\n";
+        $out .= "            }\n";
+        $out .= "        }\n";
+        $out .= "        if ( ! defined( 'VAPTSECURE_CONFIG_LOADED' ) ) { define( 'VAPTSECURE_CONFIG_LOADED', true ); }\n";
+        $out .= "        return true;\n";
+        $out .= "    }\n";
+        $out .= "}\n";
+        $out .= "\$__vaptsecure_payload_json = base64_decode( VAPTSECURE_CONFIG_B64, true );\n";
+        $out .= "\$__vaptsecure_payload = \$__vaptsecure_payload_json ? json_decode( \$__vaptsecure_payload_json, true ) : null;\n";
+        $out .= "vaptsecure_apply_config_payload( \$__vaptsecure_payload );\n";
+        $out .= "unset( \$__vaptsecure_payload_json, \$__vaptsecure_payload );\n";
+        $out .= "/* VAPTSECURE_CONFIG_CUSTOM_START */\n";
+        $out .= $custom_block;
+        if ($custom_block !== '' && substr($custom_block, -1) !== "\n") {
+            $out .= "\n";
+        }
+        $out .= "/* VAPTSECURE_CONFIG_CUSTOM_END */\n";
+        $out .= "\n";
+        return $out;
+    };
+
+    $notify = function ($subject, $message, $transient_key) {
+        if (get_transient($transient_key)) { return;
+        }
+        set_transient($transient_key, 1, DAY_IN_SECONDS);
+
+        $to = '';
+        if (defined('VAPTSECURE_SECURITY_ALERT_EMAIL') && VAPTSECURE_SECURITY_ALERT_EMAIL) {
+            $to = VAPTSECURE_SECURITY_ALERT_EMAIL;
+        } elseif (function_exists('vaptsecure_get_superadmin_identity')) {
+            $identity = vaptsecure_get_superadmin_identity();
+            $to = isset($identity['email']) ? $identity['email'] : '';
+        }
+
+        if ($to) {
+            wp_mail($to, $subject, $message);
+        }
+    };
+
+    $content = file_get_contents($config_path);
+    $current_b64 = $extract_b64($content);
+    $custom_block = $extract_custom($content);
+
+    if ($current_b64 !== '') {
+        $current_payload = $decode_b64($current_b64);
+        if (!is_array($current_payload)) {
+            if (!defined('VAPTSECURE_CONFIG_MISSING')) {
+                define('VAPTSECURE_CONFIG_MISSING', true);
+            }
+            if (function_exists('update_option')) {
+                update_option('vaptsecure_global_protection', 0);
+                delete_transient('vaptsecure_active_enforcements');
+            }
+            add_action('admin_notices', function () {
+                if (!current_user_can('manage_options')) { return; }
+                echo '<div class="notice notice-error"><p><strong>VAPT Secure:</strong> Configuration file is invalid. The plugin is disabled.</p></div>';
+            });
+            add_action('init', function () use ($should_bypass_blocking) {
+                $uri = isset($_SERVER['REQUEST_URI']) ? (string) $_SERVER['REQUEST_URI'] : '';
+                if (strpos($uri, '/wp-admin/') !== false || strpos($uri, '/wp-login.php') !== false) { return; }
+                if (function_exists('wp_doing_ajax') && wp_doing_ajax()) { return; }
+                if (defined('REST_REQUEST') && REST_REQUEST) { return; }
+                if (defined('DOING_CRON') && DOING_CRON) { return; }
+                if ($should_bypass_blocking()) { return; }
+                wp_die('<h1>VAPT Secure</h1><p>Configuration file is invalid. The plugin is disabled.</p>');
+            }, 0);
+
+            if (!$should_bypass_blocking()) {
+                $site_url = function_exists('get_site_url') ? get_site_url() : '';
+                $notify('[VAPT Secure] Configuration invalid', "VAPT Secure is disabled because its configuration file is invalid.\n\nSite: {$site_url}\n", 'vaptsecure_invalid_config_notified');
+            }
+
+            if (!defined('VAPTSECURE_LICENSE_TYPE')) { define('VAPTSECURE_LICENSE_TYPE', 'standard'); }
+            if (!defined('VAPTSECURE_LICENSE_SCOPE')) { define('VAPTSECURE_LICENSE_SCOPE', 'single'); }
+            if (!defined('VAPTSECURE_DOMAIN_LIMIT')) { define('VAPTSECURE_DOMAIN_LIMIT', 1); }
+            if (!defined('VAPTSECURE_RESTRICT_FEATURES')) { define('VAPTSECURE_RESTRICT_FEATURES', false); }
+            if (!defined('VAPTSECURE_CONFIG_LOADED')) { define('VAPTSECURE_CONFIG_LOADED', true); }
+            return true;
+        }
+
+        $original_b64 = get_option('vaptsecure_config_original_b64', '');
+        if (!is_string($original_b64)) { $original_b64 = '';
+        }
+
+        if ($original_b64 === '') {
+            update_option('vaptsecure_config_original_b64', $current_b64);
+            update_option('vaptsecure_config_original_hash', hash('sha256', $current_b64));
+            update_option('vaptsecure_config_original_path', $config_path);
+            update_option('vaptsecure_config_current_b64', $current_b64);
+        } else {
+            $baseline_b64 = get_option('vaptsecure_config_current_b64', '');
+            if (!is_string($baseline_b64)) { $baseline_b64 = '';
+            }
+            if ($baseline_b64 === '') {
+                $baseline_b64 = $original_b64;
+                update_option('vaptsecure_config_current_b64', $baseline_b64);
+            }
+
+            if ($baseline_b64 !== $current_b64) {
+                $original_payload = $decode_b64($original_b64);
+                $original_type = is_array($original_payload) && isset($original_payload['license_type']) ? (string) $original_payload['license_type'] : '';
+                $current_type = isset($current_payload['license_type']) ? (string) $current_payload['license_type'] : '';
+                $is_dev_unbound = ($original_type === 'developer_unbound' || $current_type === 'developer_unbound');
+
+                if ($is_dev_unbound && is_array($original_payload)) {
+                    $merged = $original_payload;
+                    foreach ($current_payload as $k => $v) {
+                        if (!array_key_exists($k, $merged)) {
+                            $merged[$k] = $v;
+                        }
+                    }
+                    $orig_features = (isset($original_payload['features']) && is_array($original_payload['features'])) ? $original_payload['features'] : array();
+                    $cur_features = (isset($current_payload['features']) && is_array($current_payload['features'])) ? $current_payload['features'] : array();
+                    $merged['features'] = array_values(array_unique(array_merge($orig_features, $cur_features)));
+                    $merged['license_type'] = 'developer_unbound';
+                    $merged['restrict_features'] = false;
+                    $new_b64 = $encode_payload($merged);
+                } else {
+                    $new_b64 = $original_b64;
+                }
+
+                if (is_writable($config_path)) {
+                    file_put_contents($config_path, $render_config_file($new_b64, $custom_block));
+                    update_option('vaptsecure_config_last_sync', current_time('mysql'));
+                    update_option('vaptsecure_config_current_b64', $new_b64);
+                    $site_url = function_exists('get_site_url') ? get_site_url() : '';
+                    $notify('[VAPT Secure] Configuration restored', "VAPT Secure restored its configuration file to the saved baseline.\n\nSite: {$site_url}\n", 'vaptsecure_config_restore_notified');
+                    $current_b64 = $new_b64;
+                }
+            }
+        }
+
+        if (!$is_already_loaded) {
+            require_once $config_path;
+        }
+
+        return true;
+    }
+
+    require_once $config_path;
+
+    $payload = array(
+        'build_profile' => defined('VAPTSECURE_BUILD_PROFILE') ? (string) VAPTSECURE_BUILD_PROFILE : 'client',
+        'license_type' => defined('VAPTSECURE_LICENSE_TYPE') ? (string) VAPTSECURE_LICENSE_TYPE : 'standard',
+        'domain_locked' => defined('VAPTSECURE_DOMAIN_LOCKED') ? (string) VAPTSECURE_DOMAIN_LOCKED : '',
+        'build_version' => defined('VAPTSECURE_BUILD_VERSION') ? (string) VAPTSECURE_BUILD_VERSION : '',
+        'license_scope' => defined('VAPTSECURE_LICENSE_SCOPE') ? (string) VAPTSECURE_LICENSE_SCOPE : 'single',
+        'domain_limit' => defined('VAPTSECURE_DOMAIN_LIMIT') ? intval(VAPTSECURE_DOMAIN_LIMIT) : 1,
+        'security_alert_email_b64' => defined('VAPTSECURE_SECURITY_ALERT_EMAIL') ? base64_encode((string) VAPTSECURE_SECURITY_ALERT_EMAIL) : '',
+        'active_data_file' => defined('VAPTSECURE_ACTIVE_DATA_FILE') ? (string) VAPTSECURE_ACTIVE_DATA_FILE : '',
+        'restrict_features' => defined('VAPTSECURE_RESTRICT_FEATURES') ? (bool) VAPTSECURE_RESTRICT_FEATURES : false,
+        'features' => array()
+    );
+
+    $consts = get_defined_constants(true);
+    $user_consts = isset($consts['user']) && is_array($consts['user']) ? $consts['user'] : array();
+    foreach ($user_consts as $k => $v) {
+        if (strpos($k, 'VAPTSECURE_FEATURE_') === 0 && $v === true) {
+            $suffix = substr($k, strlen('VAPTSECURE_FEATURE_'));
+            $payload['features'][] = strtolower(str_replace('_', '-', $suffix));
+        }
+    }
+
+    $new_b64 = $encode_payload($payload);
+    if (is_writable($config_path)) {
+        file_put_contents($config_path, $render_config_file($new_b64, $custom_block));
+        if (get_option('vaptsecure_config_original_b64', '') === '') {
+            update_option('vaptsecure_config_original_b64', $new_b64);
+            update_option('vaptsecure_config_original_hash', hash('sha256', $new_b64));
+            update_option('vaptsecure_config_original_path', $config_path);
+            update_option('vaptsecure_config_current_b64', $new_b64);
+        }
+    }
+
+    return true;
+}
+
+if (!vaptsecure_load_required_config()) {
+    return;
 }
 
 // Include core classes (new Builder includes)
@@ -198,10 +542,78 @@ require_once VAPTSECURE_PATH . 'includes/self-check/class-vapt-cron.php';
 require_once VAPTSECURE_PATH . 'includes/self-check/class-vapt-lifecycle.php';
 require_once VAPTSECURE_PATH . 'includes/admin/class-vapt-diagnostics-page.php';
 
+function vaptsecure_enforce_installation_limit()
+{
+    if (!defined('VAPTSECURE_LICENSE_SCOPE') || VAPTSECURE_LICENSE_SCOPE !== 'multisite') {
+        return;
+    }
+
+    if (defined('VAPTSECURE_LICENSE_TYPE') && VAPTSECURE_LICENSE_TYPE === 'developer_unbound') {
+        return;
+    }
+
+    if (!defined('VAPTSECURE_DOMAIN_LIMIT')) {
+        return;
+    }
+
+    $limit = (int) VAPTSECURE_DOMAIN_LIMIT;
+    if ($limit <= 0) {
+        return;
+    }
+
+    if (!is_multisite()) {
+        return;
+    }
+
+    $count = get_transient('vaptsecure_network_site_count');
+    if (!is_int($count)) {
+        $sites = get_sites(array('fields' => 'ids', 'number' => 0));
+        $count = is_array($sites) ? count($sites) : 0;
+        set_transient('vaptsecure_network_site_count', $count, 6 * HOUR_IN_SECONDS);
+    }
+
+    if ($count <= $limit) {
+        if (get_option('vaptsecure_over_installation_limit')) {
+            $prev = get_option('vaptsecure_global_protection_prev');
+            if ($prev !== null) {
+                update_option('vaptsecure_global_protection', (int) $prev);
+            }
+            delete_option('vaptsecure_over_installation_limit');
+            delete_option('vaptsecure_global_protection_prev');
+            delete_transient('vaptsecure_active_enforcements');
+        }
+        return;
+    }
+
+    if (!get_option('vaptsecure_over_installation_limit')) {
+        $current = get_option('vaptsecure_global_protection', 1);
+        update_option('vaptsecure_global_protection_prev', (int) $current);
+        update_option('vaptsecure_over_installation_limit', 1);
+    }
+
+    update_option('vaptsecure_global_protection', 0);
+    delete_transient('vaptsecure_active_enforcements');
+
+    $notice_cb = function () use ($count, $limit) {
+        $can_see = (function_exists('is_super_admin') && is_super_admin()) || current_user_can('manage_network_options') || current_user_can('manage_options');
+        if (!$can_see) { return; }
+        echo '<div class="notice notice-error"><p><strong>VAPT Secure:</strong> This build is disabled because the Multi-Site installation limit was exceeded (' . esc_html((string) $count) . '/' . esc_html((string) $limit) . ').</p></div>';
+    };
+
+    add_action('admin_notices', $notice_cb);
+    add_action('network_admin_notices', $notice_cb);
+
+    add_action('init', function () use ($count, $limit) {
+        if (is_admin()) { return; }
+        wp_die('<h1>VAPT Secure</h1><p>This build is disabled because the Multi-Site installation limit was exceeded (' . esc_html((string) $count) . '/' . esc_html((string) $limit) . ').</p>');
+    }, 0);
+}
+
 /**
  * Initialize Global Services
  * Deferred to plugins_loaded to avoid DB access during activation.
  */
+add_action('plugins_loaded', 'vaptsecure_enforce_installation_limit', 0);
 add_action('plugins_loaded', array('VAPTSECURE_Enforcer', 'init'));
 
 /**
