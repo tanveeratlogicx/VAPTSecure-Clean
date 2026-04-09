@@ -1,0 +1,17 @@
+{
+  "controls": [
+    {
+      "type": "toggle",
+      "label": "Enable protection for Username Enumeration via WordPress REST API",
+      "key": "UI-RISK-003-001",
+      "default": false,
+      "help": "Turns on protection for Username Enumeration via WordPress REST API. This helps secure the site against Authentication attacks."
+    }
+  ],
+  "enforcement": {
+    "driver": "htaccess",
+    "mappings": {
+      "UI-RISK-003-001": "# BEGIN VAPT RISK-003\n# Requires: mod_rewrite | AllowOverride: FileInfo or All\n# Position: BEFORE # BEGIN WordPress\n<IfModule mod_rewrite.c>\n    RewriteEngine On\n    RewriteBase /\n    RewriteRule ^wp-json/wp/v2/users$ - [F,L]\n    RewriteRule ^wp-json/wp/v2/users/ - [F,L]\n</IfModule>\n# END VAPT RISK-003"
+    }
+  }
+}

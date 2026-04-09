@@ -1,0 +1,17 @@
+{
+  "controls": [
+    {
+      "type": "toggle",
+      "label": "Enable Caddy Native Header Protection",
+      "key": "UI-RISK-123-001",
+      "default": false,
+      "help": "Turns on Caddy Native Header Protection."
+    }
+  ],
+  "enforcement": {
+    "driver": "caddy_native",
+    "mappings": {
+      "UI-RISK-123-001": "# BEGIN VAPT RISK-123\nheader {\n    X-Content-Type-Options nosniff\n}\n# END VAPT RISK-123"
+    }
+  }
+}

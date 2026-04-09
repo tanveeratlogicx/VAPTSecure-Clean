@@ -1,0 +1,17 @@
+{
+  "controls": [
+    {
+      "type": "toggle",
+      "label": "Enable IIS Web.config Protection",
+      "key": "UI-RISK-022-001",
+      "default": false,
+      "help": "Turns on IIS protection for missing headers."
+    }
+  ],
+  "enforcement": {
+    "driver": "iis",
+    "mappings": {
+      "UI-RISK-022-001": "<customHeaders>\n    <add name=\"Content-Security-Policy\" value=\"upgrade-insecure-requests\" />\n</customHeaders>"
+    }
+  }
+}

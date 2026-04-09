@@ -1,0 +1,9 @@
+---
+name: Debug Log Session Cleanup
+description: Ensures that the vapt-debug.txt file is cleared at the start of a session or task to prevent log bloating.
+---
+
+When a new task is initiated or at the start of a session:
+- Locate the file `vapt-debug.txt` in the root of the VAPT-Secure plugin directory.
+- Clear its contents completely so that debugging starts fresh for the new task.
+- Do not delete the file itself, just empty the contents.

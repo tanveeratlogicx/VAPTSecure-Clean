@@ -1,0 +1,17 @@
+{
+  "controls": [
+    {
+      "type": "toggle",
+      "label": "Enable WordPress Core Filter",
+      "key": "UI-RISK-006-001",
+      "default": false,
+      "help": "Turns on WordPress Core protective filters."
+    }
+  ],
+  "enforcement": {
+    "driver": "wordpress_core",
+    "mappings": {
+      "UI-RISK-006-001": "// BEGIN VAPT RISK-006\nadd_filter( 'rest_authentication_errors', function( $result ) {\n    if ( ! empty( $result ) ) {\n        return $result;\n    }\n    if ( ! is_user_logged_in() ) {\n        return new WP_Error( 'rest_not_logged_in', 'You are not currently logged in.', array( 'status' => 401 ) );\n    }\n    return $result;\n});\n// END VAPT RISK-006"
+    }
+  }
+}

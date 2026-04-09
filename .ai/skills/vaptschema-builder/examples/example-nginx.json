@@ -1,0 +1,17 @@
+{
+  "controls": [
+    {
+      "type": "toggle",
+      "label": "Enable Nginx Protection against XML-RPC",
+      "key": "UI-RISK-002-001",
+      "default": false,
+      "help": "Turns on Nginx protection against XML-RPC. This helps secure the site against Ping back attacks."
+    }
+  ],
+  "enforcement": {
+    "driver": "nginx",
+    "mappings": {
+      "UI-RISK-002-001": "# BEGIN VAPT RISK-002\nlocation ~* ^/xmlrpc\\.php$ {\n    deny all;\n}\n# END VAPT RISK-002"
+    }
+  }
+}

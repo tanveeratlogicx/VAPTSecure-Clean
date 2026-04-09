@@ -1,0 +1,8 @@
+---
+name: Workspace Focus on Session Start
+description: Ensures that the focus is always set to the currently selected folder's root when a new session is initiated.
+---
+
+When a new session, task, or conversation is initiated:
+- Always set your focus and working directory to the currently selected folder's `root` directory like to "VAPT-Secure" in case a files anywhere below it is currentl selected, within the workspace.
+- Do not default to subdirectories or unrelated paths unless explicitly requested by the user.

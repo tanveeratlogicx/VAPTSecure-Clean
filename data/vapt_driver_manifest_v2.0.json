@@ -1,0 +1,616 @@
+{
+    "schema_version": "2.0.0",
+    "bundle_date": "2026-02-21",
+    "source_file": "VAPT-Risk-Catalogue-Full-125-v3_4_1.json",
+    "file_role": "driver_manifest",
+    "bundle_files": {
+        "pattern_library": "enforcer_pattern_library_v2.0.json",
+        "interface_schema": "interface_schema_v2.0.json",
+        "agent_instructions": "ai_agent_instructions_v2.0.json",
+        "driver_manifest": "vapt_driver_manifest_v2.0.json",
+        "driver_reference": "VAPT_Driver_Reference_v2.0.php",
+        "readme": "VAPT_AI_Agent_System_README_v2.0.md"
+    },
+    "description": "VAPT Driver Manifest v2.0 \u2014 Machine-executable instructions for the WordPress plugin driver. Every field is directly usable with no inference required. Enforcer lib_key names match enforcer_pattern_library_v2.0 exactly.",
+    "driver_contract": {
+        "read_sequence": [
+            "1. Resolve {ABSPATH} in target_file to full filesystem path",
+            "2. Create target file if it does not exist (especially wp-content/uploads/.htaccess)",
+            "3. Read idempotency.check_string \u2014 if found in file AND if_found=skip \u2192 stop, return already-applied",
+            "4. If backup_required=true, copy target_file to target_file + '.vapt.bak.' + timestamp",
+            "5. Read insertion.anchor_string \u2014 search target_file content for this exact string",
+            "6. If anchor found: apply anchor_position (before/after/prepend/append) to place write_block",
+            "7. If anchor NOT found: use insertion.fallback strategy (prepend/append)",
+            "8. Write new content to target_file",
+            "9. Run verification.command \u2014 check output matches verification.expected",
+            "10. On failure: remove begin_marker..end_marker block from target_file (rollback)"
+        ],
+        "write_modes": {
+            "insert_at_anchor": "Find anchor_string in file. Insert write_block at anchor_position (before/after).",
+            "prepend_to_file": "Insert write_block at the very beginning of the file.",
+            "append_to_file": "Append write_block to the end of the file."
+        },
+        "idempotency_rule": "Always check idempotency.check_string before writing. Never insert a block twice.",
+        "abspath_rule": "Replace {ABSPATH} with WordPress ABSPATH constant (trailing slash included).",
+        "rollback_rule": "Regex-remove everything from begin_marker line through end_marker line, inclusive."
+    },
+    "insertion_anchor_definitions": {
+        "before_wordpress_rewrite": {
+            "search": "# BEGIN WordPress",
+            "position": "before",
+            "fallback": "prepend"
+        },
+        "after_wordpress_rewrite": {
+            "search": "# END WordPress",
+            "position": "after",
+            "fallback": "append"
+        },
+        "beginning_of_file": {
+            "search": null,
+            "position": "prepend",
+            "fallback": null
+        },
+        "end_of_file": {
+            "search": null,
+            "position": "append",
+            "fallback": null
+        },
+        "before_wp_settings": {
+            "search": "require_once ABSPATH",
+            "position": "before",
+            "fallback": "append"
+        },
+        "functions_php": {
+            "search": null,
+            "position": "append",
+            "fallback": null
+        },
+        "jail_local": {
+            "search": null,
+            "position": "append",
+            "fallback": null
+        },
+        "http_block": {
+            "search": "http {",
+            "position": "after",
+            "fallback": "append"
+        },
+        "server_tokens": {
+            "search": "server_tokens",
+            "position": "before",
+            "fallback": "append"
+        },
+        "crontab_entry": {
+            "search": null,
+            "position": "append",
+            "fallback": null
+        }
+    },
+    "target_file_definitions": {
+        ".htaccess": "{ABSPATH}.htaccess",
+        "wp-content/uploads/.htaccess": "{ABSPATH}wp-content/uploads/.htaccess",
+        "wp-config.php": "{ABSPATH}wp-config.php",
+        "PHP Functions": "{VAPTSECURE_PATH}vapt-functions.php",
+        "WordPress": "{VAPTSECURE_PATH}vapt-functions.php",
+        "WordPress Core": "{VAPTSECURE_PATH}vapt-functions.php",
+        "fail2ban": "/etc/fail2ban/jail.local",
+        "Nginx": "/etc/nginx/conf.d/vapt-security.conf",
+        "Apache": "/etc/apache2/conf-available/vapt-security.conf",
+        "Caddy": "/etc/caddy/Caddyfile",
+        "Server Cron": "crontab"
+    },
+    "risks": {
+        "RISK-001": {
+            "risk_id": "RISK-001",
+            "title": "wp-cron.php Enabled Leads to DoS Attack",
+            "category": "Configuration",
+            "severity": "high",
+            "steps": [
+                {
+                    "enforcer": "wp-config.php",
+                    "lib_key": "wp_config",
+                    "operation": "add_constant",
+                    "write_mode": "insert_at_anchor",
+                    "target_file": "{ABSPATH}wp-config.php",
+                    "backup_required": true,
+                    "idempotency": {
+                        "check_string": "/* BEGIN VAPT RISK-001 */",
+                        "if_found": "skip",
+                        "if_not_found": "insert"
+                    },
+                    "insertion": {
+                        "anchor_string": "require_once ABSPATH",
+                        "anchor_position": "before",
+                        "fallback": "append"
+                    },
+                    "write_block": "/* BEGIN VAPT RISK-001 */\ndefine('DISABLE_WP_CRON', true);\n/* END VAPT RISK-001 */",
+                    "begin_marker": "/* BEGIN VAPT RISK-001 */",
+                    "end_marker": "/* END VAPT RISK-001 */",
+                    "raw_code": "define('DISABLE_WP_CRON', true);",
+                    "verification": {
+                        "command": "wp config get DISABLE_WP_CRON",
+                        "expected": "true"
+                    },
+                    "rollback": {
+                        "action": "remove_block",
+                        "begin_marker": "/* BEGIN VAPT RISK-001 */",
+                        "end_marker": "/* END VAPT RISK-001 */",
+                        "target_file": "{ABSPATH}wp-config.php"
+                    }
+                }
+            ]
+        },
+        "RISK-002": {
+            "risk_id": "RISK-002",
+            "title": "Xmlrpc enabled Leads to Ping back attack",
+            "category": "Information Disclosure",
+            "severity": "high",
+            "steps": [
+                {
+                    "enforcer": ".htaccess",
+                    "lib_key": "htaccess",
+                    "operation": "add_files_block",
+                    "write_mode": "prepend_to_file",
+                    "target_file": "{ABSPATH}.htaccess",
+                    "backup_required": true,
+                    "idempotency": {
+                        "check_string": "# BEGIN VAPT RISK-002",
+                        "if_found": "skip",
+                        "if_not_found": "insert"
+                    },
+                    "insertion": {
+                        "anchor_string": null,
+                        "anchor_position": "prepend",
+                        "fallback": null
+                    },
+                    "write_block": "# BEGIN VAPT RISK-002\n<Files \"xmlrpc.php\">\n    Order Deny,Allow\n    Deny from all\n</Files>\n# END VAPT RISK-002",
+                    "begin_marker": "# BEGIN VAPT RISK-002",
+                    "end_marker": "# END VAPT RISK-002",
+                    "raw_code": "<Files \"xmlrpc.php\">\n    Order Deny,Allow\n    Deny from all\n</Files>",
+                    "verification": {
+                        "command": "apachectl -t",
+                        "expected": "Exit 0, no syntax errors"
+                    },
+                    "rollback": {
+                        "action": "remove_block",
+                        "begin_marker": "# BEGIN VAPT RISK-002",
+                        "end_marker": "# END VAPT RISK-002",
+                        "target_file": "{ABSPATH}.htaccess"
+                    }
+                }
+            ]
+        },
+        "RISK-003": {
+            "risk_id": "RISK-003",
+            "title": "Username Enumeration via WordPress REST API",
+            "category": "Authentication",
+            "severity": "medium",
+            "steps": [
+                {
+                    "enforcer": ".htaccess",
+                    "lib_key": "htaccess",
+                    "operation": "add_rewrite_rule",
+                    "write_mode": "insert_at_anchor",
+                    "target_file": "{ABSPATH}.htaccess",
+                    "backup_required": true,
+                    "idempotency": {
+                        "check_string": "# BEGIN VAPT RISK-003",
+                        "if_found": "skip",
+                        "if_not_found": "insert"
+                    },
+                    "insertion": {
+                        "anchor_string": "# BEGIN WordPress",
+                        "anchor_position": "before",
+                        "fallback": "prepend"
+                    },
+                    "write_block": "# BEGIN VAPT RISK-003\n<IfModule mod_rewrite.c>\n    RewriteEngine On\n    RewriteBase /\n    RewriteRule ^wp-json/wp/v2/users$ - [F,L]\n    RewriteRule ^wp-json/wp/v2/users/ - [F,L]\n</IfModule>\n# END VAPT RISK-003",
+                    "begin_marker": "# BEGIN VAPT RISK-003",
+                    "end_marker": "# END VAPT RISK-003",
+                    "raw_code": "<IfModule mod_rewrite.c>\n    RewriteEngine On\n    RewriteBase /\n    RewriteRule ^wp-json/wp/v2/users$ - [F,L]\n    RewriteRule ^wp-json/wp/v2/users/ - [F,L]\n</IfModule>",
+                    "verification": {
+                        "command": "apachectl -t && curl -sI 'https://yoursite.com/' | grep HTTP",
+                        "expected": "Exit 0, no syntax errors"
+                    },
+                    "rollback": {
+                        "action": "remove_block",
+                        "begin_marker": "# BEGIN VAPT RISK-003",
+                        "end_marker": "# END VAPT RISK-003",
+                        "target_file": "{ABSPATH}.htaccess"
+                    }
+                }
+            ]
+        },
+        "RISK-004": {
+            "risk_id": "RISK-004",
+            "title": "Email Flooding via Password Reset",
+            "category": "Authentication",
+            "severity": "medium",
+            "steps": [
+                {
+                    "enforcer": "PHP Functions",
+                    "lib_key": "php_functions",
+                    "operation": "add_action_hook",
+                    "write_mode": "append_to_file",
+                    "target_file": "{VAPTSECURE_PATH}vapt-functions.php",
+                    "backup_required": true,
+                    "idempotency": {
+                        "check_string": "// BEGIN VAPT RISK-004",
+                        "if_found": "skip",
+                        "if_not_found": "insert"
+                    },
+                    "insertion": {
+                        "anchor_string": null,
+                        "anchor_position": "append",
+                        "fallback": null
+                    },
+                    "write_block": "// BEGIN VAPT RISK-004\nadd_action('login_init', 'vapt_rate_limit_password_reset');\nfunction vapt_rate_limit_password_reset() {\n    if ($_POST['user_login'] ?? false) {\n        $ip = $_SERVER['REMOTE_ADDR'];\n        $transient = 'pwd_reset_' . md5($ip);\n        if (get_transient($transient)) {\n            wp_die('Too many attempts. Please try again later.');\n        }\n        set_transient($transient, true, 300); // 5 minutes\n    }\n}\n// END VAPT RISK-004",
+                    "begin_marker": "// BEGIN VAPT RISK-004",
+                    "end_marker": "// END VAPT RISK-004",
+                    "raw_code": "add_action('login_init', 'vapt_rate_limit_password_reset');\nfunction vapt_rate_limit_password_reset() {\n    if ($_POST['user_login'] ?? false) {\n        $ip = $_SERVER['REMOTE_ADDR'];\n        $transient = 'pwd_reset_' . md5($ip);\n        if (get_transient($transient)) {\n            wp_die('Too many attempts. Please try again later.');\n        }\n        set_transient($transient, true, 300); // 5 minutes\n    }\n}",
+                    "verification": {
+                        "command": "wp eval \"do_action('login_init');\" --skip-themes",
+                        "expected": "No errors"
+                    },
+                    "rollback": {
+                        "action": "remove_block",
+                        "begin_marker": "// BEGIN VAPT RISK-004",
+                        "end_marker": "// END VAPT RISK-004",
+                        "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php"
+                    }
+                }
+            ]
+        },
+        "RISK-005": {
+            "risk_id": "RISK-005",
+            "title": "Exposed WordPress Admin Username via Author Query",
+            "category": "Information Disclosure",
+            "severity": "medium",
+            "steps": [
+                {
+                    "enforcer": ".htaccess",
+                    "lib_key": "htaccess",
+                    "operation": "add_rewrite_cond",
+                    "write_mode": "insert_at_anchor",
+                    "target_file": "{ABSPATH}.htaccess",
+                    "backup_required": true,
+                    "idempotency": {
+                        "check_string": "# BEGIN VAPT RISK-005",
+                        "if_found": "skip",
+                        "if_not_found": "insert"
+                    },
+                    "insertion": {
+                        "anchor_string": "# BEGIN WordPress",
+                        "anchor_position": "before",
+                        "fallback": "prepend"
+                    },
+                    "write_block": "# BEGIN VAPT RISK-005\n<IfModule mod_rewrite.c>\n    RewriteEngine On\n    RewriteBase /\n    RewriteCond %{QUERY_STRING} (^|&)author=\\d+ [NC]\n    RewriteRule ^ - [F,L]\n</IfModule>\n# END VAPT RISK-005",
+                    "begin_marker": "# BEGIN VAPT RISK-005",
+                    "end_marker": "# END VAPT RISK-005",
+                    "raw_code": "<IfModule mod_rewrite.c>\n    RewriteEngine On\n    RewriteBase /\n    RewriteCond %{QUERY_STRING} (^|&)author=\\d+ [NC]\n    RewriteRule ^ - [F,L]\n</IfModule>",
+                    "verification": {
+                        "command": "apachectl -t && curl -sI 'https://yoursite.com/' | grep HTTP",
+                        "expected": "Exit 0, no syntax errors"
+                    },
+                    "rollback": {
+                        "action": "remove_block",
+                        "begin_marker": "# BEGIN VAPT RISK-005",
+                        "end_marker": "# END VAPT RISK-005",
+                        "target_file": "{ABSPATH}.htaccess"
+                    }
+                }
+            ]
+        },
+        "RISK-006": {
+            "risk_id": "RISK-006",
+            "title": "Endpoint Disclosure (auto-generated WP REST routes)",
+            "category": "API Security",
+            "severity": "low",
+            "steps": [
+                {
+                    "enforcer": "PHP Functions",
+                    "lib_key": "php_functions",
+                    "operation": "add_filter_hook",
+                    "write_mode": "append_to_file",
+                    "target_file": "{VAPTSECURE_PATH}vapt-functions.php",
+                    "backup_required": true,
+                    "idempotency": {
+                        "check_string": "// BEGIN VAPT RISK-006",
+                        "if_found": "skip",
+                        "if_not_found": "insert"
+                    },
+                    "insertion": {
+                        "anchor_string": null,
+                        "anchor_position": "append",
+                        "fallback": null
+                    },
+                    "write_block": "// BEGIN VAPT RISK-006\nadd_filter('rest_authentication_errors', 'vapt_restrict_rest_api');\nfunction vapt_restrict_rest_api($result) {\n    if (!empty($result)) return $result;\n    if (!is_user_logged_in()) {\n        return new WP_Error('rest_not_logged_in', 'Authentication required.', array('status' => 401));\n    }\n    return $result;\n}\n// END VAPT RISK-006",
+                    "begin_marker": "// BEGIN VAPT RISK-006",
+                    "end_marker": "// END VAPT RISK-006",
+                    "raw_code": "add_filter('rest_authentication_errors', 'vapt_restrict_rest_api');\nfunction vapt_restrict_rest_api($result) {\n    if (!empty($result)) return $result;\n    if (!is_user_logged_in()) {\n        return new WP_Error('rest_not_logged_in', 'Authentication required.', array('status' => 401));\n    }\n    return $result;\n}",
+                    "verification": {
+                        "command": "wp eval \"do_action('rest_authentication_errors');\" --skip-themes",
+                        "expected": "No errors"
+                    },
+                    "rollback": {
+                        "action": "remove_block",
+                        "begin_marker": "// BEGIN VAPT RISK-006",
+                        "end_marker": "// END VAPT RISK-006",
+                        "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php"
+                    }
+                }
+            ]
+        },
+        "RISK-007": {
+            "risk_id": "RISK-007",
+            "title": "Lack of Rate Limiting on WordPress Login",
+            "category": "Authentication",
+            "severity": "high",
+            "steps": [
+                {
+                    "enforcer": "fail2ban",
+                    "lib_key": "fail2ban",
+                    "operation": "add_jail_config",
+                    "write_mode": "append_to_file",
+                    "target_file": "/etc/fail2ban/jail.local",
+                    "backup_required": true,
+                    "idempotency": {
+                        "check_string": "# BEGIN VAPT RISK-007",
+                        "if_found": "skip",
+                        "if_not_found": "insert"
+                    },
+                    "insertion": {
+                        "anchor_string": null,
+                        "anchor_position": "append",
+                        "fallback": null
+                    },
+                    "write_block": "# BEGIN VAPT RISK-007\n[wordpress-login]\nenabled = true\nport = http,https\nfilter = wordpress-login\nlogpath = /var/log/apache2/access.log\nmaxretry = 3\nbantime = 3600\n# END VAPT RISK-007",
+                    "begin_marker": "# BEGIN VAPT RISK-007",
+                    "end_marker": "# END VAPT RISK-007",
+                    "raw_code": "[wordpress-login]\nenabled = true\nport = http,https\nfilter = wordpress-login\nlogpath = /var/log/apache2/access.log\nmaxretry = 3\nbantime = 3600",
+                    "verification": {
+                        "command": "fail2ban-client -t && fail2ban-client reload && fail2ban-client status wordpress-login",
+                        "expected": "No errors"
+                    },
+                    "rollback": {
+                        "action": "remove_block",
+                        "begin_marker": "# BEGIN VAPT RISK-007",
+                        "end_marker": "# END VAPT RISK-007",
+                        "target_file": "/etc/fail2ban/jail.local"
+                    }
+                }
+            ]
+        },
+        "RISK-008": {
+            "risk_id": "RISK-008",
+            "title": "Username Enumeration via wp-login.php",
+            "category": "Authentication",
+            "severity": "medium",
+            "steps": [
+                {
+                    "enforcer": "PHP Functions",
+                    "lib_key": "php_functions",
+                    "operation": "add_filter_hook",
+                    "write_mode": "append_to_file",
+                    "target_file": "{VAPTSECURE_PATH}vapt-functions.php",
+                    "backup_required": true,
+                    "idempotency": {
+                        "check_string": "// BEGIN VAPT RISK-008",
+                        "if_found": "skip",
+                        "if_not_found": "insert"
+                    },
+                    "insertion": {
+                        "anchor_string": null,
+                        "anchor_position": "append",
+                        "fallback": null
+                    },
+                    "write_block": "// BEGIN VAPT RISK-008\nadd_filter('login_errors', 'vapt_hide_login_errors');\nfunction vapt_hide_login_errors() {\n    return 'Invalid credentials. Please try again.';\n}\n// END VAPT RISK-008",
+                    "begin_marker": "// BEGIN VAPT RISK-008",
+                    "end_marker": "// END VAPT RISK-008",
+                    "raw_code": "add_filter('login_errors', 'vapt_hide_login_errors');\nfunction vapt_hide_login_errors() {\n    return 'Invalid credentials. Please try again.';\n}",
+                    "verification": {
+                        "command": "wp eval \"do_action('login_errors');\" --skip-themes",
+                        "expected": "No errors"
+                    },
+                    "rollback": {
+                        "action": "remove_block",
+                        "begin_marker": "// BEGIN VAPT RISK-008",
+                        "end_marker": "// END VAPT RISK-008",
+                        "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php"
+                    }
+                }
+            ]
+        },
+        "RISK-009": {
+            "risk_id": "RISK-009",
+            "title": "Lack of Rate Limiting on Contact and Registration Forms",
+            "category": "Configuration",
+            "severity": "medium",
+            "steps": [
+                {
+                    "enforcer": "PHP Functions",
+                    "lib_key": "php_functions",
+                    "operation": "add_action_hook",
+                    "write_mode": "append_to_file",
+                    "target_file": "{VAPTSECURE_PATH}vapt-functions.php",
+                    "backup_required": true,
+                    "idempotency": {
+                        "check_string": "// BEGIN VAPT RISK-009",
+                        "if_found": "skip",
+                        "if_not_found": "insert"
+                    },
+                    "insertion": {
+                        "anchor_string": null,
+                        "anchor_position": "append",
+                        "fallback": null
+                    },
+                    "write_block": "// BEGIN VAPT RISK-009\nadd_action('wp_enqueue_scripts', 'vapt_add_recaptcha_v3');\nfunction vapt_add_recaptcha_v3() {\n    wp_enqueue_script('google-recaptcha', 'https://www.google.com/recaptcha/api.js?render=YOUR_SITE_KEY');\n}\n// END VAPT RISK-009",
+                    "begin_marker": "// BEGIN VAPT RISK-009",
+                    "end_marker": "// END VAPT RISK-009",
+                    "raw_code": "add_action('wp_enqueue_scripts', 'vapt_add_recaptcha_v3');\nfunction vapt_add_recaptcha_v3() {\n    wp_enqueue_script('google-recaptcha', 'https://www.google.com/recaptcha/api.js?render=YOUR_SITE_KEY');\n}",
+                    "verification": {
+                        "command": "wp eval \"do_action('wp_enqueue_scripts');\" --skip-themes",
+                        "expected": "No errors"
+                    },
+                    "rollback": {
+                        "action": "remove_block",
+                        "begin_marker": "// BEGIN VAPT RISK-009",
+                        "end_marker": "// END VAPT RISK-009",
+                        "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php"
+                    }
+                }
+            ]
+        },
+        "RISK-010": {
+            "risk_id": "RISK-010",
+            "title": "Server Banner Grabbing",
+            "category": "Information Disclosure",
+            "severity": "low",
+            "steps": [
+                {
+                    "enforcer": ".htaccess",
+                    "lib_key": "htaccess",
+                    "operation": "banner_grabbing_protection",
+                    "write_mode": "prepend_to_file",
+                    "target_file": "{ABSPATH}.htaccess",
+                    "backup_required": true,
+                    "idempotency": {
+                        "check_string": "# BEGIN VAPT RISK-010",
+                        "if_found": "skip",
+                        "if_not_found": "insert"
+                    },
+                    "insertion": {
+                        "anchor_string": null,
+                        "anchor_position": "prepend",
+                        "fallback": null
+                    },
+                    "write_block": "# BEGIN VAPT RISK-010\nServerTokens Prod\nServerSignature Off\n<IfModule mod_headers.c>\n    Header set x-vapt-enforced \"htaccess\"\n    Header append x-vapt-risk-id \"RISK-010\"\n</IfModule>\n# END VAPT RISK-010",
+                    "begin_marker": "# BEGIN VAPT RISK-010",
+                    "end_marker": "# END VAPT RISK-010",
+                    "raw_code": "ServerTokens Prod\nServerSignature Off\n<IfModule mod_headers.c>\n    Header set x-vapt-enforced \"htaccess\"\n    Header append x-vapt-risk-id \"RISK-010\"\n</IfModule>",
+                    "verification": {
+                        "command": "apachectl -t",
+                        "expected": "Exit 0, no syntax errors"
+                    },
+                    "rollback": {
+                        "action": "remove_block",
+                        "begin_marker": "# BEGIN VAPT RISK-010",
+                        "end_marker": "# END VAPT RISK-010",
+                        "target_file": "{ABSPATH}.htaccess"
+                    }
+                },
+                {
+                    "enforcer": "Nginx",
+                    "lib_key": "nginx",
+                    "operation": "modify_server_tokens",
+                    "write_mode": "insert_at_anchor",
+                    "target_file": "/etc/nginx/conf.d/vapt-security.conf",
+                    "backup_required": true,
+                    "idempotency": {
+                        "check_string": "# BEGIN VAPT RISK-010",
+                        "if_found": "skip",
+                        "if_not_found": "insert"
+                    },
+                    "insertion": {
+                        "anchor_string": "http {",
+                        "anchor_position": "after",
+                        "fallback": "append"
+                    },
+                    "write_block": "# BEGIN VAPT RISK-010\nserver_tokens off;\nadd_header x-vapt-enforced \"nginx\" always;\nadd_header x-vapt-risk-id \"RISK-010\" always;\n# END VAPT RISK-010",
+                    "begin_marker": "# BEGIN VAPT RISK-010",
+                    "end_marker": "# END VAPT RISK-010",
+                    "raw_code": "server_tokens off;\nadd_header x-vapt-enforced \"nginx\" always;\nadd_header x-vapt-risk-id \"RISK-010\" always;",
+                    "verification": {
+                        "command": "nginx -t && nginx -s reload",
+                        "expected": "No errors"
+                    },
+                    "rollback": {
+                        "action": "remove_block",
+                        "begin_marker": "# BEGIN VAPT RISK-010",
+                        "end_marker": "# END VAPT RISK-010",
+                        "target_file": "/etc/nginx/conf.d/vapt-security.conf"
+                    }
+                }
+            ]
+        },
+        "RISK-011": {
+            "risk_id": "RISK-011",
+            "title": "Information Disclosure via readme.html",
+            "category": "Information Disclosure",
+            "severity": "medium",
+            "steps": [
+                {
+                    "enforcer": ".htaccess",
+                    "lib_key": "htaccess",
+                    "operation": "add_files_block",
+                    "write_mode": "prepend_to_file",
+                    "target_file": "{ABSPATH}.htaccess",
+                    "backup_required": true,
+                    "idempotency": {
+                        "check_string": "# BEGIN VAPT RISK-011",
+                        "if_found": "skip",
+                        "if_not_found": "insert"
+                    },
+                    "insertion": {
+                        "anchor_string": null,
+                        "anchor_position": "prepend",
+                        "fallback": null
+                    },
+                    "write_block": "# BEGIN VAPT RISK-011\n<Files \"readme.html\">\n    Order Deny,Allow\n    Deny from all\n</Files>\n# END VAPT RISK-011",
+                    "begin_marker": "# BEGIN VAPT RISK-011",
+                    "end_marker": "# END VAPT RISK-011",
+                    "raw_code": "<Files \"readme.html\">\n    Order Deny,Allow\n    Deny from all\n</Files>",
+                    "verification": {
+                        "command": "apachectl -t",
+                        "expected": "Exit 0, no syntax errors"
+                    },
+                    "rollback": {
+                        "action": "remove_block",
+                        "begin_marker": "# BEGIN VAPT RISK-011",
+                        "end_marker": "# END VAPT RISK-011",
+                        "target_file": "{ABSPATH}.htaccess"
+                    }
+                }
+            ]
+        },
+        "RISK-012": {
+            "risk_id": "RISK-012",
+            "title": "HSTS Not Implemented",
+            "category": "Configuration",
+            "severity": "medium",
+            "steps": [
+                {
+                    "enforcer": ".htaccess",
+                    "lib_key": "htaccess",
+                    "operation": "add_header",
+                    "write_mode": "prepend_to_file",
+                    "target_file": "{ABSPATH}.htaccess",
+                    "backup_required": true,
+                    "idempotency": {
+                        "check_string": "# BEGIN VAPT RISK-012",
+                        "if_found": "skip",
+                        "if_not_found": "insert"
+                    },
+                    "insertion": {
+                        "anchor_string": null,
+                        "anchor_position": "prepend",
+                        "fallback": null
+                    },
+                    "write_block": "# BEGIN VAPT RISK-012\n<IfModule mod_headers.c>\n    Header always set Strict-Transport-Security \"max-age=31536000; includeSubDomains; preload\"\n</IfModule>\n# END VAPT RISK-012",
+                    "begin_marker": "# BEGIN VAPT RISK-012",
+                    "end_marker": "# END VAPT RISK-012",
+                    "raw_code": "<IfModule mod_headers.c>\n    Header always set Strict-Transport-Security \"max-age=31536000; includeSubDomains; preload\"\n</IfModule>",
+                    "verification": {
+                        "command": "apachectl -t && curl -sI https://yoursite.com | grep -i 'Strict-Transport-Security'",
+                        "expected": "Exit 0, no syntax errors"
+                    },
+                    "rollback": {
+                        "action": "remove_block",
+                        "begin_marker": "# BEGIN VAPT RISK-012",
+                        "end_marker": "# END VAPT RISK-012",
+                        "target_file": "{ABSPATH}.htaccess"
+                    }
+                }
+            ]
+        }
+    }
+}

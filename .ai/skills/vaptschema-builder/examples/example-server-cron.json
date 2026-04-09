@@ -1,0 +1,17 @@
+{
+  "controls": [
+    {
+      "type": "toggle",
+      "label": "Enable Server Cron to scan for backdoors",
+      "key": "UI-RISK-050-001",
+      "default": false,
+      "help": "Turns on Server Cron to scan for backdoors."
+    }
+  ],
+  "enforcement": {
+    "driver": "server_cron",
+    "mappings": {
+      "UI-RISK-050-001": "# BEGIN VAPT RISK-050\n0 0 * * * /usr/bin/php /var/www/html/wp-content/plugins/vapt-secure/scan.php\n# END VAPT RISK-050"
+    }
+  }
+}

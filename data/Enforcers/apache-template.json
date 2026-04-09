@@ -1,0 +1,645 @@
+{
+  "metadata": {
+    "schema_version": "3.4.0",
+    "plugin_name": "WordPress VAPT Protection Suite",
+    "plugin_slug": "vapt-protection-suite",
+    "generated_at": "2026-02-16T11:16:32.301567+00:00",
+    "total_risks": 2,
+    "ai_agent_compatible": true,
+    "ui_framework": "React/WordPress-Admin",
+    "source_version": "3.1.0",
+    "source_document": "VAPT-SixT-Risk-Catalog-12-U.json",
+    "source_generated_at": "2026-01-30",
+    "owasp_standard": "OWASP Top 10 2025",
+    "enforcer": "VAPT Protection Plugin",
+    "production_ready": true,
+    "compliance_enabled": true,
+    "validation_passed": true,
+    "validation_date": "2026-02-16T11:16:32.301577+00:00",
+    "phase": "3",
+    "quality_improvements_applied": true,
+    "enhanced_capabilities_applied": true,
+    "scaling_ready": true,
+    "enterprise_ready": true
+  },
+  "risk_catalog": [
+    {
+      "risk_id": "RISK-117",
+      "title": "Apache Version Exposed",
+      "category": "Information Disclosure",
+      "severity": {
+        "level": "low",
+        "cvss_score": 3.7,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N",
+        "business_impact": "Risk of Information Disclosure compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "Apache version in Server header.",
+        "detailed": "Version aids targeted exploits.",
+        "attack_scenario": "An attacker exploits this information disclosure to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-200"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "testing": {
+        "test_method": "Header inspection",
+        "difficulty": "easy",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test Apache Version Exposed",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-117-test",
+            "expected_response": "403",
+            "description": "Test payload for Apache Version Exposed",
+            "severity": "low",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "low",
+        "estimated_time": "1-4 hours",
+        "priority": 4,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for Apache Version Exposed",
+              "file": "modify_server_tokens",
+              "code": "ServerTokens Prod\nServerSignature Off",
+              "backup_required": true,
+              "enforcer": "Apache",
+              "operation": "configtest_pass",
+              "verification_method": "http_block",
+              "insertion_point": "ServerTokens"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "Apache"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "Apache",
+            "operation": "remove_pass",
+            "target": "modify_server_tokens",
+            "description": "Remove protection for Apache Version Exposed",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-117-001",
+            "name": "Apache Version Exposed Check",
+            "method": "endpoint-test",
+            "script": "check_117()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "Apache Version Exposed vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-117-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-117-001",
+            "type": "toggle",
+            "label": "Enable Apache Version Exposed Protection",
+            "description": "Activates protection against apache version exposed",
+            "default_value": true,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK117ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "General",
+          "order": 217,
+          "collapsible": true,
+          "default_expanded": false
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-117-001",
+            "type": "enable",
+            "label": "Enable Protection",
+            "confirmation_required": false,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "Apache Version Exposed protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for Apache Version Exposed",
+          "code": "ServerTokens Prod\nServerSignature Off",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-02-16T11:16:18.089188Z",
+        "updated_at": "2026-02-16T11:16:18.089191+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "information disclosure",
+          "low",
+          "117"
+        ],
+        "schema_version": "3.4.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Information Disclosure",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing Apache Version Exposed protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "Low",
+        "integrity_impact": "Low",
+        "confidentiality_impact": "Medium",
+        "financial_risk": "Low",
+        "reputational_risk": "Low",
+        "operational_risk": "Low",
+        "compliance_risk": "Low",
+        "business_continuity_risk": "Low",
+        "impact_description": "Apache Version Exposed poses security risks to WordPress installation"
+      }
+    },
+    {
+      "risk_id": "RISK-121",
+      "title": "Apache ModSecurity Not Enabled",
+      "category": "Configuration",
+      "severity": {
+        "level": "high",
+        "cvss_score": 7.5,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+        "business_impact": "Risk of Configuration compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "WAF not active.",
+        "detailed": "Web attacks not blocked.",
+        "attack_scenario": "An attacker exploits this configuration to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-693"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "testing": {
+        "test_method": "WAF test",
+        "difficulty": "easy",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test Apache ModSecurity Not Enabled",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-121-test",
+            "expected_response": "403",
+            "description": "Test payload for Apache ModSecurity Not Enabled",
+            "severity": "high",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "medium",
+        "estimated_time": "1-2 days",
+        "priority": 8,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for Apache ModSecurity Not Enabled",
+              "file": "add_module",
+              "code": "LoadModule security2_module modules/mod_security2.so\nInclude modsecurity.d/*.conf",
+              "backup_required": true,
+              "enforcer": "Apache",
+              "operation": "configtest_pass",
+              "verification_method": "http_block",
+              "insertion_point": "modsecurity"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "Apache"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "Apache",
+            "operation": "remove_pass",
+            "target": "add_module",
+            "description": "Remove protection for Apache ModSecurity Not Enabled",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-121-001",
+            "name": "Apache ModSecurity Not Enabled Check",
+            "method": "endpoint-test",
+            "script": "check_121()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "Apache ModSecurity Not Enabled vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-121-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-121-001",
+            "type": "toggle",
+            "label": "Enable Apache ModSecurity Not Enabled Protection",
+            "description": "Activates protection against apache modsecurity not enabled",
+            "default_value": true,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK121ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "General",
+          "order": 221,
+          "collapsible": true,
+          "default_expanded": false
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-121-001",
+            "type": "enable",
+            "label": "Enable Protection",
+            "confirmation_required": true,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "Apache ModSecurity Not Enabled protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for Apache ModSecurity Not Enabled",
+          "code": "LoadModule security2_module modules/mod_security2.so\nInclude modsecurity.d/*.conf",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-02-16T11:16:18.089294Z",
+        "updated_at": "2026-02-16T11:16:18.089297+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "configuration",
+          "high",
+          "121"
+        ],
+        "schema_version": "3.4.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Configuration",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing Apache ModSecurity Not Enabled protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "Medium",
+        "integrity_impact": "Medium",
+        "confidentiality_impact": "High",
+        "financial_risk": "Medium",
+        "reputational_risk": "Medium",
+        "operational_risk": "Medium",
+        "compliance_risk": "Medium",
+        "business_continuity_risk": "Low",
+        "impact_description": "Apache ModSecurity Not Enabled poses security risks to WordPress installation"
+      }
+    }
+  ]
+}

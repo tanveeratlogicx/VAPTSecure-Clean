@@ -1,0 +1,3117 @@
+{
+  "metadata": {
+    "schema_version": "3.4.0",
+    "plugin_name": "WordPress VAPT Protection Suite",
+    "plugin_slug": "vapt-protection-suite",
+    "generated_at": "2026-02-16T11:16:32.291872+00:00",
+    "total_risks": 10,
+    "ai_agent_compatible": true,
+    "ui_framework": "React/WordPress-Admin",
+    "source_version": "3.1.0",
+    "source_document": "VAPT-SixT-Risk-Catalog-12-U.json",
+    "source_generated_at": "2026-01-30",
+    "owasp_standard": "OWASP Top 10 2025",
+    "enforcer": "VAPT Protection Plugin",
+    "production_ready": true,
+    "compliance_enabled": true,
+    "validation_passed": true,
+    "validation_date": "2026-02-16T11:16:32.291882+00:00",
+    "phase": "3",
+    "quality_improvements_applied": true,
+    "enhanced_capabilities_applied": true,
+    "scaling_ready": true,
+    "enterprise_ready": true
+  },
+  "risk_catalog": [
+    {
+      "risk_id": "RISK-106",
+      "title": "Inactive Plugins Present",
+      "category": "Configuration",
+      "severity": {
+        "level": "medium",
+        "cvss_score": 5.3,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N",
+        "business_impact": "Risk of Configuration compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "Disabled plugins remain installed.",
+        "detailed": "Vulnerable code still present.",
+        "attack_scenario": "An attacker exploits this configuration to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-1104"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "testing": {
+        "test_method": "Plugin list check",
+        "difficulty": "easy",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test Inactive Plugins Present",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-106-test",
+            "expected_response": "403",
+            "description": "Test payload for Inactive Plugins Present",
+            "severity": "medium",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "medium",
+        "estimated_time": "1-4 hours",
+        "priority": 6,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for Inactive Plugins Present",
+              "file": "add_action_hook",
+              "code": "add_action('admin_init', 'vapt_remove_inactive_plugins');",
+              "backup_required": true,
+              "enforcer": "WordPress",
+              "operation": "hook_active",
+              "verification_method": "functions_php",
+              "insertion_point": "inactive_plugins"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "WordPress"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "WordPress",
+            "operation": "remove_active",
+            "target": "add_action_hook",
+            "description": "Remove protection for Inactive Plugins Present",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-106-001",
+            "name": "Inactive Plugins Present Check",
+            "method": "endpoint-test",
+            "script": "check_106()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "Inactive Plugins Present vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-106-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-106-001",
+            "type": "toggle",
+            "label": "Enable Inactive Plugins Present Protection",
+            "description": "Activates protection against inactive plugins present",
+            "default_value": true,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK106ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "General",
+          "order": 206,
+          "collapsible": true,
+          "default_expanded": false
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-106-001",
+            "type": "enable",
+            "label": "Enable Protection",
+            "confirmation_required": false,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "Inactive Plugins Present protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for Inactive Plugins Present",
+          "code": "add_action('admin_init', 'vapt_remove_inactive_plugins');",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-02-16T11:16:18.088838Z",
+        "updated_at": "2026-02-16T11:16:18.088844+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "configuration",
+          "medium",
+          "106"
+        ],
+        "schema_version": "3.4.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Configuration",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing Inactive Plugins Present protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "Low",
+        "integrity_impact": "Low",
+        "confidentiality_impact": "Medium",
+        "financial_risk": "Low",
+        "reputational_risk": "Low",
+        "operational_risk": "Low",
+        "compliance_risk": "Low",
+        "business_continuity_risk": "Low",
+        "impact_description": "Inactive Plugins Present poses security risks to WordPress installation"
+      }
+    },
+    {
+      "risk_id": "RISK-107",
+      "title": "Inactive Themes Present",
+      "category": "Configuration",
+      "severity": {
+        "level": "medium",
+        "cvss_score": 5.3,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N",
+        "business_impact": "Risk of Configuration compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "Unused themes installed.",
+        "detailed": "Theme vulnerabilities exploitable.",
+        "attack_scenario": "An attacker exploits this configuration to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-1104"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "testing": {
+        "test_method": "Theme list check",
+        "difficulty": "easy",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test Inactive Themes Present",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-107-test",
+            "expected_response": "403",
+            "description": "Test payload for Inactive Themes Present",
+            "severity": "medium",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "medium",
+        "estimated_time": "1-4 hours",
+        "priority": 6,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for Inactive Themes Present",
+              "file": "add_action_hook",
+              "code": "add_action('admin_init', 'vapt_remove_inactive_themes');",
+              "backup_required": true,
+              "enforcer": "WordPress",
+              "operation": "hook_active",
+              "verification_method": "functions_php",
+              "insertion_point": "inactive_themes"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "WordPress"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "WordPress",
+            "operation": "remove_active",
+            "target": "add_action_hook",
+            "description": "Remove protection for Inactive Themes Present",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-107-001",
+            "name": "Inactive Themes Present Check",
+            "method": "endpoint-test",
+            "script": "check_107()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "Inactive Themes Present vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-107-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-107-001",
+            "type": "toggle",
+            "label": "Enable Inactive Themes Present Protection",
+            "description": "Activates protection against inactive themes present",
+            "default_value": true,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK107ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "General",
+          "order": 207,
+          "collapsible": true,
+          "default_expanded": false
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-107-001",
+            "type": "enable",
+            "label": "Enable Protection",
+            "confirmation_required": false,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "Inactive Themes Present protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for Inactive Themes Present",
+          "code": "add_action('admin_init', 'vapt_remove_inactive_themes');",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-02-16T11:16:18.088877Z",
+        "updated_at": "2026-02-16T11:16:18.088881+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "configuration",
+          "medium",
+          "107"
+        ],
+        "schema_version": "3.4.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Configuration",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing Inactive Themes Present protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "Low",
+        "integrity_impact": "Low",
+        "confidentiality_impact": "Medium",
+        "financial_risk": "Low",
+        "reputational_risk": "Low",
+        "operational_risk": "Low",
+        "compliance_risk": "Low",
+        "business_continuity_risk": "Low",
+        "impact_description": "Inactive Themes Present poses security risks to WordPress installation"
+      }
+    },
+    {
+      "risk_id": "RISK-108",
+      "title": "Default Theme Not Deleted",
+      "category": "Configuration",
+      "severity": {
+        "level": "low",
+        "cvss_score": 3.7,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N",
+        "business_impact": "Risk of Configuration compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "Default WordPress themes present.",
+        "detailed": "Unnecessary code on server.",
+        "attack_scenario": "An attacker exploits this configuration to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-1104"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "testing": {
+        "test_method": "Theme check",
+        "difficulty": "easy",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test Default Theme Not Deleted",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-108-test",
+            "expected_response": "403",
+            "description": "Test payload for Default Theme Not Deleted",
+            "severity": "low",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "low",
+        "estimated_time": "1-4 hours",
+        "priority": 4,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for Default Theme Not Deleted",
+              "file": "add_action_hook",
+              "code": "add_action('admin_init', 'vapt_remove_default_themes');",
+              "backup_required": true,
+              "enforcer": "WordPress",
+              "operation": "hook_active",
+              "verification_method": "functions_php",
+              "insertion_point": "default_themes"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "WordPress"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "WordPress",
+            "operation": "remove_active",
+            "target": "add_action_hook",
+            "description": "Remove protection for Default Theme Not Deleted",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-108-001",
+            "name": "Default Theme Not Deleted Check",
+            "method": "endpoint-test",
+            "script": "check_108()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "Default Theme Not Deleted vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-108-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-108-001",
+            "type": "toggle",
+            "label": "Enable Default Theme Not Deleted Protection",
+            "description": "Activates protection against default theme not deleted",
+            "default_value": true,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK108ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "General",
+          "order": 208,
+          "collapsible": true,
+          "default_expanded": false
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-108-001",
+            "type": "enable",
+            "label": "Enable Protection",
+            "confirmation_required": false,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "Default Theme Not Deleted protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for Default Theme Not Deleted",
+          "code": "add_action('admin_init', 'vapt_remove_default_themes');",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-02-16T11:16:18.088911Z",
+        "updated_at": "2026-02-16T11:16:18.088914+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "configuration",
+          "low",
+          "108"
+        ],
+        "schema_version": "3.4.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Configuration",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing Default Theme Not Deleted protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "Low",
+        "integrity_impact": "Low",
+        "confidentiality_impact": "Medium",
+        "financial_risk": "Low",
+        "reputational_risk": "Low",
+        "operational_risk": "Low",
+        "compliance_risk": "Low",
+        "business_continuity_risk": "Low",
+        "impact_description": "Default Theme Not Deleted poses security risks to WordPress installation"
+      }
+    },
+    {
+      "risk_id": "RISK-109",
+      "title": "Hello Dolly Plugin Active",
+      "category": "Configuration",
+      "severity": {
+        "level": "low",
+        "cvss_score": 3.7,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N",
+        "business_impact": "Risk of Configuration compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "Default plugin still active.",
+        "detailed": "Unnecessary code execution.",
+        "attack_scenario": "An attacker exploits this configuration to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-1104"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "testing": {
+        "test_method": "Plugin check",
+        "difficulty": "easy",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test Hello Dolly Plugin Active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-109-test",
+            "expected_response": "403",
+            "description": "Test payload for Hello Dolly Plugin Active",
+            "severity": "low",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "low",
+        "estimated_time": "1-4 hours",
+        "priority": 4,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for Hello Dolly Plugin Active",
+              "file": "add_action_hook",
+              "code": "add_action('admin_init', 'vapt_remove_hello_dolly');",
+              "backup_required": true,
+              "enforcer": "WordPress",
+              "operation": "hook_active",
+              "verification_method": "functions_php",
+              "insertion_point": "hello_dolly"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "WordPress"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "WordPress",
+            "operation": "remove_active",
+            "target": "add_action_hook",
+            "description": "Remove protection for Hello Dolly Plugin Active",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-109-001",
+            "name": "Hello Dolly Plugin Active Check",
+            "method": "endpoint-test",
+            "script": "check_109()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "Hello Dolly Plugin Active vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-109-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-109-001",
+            "type": "toggle",
+            "label": "Enable Hello Dolly Plugin Active Protection",
+            "description": "Activates protection against hello dolly plugin active",
+            "default_value": true,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK109ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "General",
+          "order": 209,
+          "collapsible": true,
+          "default_expanded": false
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-109-001",
+            "type": "enable",
+            "label": "Enable Protection",
+            "confirmation_required": false,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "Hello Dolly Plugin Active protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for Hello Dolly Plugin Active",
+          "code": "add_action('admin_init', 'vapt_remove_hello_dolly');",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-02-16T11:16:18.088934Z",
+        "updated_at": "2026-02-16T11:16:18.088938+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "configuration",
+          "low",
+          "109"
+        ],
+        "schema_version": "3.4.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Configuration",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing Hello Dolly Plugin Active protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "Low",
+        "integrity_impact": "Low",
+        "confidentiality_impact": "Medium",
+        "financial_risk": "Low",
+        "reputational_risk": "Low",
+        "operational_risk": "Low",
+        "compliance_risk": "Low",
+        "business_continuity_risk": "Low",
+        "impact_description": "Hello Dolly Plugin Active poses security risks to WordPress installation"
+      }
+    },
+    {
+      "risk_id": "RISK-110",
+      "title": "WordPress Version Publicly Visible",
+      "category": "Information Disclosure",
+      "severity": {
+        "level": "low",
+        "cvss_score": 3.7,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N",
+        "business_impact": "Risk of Information Disclosure compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "Version in RSS feeds and meta.",
+        "detailed": "Version aids targeted attacks.",
+        "attack_scenario": "An attacker exploits this information disclosure to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-200"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "testing": {
+        "test_method": "Version check",
+        "difficulty": "easy",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test WordPress Version Publicly Visible",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-110-test",
+            "expected_response": "403",
+            "description": "Test payload for WordPress Version Publicly Visible",
+            "severity": "low",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "low",
+        "estimated_time": "1-4 hours",
+        "priority": 4,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for WordPress Version Publicly Visible",
+              "file": "add_filter_hook",
+              "code": "add_filter('the_generator', '__return_empty_string');",
+              "backup_required": true,
+              "enforcer": "WordPress",
+              "operation": "filter_applied",
+              "verification_method": "functions_php",
+              "insertion_point": "version_generator"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "WordPress"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "WordPress",
+            "operation": "remove_applied",
+            "target": "add_filter_hook",
+            "description": "Remove protection for WordPress Version Publicly Visible",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-110-001",
+            "name": "WordPress Version Publicly Visible Check",
+            "method": "endpoint-test",
+            "script": "check_110()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "WordPress Version Publicly Visible vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-110-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-110-001",
+            "type": "toggle",
+            "label": "Enable WordPress Version Publicly Visible Protection",
+            "description": "Activates protection against wordpress version publicly visible",
+            "default_value": true,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK110ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "General",
+          "order": 210,
+          "collapsible": true,
+          "default_expanded": false
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-110-001",
+            "type": "enable",
+            "label": "Enable Protection",
+            "confirmation_required": false,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "WordPress Version Publicly Visible protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for WordPress Version Publicly Visible",
+          "code": "add_filter('the_generator', '__return_empty_string');",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-02-16T11:16:18.088960Z",
+        "updated_at": "2026-02-16T11:16:18.088963+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "information disclosure",
+          "low",
+          "110"
+        ],
+        "schema_version": "3.4.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Information Disclosure",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing WordPress Version Publicly Visible protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "Low",
+        "integrity_impact": "Low",
+        "confidentiality_impact": "Medium",
+        "financial_risk": "Low",
+        "reputational_risk": "Low",
+        "operational_risk": "Low",
+        "compliance_risk": "Low",
+        "business_continuity_risk": "Low",
+        "impact_description": "WordPress Version Publicly Visible poses security risks to WordPress installation"
+      }
+    },
+    {
+      "risk_id": "RISK-111",
+      "title": "Emoji Scripts Loaded",
+      "category": "Configuration",
+      "severity": {
+        "level": "low",
+        "cvss_score": 3.7,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:L",
+        "business_impact": "Risk of Configuration compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "WP emoji scripts enqueued.",
+        "detailed": "Unnecessary external requests.",
+        "attack_scenario": "An attacker exploits this configuration to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-200"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "testing": {
+        "test_method": "Script check",
+        "difficulty": "easy",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test Emoji Scripts Loaded",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-111-test",
+            "expected_response": "403",
+            "description": "Test payload for Emoji Scripts Loaded",
+            "severity": "low",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "low",
+        "estimated_time": "1-4 hours",
+        "priority": 4,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for Emoji Scripts Loaded",
+              "file": "remove_action_hook",
+              "code": "remove_action('wp_head', 'print_emoji_detection_script', 7); remove_action('wp_print_styles', 'print_emoji_styles');",
+              "backup_required": true,
+              "enforcer": "WordPress",
+              "operation": "hook_removed",
+              "verification_method": "functions_php",
+              "insertion_point": "emoji_scripts"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "WordPress"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "WordPress",
+            "operation": "remove_removed",
+            "target": "remove_action_hook",
+            "description": "Remove protection for Emoji Scripts Loaded",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-111-001",
+            "name": "Emoji Scripts Loaded Check",
+            "method": "endpoint-test",
+            "script": "check_111()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "Emoji Scripts Loaded vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-111-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-111-001",
+            "type": "toggle",
+            "label": "Enable Emoji Scripts Loaded Protection",
+            "description": "Activates protection against emoji scripts loaded",
+            "default_value": true,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK111ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "General",
+          "order": 211,
+          "collapsible": true,
+          "default_expanded": false
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-111-001",
+            "type": "enable",
+            "label": "Enable Protection",
+            "confirmation_required": false,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "Emoji Scripts Loaded protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for Emoji Scripts Loaded",
+          "code": "remove_action('wp_head', 'print_emoji_detection_script', 7); remove_action('wp_print_styles', 'print_emoji_styles');",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-02-16T11:16:18.088986Z",
+        "updated_at": "2026-02-16T11:16:18.088989+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "configuration",
+          "low",
+          "111"
+        ],
+        "schema_version": "3.4.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Configuration",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing Emoji Scripts Loaded protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "Low",
+        "integrity_impact": "Low",
+        "confidentiality_impact": "Medium",
+        "financial_risk": "Low",
+        "reputational_risk": "Low",
+        "operational_risk": "Low",
+        "compliance_risk": "Low",
+        "business_continuity_risk": "Low",
+        "impact_description": "Emoji Scripts Loaded poses security risks to WordPress installation"
+      }
+    },
+    {
+      "risk_id": "RISK-112",
+      "title": "oEmbed Discovery Enabled",
+      "category": "Configuration",
+      "severity": {
+        "level": "low",
+        "cvss_score": 3.7,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N",
+        "business_impact": "Risk of Configuration compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "oEmbed auto-discovery active.",
+        "detailed": "External site information leaked.",
+        "attack_scenario": "An attacker exploits this configuration to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-200"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "testing": {
+        "test_method": "oEmbed check",
+        "difficulty": "easy",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test oEmbed Discovery Enabled",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-112-test",
+            "expected_response": "403",
+            "description": "Test payload for oEmbed Discovery Enabled",
+            "severity": "low",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "low",
+        "estimated_time": "1-4 hours",
+        "priority": 4,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for oEmbed Discovery Enabled",
+              "file": "remove_action_hook",
+              "code": "remove_action('wp_head', 'wp_oembed_add_discovery_links');",
+              "backup_required": true,
+              "enforcer": "WordPress",
+              "operation": "hook_removed",
+              "verification_method": "functions_php",
+              "insertion_point": "oembed_discovery"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "WordPress"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "WordPress",
+            "operation": "remove_removed",
+            "target": "remove_action_hook",
+            "description": "Remove protection for oEmbed Discovery Enabled",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-112-001",
+            "name": "oEmbed Discovery Enabled Check",
+            "method": "endpoint-test",
+            "script": "check_112()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "oEmbed Discovery Enabled vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-112-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-112-001",
+            "type": "toggle",
+            "label": "Enable oEmbed Discovery Enabled Protection",
+            "description": "Activates protection against oembed discovery enabled",
+            "default_value": true,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK112ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "General",
+          "order": 212,
+          "collapsible": true,
+          "default_expanded": false
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-112-001",
+            "type": "enable",
+            "label": "Enable Protection",
+            "confirmation_required": false,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "oEmbed Discovery Enabled protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for oEmbed Discovery Enabled",
+          "code": "remove_action('wp_head', 'wp_oembed_add_discovery_links');",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-02-16T11:16:18.089017Z",
+        "updated_at": "2026-02-16T11:16:18.089020+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "configuration",
+          "low",
+          "112"
+        ],
+        "schema_version": "3.4.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Configuration",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing oEmbed Discovery Enabled protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "Low",
+        "integrity_impact": "Low",
+        "confidentiality_impact": "Medium",
+        "financial_risk": "Low",
+        "reputational_risk": "Low",
+        "operational_risk": "Low",
+        "compliance_risk": "Low",
+        "business_continuity_risk": "Low",
+        "impact_description": "oEmbed Discovery Enabled poses security risks to WordPress installation"
+      }
+    },
+    {
+      "risk_id": "RISK-113",
+      "title": "RSD Link Exposed",
+      "category": "Information Disclosure",
+      "severity": {
+        "level": "low",
+        "cvss_score": 3.7,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N",
+        "business_impact": "Risk of Information Disclosure compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "Really Simple Discovery link present.",
+        "detailed": "XML-RPC endpoint revealed.",
+        "attack_scenario": "An attacker exploits this information disclosure to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-200"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "testing": {
+        "test_method": "RSD check",
+        "difficulty": "easy",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test RSD Link Exposed",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-113-test",
+            "expected_response": "403",
+            "description": "Test payload for RSD Link Exposed",
+            "severity": "low",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "low",
+        "estimated_time": "1-4 hours",
+        "priority": 4,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for RSD Link Exposed",
+              "file": "remove_action_hook",
+              "code": "remove_action('wp_head', 'rsd_link');",
+              "backup_required": true,
+              "enforcer": "WordPress",
+              "operation": "hook_removed",
+              "verification_method": "functions_php",
+              "insertion_point": "rsd_link"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "WordPress"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "WordPress",
+            "operation": "remove_removed",
+            "target": "remove_action_hook",
+            "description": "Remove protection for RSD Link Exposed",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-113-001",
+            "name": "RSD Link Exposed Check",
+            "method": "endpoint-test",
+            "script": "check_113()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "RSD Link Exposed vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-113-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-113-001",
+            "type": "toggle",
+            "label": "Enable RSD Link Exposed Protection",
+            "description": "Activates protection against rsd link exposed",
+            "default_value": true,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK113ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "General",
+          "order": 213,
+          "collapsible": true,
+          "default_expanded": false
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-113-001",
+            "type": "enable",
+            "label": "Enable Protection",
+            "confirmation_required": false,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "RSD Link Exposed protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for RSD Link Exposed",
+          "code": "remove_action('wp_head', 'rsd_link');",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-02-16T11:16:18.089044Z",
+        "updated_at": "2026-02-16T11:16:18.089048+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "information disclosure",
+          "low",
+          "113"
+        ],
+        "schema_version": "3.4.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Information Disclosure",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing RSD Link Exposed protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "Low",
+        "integrity_impact": "Low",
+        "confidentiality_impact": "Medium",
+        "financial_risk": "Low",
+        "reputational_risk": "Low",
+        "operational_risk": "Low",
+        "compliance_risk": "Low",
+        "business_continuity_risk": "Low",
+        "impact_description": "RSD Link Exposed poses security risks to WordPress installation"
+      }
+    },
+    {
+      "risk_id": "RISK-114",
+      "title": "WLWManifest Link Exposed",
+      "category": "Information Disclosure",
+      "severity": {
+        "level": "low",
+        "cvss_score": 3.7,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N",
+        "business_impact": "Risk of Information Disclosure compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "Windows Live Writer manifest present.",
+        "detailed": "Unnecessary endpoint exposed.",
+        "attack_scenario": "An attacker exploits this information disclosure to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-200"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "testing": {
+        "test_method": "Manifest check",
+        "difficulty": "easy",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test WLWManifest Link Exposed",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-114-test",
+            "expected_response": "403",
+            "description": "Test payload for WLWManifest Link Exposed",
+            "severity": "low",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "low",
+        "estimated_time": "1-4 hours",
+        "priority": 4,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for WLWManifest Link Exposed",
+              "file": "remove_action_hook",
+              "code": "remove_action('wp_head', 'wlwmanifest_link');",
+              "backup_required": true,
+              "enforcer": "WordPress",
+              "operation": "hook_removed",
+              "verification_method": "functions_php",
+              "insertion_point": "wlwmanifest"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "WordPress"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "WordPress",
+            "operation": "remove_removed",
+            "target": "remove_action_hook",
+            "description": "Remove protection for WLWManifest Link Exposed",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-114-001",
+            "name": "WLWManifest Link Exposed Check",
+            "method": "endpoint-test",
+            "script": "check_114()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "WLWManifest Link Exposed vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-114-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-114-001",
+            "type": "toggle",
+            "label": "Enable WLWManifest Link Exposed Protection",
+            "description": "Activates protection against wlwmanifest link exposed",
+            "default_value": true,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK114ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "General",
+          "order": 214,
+          "collapsible": true,
+          "default_expanded": false
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-114-001",
+            "type": "enable",
+            "label": "Enable Protection",
+            "confirmation_required": false,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "WLWManifest Link Exposed protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for WLWManifest Link Exposed",
+          "code": "remove_action('wp_head', 'wlwmanifest_link');",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-02-16T11:16:18.089111Z",
+        "updated_at": "2026-02-16T11:16:18.089114+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "information disclosure",
+          "low",
+          "114"
+        ],
+        "schema_version": "3.4.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Information Disclosure",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing WLWManifest Link Exposed protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "Low",
+        "integrity_impact": "Low",
+        "confidentiality_impact": "Medium",
+        "financial_risk": "Low",
+        "reputational_risk": "Low",
+        "operational_risk": "Low",
+        "compliance_risk": "Low",
+        "business_continuity_risk": "Low",
+        "impact_description": "WLWManifest Link Exposed poses security risks to WordPress installation"
+      }
+    },
+    {
+      "risk_id": "RISK-115",
+      "title": "Shortlink Header Exposed",
+      "category": "Information Disclosure",
+      "severity": {
+        "level": "low",
+        "cvss_score": 3.7,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N",
+        "business_impact": "Risk of Information Disclosure compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "wp.me shortlink in headers.",
+        "detailed": "Post IDs revealed.",
+        "attack_scenario": "An attacker exploits this information disclosure to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-200"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "testing": {
+        "test_method": "Shortlink check",
+        "difficulty": "easy",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test Shortlink Header Exposed",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-115-test",
+            "expected_response": "403",
+            "description": "Test payload for Shortlink Header Exposed",
+            "severity": "low",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "low",
+        "estimated_time": "1-4 hours",
+        "priority": 4,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for Shortlink Header Exposed",
+              "file": "remove_action_hook",
+              "code": "remove_action('wp_head', 'wp_shortlink_wp_head');",
+              "backup_required": true,
+              "enforcer": "WordPress",
+              "operation": "hook_removed",
+              "verification_method": "functions_php",
+              "insertion_point": "shortlink"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "WordPress"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "WordPress",
+            "operation": "remove_removed",
+            "target": "remove_action_hook",
+            "description": "Remove protection for Shortlink Header Exposed",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-115-001",
+            "name": "Shortlink Header Exposed Check",
+            "method": "endpoint-test",
+            "script": "check_115()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "Shortlink Header Exposed vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-115-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-115-001",
+            "type": "toggle",
+            "label": "Enable Shortlink Header Exposed Protection",
+            "description": "Activates protection against shortlink header exposed",
+            "default_value": true,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK115ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "General",
+          "order": 215,
+          "collapsible": true,
+          "default_expanded": false
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-115-001",
+            "type": "enable",
+            "label": "Enable Protection",
+            "confirmation_required": false,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "Shortlink Header Exposed protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for Shortlink Header Exposed",
+          "code": "remove_action('wp_head', 'wp_shortlink_wp_head');",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-02-16T11:16:18.089138Z",
+        "updated_at": "2026-02-16T11:16:18.089142+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "information disclosure",
+          "low",
+          "115"
+        ],
+        "schema_version": "3.4.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Information Disclosure",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing Shortlink Header Exposed protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "Low",
+        "integrity_impact": "Low",
+        "confidentiality_impact": "Medium",
+        "financial_risk": "Low",
+        "reputational_risk": "Low",
+        "operational_risk": "Low",
+        "compliance_risk": "Low",
+        "business_continuity_risk": "Low",
+        "impact_description": "Shortlink Header Exposed poses security risks to WordPress installation"
+      }
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+/* Technical trace container - respect line breaks */
+.vapt-file-inspector > div:last-child {
+    white-space: pre-wrap !important;
+    line-height: 1.6 !important;
+    padding: 12px !important;
+    text-align: left !important;
+}
+
+/* Ensure the container uses flex column for proper alignment */
+.vapt-result-container .vapt-file-inspector {
+    display: flex;
+    flex-direction: column;
+}
+
+/* URL link on its own line */
+.vapt-file-inspector a {
+    display: inline-block;
+    margin-bottom: 4px;
+}

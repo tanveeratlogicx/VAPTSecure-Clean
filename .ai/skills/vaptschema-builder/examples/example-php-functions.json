@@ -1,0 +1,17 @@
+{
+  "controls": [
+    {
+      "type": "toggle",
+      "label": "Enable protection for Email Flooding via Password Reset",
+      "key": "UI-RISK-004-001",
+      "default": false,
+      "help": "Turns on protection for Email Flooding via Password Reset. This helps secure the site against Authentication attacks."
+    }
+  ],
+  "enforcement": {
+    "driver": "php_functions",
+    "mappings": {
+      "UI-RISK-004-001": "// BEGIN VAPT RISK-004\nadd_action( 'retreive_password_message', 'vapt_block_password_reset_flood', 10, 4 );\nfunction vapt_block_password_reset_flood( $message, $key, $user_login, $user_data ) {\n    // Rate limiting logic here\n    // ... whitelisting logic for /wp-admin/\n    return $message;\n}\n// END VAPT RISK-004"
+    }
+  }
+}

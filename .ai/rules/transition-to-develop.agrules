@@ -1,0 +1,22 @@
+# Rule: Transition to Develop
+
+**Trigger:** 
+This rule is triggered when we initiate the transition of a feature to the "Develop" state (specifically, by clicking the "Develop" radio button). The workflow completes when the user clicks on the "Confirm to Develop" button on the "Transition to Develop" Modal.
+
+**Workflow Invocation:**
+Upon trigger, invoke the `/transition-to-develop` workflow to guide the implementation.
+
+**Follow-up Workflow:**
+Once development is complete, the feature will transition to the "Deploy" phase, which is governed by the `/develop-to-deploy` workflow.
+
+**Skill Integration:**
+Take advantage of the SKILL `VAPT-Secure\.ai\skills\vapt-expert` (WordPress VAPT Expert) to ensure security best practices and compliance with the v2.0 schema.
+
+**Execution Sequence:**
+1. **Context Initialization**: Load @VAPT-Secure context.
+2. **Instruction Ingestion**: Load `VAPT-Secure/data/ai_agent_instructions_v2.0.json` for rulebook, naming conventions, and rubric.
+3. **Schema Mapping**: Load `VAPT-Secure/data/interface_schema_v2.0.json` for the specific `risk_id` blueprint.
+4. **Pattern Matching**: Load `VAPT-Secure/data/enforcer_pattern_library_v2.0.json` to retrieve validated code via `lib_key`.
+5. **Enforcer Guard**: Apply `.htaccess` syntax guards and verify against the rubric (Minimum Score 16/19).
+
+*Note: Ensure you stay in planning mode and wait for the workflow to complete before moving to execution. Maintain a minimum rubric score of 16/19 for this phase.*

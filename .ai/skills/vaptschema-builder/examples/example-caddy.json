@@ -1,0 +1,17 @@
+{
+  "controls": [
+    {
+      "type": "toggle",
+      "label": "Enable Caddyfile v2 Protection",
+      "key": "UI-RISK-022-001",
+      "default": false,
+      "help": "Turns on Caddy protection for missing headers."
+    }
+  ],
+  "enforcement": {
+    "driver": "caddy",
+    "mappings": {
+      "UI-RISK-022-001": "header {\n    Content-Security-Policy \"upgrade-insecure-requests\" defer\n}"
+    }
+  }
+}

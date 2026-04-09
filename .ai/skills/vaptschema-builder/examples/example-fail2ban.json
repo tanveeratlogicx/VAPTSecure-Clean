@@ -1,0 +1,17 @@
+{
+  "controls": [
+    {
+      "type": "toggle",
+      "label": "Enable fail2ban brute force protection",
+      "key": "UI-RISK-010-001",
+      "default": false,
+      "help": "Turns on fail2ban brute force protection. This helps secure the site against Brute Force attacks."
+    }
+  ],
+  "enforcement": {
+    "driver": "fail2ban",
+    "mappings": {
+      "UI-RISK-010-001": "# BEGIN VAPT RISK-010\n[wordpress]\nenabled = true\nport = http,https\nfilter = wordpress-auth\nlogpath = /var/log/auth.log\nmaxretry = 3\n# END VAPT RISK-010"
+    }
+  }
+}

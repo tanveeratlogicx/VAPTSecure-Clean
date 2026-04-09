@@ -1,0 +1,17 @@
+{
+  "controls": [
+    {
+      "type": "toggle",
+      "label": "Enable Cloudflare Transform Rule for Headers",
+      "key": "UI-RISK-022-001",
+      "default": false,
+      "help": "Turns on Cloudflare Transform rule for missing headers."
+    }
+  ],
+  "enforcement": {
+    "driver": "cloudflare",
+    "mappings": {
+      "UI-RISK-022-001": "{\"implementation_type\": \"transform_rule\", \"action\": \"set\", \"header\": \"Content-Security-Policy\", \"value\": \"upgrade-insecure-requests\"}"
+    }
+  }
+}

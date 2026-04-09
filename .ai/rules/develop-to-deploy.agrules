@@ -1,0 +1,292 @@
+# Rule: Develop to Deploy
+
+**Trigger:**
+This rule is triggered when we initiate the deployment of a feature to the "Deploy" state (specifically, by clicking the "A+ Workbench" button on the Features List tab). The workflow completes when the user clicks on the "Submit" button on the "Design Implementation" Modal.
+*(Note: This submit button is currently labeled as "Save Status", but will soon be updated to a dynamic label—either "Deploy" or "Implement"—based upon whether the user is opting for an "A+ Adaptive" or "Standard" interface.)*
+
+**Workflow Invocation:**
+Upon trigger, invoke the `/develop-to-deploy` workflow to guide the deployment implementation.
+
+**Skill Integration:**
+This rule should take advantage of the SKILL `VAPT-Secure\.ai\skills\vaptschema-builder` where appropriate to be more effective and present a consistent JSON Schema.
+
+---
+
+## 🎚️ Enable Protection Toggle Intelligence
+
+**CRITICAL:** The "Enable Protection" toggle (`feat_enabled`) is the PRIMARY control for all enforcement operations. This rule MUST be toggle-aware and inject appropriate code snippets based on the toggle state.
+
+### Toggle State Detection
+
+When generating or modifying code, you MUST check the `feat_enabled` state:
+
+```javascript
+// In generated-interface.js and aplus-generator.js
+const isEnabled = toBool(featureData?.feat_enabled);
+```
+
+### Toggle-Aware Code Injection Logic
+
+#### When `feat_enabled: true` (Protection ENABLED)
+
+**For .htaccess enforcers:**
+- Inject the FULL enforcement block with VAPT markers
+- Include all RewriteRule/RewriteCond directives
+- Wrap in `<IfModule mod_rewrite.c>` with proper `RewriteEngine On` and `RewriteBase /`
+- Place BEFORE `# BEGIN WordPress` (never after)
+
+```apache
+# BEGIN VAPT RISK-XXX
+<IfModule mod_rewrite.c>
+ RewriteEngine On
+ RewriteBase /
+ # Full protection rules here
+ RewriteRule ^wp-json/wp/v2/users$ - [F,L]
+</IfModule>
+# END VAPT RISK-XXX
+```
+
+**For wp-config.php enforcers:**
+- Inject the constant definition with VAPT markers
+- Place BEFORE `require_once ABSPATH . 'wp-settings.php';`
+
+```php
+/* BEGIN VAPT RISK-XXX */
+define('DISABLE_WP_CRON', true);
+/* END VAPT RISK-XXX */
+```
+
+**For PHP Functions enforcers:**
+- Inject the FULL hook registration code
+- Include all `add_action` / `add_filter` calls
+- Include the complete callback function implementation
+
+```php
+// BEGIN VAPT RISK-XXX
+add_action('init', 'vapt_risk_xxx_protection', 1);
+function vapt_risk_xxx_protection() {
+    // Full protection logic
+}
+// END VAPT RISK-XXX
+```
+
+#### When `feat_enabled: false` (Protection DISABLED)
+
+**For ALL enforcer types:**
+- REMOVE or COMMENT OUT the enforcement block
+- Preserve the VAPT markers but comment the content
+- This allows quick re-enable without code regeneration
+
+```apache
+# BEGIN VAPT RISK-XXX (DISABLED)
+# <IfModule mod_rewrite.c>
+#  RewriteEngine On
+#  RewriteBase /
+#  RewriteRule ^wp-json/wp/v2/users$ - [F,L]
+# </IfModule>
+# END VAPT RISK-XXX
+```
+
+```php
+// BEGIN VAPT RISK-XXX (DISABLED)
+// define('DISABLE_WP_CRON', true);
+// END VAPT RISK-XXX
+```
+
+### Toggle State Verification
+
+After any code injection/removal, verify:
+
+1. **Header Probe Check:** When `feat_enabled: true`, expect `X-VAPT-Feature: RISK-XXX` in response headers
+2. **Absence Check:** When `feat_enabled: false`, expect NO VAPT headers for this feature
+3. **Probe Registry Sync:** The `PROBE_REGISTRY` in `generated-interface.js` checks `feat_enabled` state
+
+```javascript
+// From generated-interface.js probe logic
+if (toBool(featureData?.feat_enabled) === false) {
+    return { 
+        success: true, 
+        message: `Status: Protection Disabled (Intentional). No enforcement detected.` 
+    };
+}
+```
+
+### Enforcement Driver Mapping
+
+The toggle state maps to the enforcement driver via:
+
+```javascript
+// From aplus-generator.js
+enforcement: {
+  driver: "htaccess", // or "hook", "wp_config"
+  target: "root",
+  is_adaptive: true,
+  mappings: {
+    feat_enabled: this.suggestApacheRules(feature),
+  }
+}
+```
+
+**IMPORTANT:** When generating the `mappings` object, the key MUST be exactly `feat_enabled` (not `enabled`, not `prot_enabled`).
+
+---
+
+## 💡 IntelliSense: Toggle-Aware Code Snippets
+
+Use these snippets when implementing toggle-aware protection. The snippets automatically adapt based on `feat_enabled` state.
+
+### Snippet 1: Toggle State Detector
+```javascript
+// Detect toggle state with fallback
+const isProtectionEnabled = () => {
+  const featEnabled = featureData?.feat_enabled ?? false;
+  return featEnabled === true || featEnabled === 'true' || featEnabled === 1;
+};
+
+const protectionState = isProtectionEnabled() ? 'ENABLED' : 'DISABLED';
+console.log(`[VAPT] Protection ${protectionState} for ${featureData?.risk_id || 'unknown'}`);
+```
+
+### Snippet 2: Conditional Block Injector (.htaccess)
+```apache
+{{#if feat_enabled}}
+# BEGIN VAPT {{risk_id}} - ACTIVE
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  {{enforcement_code}}
+</IfModule>
+# END VAPT {{risk_id}}
+{{else}}
+# BEGIN VAPT {{risk_id}} - DISABLED
+# Protection temporarily disabled via feat_enabled toggle
+# <IfModule mod_rewrite.c>
+#   RewriteEngine On
+#   RewriteBase /
+#   {{enforcement_code}}
+# </IfModule>
+# END VAPT {{risk_id}}
+{{/if}}
+```
+
+### Snippet 3: Conditional Block Injector (wp-config.php)
+```php
+{{#if feat_enabled}}
+/* BEGIN VAPT {{risk_id}} - ACTIVE */
+define('{{constant_name}}', {{constant_value}});
+/* END VAPT {{risk_id}} */
+{{else}}
+/* BEGIN VAPT {{risk_id}} - DISABLED */
+// define('{{constant_name}}', {{constant_value}});
+/* END VAPT {{risk_id}} */
+{{/if}}
+```
+
+### Snippet 4: Conditional Block Injector (PHP Hooks)
+```php
+{{#if feat_enabled}}
+// BEGIN VAPT {{risk_id}} - ACTIVE
+add_action('{{hook_name}}', 'vapt_{{risk_id}}_protection', {{priority}});
+function vapt_{{risk_id}}_protection() {
+    {{protection_logic}}
+}
+// END VAPT {{risk_id}}
+{{else}}
+// BEGIN VAPT {{risk_id}} - DISABLED
+// add_action('{{hook_name}}', 'vapt_{{risk_id}}_protection', {{priority}});
+// function vapt_{{risk_id}}_protection() {
+//     {{protection_logic}}
+// }
+// END VAPT {{risk_id}}
+{{/if}}
+```
+
+### Snippet 5: Toggle-Aware Probe Response
+```javascript
+// In PROBE_REGISTRY handlers
+const runToggleAwareProbe = async (featureData) => {
+  const isEnabled = toBool(featureData?.feat_enabled);
+  
+  if (!isEnabled) {
+    return {
+      success: true,
+      status: 'disabled',
+      message: `Protection intentionally disabled for ${featureData.risk_id}`,
+      recommendation: 'Enable the toggle to activate protection'
+    };
+  }
+  
+  // Run actual probe when enabled
+  return await runProtectionProbe(featureData);
+};
+```
+
+### Snippet 6: Toggle State Change Handler
+```javascript
+// Handle toggle state changes in UI
+const handleToggleChange = async (riskId, newState) => {
+  const previousState = featureData.feat_enabled;
+  
+  console.log(`[VAPT] Toggle change: ${riskId} | ${previousState} → ${newState}`);
+  
+  // Update feature data
+  featureData.feat_enabled = newState;
+  
+  // Trigger code regeneration
+  await regenerateProtectionCode(riskId, newState);
+  
+  // Update UI indicators
+  updateProtectionStatusIndicator(riskId, newState);
+  
+  // Log state change
+  logToggleEvent(riskId, previousState, newState);
+};
+```
+
+---
+
+## 🔧 Quick Reference: Toggle State Matrix
+
+| `feat_enabled` | Expected Behavior | Code Action | Header Check |
+|----------------|-------------------|-------------|--------------|
+| `true` | Protection ACTIVE | Inject full code block | Expect `X-VAPT-Feature` header |
+| `false` | Protection DISABLED | Comment out/remove code | Expect NO VAPT header |
+| `undefined` | Protection DISABLED (default) | Comment out/remove code | Expect NO VAPT header |
+| `null` | Protection DISABLED (default) | Comment out/remove code | Expect NO VAPT header |
+
+---
+
+## Workflow Sequence
+
+Before finalizing the development phase and presenting the delivery (or committing/deploying), you must validate the implementation against the loaded rulebook rubric.
+
+### Step 1 → Load the Rulebook
+Read `VAPT-Secure/data/ai_agent_instructions_v2.0.json`.
+- Internalize the naming conventions.
+- Internalize the `.htaccess` syntax guard.
+- Note the 19-point rubric and balanced protection policy.
+
+### Step 2 → Load the Blueprint
+Look up the target `RISK-XXX` in `VAPT-Secure/data/interface_schema_v2.0.json`.
+- Extract the `ui_layout`, `components`, `severity`, and `available_platforms`.
+- Note the crucial `lib_key` inside `code_refs` for the target platform.
+
+### Step 3 → Load the Enforcement Code
+Map the `lib_key` to `VAPT-Secure/data/enforcer_pattern_library_v2.0.json`.
+- Extract the actual enforcement code.
+- **Never write enforcement code from memory.** Always use the code provided in the library.
+- Apply the **Core Principle** whitelisting (ensure `/wp-admin/`, `/wp-json/wp/v2/`, and `/wp-json/vaptsecure/v1/` are excluded from blocks if applicable to the enforcer type).
+- **Apply Toggle Intelligence:** Determine if `feat_enabled` is true or false and inject/remove code accordingly.
+
+### Step 4 → Self-Check and Score
+- Self-check the implemented code against the grading rubric from Step 1.
+- Ensure you meet all safety guards (`htaccess_syntax_guard`), naming conventions, and the `balanced_protection_policy`.
+- **Verify Toggle Awareness:** Confirm the code properly reflects the `feat_enabled` state.
+- **Condition:** Your self-evaluation score must be **≥ 18**.
+- Only proceed to deliver if the score is ≥ 18. If lower, refactor the implementation until the standard is met before completing the deployment.
+
+### Step 5 → Deliver with Toggle State Documentation
+When delivering the implementation, clearly document:
+1. The current `feat_enabled` state (true/false)
+2. What code was injected (if enabled) or removed/commented (if disabled)
+3. Expected verification results based on toggle state

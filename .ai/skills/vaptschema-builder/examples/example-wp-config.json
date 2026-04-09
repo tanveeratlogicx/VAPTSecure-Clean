@@ -1,0 +1,17 @@
+{
+  "controls": [
+    {
+      "type": "toggle",
+      "label": "Enable protection for wp-cron.php Enabled Leads to DoS Attack",
+      "key": "UI-RISK-001-001",
+      "default": false,
+      "help": "Turns on protection for wp-cron.php Enabled Leads to DoS Attack. This helps secure the site against Configuration attacks."
+    }
+  ],
+  "enforcement": {
+    "driver": "wp_config",
+    "mappings": {
+      "UI-RISK-001-001": "/* BEGIN VAPT RISK-001 */\ndefine( 'DISABLE_WP_CRON', true );\n/* END VAPT RISK-001 */"
+    }
+  }
+}

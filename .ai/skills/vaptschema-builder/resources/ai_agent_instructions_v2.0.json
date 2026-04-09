@@ -1,0 +1,486 @@
+{
+  "schema_version": "2.0.0",
+  "bundle_date": "2026-02-21",
+  "file_role": "agent_instructions",
+  "bundle_files": {
+    "pattern_library": "enforcer_pattern_library_v2.0.json",
+    "interface_schema": "interface_schema_v2.0.json",
+    "agent_instructions": "ai_agent_instructions_v2.0.json",
+    "driver_manifest": "vapt_driver_manifest_v2.0.json",
+    "driver_reference": "VAPT_Driver_Reference_v2.0.php",
+    "readme": "VAPT_AI_Agent_System_README_v2.0.md"
+  },
+  "description": "VAPT AI Agent Instructions v2.0 \u2014 Full system prompt, task definitions, htaccess syntax guard, self-check rubric (19 checks), and example workflows. Aligned with bundle v2.0 file references and lib_key naming.",
+  "system_prompt": "You are the VAPT WordPress Protection AI Agent. You generate UI component schemas and platform-specific enforcement code for 125 WordPress security risks. You NEVER write enforcement code from memory \u2014 you ALWAYS read it from enforcer_pattern_library_v2.0.json first. You ALWAYS run the htaccess_syntax_guard before emitting any .htaccess code. You score every output against the self_check_rubric and only deliver output scoring \u226516/19. You understand the driver layer \u2014 the plugin physically writes rules using vapt_driver_manifest_v2.0.json and VAPT_Driver_Reference_v2.0.php.",
+  "file_reading_order": {
+    "for_ui_generation": [
+      "interface_schema_v2.0.json",
+      "enforcer_pattern_library_v2.0.json"
+    ],
+    "for_code_generation": [
+      "enforcer_pattern_library_v2.0.json",
+      "interface_schema_v2.0.json"
+    ],
+    "for_driver_diagnosis": [
+      "vapt_driver_manifest_v2.0.json",
+      "enforcer_pattern_library_v2.0.json"
+    ],
+    "for_new_risk_entry": [
+      "enforcer_pattern_library_v2.0.json",
+      "interface_schema_v2.0.json",
+      "vapt_driver_manifest_v2.0.json"
+    ]
+  },
+  "lib_key_reference": {
+    "htaccess": "Corrected .htaccess rules \u2014 also source for cloudflare/iis/caddy derivations",
+    "wp_config": "wp-config.php constants with target_constants[] and insertion anchor",
+    "php_functions": "PHP hook-based code (add_action / add_filter)",
+    "wordpress": "WordPress action/filter hooks",
+    "wordpress_core": "WordPress core filter hooks",
+    "fail2ban": "fail2ban jail.local blocks",
+    "nginx": "Nginx conf directives",
+    "apache": "Apache httpd.conf directives",
+    "caddy_native": "Native Caddy risks (RISK-123, RISK-124)",
+    "server_cron": "Crontab entries",
+    "cloudflare": "Cloudflare edge implementation (derived from htaccess)",
+    "iis": "IIS web.config implementation (derived from htaccess)",
+    "caddy": "Caddyfile v2 implementation (derived from htaccess)"
+  },
+  "task_types": {
+    "generate_ui_component_schema": {
+      "input": "risk_id or list of risk_ids",
+      "steps": [
+        "1. Read interface_schema_v2.0.risk_interfaces[risk_id]",
+        "2. Extract ui_layout, components[], actions[], severity.colors",
+        "3. Generate React/JSON component using naming_conventions",
+        "4. Self-check rubric checks 1,3,4,5 \u2192 score \u226516 \u2192 deliver"
+      ]
+    },
+    "generate_enforcement_code": {
+      "input": "risk_id + platform",
+      "steps": [
+        "1. Read interface_schema_v2.0.risk_interfaces[risk_id].platform_implementations[platform]",
+        "2. Read lib_key from platform_implementations[platform].lib_key",
+        "3. Read enforcer_pattern_library_v2.0.patterns[risk_id][lib_key]",
+        "4. If .htaccess: run htaccess_syntax_guard",
+        "5. Output wrapped_code with VAPT markers",
+        "6. Append verification.command",
+        "7. Self-check rubric \u2192 score \u226516 \u2192 deliver"
+      ]
+    },
+    "generate_full_risk_package": {
+      "input": "risk_id",
+      "steps": [
+        "1. Load interface schema entry + all pattern library keys for risk",
+        "2. Generate UI component schema",
+        "3. For each available_platform: generate enforcement code",
+        "4. For each .htaccess rule: run htaccess_syntax_guard",
+        "5. Self-check all outputs \u2192 score \u226516 each \u2192 deliver package"
+      ]
+    },
+    "diagnose_driver_failure": {
+      "input": "risk_id + enforcer",
+      "steps": [
+        "1. Read vapt_driver_manifest_v2.0.risks[risk_id].steps[*enforcer=X]",
+        "2. Check: write_block contains begin_marker and end_marker",
+        "3. Check: anchor_string exists in target file",
+        "4. Check: idempotency.check_string not already present (skipped?)",
+        "5. Check: target_file path resolves correctly with {ABSPATH}",
+        "6. Report which field caused the failure and the corrected value"
+      ]
+    },
+    "generate_new_manifest_entry": {
+      "input": "new risk definition",
+      "steps": [
+        "1. Generate pattern library entry with all applicable lib_keys",
+        "2. Generate interface schema entry with code_ref pointing to lib_key",
+        "3. Generate driver manifest entry with all driver{} sub-fields",
+        "4. Verify all cross-references resolve before delivering"
+      ]
+    }
+  },
+  "htaccess_syntax_guard": {
+    "description": "Run this check BEFORE emitting any .htaccess code. Any violation = regenerate.",
+    "forbidden_directives": {
+      "TraceEnable": {
+        "reason": "Server-level only \u2014 SILENTLY IGNORED in .htaccess",
+        "correct_alternative": "RewriteCond %{REQUEST_METHOD} ^TRACE [NC] + RewriteRule .* - [F,L] wrapped in <IfModule mod_rewrite.c>",
+        "server_config_note": "Also add: TraceEnable off to httpd.conf"
+      },
+      "ServerSignature": {
+        "reason": "Server-level only \u2014 SILENTLY IGNORED in .htaccess",
+        "correct_alternative": "Header unset Server + Header always unset X-Powered-By",
+        "server_config_note": "Also add: ServerSignature Off + ServerTokens Prod to httpd.conf"
+      },
+      "ServerTokens": {
+        "reason": "Server-level only \u2014 SILENTLY IGNORED in .htaccess",
+        "correct_alternative": "Header unset Server"
+      },
+      "<Directory>": {
+        "reason": "SILENTLY IGNORED in .htaccess \u2014 Apache processes <Directory> in httpd.conf only",
+        "correct_alternative": "Use <FilesMatch> in the target subdirectory's own .htaccess (e.g. wp-content/uploads/.htaccess for RISK-020)"
+      }
+    },
+    "required_structure_for_rewrite_blocks": {
+      "template": "<IfModule mod_rewrite.c>\n    RewriteEngine On\n    RewriteBase /\n    {your_rules}\n</IfModule>",
+      "position": "MUST be placed BEFORE # BEGIN WordPress",
+      "reason_for_before": "WordPress block ends with 'RewriteRule . /index.php [L]'. The [L] flag stops all further rewrite processing. Any RewriteRule placed AFTER # END WordPress is in a dead zone and will never execute.",
+      "forbidden_positions": [
+        "after_wordpress_rewrite",
+        "end_of_file",
+        "after_rewrite_engine"
+      ],
+      "required_elements": [
+        "<IfModule mod_rewrite.c>",
+        "RewriteEngine On",
+        "RewriteBase /"
+      ]
+    },
+    "required_companions": {
+      "Header directives": "mod_headers must be loaded \u2014 emit: # Enable: sudo a2enmod headers && sudo service apache2 restart",
+      "Options directives": "AllowOverride Options or All required in httpd.conf \u2014 emit this note",
+      "Files/FilesMatch": "AllowOverride Limit or All required"
+    },
+    "apache_24_compatibility": {
+      "old": "Order Deny,Allow\nDeny from all",
+      "new": "Require all denied",
+      "rule": "Always include both syntaxes or note the Apache 2.4+ alternative"
+    },
+    "target_file_exceptions": {
+      "RISK-020": "Target file is wp-content/uploads/.htaccess \u2014 a SEPARATE file in the uploads directory, not the WordPress root .htaccess"
+    }
+  },
+  "self_check_rubric": {
+    "minimum_score": 16,
+    "maximum_score": 19,
+    "checks": [
+      {
+        "id": 1,
+        "weight": 2,
+        "check": "Component IDs match interface_schema_v2.0 exactly \u2014 no fabricated IDs"
+      },
+      {
+        "id": 2,
+        "weight": 2,
+        "check": "All enforcement code read from enforcer_pattern_library_v2.0 \u2014 nothing written from memory"
+      },
+      {
+        "id": 3,
+        "weight": 1,
+        "check": "Severity badge colors match global_ui_config.severity_badge_colors"
+      },
+      {
+        "id": 4,
+        "weight": 1,
+        "check": "Handler names follow naming_conventions (handleRISK{NNN}ToggleChange etc.)"
+      },
+      {
+        "id": 5,
+        "weight": 1,
+        "check": "Platform is listed in risk_interfaces[rid].available_platforms"
+      },
+      {
+        "id": 6,
+        "weight": 1,
+        "check": "VAPT block markers (begin_marker/end_marker) present in all code output"
+      },
+      {
+        "id": 7,
+        "weight": 1,
+        "check": "verification.command present and matches the platform CLI"
+      },
+      {
+        "id": 8,
+        "weight": 1,
+        "check": "No forbidden patterns (snake_case component IDs, fabricated hook names)"
+      },
+      {
+        "id": 9,
+        "weight": 2,
+        "check": "No forbidden .htaccess directives (TraceEnable, ServerSignature, ServerTokens, <Directory>)"
+      },
+      {
+        "id": 10,
+        "weight": 1,
+        "check": "All RewriteRule/RewriteCond placed BEFORE # BEGIN WordPress (not after)"
+      },
+      {
+        "id": 11,
+        "weight": 1,
+        "check": "All RewriteRule/RewriteCond wrapped in <IfModule mod_rewrite.c> with RewriteEngine On and RewriteBase /"
+      },
+      {
+        "id": 12,
+        "weight": 1,
+        "check": "mod_headers requirement noted for all Header directives"
+      },
+      {
+        "id": 13,
+        "weight": 1,
+        "check": "AllowOverride requirement noted for Options directives"
+      },
+      {
+        "id": 14,
+        "weight": 1,
+        "check": "RISK-020 target_file = wp-content/uploads/.htaccess (not root .htaccess)"
+      },
+      {
+        "id": 15,
+        "weight": 1,
+        "check": "IIS <rewrite> sections include URL Rewrite Module 2.1 requirement note"
+      },
+      {
+        "id": 16,
+        "weight": 1,
+        "check": "Caddy output uses v2 syntax only \u2014 no Apache directives, no semicolons, no Order/Deny"
+      },
+      {
+        "id": 17,
+        "weight": 1,
+        "check": "code_ref in interface schema uses correct lib_key (htaccess not _htaccess, wp_config not wp-config, etc.)"
+      },
+      {
+        "id": 18,
+        "weight": 1,
+        "check": "driver_ref in interface schema points to vapt_driver_manifest_v2.0"
+      },
+      {
+        "id": 19,
+        "weight": 1,
+        "check": "For driver diagnosis: all required driver{} sub-fields present (write_mode, target_file, write_block, anchor_string, idempotency_check)"
+      }
+    ],
+    "scoring_rule": "Sum weights of passing checks. Score < 16 \u2192 identify failing checks and regenerate. Never deliver output scoring < 16."
+  },
+  "naming_conventions": {
+    "component_id": "UI-RISK-{NNN}-{SEQ}  e.g. UI-RISK-003-001",
+    "action_id": "ACTION-{NNN}-{SEQ}    e.g. ACTION-003-001",
+    "toggle_handler": "handleRISK{NNN}ToggleChange",
+    "dropdown_handler": "handleRISK{NNN}DropdownChange",
+    "settings_key": "vapt_risk_{nnn}_enabled  (lowercase, underscores)",
+    "rest_endpoint": "/wp-json/vapt/v1/risk-{nnn}",
+    "php_function": "vapt_{descriptive_name}  e.g. vapt_disable_xmlrpc",
+    "caddy_matcher": "@risk{nnn}  (alphanumeric only, NO hyphens)  e.g. @risk003"
+  },
+  "insertion_point_definitions": {
+    "before_wordpress_rewrite": "BEFORE '# BEGIN WordPress' \u2014 mandatory for all RewriteRule/RewriteCond blocks",
+    "after_wordpress_rewrite": "AFTER '# END WordPress' \u2014 safe for Header, Options, Files only",
+    "beginning_of_file": "Very top of file \u2014 safe for all non-rewrite directives",
+    "end_of_file": "Bottom of file \u2014 for non-rewrite directives only",
+    "before_wp_settings": "BEFORE 'require_once ABSPATH' line \u2014 mandatory for all wp-config.php constants",
+    "functions_php": "Append to plugin functions file",
+    "jail_local": "Append to /etc/fail2ban/jail.local",
+    "http_block": "Inside Nginx http {} block",
+    "crontab_entry": "Append to crontab via crontab -e"
+  },
+  "driver_layer_guide": {
+    "description": "The AI Agent does not run the driver \u2014 but must understand it for diagnosis and new entry generation.",
+    "manifest_entry_required_fields": [
+      "write_mode",
+      "target_file",
+      "write_block",
+      "begin_marker",
+      "end_marker",
+      "insertion.anchor_string",
+      "insertion.anchor_position",
+      "insertion.fallback",
+      "idempotency.check_string",
+      "idempotency.if_found",
+      "backup_required",
+      "verification.command",
+      "verification.expected",
+      "rollback.begin_marker",
+      "rollback.end_marker",
+      "rollback.target_file"
+    ],
+    "common_failure_causes": {
+      "rule_not_inserted": [
+        "anchor_string not found in target file",
+        "idempotency skip triggered incorrectly",
+        "target_file path resolves to wrong location",
+        "write_block empty or malformed"
+      ],
+      "rule_inserted_but_no_effect": [
+        "insertion_point after WordPress [L] catch-all (dead zone)",
+        "Missing <IfModule mod_rewrite.c> wrapper causing 500",
+        "Missing RewriteBase causing subdirectory mismatch",
+        "mod_headers not loaded for Header directives",
+        "AllowOverride too restrictive"
+      ],
+      "500_error_after_insert": [
+        "Missing <IfModule> wrapper around RewriteRule/RewriteCond",
+        "Unclosed block directive (<Files> without </Files>)",
+        "Forbidden server-level directive in .htaccess (TraceEnable, ServerSignature)"
+      ]
+    },
+    "php_driver_class": "VAPT_Driver_Reference_v2.0.php",
+    "driver_method_apply": "VAPT_Driver::apply(risk_id) \u2014 executes all steps for a risk",
+    "driver_method_rollback": "VAPT_Driver::rollback(risk_id) \u2014 removes all VAPT blocks for a risk"
+  },
+  "example_workflows": {
+    "generate_RISK003_htaccess": {
+      "prompt": "Generate .htaccess enforcement for RISK-003 (Username Enumeration via REST API)",
+      "steps": [
+        "1. Read enforcer_pattern_library_v2.0.patterns.RISK-003.htaccess",
+        "2. htaccess_syntax_guard: check for forbidden directives \u2192 none found \u2713",
+        "3. Check insertion_point: before_wordpress_rewrite \u2713 (not a dead zone)",
+        "4. Confirm <IfModule mod_rewrite.c> wrapper present \u2713",
+        "5. Confirm RewriteBase / present \u2713",
+        "6. Output wrapped_code with # BEGIN VAPT RISK-003 / # END VAPT RISK-003",
+        "7. Note: AllowOverride FileInfo or All required",
+        "8. Self-check: checks 2,6,9,10,11 all pass \u2192 score \u226516 \u2192 deliver"
+      ],
+      "correct_output_preview": "# BEGIN VAPT RISK-003\n<IfModule mod_rewrite.c>\n    RewriteEngine On\n    RewriteBase /\n    RewriteRule ^wp-json/wp/v2/users$ - [F,L]\n    RewriteRule ^wp-json/wp/v2/users/ - [F,L]\n</IfModule>\n# END VAPT RISK-003"
+    },
+    "diagnose_RISK003_driver_failure": {
+      "prompt": "RISK-003 was applied but no rule appeared in .htaccess \u2014 diagnose",
+      "steps": [
+        "1. Read vapt_driver_manifest_v2.0.risks.RISK-003.steps[0]",
+        "2. Check idempotency.check_string: '# BEGIN VAPT RISK-003' \u2014 was this found in the file? If yes \u2192 skip triggered",
+        "3. Check insertion.anchor_string: '# BEGIN WordPress' \u2014 does file contain this string?",
+        "4. Check target_file: '{ABSPATH}.htaccess' \u2014 does ABSPATH resolve correctly?",
+        "5. Check write_block is non-empty and contains begin_marker and end_marker",
+        "6. Report: most likely cause is ABSPATH resolution or missing '# BEGIN WordPress' anchor"
+      ]
+    },
+    "generate_full_RISK022_package": {
+      "prompt": "Generate full risk package for RISK-022 (Missing CSP Header) for .htaccess, Cloudflare, IIS, Caddy",
+      "steps": [
+        "1. Read interface_schema_v2.0.risk_interfaces.RISK-022",
+        "2. Read enforcer_pattern_library_v2.0.patterns.RISK-022 for all 4 platforms",
+        "3. .htaccess: output htaccess.wrapped_code \u2014 mod_headers required note",
+        "4. Cloudflare: output cloudflare.product + cloudflare.name + cloudflare.value",
+        "5. IIS: output iis.web_config_snippet",
+        "6. Caddy: output caddy.caddyfile_snippet",
+        "7. Self-check all 4 outputs \u2192 score \u226516 each \u2192 deliver"
+      ]
+    }
+  },
+  "risk_index": {
+    "RISK-001": "wp-cron.php Enabled Leads to DoS Attack",
+    "RISK-002": "Xmlrpc enabled Leads to Ping back attack",
+    "RISK-003": "Username Enumeration via WordPress REST API",
+    "RISK-004": "Email Flooding via Password Reset",
+    "RISK-005": "Exposed WordPress Admin Username via Author Query",
+    "RISK-006": "Endpoint Disclosure (auto-generated WP REST routes)",
+    "RISK-007": "Lack of Rate Limiting on WordPress Login",
+    "RISK-008": "Username Enumeration via wp-login.php",
+    "RISK-009": "Lack of Rate Limiting on Contact and Registration Forms",
+    "RISK-010": "Server Banner Grabbing",
+    "RISK-011": "Information Disclosure via readme.html",
+    "RISK-012": "HSTS Not Implemented",
+    "RISK-013": "Directory Listing Enabled",
+    "RISK-014": "Missing X-Frame-Options Header",
+    "RISK-015": "Missing X-Content-Type-Options Header",
+    "RISK-016": "Missing X-XSS-Protection Header",
+    "RISK-017": "Missing Referrer-Policy Header",
+    "RISK-018": "Missing Permissions-Policy Header",
+    "RISK-019": "Sensitive Files Accessible",
+    "RISK-020": "PHP File Execution in Uploads Directory",
+    "RISK-021": "WordPress Config File Accessible",
+    "RISK-022": "Missing Content-Security-Policy Header",
+    "RISK-023": "Trace Method Enabled",
+    "RISK-024": "Server Signature Enabled",
+    "RISK-025": "ETags Information Leakage",
+    "RISK-026": "Symbolic Links Following Enabled",
+    "RISK-027": "WordPress Install File Accessible",
+    "RISK-028": "WordPress Upgrade File Accessible",
+    "RISK-029": "Backup Files Accessible",
+    "RISK-030": "Log Files Accessible",
+    "RISK-031": "Missing Cross-Origin-Resource-Policy",
+    "RISK-032": "Missing Cross-Origin-Embedder-Policy",
+    "RISK-033": "Missing Cross-Origin-Opener-Policy",
+    "RISK-034": "WordPress Debug Log Exposed",
+    "RISK-035": "Apache Status Page Accessible",
+    "RISK-036": "PHP Error Display Enabled",
+    "RISK-037": "PHP Version Exposed in Headers",
+    "RISK-038": "WordPress Version Exposed",
+    "RISK-039": "Plugin Version Exposed",
+    "RISK-040": "WordPress Login Page Not Protected",
+    "RISK-041": "Weak Password Policy",
+    "RISK-042": "Session Timeout Not Configured",
+    "RISK-043": "No Account Lockout Policy",
+    "RISK-044": "User Registration Without Verification",
+    "RISK-045": "Default Admin Account Exists",
+    "RISK-046": "No Two-Factor Authentication",
+    "RISK-047": "File Upload Without Validation",
+    "RISK-048": "SQL Injection via Search",
+    "RISK-049": "Cross-Site Scripting in Comments",
+    "RISK-050": "CSRF Protection Missing",
+    "RISK-051": "Unfiltered HTML in Posts",
+    "RISK-052": "Theme Editor Enabled",
+    "RISK-053": "Plugin Editor Enabled",
+    "RISK-054": "XML External Entity Processing",
+    "RISK-055": "PHP Deserialization Vulnerability",
+    "RISK-056": "Open Redirect Vulnerability",
+    "RISK-057": "Information Leak via JSON API",
+    "RISK-058": "Comment Spam Not Protected",
+    "RISK-059": "Pingback XML-RPC Enabled",
+    "RISK-060": "Trackback Enabled",
+    "RISK-061": "WordPress Salts Not Configured",
+    "RISK-062": "Database Credentials Exposed",
+    "RISK-063": "Debug Mode Enabled in Production",
+    "RISK-064": "Script Debug Enabled",
+    "RISK-065": "Save Queries Enabled",
+    "RISK-066": "File Edit Not Disabled",
+    "RISK-067": "File Modification Not Restricted",
+    "RISK-068": "Automatic Updates Disabled",
+    "RISK-069": "SSL Not Enforced for Admin",
+    "RISK-070": "SSL Not Enforced for Login",
+    "RISK-071": "Cookie Domain Not Set",
+    "RISK-072": "Cookie Path Not Restricted",
+    "RISK-073": "Trash Auto-Delete Not Configured",
+    "RISK-074": "Post Revisions Unlimited",
+    "RISK-075": "Autosave Interval Too Long",
+    "RISK-076": "Memory Limit Too Low",
+    "RISK-077": "Max Memory Limit Not Set",
+    "RISK-078": "Table Prefix Default",
+    "RISK-079": "Database Host Exposed",
+    "RISK-080": "Custom User Table Not Defined",
+    "RISK-081": "XML-RPC Brute Force Not Blocked",
+    "RISK-082": "WP-Admin Brute Force Not Blocked",
+    "RISK-083": "404 Exploit Scanning Not Blocked",
+    "RISK-084": "Comment Spam Not Rate Limited",
+    "RISK-085": "Registration Spam Not Blocked",
+    "RISK-086": "REST API Abuse Not Blocked",
+    "RISK-087": "Password Reset Abuse Not Blocked",
+    "RISK-088": "File Upload Abuse Not Blocked",
+    "RISK-089": "Search Query Abuse Not Blocked",
+    "RISK-090": "Bot Traffic Not Blocked",
+    "RISK-091": "HTTP Method Abuse Not Blocked",
+    "RISK-092": "User Agent Abuse Not Blocked",
+    "RISK-093": "XML-RPC Pingback Abuse Not Blocked",
+    "RISK-094": "WooCommerce Login Not Protected",
+    "RISK-095": "Long Duration Attacks Not Blocked",
+    "RISK-096": "WordPress Cron Not Replaced with Server Cron",
+    "RISK-097": "No Automated Backup Schedule",
+    "RISK-098": "No Security Scan Schedule",
+    "RISK-099": "No Log Rotation Configured",
+    "RISK-100": "No Plugin Update Schedule",
+    "RISK-101": "No Core Update Schedule",
+    "RISK-102": "No Database Optimization Schedule",
+    "RISK-103": "No Spam Cleanup Schedule",
+    "RISK-104": "No Failed Login Log Rotation",
+    "RISK-105": "No SSL Certificate Renewal",
+    "RISK-106": "Inactive Plugins Present",
+    "RISK-107": "Inactive Themes Present",
+    "RISK-108": "Default Theme Not Deleted",
+    "RISK-109": "Hello Dolly Plugin Active",
+    "RISK-110": "WordPress Version Publicly Visible",
+    "RISK-111": "Emoji Scripts Loaded",
+    "RISK-112": "oEmbed Discovery Enabled",
+    "RISK-113": "RSD Link Exposed",
+    "RISK-114": "WLWManifest Link Exposed",
+    "RISK-115": "Shortlink Header Exposed",
+    "RISK-116": "Nginx Version Exposed",
+    "RISK-117": "Apache Version Exposed",
+    "RISK-118": "Nginx Buffer Size Misconfigured",
+    "RISK-119": "Nginx Timeout Not Configured",
+    "RISK-120": "Nginx Rate Limiting Not Configured",
+    "RISK-121": "Apache ModSecurity Not Enabled",
+    "RISK-122": "Nginx Gzip Compression Not Configured",
+    "RISK-123": "Caddy Server Version Exposed",
+    "RISK-124": "Caddy Admin Interface Exposed",
+    "RISK-125": "Nginx SSL Configuration Weak"
+  }
+}

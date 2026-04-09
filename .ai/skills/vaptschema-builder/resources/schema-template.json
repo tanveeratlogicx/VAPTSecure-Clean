@@ -1,0 +1,17 @@
+{
+  "controls": [
+    {
+      "type": "toggle",
+      "label": "{Descriptive Label}",
+      "key": "{component_id}",
+      "default": true,
+      "help": "Turns on {Descriptive Label}. This helps secure the site against {Risk Topic}."
+    }
+  ],
+  "enforcement": {
+    "driver": "{mapped_driver}",
+    "mappings": {
+      "{component_id}": "{exact_code_from_pattern_library}"
+    }
+  }
+}
