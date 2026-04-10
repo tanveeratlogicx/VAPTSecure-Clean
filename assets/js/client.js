@@ -512,7 +512,15 @@ var vaptLog = window.vaptLog || {
               feature: { ...f, generated_schema: { ...schema, controls: implControls } },
               globalProtection: globalProtection,
               onUpdate: (data) => updateFeature(f.key, { implementation_data: data })
-            }) : el('p', { style: { fontSize: '12px', color: '#94a3b8', fontStyle: 'italic' } }, __('Standard protection rules active.'))
+            }) : el('div', null, [
+              el(ToggleControl, {
+                label: __('Enable Protection', 'vaptsecure'),
+                checked: !!(f.is_enabled || f.is_enforced),
+                disabled: !globalProtection,
+                onChange: (val) => updateFeature(f.key, { is_enabled: val ? 1 : 0, is_enforced: val ? 1 : 0 }, __('Saved', 'vaptsecure'))
+              }),
+              el('p', { style: { fontSize: '12px', color: '#94a3b8', fontStyle: 'italic', marginTop: '10px' } }, __('Standard protection rules active.', 'vaptsecure'))
+            ])
           ]),
           // Verification Engine Column
           el('div', { style: { padding: '25px', background: '#f8fafc' } }, [

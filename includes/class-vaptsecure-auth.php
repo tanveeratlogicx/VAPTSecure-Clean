@@ -38,20 +38,30 @@ class VAPTSECURE_Auth
      */
     public static function send_otp()
     {
-        $identity = vaptsecure_get_superadmin_identity();
+        $user = wp_get_current_user();
+        if (!$user || !isset($user->ID) || !$user->ID) {
+            return;
+        }
+        $to = isset($user->user_email) ? (string) $user->user_email : '';
+        if (!$to) {
+            return;
+        }
+        if (function_exists('is_email') && !is_email($to)) {
+            return;
+        }
         $otp = wp_generate_password(6, false, false);
         $hashed_otp = wp_hash_password($otp);
 
         // Store OTP in transient for 10 minutes
         // Email Only per user request
-        set_transient('vaptsecure_otp_email_' . $identity['user'], $hashed_otp, 10 * MINUTE_IN_SECONDS);
+        set_transient('vaptsecure_otp_email_' . $user->ID, $hashed_otp, 10 * MINUTE_IN_SECONDS);
 
         // 1. Send Email
         $message = sprintf(
             __('Your VAPT Secure verification code is: %s. This code will expire in 10 minutes.', 'vaptsecure'),
             $otp
         );
-        wp_mail($identity['email'], __('VAPT Secure - Verification Code', 'vaptsecure'), $message);
+        wp_mail($to, __('VAPT Secure - Verification Code', 'vaptsecure'), $message);
     }
 
     /**
@@ -71,21 +81,23 @@ class VAPTSECURE_Auth
             return;
         }
 
-        $identity = vaptsecure_get_superadmin_identity();
         $submitted_otp = sanitize_text_field($_POST['vaptsecure_email_otp']);
-        $stored_otp = get_transient('vaptsecure_otp_email_' . $identity['user']);
+        $user_id = get_current_user_id();
+        if (!$user_id) {
+            return;
+        }
+        $stored_otp = get_transient('vaptsecure_otp_email_' . $user_id);
 
         if ($stored_otp && wp_check_password($submitted_otp, $stored_otp)) {
             // Successful verification
-            $user_id = get_current_user_id();
             set_transient(
                 'vaptsecure_auth_' . $user_id, array(
-                'user' => $identity['user'],
+                'user' => (string) wp_get_current_user()->user_login,
                 'time' => time()
                 ), 2 * HOUR_IN_SECONDS
             );
 
-            delete_transient('vaptsecure_otp_email_' . $identity['user']);
+            delete_transient('vaptsecure_otp_email_' . $user_id);
 
             wp_safe_redirect(admin_url('admin.php?page=vaptsecure-domain-admin'));
             exit;

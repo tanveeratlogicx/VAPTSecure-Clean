@@ -407,6 +407,66 @@ class VAPTSECURE_REST
         return $is_super || $can_manage;
     }
 
+    public function get_global_enforcement($request)
+    {
+        if (!class_exists('VAPTSECURE_DB')) {
+            return new WP_REST_Response(array('error' => 'DB helper not loaded'), 500);
+        }
+
+        $enabled = VAPTSECURE_DB::get_global_enforcement();
+        return new WP_REST_Response(array('enabled' => (bool) $enabled), 200);
+    }
+
+    public function update_global_enforcement($request)
+    {
+        if (!class_exists('VAPTSECURE_DB')) {
+            return new WP_REST_Response(array('error' => 'DB helper not loaded'), 500);
+        }
+
+        $enabled_raw = $request->get_param('enabled');
+        $enabled = filter_var($enabled_raw, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+        if ($enabled === null) {
+            return new WP_REST_Response(array('error' => 'Invalid enabled value'), 400);
+        }
+
+        $ok = VAPTSECURE_DB::update_global_enforcement($enabled ? 1 : 0);
+        delete_transient('vaptsecure_active_enforcements');
+
+        return new WP_REST_Response(array('success' => (bool) $ok, 'enabled' => (bool) $enabled), 200);
+    }
+
+    public function get_security_stats($request)
+    {
+        if (!class_exists('VAPTSECURE_DB')) {
+            return new WP_REST_Response(array('error' => 'DB helper not loaded'), 500);
+        }
+
+        $stats = VAPTSECURE_DB::get_security_stats_summary();
+        return new WP_REST_Response($stats, 200);
+    }
+
+    public function get_security_logs($request)
+    {
+        if (!class_exists('VAPTSECURE_DB')) {
+            return new WP_REST_Response(array('error' => 'DB helper not loaded'), 500);
+        }
+
+        $limit = (int) $request->get_param('limit');
+        if ($limit <= 0) {
+            $limit = 50;
+        }
+        if ($limit > 200) {
+            $limit = 200;
+        }
+        $offset = (int) $request->get_param('offset');
+        if ($offset < 0) {
+            $offset = 0;
+        }
+
+        $events = VAPTSECURE_DB::get_security_events($limit, $offset);
+        return new WP_REST_Response($events, 200);
+    }
+
     public function get_features($request)
     {
         try {
@@ -1185,6 +1245,7 @@ class VAPTSECURE_REST
                 $v = null;
                 if (isset($implementation_data['enabled'])) $v = $implementation_data['enabled'];
                 elseif (isset($implementation_data['feat_enabled'])) $v = $implementation_data['feat_enabled'];
+                elseif (isset($implementation_data['prot_enabled'])) $v = $implementation_data['prot_enabled'];
                 elseif (isset($implementation_data[$auto_key])) $v = $implementation_data[$auto_key];
 
                 if ($v !== null) {
@@ -1905,7 +1966,7 @@ class VAPTSECURE_REST
         $version_for_files = sanitize_file_name($version);
 
         include_once VAPTSECURE_PATH . 'includes/class-vaptsecure-build.php';
-        $config_content = VAPTSECURE_Build::generate_config_content($domain, $version, $features, null, $license_type, $license_scope, $installation_limit, $restrict_features);
+        $config_content = VAPTSECURE_Build::generate_config_content($domain, $version, $features, null, $license_type, $license_scope, $installation_limit, $restrict_features, '');
         $filename = "vapt-{$domain_for_files}-config-{$version_for_files}.php";
         $filepath = VAPTSECURE_PATH . $filename;
 

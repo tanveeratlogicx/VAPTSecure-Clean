@@ -11,6 +11,9 @@ class VAPT_Diagnostics_Page {
     }
 
     public static function register_menu(): void {
+        if (!function_exists('is_vaptsecure_superadmin') || !is_vaptsecure_superadmin(true)) {
+            return;
+        }
         add_submenu_page(
             'vaptsecure',
             'Diagnostics & Self-Check',
@@ -22,6 +25,9 @@ class VAPT_Diagnostics_Page {
     }
 
     public static function render_page(): void {
+        if (!function_exists('is_vaptsecure_superadmin') || !is_vaptsecure_superadmin(true)) {
+            wp_die('Unauthorized');
+        }
         if ( ! current_user_can('manage_options') ) {
             wp_die('Unauthorized');
         }
@@ -75,6 +81,9 @@ class VAPT_Diagnostics_Page {
     public static function ajax_run_diagnostics(): void {
         check_ajax_referer('vapt_diagnostics', 'nonce');
 
+        if (!function_exists('is_vaptsecure_superadmin') || !is_vaptsecure_superadmin(true)) {
+            wp_send_json_error('Unauthorized');
+        }
         if ( ! current_user_can('manage_options') ) {
             wp_send_json_error('Unauthorized');
         }

@@ -61,3 +61,4 @@ wp-config.php
 # uncomment the next line
 #/wp-content/themes
 /plans/
+vapt-universal-config-1.0.1.php

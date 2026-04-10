@@ -363,7 +363,19 @@ class VAPTSECURE_DB
 
         $top_risk = $wpdb->get_row("SELECT feature_key, COUNT(*) as count FROM $table GROUP BY feature_key ORDER BY count DESC LIMIT 1", ARRAY_A);
 
-        $active_features = $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}vaptsecure_feature_status WHERE status IN ('Release', 'Develop', 'Test')");
+        $is_global = self::get_global_enforcement();
+        $active_features = 0;
+        if ($is_global) {
+            $meta_table = $wpdb->prefix . 'vaptsecure_feature_meta';
+            $status_table = $wpdb->prefix . 'vaptsecure_feature_status';
+            $active_features = $wpdb->get_var(
+                "SELECT COUNT(*) 
+                 FROM {$meta_table} m
+                 INNER JOIN {$status_table} s ON m.feature_key = s.feature_key
+                 WHERE s.status IN ('Release', 'Develop', 'Test')
+                   AND (m.is_enabled = 1 OR m.is_enforced = 1)"
+            );
+        }
 
         return array(
         'total_blocks' => (int) $total_blocks,

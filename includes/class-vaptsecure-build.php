@@ -10,6 +10,140 @@ if (! defined('ABSPATH')) {
 
 class VAPTSECURE_Build
 {
+    private static function safe_preg_replace($pattern, $replacement, $subject, $limit = -1)
+    {
+        $result = preg_replace($pattern, $replacement, $subject, $limit);
+        if ($result === null) {
+            return $subject;
+        }
+        return $result;
+    }
+
+    private static function filter_data_file_for_release($source_path, $dest_path, $allowed_feature_keys = [])
+    {
+        $allowed = array();
+        if (is_array($allowed_feature_keys)) {
+            foreach ($allowed_feature_keys as $k) {
+                $k = strtoupper(trim((string) $k));
+                if ($k !== '') {
+                    $allowed[$k] = true;
+                }
+            }
+        }
+
+        if (empty($allowed) || !file_exists($source_path)) {
+            return copy($source_path, $dest_path);
+        }
+
+        $raw = file_get_contents($source_path);
+        $data = json_decode($raw, true);
+        if (!is_array($data)) {
+            return copy($source_path, $dest_path);
+        }
+
+        if (isset($data['risk_interfaces']) && is_array($data['risk_interfaces'])) {
+            $filtered = array();
+            foreach ($data['risk_interfaces'] as $risk_key => $item) {
+                $candidate = strtoupper(trim((string) ($item['risk_id'] ?? $risk_key)));
+                if ($candidate !== '' && isset($allowed[$candidate])) {
+                    $filtered[$risk_key] = $item;
+                }
+            }
+            $data['risk_interfaces'] = $filtered;
+        } elseif (isset($data['risk_catalog']) && is_array($data['risk_catalog'])) {
+            $data['risk_catalog'] = array_values(array_filter($data['risk_catalog'], function ($item) use ($allowed) {
+                if (!is_array($item)) {
+                    return false;
+                }
+                $candidate = strtoupper(trim((string) ($item['risk_id'] ?? $item['id'] ?? $item['key'] ?? '')));
+                return $candidate !== '' && isset($allowed[$candidate]);
+            }));
+        } elseif (isset($data['features']) && is_array($data['features'])) {
+            $data['features'] = array_values(array_filter($data['features'], function ($item) use ($allowed) {
+                if (!is_array($item)) {
+                    return false;
+                }
+                $candidate = strtoupper(trim((string) ($item['risk_id'] ?? $item['id'] ?? $item['key'] ?? '')));
+                return $candidate !== '' && isset($allowed[$candidate]);
+            }));
+        } elseif (isset($data['wordpress_vapt']) && is_array($data['wordpress_vapt'])) {
+            $data['wordpress_vapt'] = array_values(array_filter($data['wordpress_vapt'], function ($item) use ($allowed) {
+                if (!is_array($item)) {
+                    return false;
+                }
+                $candidate = strtoupper(trim((string) ($item['risk_id'] ?? $item['id'] ?? $item['key'] ?? '')));
+                return $candidate !== '' && isset($allowed[$candidate]);
+            }));
+        }
+
+        $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        if (!is_string($json) || $json === '') {
+            return copy($source_path, $dest_path);
+        }
+        return file_put_contents($dest_path, $json) !== false;
+    }
+
+    private static function get_feature_meta_snapshot($feature_keys = [])
+    {
+        if (!function_exists('sanitize_text_field')) {
+            return array();
+        }
+        if (!is_array($feature_keys) || empty($feature_keys)) {
+            return array();
+        }
+
+        $normalized = array_values(array_unique(array_filter(array_map(function ($k) {
+            $k = strtoupper(trim((string) $k));
+            return $k !== '' ? $k : null;
+        }, $feature_keys))));
+
+        if (empty($normalized)) {
+            return array();
+        }
+
+        global $wpdb;
+        if (!isset($wpdb) || !is_object($wpdb)) {
+            return array();
+        }
+
+        $table = $wpdb->prefix . 'vaptsecure_feature_meta';
+        $placeholders = implode(',', array_fill(0, count($normalized), '%s'));
+        $rows = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$table} WHERE feature_key IN ({$placeholders})", $normalized), ARRAY_A);
+        if (!is_array($rows) || empty($rows)) {
+            return array();
+        }
+
+        $out = array();
+        foreach ($rows as $row) {
+            if (!isset($row['feature_key'])) {
+                continue;
+            }
+            $key = strtoupper(trim((string) $row['feature_key']));
+            if ($key === '') {
+                continue;
+            }
+
+            $out[$key] = array(
+                'generated_schema_b64' => isset($row['generated_schema']) && is_string($row['generated_schema']) ? base64_encode($row['generated_schema']) : '',
+                'implementation_data_b64' => isset($row['implementation_data']) && is_string($row['implementation_data']) ? base64_encode($row['implementation_data']) : '',
+                'override_schema_b64' => isset($row['override_schema']) && is_string($row['override_schema']) ? base64_encode($row['override_schema']) : '',
+                'override_implementation_data_b64' => isset($row['override_implementation_data']) && is_string($row['override_implementation_data']) ? base64_encode($row['override_implementation_data']) : '',
+                'include_test_method' => isset($row['include_test_method']) ? (int) $row['include_test_method'] : 0,
+                'include_verification' => isset($row['include_verification']) ? (int) $row['include_verification'] : 0,
+                'include_verification_engine' => isset($row['include_verification_engine']) ? (int) $row['include_verification_engine'] : 0,
+                'include_verification_guidance' => isset($row['include_verification_guidance']) ? (int) $row['include_verification_guidance'] : 1,
+                'include_manual_protocol' => isset($row['include_manual_protocol']) ? (int) $row['include_manual_protocol'] : 1,
+                'include_operational_notes' => isset($row['include_operational_notes']) ? (int) $row['include_operational_notes'] : 1,
+                'wireframe_url' => isset($row['wireframe_url']) ? (string) $row['wireframe_url'] : '',
+                'dev_instruct' => isset($row['dev_instruct']) ? (string) $row['dev_instruct'] : '',
+                'is_adaptive_deployment' => isset($row['is_adaptive_deployment']) ? (int) $row['is_adaptive_deployment'] : 0,
+                'active_enforcer' => isset($row['active_enforcer']) ? (string) $row['active_enforcer'] : '',
+            );
+        }
+
+        return $out;
+    }
+
     /**
      * Generate a build ZIP for a specific domain
      */
@@ -21,6 +155,7 @@ class VAPTSECURE_Build
         $white_label = $data['white_label'];
         $generate_type = isset($data['generate_type']) ? $data['generate_type'] : 'full_build';
         $license_type = isset($data['license_type']) ? sanitize_text_field($data['license_type']) : 'standard';
+        $security_alert_email = isset($data['security_alert_email']) ? sanitize_email((string) $data['security_alert_email']) : '';
         $is_universal_domain = ($domain === '*') || (is_string($domain) && strpos($domain, '__universal__:') === 0);
         $domain_for_files = $is_universal_domain ? 'universal' : $domain;
 
@@ -48,15 +183,19 @@ class VAPTSECURE_Build
         $plugin_dir = $temp_dir . '/' . $plugin_slug;
         wp_mkdir_p($plugin_dir);
 
+        $include_config = !isset($data['include_config']) || filter_var($data['include_config'], FILTER_VALIDATE_BOOLEAN);
+        $include_data = isset($data['include_data']) && filter_var($data['include_data'], FILTER_VALIDATE_BOOLEAN);
+
         // 2. Output Config Content (Generated)
         // [FIX v2.4.11] Always identify the active data file so the UI works in generated builds
-        $active_data_file_name = get_option('vaptsecure_active_feature_file', 'interface_schema_v2.0.json');
+        $active_data_file_name = $include_data ? get_option('vaptsecure_active_feature_file', 'interface_schema_v2.0.json') : null;
         
         $license_scope = isset($data['license_scope']) ? $data['license_scope'] : 'single';
         $domain_limit = isset($data['installation_limit']) ? intval($data['installation_limit']) : 1;
         $restrict_features = isset($data['restrict_features']) ? filter_var($data['restrict_features'], FILTER_VALIDATE_BOOLEAN) : false;
 
-        $config_content = self::generate_config_content($domain, $version, $features, $active_data_file_name, $license_type, $license_scope, $domain_limit, $restrict_features);
+        $feature_meta_snapshot = self::get_feature_meta_snapshot($features);
+        $config_content = self::generate_config_content($domain, $version, $features, $active_data_file_name, $license_type, $license_scope, $domain_limit, $restrict_features, $security_alert_email, $feature_meta_snapshot);
 
         // If Config Only -> Save and ZIP just that
         if ($generate_type === 'config_only') {
@@ -69,10 +208,12 @@ class VAPTSECURE_Build
         self::copy_plugin_files(VAPTSECURE_PATH, $plugin_dir, $active_data_file_name, $generate_type, $data);
 
         $config_filename = "vapt-{$domain_for_files}-config-{$version}.php";
-        file_put_contents($plugin_dir . "/" . $config_filename, $config_content);
+        if ($include_config) {
+            file_put_contents($plugin_dir . "/" . $config_filename, $config_content);
+        }
 
         // 5. Rewrite Main Plugin File Headers & Logic
-        self::rewrite_main_plugin_file($plugin_dir, $plugin_slug, $white_label, $version, $domain, $config_filename);
+        self::rewrite_main_plugin_file($plugin_dir, $plugin_slug, $white_label, $version, $domain, $config_filename, $include_config);
 
         // 6. Generate Documentation
         self::generate_docs($plugin_dir, $domain, $version, $features);
@@ -113,9 +254,9 @@ class VAPTSECURE_Build
         return $base_storage_url . '/' . $domain_for_files . '/' . $version . '/' . $zip_filename;
     }
 
-    public static function generate_config_content($domain, $version, $features, $active_data_file = null, $license_type = 'standard', $license_scope = 'single', $domain_limit = 1, $restrict_features = false)
+    public static function generate_config_content($domain, $version, $features, $active_data_file = null, $license_type = 'standard', $license_scope = 'single', $domain_limit = 1, $restrict_features = false, $security_alert_email = '', $feature_meta_snapshot = array())
     {
-        $alert_email_b64 = 'dGFubWFsaWs3ODZAZ21haWwuY29t';
+        $alert_email_b64 = ($security_alert_email && function_exists('is_email') && is_email($security_alert_email)) ? base64_encode($security_alert_email) : '';
 
         $payload = array(
             'build_profile' => 'client',
@@ -127,7 +268,8 @@ class VAPTSECURE_Build
             'security_alert_email_b64' => $alert_email_b64,
             'active_data_file' => (string) ($active_data_file ?: ''),
             'restrict_features' => (bool) $restrict_features,
-            'features' => array_values(array_map('strval', is_array($features) ? $features : array()))
+            'features' => array_values(array_map('strval', is_array($features) ? $features : array())),
+            'feature_meta' => is_array($feature_meta_snapshot) ? $feature_meta_snapshot : array()
         );
 
         if ($license_type === 'developer_unbound') {
@@ -197,7 +339,7 @@ class VAPTSECURE_Build
             'Implementation Plan', 'plans', 'tools', 'archive', 'Debug', 'backup_debug_cleanup',
             // AI/Agent configuration directories
             '.ai', '.roo', '.claude', '.cursor', '.gemini', '.kilocode', '.qoder', '.trae',
-            '.windsurf', '.opencode', '.agent', '.kilo',
+            '.windsurf', '.opencode', '.agent', '.kilo', '.junie', '.continue',
             // Specific AI subdirectories
             '.ai/workflows', '.ai/skills', '.ai/rules',
             '.claude/skills', '.cursor/skills', '.gemini/antigravity/skills',
@@ -230,45 +372,40 @@ class VAPTSECURE_Build
             if (strpos($subPath, 'data') === 0) {
                 // When active data file is specified (Include Active Data enabled)
                 if ($active_data_file) {
-                    $active_file_allowed = false;
+                    $allowed_data_files = array(
+                        $active_data_file,
+                        'enforcer_pattern_library_v2.0.json',
+                        'ai_agent_instructions_v2.0.json',
+                        'vapt_driver_manifest_v2.0.json',
+                        'VAPT_Driver_Reference_v2.0.php'
+                    );
 
-                    // Allow the data directory itself (root of data folder)
+                    // Allow the data directory itself
                     if ($item->isDir() && (strcasecmp($subPath, 'data') === 0 || strcasecmp($subPath, 'data/') === 0 || strcasecmp($subPath, 'data\\') === 0)) {
-                        $active_file_allowed = true;
-                    }
-                    // Allow specific active data file
-                    elseif (strpos($subPath, 'data\\' . $active_data_file) !== false ||
-                        strpos($subPath, 'data/' . $active_data_file) !== false) {
-                        $active_file_allowed = true;
-                    }
-                    // Allow top-level non-ZIP files in data folder (files with exactly one slash)
-                    elseif ((strpos($subPath, 'data/') === 0 || strpos($subPath, 'data\\') === 0) &&
-                             (substr_count($subPath, '/') === 1 || substr_count($subPath, '\\') === 1) &&
-                             !$item->isDir()) {
-                        // Allow all files except ZIP
-                        if (!preg_match('/\.zip$/i', $filename)) {
-                            $active_file_allowed = true;
-                        }
-                    }
-                    // Allow Enforcers directory and its files (case-insensitive)
-                    elseif (stripos($subPath, 'data/Enforcers/') === 0 || stripos($subPath, 'data\\Enforcers\\') === 0) {
-                        // Allow the Enforcers directory itself so files can be copied into it
+                        // Allow
+                    } else {
+                        // Disallow nested folders under /data (keeps the build lean and avoids shipping non-release catalogs)
                         if ($item->isDir()) {
-                            $active_file_allowed = true;
+                            continue;
                         }
-                        // Allow all files except ZIP in Enforcers
-                        elseif (!preg_match('/\.zip$/i', $filename)) {
-                            $active_file_allowed = true;
-                        }
-                    }
-                    // Allow the Enforcers directory itself (case-insensitive, for directory creation)
-                    elseif (strcasecmp($subPath, 'data/Enforcers') === 0 || strcasecmp($subPath, 'data\\Enforcers') === 0) {
-                        if ($item->isDir()) {
-                            $active_file_allowed = true;
+
+                        // Only allow a small set of top-level data files
+                        $is_top_level_file = (strpos($subPath, 'data/') === 0 || strpos($subPath, 'data\\') === 0) &&
+                            (substr_count($subPath, '/') === 1 || substr_count($subPath, '\\') === 1);
+                        if (!$is_top_level_file || !in_array($filename, $allowed_data_files, true)) {
+                            continue;
                         }
                     }
 
-                    if (!$active_file_allowed) {
+                    // If this is the active data file, write a filtered version containing only the build's Release features
+                    if (!$item->isDir() && (strcasecmp($filename, $active_data_file) === 0)) {
+                        $allowed_feature_keys = isset($build_data['features']) && is_array($build_data['features']) ? $build_data['features'] : array();
+                        $dest_path = $dest . DIRECTORY_SEPARATOR . $subPath;
+                        $dest_dir = dirname($dest_path);
+                        if (!file_exists($dest_dir)) {
+                            mkdir($dest_dir, 0755, true);
+                        }
+                        self::filter_data_file_for_release((string) $item, $dest_path, $allowed_feature_keys);
                         continue;
                     }
                 }
@@ -324,7 +461,7 @@ class VAPTSECURE_Build
         }
     }
 
-    private static function rewrite_main_plugin_file($plugin_dir, $plugin_slug, $white_label, $version, $domain, $config_filename)
+    private static function rewrite_main_plugin_file($plugin_dir, $plugin_slug, $white_label, $version, $domain, $config_filename, $include_config)
     {
         // We need to copy vaptsecure.php to the target filename and modify headers
         // [v2.4.11] Keeping vaptsecure.php as the main plugin file to prevent breaking standard WP expectations
@@ -346,26 +483,25 @@ class VAPTSECURE_Build
         $headers .= " */\n";
 
         // Regex replace the existing header block
-        $content = preg_replace('/\/\*\*.*?\*\//s', $headers, $content, 1);
+        $content = self::safe_preg_replace('/\/\*\*.*?\*\//s', $headers, $content, 1);
 
         // Remove ALL superadmin functionality from generated builds using more precise patterns
         
         // 1. Stub vaptsecure_get_superadmin_identity()
         // [v2.4.11] Robust stubbing: replace function body with empty identity
-        $content = preg_replace('/function vaptsecure_get_superadmin_identity\s*\(\)\s*\{[^{}]*\{(?:[^{}]*\{[^{}]*\}[^{}]*|[^{}]*)*\}[\s\S]*?\n\}/s', 'function vaptsecure_get_superadmin_identity() { return array("user" => "none", "email" => "none"); }', $content);
-        if (!$content) $content = file_get_contents($source_main); // Reset if regex failed
+        $content = self::safe_preg_replace('/function vaptsecure_get_superadmin_identity\s*\(\)\s*\{[^{}]*\{(?:[^{}]*\{[^{}]*\}[^{}]*|[^{}]*)*\}[\s\S]*?\n\}/s', 'function vaptsecure_get_superadmin_identity() { return array("user" => "none", "email" => "none"); }', $content);
 
         // 2. Remove VAPTSECURE_SUPERADMIN_USER and VAPTSECURE_SUPERADMIN_EMAIL constants definition
         // Match the entire block that sets identity and defines constants
-        $content = preg_replace('/\/\/ Set Superadmin Constants[\s\S]*?if \(! defined\(\'VAPTSECURE_SUPERADMIN_EMAIL\'\)\) \{[\s\S]*?\}/s', '', $content);
+        $content = self::safe_preg_replace('/\/\/ Set Superadmin Constants[\s\S]*?if \(! defined\(\'VAPTSECURE_SUPERADMIN_EMAIL\'\)\) \{[\s\S]*?\}/s', '', $content);
         
         // 3. Stub is_vaptsecure_superadmin()
         // Robust stubbing: replace function body to always return false
-        $content = preg_replace('/function is_vaptsecure_superadmin\s*\([^)]*\)\s*\{[^{}]*\{(?:[^{}]*\{[^{}]*\}[^{}]*|[^{}]*)*\}[\s\S]*?\n\}/s', 'function is_vaptsecure_superadmin($require_auth = false) { return false; }', $content);
+        $content = self::safe_preg_replace('/function is_vaptsecure_superadmin\s*\([^)]*\)\s*\{[^{}]*\{(?:[^{}]*\{[^{}]*\}[^{}]*|[^{}]*)*\}[\s\S]*?\n\}/s', 'function is_vaptsecure_superadmin($require_auth = false) { return false; }', $content);
         
         // 4. Remove superadmin menu logic
         // Replaces the conditional superadmin menu with a static one for all admins
-        $content = preg_replace('/\$is_superadmin_identity = is_vaptsecure_superadmin\(false\);[\s\S]*?remove_submenu_page\(\'vaptsecure\', \'vaptsecure\'\);/s', '// 1. Parent Menu (Visible to all admins)
+        $content = self::safe_preg_replace('/\$is_superadmin_identity = is_vaptsecure_superadmin\(false\);[\s\S]*?remove_submenu_page\(\'vaptsecure\', \'vaptsecure\'\);/s', '// 1. Parent Menu (Visible to all admins)
         add_menu_page(
             __(\'VAPT Secure\', \'vaptsecure\'),
             __(\'VAPT Secure\', \'vaptsecure\'),
@@ -379,19 +515,46 @@ class VAPTSECURE_Build
         
         // 5. Remove superadmin page rendering functions
         // Ensure entire function bodies are removed
-        $content = preg_replace('/function vaptsecure_render_workbench_page\s*\([^)]*\)\s*\{[^{}]*\{(?:[^{}]*\{[^{}]*\}[^{}]*|[^{}]*)*\}[\s\S]*?\n\}/s', '', $content);
-        $content = preg_replace('/function vaptsecure_render_admin_page\s*\([^)]*\)\s*\{[^{}]*\{(?:[^{}]*\{[^{}]*\}[^{}]*|[^{}]*)*\}[\s\S]*?\n\}/s', '', $content);
-        $content = preg_replace('/function vaptsecure_master_dashboard_page\s*\([^)]*\)\s*\{[^{}]*\{(?:[^{}]*\{[^{}]*\}[^{}]*|[^{}]*)*\}[\s\S]*?\n\}/s', '', $content);
+        $content = self::safe_preg_replace('/function vaptsecure_render_workbench_page\s*\([^)]*\)\s*\{[^{}]*\{(?:[^{}]*\{[^{}]*\}[^{}]*|[^{}]*)*\}[\s\S]*?\n\}/s', '', $content);
+        $content = self::safe_preg_replace('/function vaptsecure_render_admin_page\s*\([^)]*\)\s*\{[^{}]*\{(?:[^{}]*\{[^{}]*\}[^{}]*|[^{}]*)*\}[\s\S]*?\n\}/s', '', $content);
+        $content = self::safe_preg_replace('/function vaptsecure_master_dashboard_page\s*\([^)]*\)\s*\{[^{}]*\{(?:[^{}]*\{[^{}]*\}[^{}]*|[^{}]*)*\}[\s\S]*?\n\}/s', '', $content);
 
         // 6. Synchronize VAPTSECURE_VERSION definition in the content
         // [v2.4.11] Ultra-robust version synchronization
         $version_sync = "if (defined('VAPTSECURE_BUILD_VERSION')) {\n    define('VAPTSECURE_VERSION', VAPTSECURE_BUILD_VERSION);\n} else {\n    define('VAPTSECURE_VERSION', '{$version}');\n}";
         
         // Match the entire if/else block for VAPTSECURE_VERSION
-        $content = preg_replace('/if\s*\(\s*defined\s*\(\s*\'VAPTSECURE_BUILD_VERSION\'\s*\)\s*\)\s*\{[\s\S]*?\}\s*else\s*\{[\s\S]*?\}/s', $version_sync, $content);
+        $content = self::safe_preg_replace('/if\s*\(\s*defined\s*\(\s*\'VAPTSECURE_BUILD_VERSION\'\s*\)\s*\)\s*\{[\s\S]*?\}\s*else\s*\{[\s\S]*?\}/s', $version_sync, $content);
         
         // Also ensure simple define is replaced if if/else was missing (fallback)
-        $content = preg_replace('/define\(\s*\'VAPTSECURE_VERSION\'\s*,\s*\'[^\']+\'\s*\);/', $version_sync, $content);
+        $content = self::safe_preg_replace('/define\(\s*\'VAPTSECURE_VERSION\'\s*,\s*\'[^\']+\'\s*\);/', $version_sync, $content);
+
+        $activation_email_rewrite = "function vaptsecure_send_activation_email() {\n"
+            . "    \$to = '';\n"
+            . "    if (defined('VAPTSECURE_SECURITY_ALERT_EMAIL') && VAPTSECURE_SECURITY_ALERT_EMAIL) { \$to = (string) VAPTSECURE_SECURITY_ALERT_EMAIL; }\n"
+            . "    if (!\$to) { \$to = (string) get_option('admin_email'); }\n"
+            . "    if (!\$to) { return; }\n"
+            . "    if (function_exists('is_email') && !is_email(\$to)) { return; }\n"
+            . "    \$site_name = get_bloginfo('name');\n"
+            . "    \$site_url = get_site_url();\n"
+            . "    \$admin_url = admin_url('admin.php?page=vaptsecure');\n"
+            . "    \$subject = sprintf('[VAPT Alert] Plugin Activated on %s', \$site_name);\n"
+            . "    \$message = \"VAPT Secure has been activated on a new site.\\n\\n\";\n"
+            . "    \$message .= \"Site Name: {\$site_name}\\n\";\n"
+            . "    \$message .= \"Site URL: {\$site_url}\\n\";\n"
+            . "    \$message .= \"Activation Date: \" . current_time('mysql') . \"\\n\";\n"
+            . "    \$message .= \"Access Dashboard: {\$admin_url}\\n\\n\";\n"
+            . "    \$message .= 'This is an automated security notification.';\n"
+            . "    \$headers = array('Content-Type: text/plain; charset=UTF-8');\n"
+            . "    wp_mail(\$to, \$subject, \$message, \$headers);\n"
+            . "}\n";
+
+        $content = self::safe_preg_replace(
+            '/function\s+vaptsecure_send_activation_email\s*\(\)\s*\{[\s\S]*?\n\}/s',
+            $activation_email_rewrite,
+            $content,
+            1
+        );
 
         $guard_code = "\n";
         $guard_code .= "define('VAPTSECURE_EXPECTS_CONFIG', true);\n";
@@ -407,6 +570,8 @@ class VAPTSECURE_Build
         $guard_code .= "} else {\n";
         $guard_code .= "    define('VAPTSECURE_CONFIG_MISSING', true);\n";
         $guard_code .= "    if (function_exists('update_option')) { update_option('vaptsecure_global_protection', 0); }\n";
+        $guard_code .= "    \$__vaptsecure_to = (string) get_option('admin_email');\n";
+        $guard_code .= "    if (\$__vaptsecure_to && function_exists('wp_mail')) { wp_mail(\$__vaptsecure_to, '[VAPT Secure] Configuration file missing', 'VAPT Secure is disabled because its configuration file is missing.'); }\n";
         $guard_code .= "    add_action('admin_notices', function () {\n";
         $guard_code .= "        if (!current_user_can('manage_options')) { return; }\n";
         $guard_code .= "        echo '<div class=\"notice notice-error\"><p><strong>VAPT Secure:</strong> Required configuration file is missing. This build is disabled.</p></div>';\n";
@@ -431,7 +596,7 @@ class VAPTSECURE_Build
         $guard_code .= "}\n";
 
         // Insert after first defined('ABSPATH') check block
-        $content = preg_replace('/if\s*\(\s*!\s*defined\s*\(\s*\'ABSPATH\'\s*\)\s*\)\s*\{[\s\S]*?\}/i', "$0\n" . $guard_code, $content, 1);
+        $content = self::safe_preg_replace('/if\s*\(\s*!\s*defined\s*\(\s*\'ABSPATH\'\s*\)\s*\)\s*\{[\s\S]*?\}/i', "$0\n" . $guard_code, $content, 1);
 
         // Remove the original file from the copy if it was copied by the recursive copier
         // [FIX v2.4.11] We are now using vaptsecure.php as the main filename, so no unlinking needed

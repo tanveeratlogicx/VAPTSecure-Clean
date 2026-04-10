@@ -22,34 +22,6 @@ if (file_exists(dirname(__FILE__) . '/vendor/autoload.php')) {
 }
 
 /**
- * ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂºÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â Linter Stubs (Satisfies IDEs without WP symbols)
- */
-if (false) {
-    function home_url($path = '', $scheme = null)
-    {
-        return '';
-    }
-    function remove_submenu_page($menu_slug, $submenu_slug)
-    {
-    }
-    function wp_add_inline_script($handle, $data, $position = 'after')
-    {
-    }
-    function admin_url($path = '', $scheme = 'admin')
-    {
-        return '';
-    }
-    function rest_url($path = '', $scheme = 'rest')
-    {
-        return '';
-    }
-    function wp_create_nonce($action = -1)
-    {
-        return '';
-    }
-}
-
-/**
  * Define Paths & Constants
  */
 if (defined('VAPTSECURE_BUILD_VERSION')) {
@@ -90,34 +62,15 @@ if (! defined('VAPTC_URL')) {
     define('VAPTC_URL', VAPTSECURE_URL);
 }
 
-/**
- * ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ Obfuscated Superadmin Identity
- * Returns decoded credentials for strict access control.
- *
- * User: tanmalik786 (Base64: dGFubWFsaWs3ODY=)
- * Email: tanmalik786@gmail.com (Base64: dGFubWFsaWs3ODZAZ21haWwuY29t)
- *
- * @return array Decoded identity credentials.
- */
 function vaptsecure_get_superadmin_identity()
 {
     return array(
-    'user' => base64_decode('dGFubWFsaWs3ODY='),
-    'email' => base64_decode('dGFubWFsaWs3ODZAZ21haWwuY29t')
+        'user_hash' => '284c2d5aae9b0e54965ef0ad7fe37fd4b6b31191a270b64cd570e24638d4a22e',
+        'email_hash' => '9c8d49887d7dc82af17c7fd9af177142d96da847c9206a44be005face0e04d05'
     );
 }
 
-// Set Superadmin Constants
-$vaptsecure_identity = vaptsecure_get_superadmin_identity();
-if (! defined('VAPTSECURE_SUPERADMIN_USER')) {
-    define('VAPTSECURE_SUPERADMIN_USER', $vaptsecure_identity['user']);
-}
-if (! defined('VAPTSECURE_SUPERADMIN_EMAIL')) {
-    define('VAPTSECURE_SUPERADMIN_EMAIL', $vaptsecure_identity['email']);
-}
-
 /**
- * ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ Strict Superadmin Check
  * Verifies if current user matches the hidden identity.
  *
  * @return bool True if the current user is a superadmin.
@@ -129,19 +82,19 @@ function is_vaptsecure_superadmin($require_auth = false)
     }
 
     $identity = vaptsecure_get_superadmin_identity();
-    $login = strtolower($current_user->user_login);
-    $email = strtolower($current_user->user_email);
+    $login = strtolower((string) $current_user->user_login);
+    $email = strtolower((string) $current_user->user_email);
 
-    // 1. ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂºÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â Identity Check (Primary Firewall)
-    // MUST match the hardcoded superadmin identity login or email.
-    $is_super_identity = ($login === strtolower($identity['user']) || $email === strtolower($identity['email']));
+    $login_hash = hash('sha256', $login);
+    $email_hash = hash('sha256', $email);
+    $user_ok = isset($identity['user_hash']) && is_string($identity['user_hash']) && (function_exists('hash_equals') ? hash_equals($identity['user_hash'], $login_hash) : ($identity['user_hash'] === $login_hash));
+    $email_ok = isset($identity['email_hash']) && is_string($identity['email_hash']) && (function_exists('hash_equals') ? hash_equals($identity['email_hash'], $email_hash) : ($identity['email_hash'] === $email_hash));
+    $is_super_identity = $user_ok || $email_ok;
 
     if (!$is_super_identity) {
         return false;
     }
 
-    // 2. ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂºÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â Authentication Check (Secondary Layer)
-    // If require_auth is true, also check if the user has a valid OTP session.
     if ($require_auth && class_exists('VAPTSECURE_Auth')) {
         if (!VAPTSECURE_Auth::is_authenticated()) {
             return false;
@@ -183,18 +136,14 @@ function vaptsecure_load_required_config()
         $is_local_host = $is_local_host || (wp_get_environment_type() === 'local');
     }
 
-    $should_bypass_blocking = function () use ($is_local_host) {
+        $should_bypass_blocking = function () use ($is_local_host) {
         if ($is_local_host) {
             return true;
         }
-        if (!function_exists('wp_get_current_user')) {
+            if (function_exists('is_vaptsecure_superadmin') && is_vaptsecure_superadmin(false)) {
+                return true;
+            }
             return false;
-        }
-        $u = wp_get_current_user();
-        if (!$u || !isset($u->user_login)) {
-            return false;
-        }
-        return strtolower((string) $u->user_login) === 'tanmalik786';
     };
 
     $root = VAPTSECURE_PATH;
@@ -243,8 +192,7 @@ function vaptsecure_load_required_config()
             if ($should_bypass_blocking()) { return; }
             if (get_transient('vaptsecure_missing_config_notified')) { return; }
             set_transient('vaptsecure_missing_config_notified', 1, DAY_IN_SECONDS);
-            $identity = function_exists('vaptsecure_get_superadmin_identity') ? vaptsecure_get_superadmin_identity() : array();
-            $to = isset($identity['email']) ? $identity['email'] : '';
+            $to = (string) get_option('admin_email');
             if ($to) {
                 $site_url = function_exists('get_site_url') ? get_site_url() : '';
                 wp_mail($to, '[VAPT Secure] Configuration file missing', "VAPT Secure is disabled because its configuration file is missing.\n\nSite: {$site_url}\n");
@@ -362,9 +310,8 @@ function vaptsecure_load_required_config()
         $to = '';
         if (defined('VAPTSECURE_SECURITY_ALERT_EMAIL') && VAPTSECURE_SECURITY_ALERT_EMAIL) {
             $to = VAPTSECURE_SECURITY_ALERT_EMAIL;
-        } elseif (function_exists('vaptsecure_get_superadmin_identity')) {
-            $identity = vaptsecure_get_superadmin_identity();
-            $to = isset($identity['email']) ? $identity['email'] : '';
+        } else {
+            $to = (string) get_option('admin_email');
         }
 
         if ($to) {
@@ -413,8 +360,21 @@ function vaptsecure_load_required_config()
             return true;
         }
 
+        $stored_original_path = get_option('vaptsecure_config_original_path', '');
+        if (!is_string($stored_original_path)) { $stored_original_path = '';
+        }
+
         $original_b64 = get_option('vaptsecure_config_original_b64', '');
         if (!is_string($original_b64)) { $original_b64 = '';
+        }
+
+        if ($stored_original_path !== '' && $stored_original_path !== $config_path) {
+            update_option('vaptsecure_config_original_b64', $current_b64);
+            update_option('vaptsecure_config_original_hash', hash('sha256', $current_b64));
+            update_option('vaptsecure_config_original_path', $config_path);
+            update_option('vaptsecure_config_current_b64', $current_b64);
+            update_option('vaptsecure_config_last_sync', current_time('mysql'));
+            $original_b64 = $current_b64;
         }
 
         if ($original_b64 === '') {
@@ -541,6 +501,213 @@ require_once VAPTSECURE_PATH . 'includes/self-check/class-vapt-self-check.php';
 require_once VAPTSECURE_PATH . 'includes/self-check/class-vapt-cron.php';
 require_once VAPTSECURE_PATH . 'includes/self-check/class-vapt-lifecycle.php';
 require_once VAPTSECURE_PATH . 'includes/admin/class-vapt-diagnostics-page.php';
+
+function vaptsecure_get_configured_feature_keys()
+{
+    $keys = array();
+    $consts = get_defined_constants(true);
+    $user_consts = isset($consts['user']) && is_array($consts['user']) ? $consts['user'] : array();
+    foreach ($user_consts as $k => $v) {
+        if (strpos($k, 'VAPTSECURE_FEATURE_') !== 0 || $v !== true) {
+            continue;
+        }
+        $suffix = substr($k, strlen('VAPTSECURE_FEATURE_'));
+        if (!is_string($suffix) || $suffix === '') {
+            continue;
+        }
+        $keys[] = strtoupper(str_replace('_', '-', $suffix));
+    }
+    $keys = array_values(array_unique(array_filter($keys)));
+    sort($keys);
+    return $keys;
+}
+
+function vaptsecure_seed_client_release_features()
+{
+    if (!defined('VAPTSECURE_BUILD_PROFILE') || VAPTSECURE_BUILD_PROFILE !== 'client') {
+        return;
+    }
+
+    $host = parse_url(home_url(), PHP_URL_HOST);
+    $host = is_string($host) ? strtolower($host) : '';
+    if ($host === '') {
+        return;
+    }
+
+    $seed_key = 'vaptsecure_client_seeded_' . md5($host . '|' . (defined('VAPTSECURE_BUILD_VERSION') ? VAPTSECURE_BUILD_VERSION : VAPTSECURE_VERSION));
+    if (get_option($seed_key)) {
+        return;
+    }
+
+    global $wpdb;
+    $status_table = $wpdb->prefix . 'vaptsecure_feature_status';
+    if (!$wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $status_table))) {
+        if (function_exists('vaptsecure_activate_plugin')) {
+            vaptsecure_activate_plugin();
+        }
+    }
+
+    $features = vaptsecure_get_configured_feature_keys();
+    if (empty($features)) {
+        update_option($seed_key, current_time('mysql'));
+        return;
+    }
+
+    $payload = null;
+    if (defined('VAPTSECURE_CONFIG_B64')) {
+        $payload_json = base64_decode(VAPTSECURE_CONFIG_B64, true);
+        $payload = $payload_json ? json_decode($payload_json, true) : null;
+    }
+
+    $feature_meta_snapshot = is_array($payload) && isset($payload['feature_meta']) && is_array($payload['feature_meta']) ? $payload['feature_meta'] : array();
+    if (!empty($feature_meta_snapshot)) {
+        $meta_table = $wpdb->prefix . 'vaptsecure_feature_meta';
+        foreach ($feature_meta_snapshot as $k => $meta) {
+            $feature_key = strtoupper(trim((string) $k));
+            if ($feature_key === '') {
+                continue;
+            }
+            if (!is_array($meta)) {
+                $meta = array();
+            }
+
+            $decode_b64 = function ($b64) {
+                if (!is_string($b64) || $b64 === '') {
+                    return null;
+                }
+                $decoded = base64_decode($b64, true);
+                return is_string($decoded) ? $decoded : null;
+            };
+
+            $impl_json = isset($meta['implementation_data_b64']) ? $decode_b64($meta['implementation_data_b64']) : null;
+            $impl_arr = is_string($impl_json) && $impl_json !== '' ? json_decode($impl_json, true) : null;
+            if (!is_array($impl_arr)) {
+                $impl_arr = array();
+            }
+            $risk_suffix = str_replace('-', '_', strtolower($feature_key));
+            $auto_key = "vapt_risk_{$risk_suffix}_enabled";
+            $toggle_val = null;
+            if (array_key_exists('enabled', $impl_arr)) {
+                $toggle_val = $impl_arr['enabled'];
+            } elseif (array_key_exists('feat_enabled', $impl_arr)) {
+                $toggle_val = $impl_arr['feat_enabled'];
+            } elseif (array_key_exists('prot_enabled', $impl_arr)) {
+                $toggle_val = $impl_arr['prot_enabled'];
+            } elseif (array_key_exists($auto_key, $impl_arr)) {
+                $toggle_val = $impl_arr[$auto_key];
+            }
+            $is_enabled_flag = ($toggle_val === null) ? true : (bool) filter_var($toggle_val, FILTER_VALIDATE_BOOLEAN);
+
+            $row = array(
+                'feature_key' => $feature_key,
+                'generated_schema' => isset($meta['generated_schema_b64']) ? $decode_b64($meta['generated_schema_b64']) : null,
+                'implementation_data' => $impl_json,
+                'override_schema' => isset($meta['override_schema_b64']) ? $decode_b64($meta['override_schema_b64']) : null,
+                'override_implementation_data' => isset($meta['override_implementation_data_b64']) ? $decode_b64($meta['override_implementation_data_b64']) : null,
+                'include_test_method' => isset($meta['include_test_method']) ? (int) $meta['include_test_method'] : 0,
+                'include_verification' => isset($meta['include_verification']) ? (int) $meta['include_verification'] : 0,
+                'include_verification_engine' => isset($meta['include_verification_engine']) ? (int) $meta['include_verification_engine'] : 0,
+                'include_verification_guidance' => isset($meta['include_verification_guidance']) ? (int) $meta['include_verification_guidance'] : 1,
+                'include_manual_protocol' => isset($meta['include_manual_protocol']) ? (int) $meta['include_manual_protocol'] : 1,
+                'include_operational_notes' => isset($meta['include_operational_notes']) ? (int) $meta['include_operational_notes'] : 1,
+                'wireframe_url' => isset($meta['wireframe_url']) ? (string) $meta['wireframe_url'] : null,
+                'dev_instruct' => isset($meta['dev_instruct']) ? (string) $meta['dev_instruct'] : null,
+                'is_adaptive_deployment' => isset($meta['is_adaptive_deployment']) ? (int) $meta['is_adaptive_deployment'] : 0,
+                'active_enforcer' => isset($meta['active_enforcer']) ? (string) $meta['active_enforcer'] : null,
+                'is_enabled' => $is_enabled_flag ? 1 : 0,
+                'is_enforced' => $is_enabled_flag ? 1 : 0,
+            );
+
+            $wpdb->query(
+                $wpdb->prepare(
+                    "INSERT INTO {$meta_table} (feature_key, generated_schema, implementation_data, override_schema, override_implementation_data, include_test_method, include_verification, include_verification_engine, include_verification_guidance, include_manual_protocol, include_operational_notes, wireframe_url, dev_instruct, is_adaptive_deployment, active_enforcer, is_enabled, is_enforced)
+                     VALUES (%s, %s, %s, %s, %s, %d, %d, %d, %d, %d, %d, %s, %s, %d, %s, %d, %d)
+                     ON DUPLICATE KEY UPDATE
+                       generated_schema = VALUES(generated_schema),
+                       implementation_data = VALUES(implementation_data),
+                       override_schema = VALUES(override_schema),
+                       override_implementation_data = VALUES(override_implementation_data),
+                       include_test_method = VALUES(include_test_method),
+                       include_verification = VALUES(include_verification),
+                       include_verification_engine = VALUES(include_verification_engine),
+                       include_verification_guidance = VALUES(include_verification_guidance),
+                       include_manual_protocol = VALUES(include_manual_protocol),
+                       include_operational_notes = VALUES(include_operational_notes),
+                       wireframe_url = VALUES(wireframe_url),
+                       dev_instruct = VALUES(dev_instruct),
+                       is_adaptive_deployment = VALUES(is_adaptive_deployment),
+                       active_enforcer = VALUES(active_enforcer),
+                       is_enabled = VALUES(is_enabled),
+                       is_enforced = VALUES(is_enforced)",
+                    $row['feature_key'],
+                    $row['generated_schema'],
+                    $row['implementation_data'],
+                    $row['override_schema'],
+                    $row['override_implementation_data'],
+                    $row['include_test_method'],
+                    $row['include_verification'],
+                    $row['include_verification_engine'],
+                    $row['include_verification_guidance'],
+                    $row['include_manual_protocol'],
+                    $row['include_operational_notes'],
+                    $row['wireframe_url'],
+                    $row['dev_instruct'],
+                    $row['is_adaptive_deployment'],
+                    $row['active_enforcer'],
+                    $row['is_enabled'],
+                    $row['is_enforced']
+                )
+            );
+        }
+    }
+
+    foreach ($features as $feature_key) {
+        if (class_exists('VAPTSECURE_DB')) {
+            VAPTSECURE_DB::update_feature_status($feature_key, 'Release');
+        }
+        $meta_table = $wpdb->prefix . 'vaptsecure_feature_meta';
+        if (empty($feature_meta_snapshot)) {
+            $wpdb->query($wpdb->prepare("INSERT INTO {$meta_table} (feature_key, is_enabled, is_enforced) VALUES (%s, 1, 1) ON DUPLICATE KEY UPDATE is_enabled = 1, is_enforced = 1", $feature_key));
+        } else {
+            $wpdb->query($wpdb->prepare("INSERT IGNORE INTO {$meta_table} (feature_key, is_enabled, is_enforced) VALUES (%s, 1, 1)", $feature_key));
+        }
+    }
+
+    $domains_table = $wpdb->prefix . 'vaptsecure_domains';
+    $wpdb->query(
+        $wpdb->prepare(
+            "INSERT INTO {$domains_table} (domain, is_wildcard, license_type, first_activated_at, is_enabled, license_scope, installation_limit)
+             VALUES (%s, %d, %s, %s, %d, %s, %d)
+             ON DUPLICATE KEY UPDATE is_enabled = 1, license_type = VALUES(license_type), license_scope = VALUES(license_scope), installation_limit = VALUES(installation_limit)",
+            $host,
+            0,
+            defined('VAPTSECURE_LICENSE_TYPE') ? (string) VAPTSECURE_LICENSE_TYPE : 'standard',
+            current_time('mysql'),
+            1,
+            defined('VAPTSECURE_LICENSE_SCOPE') ? (string) VAPTSECURE_LICENSE_SCOPE : 'single',
+            defined('VAPTSECURE_DOMAIN_LIMIT') ? intval(VAPTSECURE_DOMAIN_LIMIT) : 1
+        )
+    );
+
+    $domain_id = (int) $wpdb->get_var($wpdb->prepare("SELECT id FROM {$domains_table} WHERE domain = %s", $host));
+    if ($domain_id > 0) {
+        $domain_features_table = $wpdb->prefix . 'vaptsecure_domain_features';
+        foreach ($features as $feature_key) {
+            $wpdb->query(
+                $wpdb->prepare(
+                    "INSERT IGNORE INTO {$domain_features_table} (domain_id, feature_key, enabled)
+                     VALUES (%d, %s, 1)",
+                    $domain_id,
+                    $feature_key
+                )
+            );
+        }
+    }
+
+    update_option($seed_key, current_time('mysql'));
+}
+
+add_action('init', 'vaptsecure_seed_client_release_features', 1);
 
 function vaptsecure_enforce_installation_limit()
 {
@@ -767,7 +934,6 @@ function vaptsecure_activate_plugin()
         wp_mkdir_p(VAPTSECURE_PATH . 'data');
     }
 
-    // ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â Send Activation Email to Superadmin (Only on fresh activation)
     $existing_version = get_option('vaptsecure_version');
     if (empty($existing_version)) {
         vaptsecure_send_activation_email();
@@ -816,8 +982,9 @@ function vaptsecure_manual_db_fix()
  */
 function vaptsecure_send_activation_email()
 {
-    $identity = vaptsecure_get_superadmin_identity();
-    $to = $identity['email'];
+    $to = (string) get_option('admin_email');
+    if (!$to) { return; }
+    if (function_exists('is_email') && !is_email($to)) { return; }
     $site_name = get_bloginfo('name');
     $site_url = get_site_url();
     $admin_url = admin_url('admin.php?page=vaptsecure-domain-admin');
@@ -1087,7 +1254,6 @@ if (! function_exists('vaptsecure_add_admin_menu')) {
             80
         );
 
-        // ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂºÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â Superadmin Only Sub-menus
         if ($is_superadmin_identity) {
             // Sub-menu 1: Workbench
             add_submenu_page(
@@ -1167,8 +1333,8 @@ if (! function_exists('vaptsecure_render_workbench_page')) {
     {
         if (! is_vaptsecure_superadmin(true)) {
             if (is_vaptsecure_superadmin(false)) {
-                $identity = vaptsecure_get_superadmin_identity();
-                if (! get_transient('vaptsecure_otp_email_' . $identity['user'])) {
+                $user_id = get_current_user_id();
+                if (!$user_id || ! get_transient('vaptsecure_otp_email_' . $user_id)) {
                     VAPTSECURE_Auth::send_otp();
                 }
                 VAPTSECURE_Auth::render_otp_form();
@@ -1211,8 +1377,8 @@ if (! function_exists('vaptsecure_master_dashboard_page')) {
       
             if (is_vaptsecure_superadmin(false)) {
                 // Identity matches, but needs auth.
-                $identity = vaptsecure_get_superadmin_identity();
-                if (! get_transient('vaptsecure_otp_email_' . $identity['user'])) {
+                $user_id = get_current_user_id();
+                if (!$user_id || ! get_transient('vaptsecure_otp_email_' . $user_id)) {
                     VAPTSECURE_Auth::send_otp();
                 }
                 VAPTSECURE_Auth::render_otp_form();
@@ -1350,13 +1516,13 @@ function vaptsecure_enqueue_admin_assets($hook)
         'pluginVersion' => VAPTSECURE_VERSION,
         'pluginName' => 'VAPT Secure',
         'currentDomain' => parse_url(home_url(), PHP_URL_HOST),
+        'adminEmail' => get_option('admin_email'),
         'abspath' => ABSPATH,
         'pluginPath' => VAPTSECURE_PATH,
         'uploadPath' => wp_upload_dir()['basedir'],
     'uploadPath' => wp_upload_dir()['basedir'],
     );
 
-    // ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂºÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â GLOBAL REST HOTPATCH (v3.8.17) - Inline for maximum priority
     $home_url = esc_url_raw(home_url());
     $inline_patch = "
     (function() {
@@ -1364,7 +1530,6 @@ function vaptsecure_enqueue_admin_assets($hook)
       if (wp.apiFetch.__vaptsecure_patched) return;
       
       try {
-        // ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂºÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â RECOVERY: If the browser was permanently stuck in silent mode, free it (v2.2.9 Fix)
         localStorage.removeItem('vaptsecure_rest_broken');
       } catch (e) { }
 
@@ -1378,7 +1543,6 @@ function vaptsecure_enqueue_admin_assets($hook)
         
         const home = '{$home_url}';
         
-        // ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂºÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â AUTH PERI-FIX: Ensure Nonce is present for non-GET requests
         const method = (args.method || 'GET').toUpperCase();
         if (effectiveNonce && method !== 'GET') {
           if (!args.headers) args.headers = {};
@@ -1402,7 +1566,6 @@ function vaptsecure_enqueue_admin_assets($hook)
           return cleanHome + '/?rest_route=/' + cleanPath + queryParams + nonceParam;
         };
 
-        // ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂºÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â REMOVED THE INSTANT FALLBACK LOGIC to prevent permanently spamming 403s
         // on all endpoints when only one endpoint was broken.
         // Fallbacks will only occur per-request dynamically.
 

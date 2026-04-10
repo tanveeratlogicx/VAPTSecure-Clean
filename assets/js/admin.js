@@ -570,7 +570,8 @@ var vaptLog = window.vaptLog || {
     const [buildDomain, setBuildDomain] = useState('');
     const [buildVersion, setBuildVersion] = useState(settings.pluginVersion || '3.1.0');
     const [includeConfig, setIncludeConfig] = useState(true);
-    const [includeData, setIncludeData] = useState(false);
+    const [includeData, setIncludeData] = useState(true);
+    const [securityAlertEmail, setSecurityAlertEmail] = useState(settings.adminEmail || '');
     const [whiteLabel, setWhiteLabel] = useState({
       name: 'VAPT Secure',
       description: '',
@@ -673,6 +674,7 @@ var vaptLog = window.vaptLog || {
           generate_type: type,
           include_config: includeConfig,
           include_data: includeData,
+          security_alert_email: securityAlertEmail,
           license_type: buildLicenseType,
           license_scope: licenseScope,
           installation_limit: installationLimit,
@@ -907,6 +909,9 @@ var vaptLog = window.vaptLog || {
                 ),
                 el(FieldRow, { label: __('Version', 'vaptsecure') },
                   el(TextControl, { value: buildVersion, onChange: (val) => setBuildVersion(val), style: { marginBottom: 0 } })
+                ),
+                el(FieldRow, { label: __('Alert Email', 'vaptsecure') },
+                  el(TextControl, { value: securityAlertEmail, onChange: (val) => setSecurityAlertEmail(val), style: { marginBottom: 0 } })
                 ),
               ]),
             ]),
