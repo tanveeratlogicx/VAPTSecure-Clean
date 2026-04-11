@@ -1676,6 +1676,7 @@ class VAPTSECURE_REST
         $action = $request->get_param('action');
         $license_scope = $request->get_param('license_scope');
         $installation_limit = $request->get_param('installation_limit');
+        $user_notes = $request->get_param('user_notes');
 
         $id = $request->get_param('id');
         if ($id) {
@@ -1726,6 +1727,8 @@ class VAPTSECURE_REST
         if ($license_scope === null && $current) { $license_scope = $current['license_scope'] ?: 'single';
         }
         if ($installation_limit === null && $current) { $installation_limit = $current['installation_limit'] ?: 1;
+        }
+        if ($user_notes === null && $current) { $user_notes = $current['user_notes'] ?: '';
         }
 
         // Auto-generate license ID for new domains if missing (Glitch Fix)
@@ -1826,7 +1829,7 @@ class VAPTSECURE_REST
             }
         }
 
-        $result_id = VAPTSECURE_DB::update_domain($domain, $is_wildcard ? 1 : 0, $is_enabled ? 1 : 0, $id, $license_id, $license_type, $manual_expiry_date, $auto_renew, $renewals_count, $history, $license_scope, $installation_limit);
+        $result_id = VAPTSECURE_DB::update_domain($domain, $is_wildcard ? 1 : 0, $is_enabled ? 1 : 0, $id, $license_id, $license_type, $manual_expiry_date, $auto_renew, $renewals_count, $history, $license_scope, $installation_limit, $user_notes);
         
         if ($result_id === false) {
             return new WP_REST_Response(array('error' => 'Database update failed'), 500);

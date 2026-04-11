@@ -176,7 +176,7 @@ class VAPTSECURE_DB
     /**
      * Add or update domain
      */
-    public static function update_domain($domain, $is_wildcard = 0, $is_enabled = 1, $id = null, $license_id = '', $license_type = 'standard', $manual_expiry_date = null, $auto_renew = 0, $renewals_count = 0, $renewal_history = null, $license_scope = 'single', $installation_limit = 1)
+    public static function update_domain($domain, $is_wildcard = 0, $is_enabled = 1, $id = null, $license_id = '', $license_type = 'standard', $manual_expiry_date = null, $auto_renew = 0, $renewals_count = 0, $renewal_history = null, $license_scope = 'single', $installation_limit = 1, $user_notes = null)
     {
         global $wpdb;
         $table = $wpdb->prefix . 'vaptsecure_domains';
@@ -202,6 +202,11 @@ class VAPTSECURE_DB
         $limit_col = $wpdb->get_results($wpdb->prepare("SHOW COLUMNS FROM $table LIKE %s", 'installation_limit'));
         if (empty($limit_col)) {
             $wpdb->query("ALTER TABLE $table ADD COLUMN installation_limit INT DEFAULT 1");
+        }
+
+        $notes_col = $wpdb->get_results($wpdb->prepare("SHOW COLUMNS FROM $table LIKE %s", 'user_notes'));
+        if (empty($notes_col)) {
+            $wpdb->query("ALTER TABLE $table ADD COLUMN user_notes TEXT DEFAULT NULL");
         }
 
         $domain = trim($domain);
@@ -234,9 +239,10 @@ class VAPTSECURE_DB
         'renewal_history'    => is_array($renewal_history) ? json_encode($renewal_history) : $renewal_history,
         'license_scope'      => $license_scope,
         'installation_limit' => intval($installation_limit),
+        'user_notes'         => $user_notes,
         );
 
-        $formats = array('%s', '%d', '%d', '%s', '%s', '%s', '%s', '%d', '%d', '%s', '%s', '%d');
+        $formats = array('%s', '%d', '%d', '%s', '%s', '%s', '%s', '%d', '%d', '%s', '%s', '%d', '%s');
 
         if ($existing) {
             vapt_debug('DB Found Existing Record (ID: ' . $existing->id . '). Updating...');

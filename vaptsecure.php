@@ -3,7 +3,7 @@
 /**
  * Plugin Name: VAPTSecure Clean
  * Description: Ultimate VAPT and OWASP Security Plugin Builder.
- * Version: 3.1.4
+ * Version: 3.1.5
  * Author: Tanveer H. Malik
  * Author URI: https://vapt.copilot.com
  * License: GPL-2.0+
@@ -27,7 +27,7 @@ if (file_exists(dirname(__FILE__) . '/vendor/autoload.php')) {
 if (defined('VAPTSECURE_BUILD_VERSION')) {
     define('VAPTSECURE_VERSION', VAPTSECURE_BUILD_VERSION);
 } else {
-    define('VAPTSECURE_VERSION', '3.1.4'); // Added vibrant Auto-Renew toggle states & Restored New Domain button
+    define('VAPTSECURE_VERSION', '3.1.5'); // Added User Notes field to License Management
 }
 if (! defined('VAPTSECURE_DATA_VERSION')) {
     define('VAPTSECURE_DATA_VERSION', '2.5.0');
@@ -843,6 +843,7 @@ function vaptsecure_activate_plugin()
         is_enabled TINYINT(1) DEFAULT 1,
         license_scope VARCHAR(50) DEFAULT 'single',
         installation_limit INT DEFAULT 1,
+        user_notes TEXT DEFAULT NULL,
         PRIMARY KEY  (id),
         UNIQUE KEY domain (domain)
     ) $charset_collate;";
