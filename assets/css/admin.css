@@ -176,6 +176,27 @@
     background-color: #ffffff !important;
 }
 
+/* Auto Renew Toggle Vibrant States (v3.1.4) */
+.vapt-auto-renew-toggle.is-enabled .components-form-toggle.is-checked .components-form-toggle__track {
+    background-color: #10b981 !important; /* Vibrant Green */
+    border-color: #059669 !important;
+}
+
+.vapt-auto-renew-toggle.is-disabled:not(.is-perpetual) .components-form-toggle:not(.is-checked) .components-form-toggle__track {
+    background-color: #ec4899 !important; /* Vibrant Pink/Magenta */
+    border-color: #db2777 !important;
+}
+
+.vapt-auto-renew-toggle.is-disabled:not(.is-perpetual) .components-form-toggle:not(.is-checked) .components-form-toggle__thumb {
+    background-color: #fff !important;
+}
+
+/* Perpetual state remains blue/standard */
+.vapt-auto-renew-toggle.is-perpetual .components-form-toggle.is-checked .components-form-toggle__track {
+    background-color: #2271b1 !important;
+    border-color: #1e5f96 !important;
+}
+
 .toggle-switch {
     position: relative;
     display: inline-block;
