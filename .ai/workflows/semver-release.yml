@@ -1,0 +1,177 @@
+---
+description: Semantic Versioning (SemVer) Release Workflow for VAPTSecure
+---
+
+# Semantic Versioning Release Workflow
+
+## Overview
+
+This workflow defines the rules for bumping VAPTSecure plugin versions following [Semantic Versioning 2.0.0](https://semver.org/) specification.
+
+**Version Format:** `MAJOR.MINOR.PATCH` (e.g., `3.1.0`)
+
+---
+
+## Version Bump Rules
+
+### 1. MAJOR Version Bump (X.0.0)
+**When to increment:**
+- Breaking changes to REST API endpoints (removing or modifying existing routes)
+- Database schema changes requiring migrations that are NOT backward compatible
+- Changes to feature key naming conventions that break existing client builds
+- Removal of deprecated functions/classes without backward compatibility
+- Changes to license validation logic that affect existing licensed domains
+- Security fixes that require mandatory user action (config re-creation)
+
+**Examples:**
+- Removing `/vaptsecure/v1/features/reset` endpoint
+- Changing `vaptsecure_feature_meta` table schema (dropping columns)
+- Renaming `RISK-001` to `RISK-001-NEW` breaking existing builds
+- Removing `VAPTSECURE_Enforcer::legacy_clean_all_config_files()`
+
+---
+
+### 2. MINOR Version Bump (0.X.0)
+**When to increment:**
+- New features added in a backward-compatible manner
+- New REST API endpoints added
+- New enforcer drivers (e.g., adding Cloudflare driver)
+- New risk categories or features in schema
+- UI/UX improvements to admin interface
+- Performance optimizations (caching, query improvements)
+- New self-check validation routines
+- Adding new optional configuration parameters
+
+**Examples:**
+- Adding `/vaptsecure/v1/security/stats` endpoint
+- Adding IIS or Caddy driver support
+- Adding RISK-126 to the catalog
+- Implementing adaptive deployment orchestration
+
+---
+
+### 3. PATCH Version Bump (0.0.X)
+**When to increment:**
+- Bug fixes (fatal errors, warnings, notices)
+- Security patches (CVE fixes without breaking changes)
+- Documentation updates that don't affect functionality
+- Refactoring with no behavioral changes
+- Fixing typos in user-facing strings
+- Build generation fixes (like wp_mail() undefined)
+- Wildcard domain matching logic fixes
+
+**Examples:**
+- Fixing `wp_mail()` undefined function error in builds
+- Correcting wildcard vs standard domain matching
+- Fixing .htaccess rule syntax errors
+- Correcting REST API permission checks
+
+---
+
+## Single Source of Truth (SSOT)
+
+### Canonical Version Location
+The **single source of truth** for the plugin version is:
+
+**File:** `vaptsecure.php`  
+**Line:** 30 (or 27-30 block)
+
+```php
+if (defined('VAPTSECURE_BUILD_VERSION')) {
+    define('VAPTSECURE_VERSION', VAPTSECURE_BUILD_VERSION);
+} else {
+    define('VAPTSECURE_VERSION', '3.1.0');  // ← THIS IS THE CANONICAL VERSION
+}
+```
+
+### Version Propagation
+When bumping version, update in this order:
+
+1. **Primary:** `vaptsecure.php` - Main plugin file (SSOT)
+2. **Secondary:** `README.md` - Plugin header
+3. **Generated:** `CODEBASE_REVIEW.md` - Documentation reference
+4. **Builds:** Client builds derive version from build generator, not source
+
+---
+
+## Automated Version Bump Procedure
+
+### When User Requests "Bump to Next Release"
+
+1. **Analyze Recent Changes**
+   - Review git log since last release
+   - Check modified files against rules above
+   - Identify highest impact change type
+
+2. **Determine New Version**
+   - Current: `3.1.0`
+   - If breaking changes → `4.0.0` (MAJOR)
+   - If new features → `3.2.0` (MINOR)
+   - If only fixes → `3.1.1` (PATCH)
+
+3. **Execute Updates**
+   ```php
+   // vaptsecure.php
+   define('VAPTSECURE_VERSION', '3.1.1');  // Updated
+   ```
+
+4. **Verify Consistency**
+   - Confirm no hardcoded version strings elsewhere
+   - Check that `VAPTC_VERSION` alias uses `VAPTSECURE_VERSION`
+
+---
+
+## Build Generator Version Handling
+
+### Domain-Specific Version Tracking
+Each domain has independent versioning stored in:
+- Option: `vaptsecure_last_build_version_{md5(domain)}`
+- DB Table: `vaptsecure_domain_builds`
+
+### Auto-Bump Logic (Already Implemented)
+```php
+// class-vaptsecure-rest.php:1922
+$data['version'] = ($last_version !== '') 
+    ? self::bump_semver_patch($last_version)  // Auto +1 patch
+    : '1.0.0';
+```
+
+**Note:** Build generator always auto-bumps PATCH. Manual MAJOR/MINOR bumps require explicit version input in build request.
+
+---
+
+## Pre-Release Tags (Optional)
+
+For beta/RC releases, append to version:
+- `3.2.0-beta.1`
+- `3.2.0-rc.1`
+
+**Important:** Pre-release tags are NOT used in production builds (client releases must be stable only).
+
+---
+
+## Validation Checklist
+
+Before marking release complete:
+- [ ] Version updated in `vaptsecure.php`
+- [ ] No hardcoded versions in source (use constant)
+- [ ] REST API version unchanged (remains v1)
+- [ ] Database migrations compatible (or version bumped to MAJOR)
+- [ ] Self-check tests pass
+- [ ] Build generator produces working builds
+
+---
+
+## Related Files
+
+| File | Purpose |
+|------|---------|
+| `vaptsecure.php:30` | Canonical version definition (SSOT) |
+| `class-vaptsecure-rest.php:15-29` | `bump_semver_patch()` function |
+| `class-vaptsecure-rest.php:1916-1925` | Build version auto-bump logic |
+| `class-vaptsecure-build.php:524-530` | Version sync in generated builds |
+
+---
+
+*Workflow Version: 1.0.0*
+*Last Updated: April 10, 2026*
