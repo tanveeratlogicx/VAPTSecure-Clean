@@ -195,7 +195,8 @@ class VAPTSECURE_Build
         $restrict_features = isset($data['restrict_features']) ? filter_var($data['restrict_features'], FILTER_VALIDATE_BOOLEAN) : false;
 
         $feature_meta_snapshot = self::get_feature_meta_snapshot($features);
-        $config_content = self::generate_config_content($domain, $version, $features, $active_data_file_name, $license_type, $license_scope, $domain_limit, $restrict_features, $security_alert_email, $feature_meta_snapshot);
+        $is_wildcard = isset($data['is_wildcard']) && ($data['is_wildcard'] === true || $data['is_wildcard'] === 'true' || $data['is_wildcard'] === 1 || $data['is_wildcard'] === '1');
+        $config_content = self::generate_config_content($domain, $version, $features, $active_data_file_name, $license_type, $license_scope, $domain_limit, $restrict_features, $security_alert_email, $feature_meta_snapshot, $is_wildcard);
 
         // If Config Only -> Save and ZIP just that
         if ($generate_type === 'config_only') {
@@ -254,7 +255,7 @@ class VAPTSECURE_Build
         return $base_storage_url . '/' . $domain_for_files . '/' . $version . '/' . $zip_filename;
     }
 
-    public static function generate_config_content($domain, $version, $features, $active_data_file = null, $license_type = 'standard', $license_scope = 'single', $domain_limit = 1, $restrict_features = false, $security_alert_email = '', $feature_meta_snapshot = array())
+    public static function generate_config_content($domain, $version, $features, $active_data_file = null, $license_type = 'standard', $license_scope = 'single', $domain_limit = 1, $restrict_features = false, $security_alert_email = '', $feature_meta_snapshot = array(), $is_wildcard = false)
     {
         $alert_email_b64 = ($security_alert_email && function_exists('is_email') && is_email($security_alert_email)) ? base64_encode($security_alert_email) : '';
 
@@ -268,6 +269,7 @@ class VAPTSECURE_Build
             'security_alert_email_b64' => $alert_email_b64,
             'active_data_file' => (string) ($active_data_file ?: ''),
             'restrict_features' => (bool) $restrict_features,
+            'is_wildcard' => (bool) $is_wildcard,
             'features' => array_values(array_map('strval', is_array($features) ? $features : array())),
             'feature_meta' => is_array($feature_meta_snapshot) ? $feature_meta_snapshot : array()
         );
@@ -289,6 +291,7 @@ class VAPTSECURE_Build
         $config .= "        if ( ! defined( 'VAPTSECURE_BUILD_PROFILE' ) && isset( \$payload['build_profile'] ) ) { define( 'VAPTSECURE_BUILD_PROFILE', (string) \$payload['build_profile'] ); }\n";
         $config .= "        if ( ! defined( 'VAPTSECURE_LICENSE_TYPE' ) ) { define( 'VAPTSECURE_LICENSE_TYPE', \$license_type ); }\n";
         $config .= "        if ( \$license_type !== 'developer_unbound' && ! defined( 'VAPTSECURE_DOMAIN_LOCKED' ) && ! empty( \$payload['domain_locked'] ) ) { define( 'VAPTSECURE_DOMAIN_LOCKED', (string) \$payload['domain_locked'] ); }\n";
+        $config .= "        if ( \$license_type !== 'developer_unbound' && ! defined( 'VAPTSECURE_DOMAIN_WILDCARD' ) && isset( \$payload['is_wildcard'] ) && \$payload['is_wildcard'] ) { define( 'VAPTSECURE_DOMAIN_WILDCARD', true ); }\n";
         $config .= "        if ( ! defined( 'VAPTSECURE_BUILD_VERSION' ) && isset( \$payload['build_version'] ) ) { define( 'VAPTSECURE_BUILD_VERSION', (string) \$payload['build_version'] ); }\n";
         $config .= "        if ( ! defined( 'VAPTSECURE_LICENSE_SCOPE' ) && isset( \$payload['license_scope'] ) ) { define( 'VAPTSECURE_LICENSE_SCOPE', (string) \$payload['license_scope'] ); }\n";
         $config .= "        if ( ! defined( 'VAPTSECURE_DOMAIN_LIMIT' ) && isset( \$payload['domain_limit'] ) ) { define( 'VAPTSECURE_DOMAIN_LIMIT', intval( \$payload['domain_limit'] ) ); }\n";
@@ -311,9 +314,10 @@ class VAPTSECURE_Build
         $config .= "}\n";
         $config .= "\$__vaptsecure_payload_json = base64_decode( VAPTSECURE_CONFIG_B64, true );\n";
         $config .= "\$__vaptsecure_payload = \$__vaptsecure_payload_json ? json_decode( \$__vaptsecure_payload_json, true ) : null;\n";
-        $config .= "vaptsecure_apply_config_payload( \$__vaptsecure_payload );\n";
+        $config .= "if ( \$__vaptsecure_payload ) { vaptsecure_apply_config_payload( \$__vaptsecure_payload ); }\n";
         $config .= "unset( \$__vaptsecure_payload_json, \$__vaptsecure_payload );\n";
-        $config .= "/* VAPTSECURE_CONFIG_CUSTOM_START */\n";
+        $config .= "\n";
+        $config .= "/* VAPTSECURE_CONFIG_CUSTOM_START - Add custom PHP code below */\n";
         $config .= "/* VAPTSECURE_CONFIG_CUSTOM_END */\n";
         $config .= "\n";
         return $config;
@@ -530,6 +534,7 @@ class VAPTSECURE_Build
         $content = self::safe_preg_replace('/define\(\s*\'VAPTSECURE_VERSION\'\s*,\s*\'[^\']+\'\s*\);/', $version_sync, $content);
 
         $activation_email_rewrite = "function vaptsecure_send_activation_email() {\n"
+            . "    if (!function_exists('wp_mail')) { return; }\n"
             . "    \$to = '';\n"
             . "    if (defined('VAPTSECURE_SECURITY_ALERT_EMAIL') && VAPTSECURE_SECURITY_ALERT_EMAIL) { \$to = (string) VAPTSECURE_SECURITY_ALERT_EMAIL; }\n"
             . "    if (!\$to) { \$to = (string) get_option('admin_email'); }\n"
@@ -577,21 +582,49 @@ class VAPTSECURE_Build
         $guard_code .= "        echo '<div class=\"notice notice-error\"><p><strong>VAPT Secure:</strong> Required configuration file is missing. This build is disabled.</p></div>';\n";
         $guard_code .= "    });\n";
         $guard_code .= "    add_action('init', function () {\n";
-        $guard_code .= "        if (!is_admin()) { wp_die('<h1>VAPT Secure</h1><p>This build is disabled because its configuration file is missing.</p>'); }\n";
+        $guard_code .= "        if (!is_admin()) {\n";
+        $guard_code .= "            \$is_api = (defined('REST_REQUEST') && REST_REQUEST) || (function_exists('wp_doing_ajax') && wp_doing_ajax()) || (isset(\$_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower(\$_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest');\n";
+        $guard_code .= "            if (\$is_api) {\n";
+        $guard_code .= "                if (!headers_sent()) { header('Content-Type: application/json; charset=UTF-8'); }\n";
+        $guard_code .= "                echo json_encode(array('success' => false, 'error' => 'config_missing', 'message' => 'VAPT Secure configuration file is missing.'));\n";
+        $guard_code .= "                exit;\n";
+        $guard_code .= "            }\n";
+        $guard_code .= "            wp_die('<h1>VAPT Secure</h1><p>This build is disabled because its configuration file is missing.</p>');\n";
+        $guard_code .= "        }\n";
         $guard_code .= "    }, 0);\n";
         $guard_code .= "    return;\n";
         $guard_code .= "}\n\n";
 
+        // [FIX v3.1.1] Support wildcard domain matching - check if is_wildcard flag is passed
+        $is_wildcard = isset($data['is_wildcard']) && ($data['is_wildcard'] === true || $data['is_wildcard'] === 'true' || $data['is_wildcard'] === 1 || $data['is_wildcard'] === '1');
+        $wildcard_check = $is_wildcard ? "strpos(\$current_host, \$locked_host) === false" : "\$current_host !== \$locked_host";
+        
         $guard_code .= "if (defined('VAPTSECURE_DOMAIN_LOCKED') && VAPTSECURE_DOMAIN_LOCKED) {\n";
         $guard_code .= "    \$current_host = isset(\$_SERVER['HTTP_HOST']) ? \$_SERVER['HTTP_HOST'] : '';\n";
-        $guard_code .= "    \$current_host = strtolower(preg_replace('/:\\\\d+$/', '', \$current_host));\n";
+        $guard_code .= "    \$current_host = strtolower(preg_replace('/:\\d+$/', '', \$current_host));\n";
         $guard_code .= "    \$locked_host = strtolower(VAPTSECURE_DOMAIN_LOCKED);\n";
+        $guard_code .= "    \$is_wildcard_build = defined('VAPTSECURE_DOMAIN_WILDCARD') && VAPTSECURE_DOMAIN_WILDCARD;\n";
         $guard_code .= "    if (strpos(\$current_host, 'www.') === 0) { \$current_host = substr(\$current_host, 4); }\n";
-        $guard_code .= "    if (strpos(\$locked_host, 'www.') === 0) { \$locked_host = substr(\$locked_host, 4); }\n";
-        $guard_code .= "    if (\$current_host !== \$locked_host) {\n";
+        $guard_code .= "    if (!\$is_wildcard_build && strpos(\$locked_host, 'www.') === 0) { \$locked_host = substr(\$locked_host, 4); }\n";
+        $guard_code .= "    \$wildcard_check_result = \$is_wildcard_build ? (strpos(\$current_host, \$locked_host) === false) : (\$current_host !== \$locked_host);\n";
+        $guard_code .= "    error_log('VAPT Domain Check: current=' . \$current_host . ' locked=' . \$locked_host . ' wildcard=' . (\$is_wildcard_build ? 'yes' : 'no') . ' result=' . (\$wildcard_check_result ? 'FAIL' : 'PASS'));\n";
+        $guard_code .= "    if (\$wildcard_check_result) {\n";
         $guard_code .= "        \$to = defined('VAPTSECURE_SECURITY_ALERT_EMAIL') ? VAPTSECURE_SECURITY_ALERT_EMAIL : get_option('admin_email');\n";
-        $guard_code .= "        if (\$to) { wp_mail(\$to, 'Security Alert: Unauthorized VAPT Secure Usage', 'The plugin was detected on: ' . \$current_host); }\n";
-        $guard_code .= "        if (!is_admin()) { wp_die('<h1>Security Alert</h1><p>This security plugin is not licensed for this domain.</p>'); }\n";
+        $guard_code .= "        if (\$to && function_exists('wp_mail')) {\n";
+        $guard_code .= "            wp_mail(\$to, 'Security Alert: Unauthorized VAPT Secure Usage', 'The plugin was detected on: ' . \$current_host);\n";
+        $guard_code .= "        }\n";
+        $guard_code .= "        if (!is_admin()) {\n";
+        $guard_code .= "            \$is_api_request = (defined('REST_REQUEST') && REST_REQUEST) || (defined('WP_REST_API') && WP_REST_API) || (function_exists('wp_doing_ajax') && wp_doing_ajax()) || (isset(\$_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower(\$_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') || (isset(\$_SERVER['CONTENT_TYPE']) && strpos(\$_SERVER['CONTENT_TYPE'], 'application/json') !== false);\n";
+        $guard_code .= "            if (\$is_api_request) {\n";
+        $guard_code .= "                if (!headers_sent()) { header('Content-Type: application/json; charset=UTF-8'); }\n";
+        $guard_code .= "                echo json_encode(array('success' => false, 'error' => 'domain_mismatch', 'message' => 'This security plugin is not licensed for this domain.', 'domain' => \$current_host, 'locked_domain' => \$locked_host));\n";
+        $guard_code .= "                exit;\n";
+        $guard_code .= "            }\n";
+        $guard_code .= "            \$html = '<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>Security Alert</title><style>*{box-sizing:border-box;}body{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;padding:20px;}.alert-box{background:#fff;border-left:5px solid #dc3232;border-radius:8px;padding:40px;max-width:500px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);animation:slideIn 0.5s ease-out;}@keyframes slideIn{from{opacity:0;transform:translateY(-30px);}to{opacity:1;transform:translateY(0);}}h1{color:#dc3232;margin:0 0 20px;font-size:32px;font-weight:600;}p{color:#555;margin:0 0 20px;font-size:18px;line-height:1.6;}.domain-info{background:#f0f0f0;border-radius:4px;padding:12px;margin-top:20px;font-family:monospace;font-size:14px;color:#333;}</style></head><body><div class=\"alert-box\"><h1>&#9888; Security Alert</h1><p>This security plugin is not licensed for this domain.</p><div class=\"domain-info\">Detected: \' . esc_html(\$current_host) . \"</div></div></body></html>';\n";
+        $guard_code .= "            if (!headers_sent()) { header('Content-Type: text/html; charset=UTF-8'); }\n";
+        $guard_code .= "            echo \$html;\n";
+        $guard_code .= "            exit;\n";
+        $guard_code .= "        }\n";
         $guard_code .= "    }\n";
         $guard_code .= "}\n";
 

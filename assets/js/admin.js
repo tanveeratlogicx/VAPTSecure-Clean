@@ -663,6 +663,7 @@ var vaptLog = window.vaptLog || {
       const selectedDomain = (Array.isArray(domains) ? domains : []).find(d => d.domain === buildDomain);
       const buildFeatures = selectedDomain ? (Array.isArray(selectedDomain.features) ? selectedDomain.features : []) : (Array.isArray(features) ? features : []).filter(f => f.status === 'implemented').map(f => f.key);
       const buildLicenseType = selectedDomain && selectedDomain.license_type ? selectedDomain.license_type : 'standard';
+      const buildIsWildcard = selectedDomain ? (selectedDomain.is_wildcard === '1' || selectedDomain.is_wildcard === true || selectedDomain.is_wildcard === 1) : false;
 
       apiFetch({
         path: 'vaptsecure/v1/build/generate',
@@ -679,6 +680,7 @@ var vaptLog = window.vaptLog || {
           license_scope: licenseScope,
           installation_limit: installationLimit,
           restrict_features: false,
+          is_wildcard: buildIsWildcard,
           white_label: {
             name: whiteLabel.name.trim(),
             description: whiteLabel.description.trim(),
