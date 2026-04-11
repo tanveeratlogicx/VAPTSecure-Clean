@@ -1908,6 +1908,7 @@ class VAPTSECURE_REST
         $data['license_scope'] = $request->get_param('license_scope');
         $data['installation_limit'] = $request->get_param('installation_limit');
         $data['restrict_features'] = $request->get_param('restrict_features');
+        $data['is_wildcard'] = $request->get_param('is_wildcard');
 
         // Delegate to Build Class
         include_once VAPTSECURE_PATH . 'includes/class-vaptsecure-build.php';
