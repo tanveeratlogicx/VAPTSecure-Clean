@@ -313,9 +313,10 @@ var vaptLog = window.vaptLog || {
                   ? el(GeneratedInterface, { 
                       feature: { ...f, generated_schema: { ...schema, controls: implControls } }, 
                       onUpdate: (data) => updateFeature(f.key, { implementation_data: data }), 
-                      hideProtocol: true,
+                      hideProtocol: true, // 🛡️ v3.14.14: Explicitly hide protocol from left panel
                       hideImplementationControl: true,
-                      hideOpNotes: false // Keep Business Impact here
+                      hideOpNotes: false, // Keep Business Impact here
+                      hideThreatPanel: true // Prevent leaking Security Insights/HTML to left panel
                     })
                   : el('div', { style: { padding: '30px', background: '#f9fafb', border: '1px dashed #d1d5db', borderRadius: '8px', textAlign: 'center', color: '#9ca3af', fontSize: '13px' } },
                     __('No configurable controls.', 'vaptsecure'))
