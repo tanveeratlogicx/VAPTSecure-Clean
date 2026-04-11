@@ -1495,7 +1495,21 @@ var vaptLog = window.vaptLog || {
     ]);
   };
 
-  const GeneratedInterface = ({ feature, onUpdate, isGuidePanel = false, hideMonitor = false, hideOpNotes = false, hideProtocol = false, globalProtection = true, showTechnicalTrace = false, showVerificationDetails = true }) => {
+  const GeneratedInterface = (props) => {
+    const {
+      feature,
+      onUpdate,
+      isGuidePanel = false,
+      hideMonitor = false,
+      hideOpNotes = false,
+      hideProtocol = false,
+      hideImplementationControl = false,
+      hideThreatPanel = false, // 🛡️ ADD THIS
+      hideBadges = false,      // 🛡️ ADD THIS
+      showTechnicalTrace = false,
+      showVerificationDetails = true,
+      globalProtection = true
+    } = props;
     const isWorkbench = window.location.search.includes('page=vaptsecure-workbench');
     vaptLog.log('GeneratedInterface Render:', { key: feature?.key, controls: feature?.generated_schema?.controls, isGuidePanel });
     let schema = useMemo(() => {
@@ -2010,13 +2024,20 @@ var vaptLog = window.vaptLog || {
       return '✅';
     };
 
-    // If all controls are hidden, return null to avoid rendering empty wrappers
+    // v3.14.9: Business Impact Visibility Logic
+    // If all controls are hidden AND hideOpNotes is true, return null
+    const hasOpNotes = !!(feature.operational_notes || schema.operational_notes);
+    const hasProtocol = !!(feature.manual_protocol || schema.manual_protocol || (schema.manual_protocol && (schema.manual_protocol.steps || schema.manual_protocol.length > 0)));
+
     if (mainControls.length === 0 && riskControls.length === 0 && badgeControls.length === 0 && otherVerificationControls.length === 0) {
-      // Still show monitor if explicitly asked and present
-      if (isRateLimit && !hideMonitor) {
-        return el('div', { className: 'vapt-generated-interface' }, el(RateLimitMonitor, { featureKey: feature.key || feature.id }));
+      // If we are hiding op notes (or they don't exist) AND we are hiding protocol (or it doesn't exist)
+      if ((hideOpNotes || !hasOpNotes) && (hideProtocol || !hasProtocol)) {
+        // Still show monitor if explicitly asked and present
+        if (isRateLimit && !hideMonitor) {
+          return el('div', { className: 'vapt-generated-interface' }, el(RateLimitMonitor, { featureKey: feature.key || feature.id }));
+        }
+        return null;
       }
-      return null;
     }
 
     const metadata = schema.metadata || {};
@@ -2167,7 +2188,8 @@ var vaptLog = window.vaptLog || {
       // Live Rate Limit Monitor (Moved below controls v3.3.45)
       isRateLimit && !hideMonitor && el(RateLimitMonitor, { featureKey: feature.key || feature.id }),
 
-      (feature.include_verification_guidance == 1 || feature.include_verification_guidance === true || feature.include_verification_guidance === undefined) && (riskControls.length > 0 || otherVerificationControls.length > 0) && el('div', {
+      // 🛡️ Wrap Threat Panel with suppression check
+      !hideThreatPanel && (feature.include_verification_guidance == 1 || feature.include_verification_guidance === true || feature.include_verification_guidance === undefined) && (riskControls.length > 0 || otherVerificationControls.length > 0) && el('div', {
         className: 'vapt-threat-panel',
         style: {
           background: '#fff7ed',
@@ -2181,7 +2203,8 @@ var vaptLog = window.vaptLog || {
         otherVerificationControls.map(renderControl)
       ]),
 
-      (feature.include_verification_guidance == 1 || feature.include_verification_guidance === true || feature.include_verification_guidance === undefined) && badgeControls.length > 0 && el('div', {
+      // 🛡️ Wrap Badges with suppression check
+      !hideBadges && (feature.include_verification_guidance == 1 || feature.include_verification_guidance === true || feature.include_verification_guidance === undefined) && badgeControls.length > 0 && el('div', {
         className: 'vapt-badges-row',
         style: { display: 'flex', flexWrap: 'wrap', gap: '10px' }
       },
@@ -2196,9 +2219,9 @@ var vaptLog = window.vaptLog || {
       ),
 
       // 🛡️ Manual Verification Protocol (v3.12.18) - Collapsible (v3.12.20)
-      !hideProtocol && (feature.include_manual_protocol == 1 || feature.include_manual_protocol === true || feature.include_manual_protocol === undefined) && protocolSteps && el('details', {
+      !hideProtocol && protocolSteps && el('details', {
         className: 'vapt-protocol-panel',
-        open: false, // Default collapsed
+        open: true, // Default collapsed
         style: {
           background: '#f8fafc',
           border: '1px solid #e2e8f0',
@@ -2216,6 +2239,19 @@ var vaptLog = window.vaptLog || {
           })
         )
       ]),
+
+      // 🛡️ "No Manual Verification" fallback (v3.14.10)
+      !hideProtocol && !protocolSteps && el('div', {
+        style: {
+          padding: '15px',
+          background: '#f8fafc',
+          border: '1px solid #e2e8f0',
+          borderRadius: '8px',
+          fontSize: '12px',
+          color: '#64748b',
+          fontStyle: 'italic'
+        }
+      }, __('No manual verification required for this feature.', 'vaptsecure')),
 
       localAlert && el(Modal, {
         title: localAlert.type === 'error' ? __('Error', 'vaptsecure') : __('Notice', 'vaptsecure'),

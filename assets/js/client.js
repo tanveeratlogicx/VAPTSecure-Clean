@@ -562,40 +562,69 @@ var vaptLog = window.vaptLog || {
         ])
       ]),
       el(CardBody, { style: { padding: '0' } }, [
-        el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', minHeight: '200px' } }, [
-          // Security Configuration Column
-          el('div', { style: { padding: '25px', background: isInhibited ? '#f1f5f9' : '#fcfdfd', borderRight: '1px solid #f1f5f9' } }, [
-            el('h4', { style: { fontSize: '11px', fontWeight: 800, marginBottom: '20px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' } }, [
-              el(Icon, { icon: 'admin-settings', size: 16 }),
-              __('Functional Implementation')
+        el('div', { style: { display: 'flex', flexDirection: 'column', gap: '20px', padding: '25px', background: '#fcfdfd' } }, [
+          // Row 1: Functional Implementation and Implementation Control
+          el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '25px' } }, [
+            // Left: Functional Implementation
+            el('div', { className: 'vapt-implementation-panel', style: { padding: '20px', background: '#fff', borderRadius: '12px', border: '1px solid #f1f5f9', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' } }, [
+              el('h4', { style: { fontSize: '11px', fontWeight: 800, marginBottom: '20px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' } }, [
+                el(Icon, { icon: 'admin-settings', size: 16 }),
+                __('Functional Implementation', 'vaptsecure')
+              ]),
+              implControls.length > 0 ? el(GeneratedInterface, {
+                feature: { ...f, generated_schema: { ...schema, controls: implControls } },
+                globalProtection: globalProtection,
+                hideImplementationControl: true, // Show it on the right
+                onUpdate: (data) => updateFeature(f.key, { implementation_data: data })
+              }) : el('p', { style: { fontSize: '12px', color: '#94a3b8', fontStyle: 'italic' } }, __('Standard protection rules active.', 'vaptsecure'))
             ]),
-            implControls.length > 0 ? el(GeneratedInterface, {
-              feature: { ...f, generated_schema: { ...schema, controls: implControls } },
-              globalProtection: globalProtection,
-              onUpdate: (data) => updateFeature(f.key, { implementation_data: data })
-            }) : el('div', null, [
+            // Right: Implementation Control
+            el('div', { className: 'vapt-control-panel', style: { padding: '20px', background: '#fff', borderRadius: '12px', border: '1px solid #f1f5f9', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' } }, [
+              el('h4', { style: { fontSize: '11px', fontWeight: 800, marginBottom: '20px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' } }, [
+                el(Icon, { icon: 'shield', size: 16 }),
+                __('Implementation Control', 'vaptsecure')
+              ]),
               el(ToggleControl, {
                 label: __('Enable Protection', 'vaptsecure'),
                 checked: !!(f.is_enabled || f.is_enforced),
                 disabled: !globalProtection,
                 onChange: (val) => updateFeature(f.key, { is_enabled: val ? 1 : 0, is_enforced: val ? 1 : 0 }, __('Saved', 'vaptsecure'))
               }),
-              el('p', { style: { fontSize: '12px', color: '#94a3b8', fontStyle: 'italic', marginTop: '10px' } }, __('Standard protection rules active.', 'vaptsecure'))
+              el('p', { style: { fontSize: '12px', color: '#94a3b8', fontStyle: 'italic', marginTop: '10px' } }, __('Toggle to activate/deactivate this specific protection.', 'vaptsecure'))
             ])
           ]),
-          // Verification Engine Column
-          el('div', { style: { padding: '25px', background: '#f8fafc' } }, [
-            el('h4', { style: { fontSize: '11px', fontWeight: 800, marginBottom: '20px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' } }, [
-              el(Icon, { icon: 'shield', size: 16 }),
-              __('Automated Verification Engine')
+
+          // Row 2: Automated Verification Engine and Manual Verification Protocol
+          el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '25px' } }, [
+            // Left: Automated Verification Engine
+            el('div', { className: 'vapt-automation-panel', style: { padding: '20px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #f1f5f9' } }, [
+              el('h4', { style: { fontSize: '11px', fontWeight: 800, marginBottom: '20px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' } }, [
+                el(Icon, { icon: 'shield', size: 16 }),
+                __('Automated Verification Engine', 'vaptsecure')
+              ]),
+              automControls.length > 0 ? el(GeneratedInterface, {
+                feature: { ...f, generated_schema: { ...schema, controls: automControls } },
+                globalProtection: globalProtection,
+                hideOpNotes: true,
+                hideProtocol: true,
+                onUpdate: (data) => updateFeature(f.key, { implementation_data: data })
+              }) : el('p', { style: { fontSize: '12px', color: '#94a3b8', fontStyle: 'italic' } }, __('Automated monitoring active.', 'vaptsecure'))
             ]),
-            automControls.length > 0 ? el(GeneratedInterface, {
-              feature: { ...f, generated_schema: { ...schema, controls: automControls } },
-              globalProtection: globalProtection,
-              hideOpNotes: true,
-              hideProtocol: true,
-              onUpdate: (data) => updateFeature(f.key, { implementation_data: data })
-            }) : el('p', { style: { fontSize: '12px', color: '#94a3b8', fontStyle: 'italic' } }, __('Automated monitoring active.'))
+            // Right: Manual Verification Protocol
+            el('div', { className: 'vapt-protocol-panel', style: { padding: '20px', background: '#fff', borderRadius: '12px', border: '1px solid #f1f5f9' } }, [
+              el('h4', { style: { fontSize: '11px', fontWeight: 800, marginBottom: '20px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' } }, [
+                el(Icon, { icon: 'excerpt-view', size: 16 }),
+                __('Manual Verification Protocol', 'vaptsecure')
+              ]),
+              f.include_manual_protocol ? el('div', null, [
+                el('p', { style: { fontSize: '12px', color: '#64748b', marginBottom: '15px' } }, __('Systematic checks for manual verification.', 'vaptsecure')),
+                el(Button, { 
+                  isSecondary: true, 
+                  onClick: () => setVerifFeature(f),
+                  style: { width: '100%', justifyContent: 'center', borderRadius: '8px' }
+                }, __('Open Protocol', 'vaptsecure'))
+              ]) : el('p', { style: { fontSize: '12px', color: '#94a3b8', fontStyle: 'italic' } }, __('No manual steps required.', 'vaptsecure'))
+            ])
           ])
         ])
       ]),
