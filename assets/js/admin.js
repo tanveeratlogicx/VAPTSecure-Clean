@@ -1465,8 +1465,8 @@ var vaptLog = window.vaptLog || {
                     ...formState,
                     domain: token,
                     is_wildcard: 0,
-                    license_type: 'developer_unbound',
-                    manual_expiry_date: '',
+                    license_type: 'standard', // v3.1.2: Default to standard instead of auto-locking to unbound
+                    manual_expiry_date: new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
                     auto_renew: false,
                     license_scope: 'single',
                     installation_limit: 1
@@ -1502,7 +1502,7 @@ var vaptLog = window.vaptLog || {
                 { label: __('Single Domain', 'vaptsecure'), value: 'single' },
                 { label: __('Multi-Site', 'vaptsecure'), value: 'multisite' }
               ],
-              disabled: isSaving || isUniversalDomain,
+              disabled: isSaving,
               onChange: (val) => setFormState({ ...formState, license_scope: val }),
               style: { marginBottom: 0 }
             })),
@@ -1510,7 +1510,7 @@ var vaptLog = window.vaptLog || {
               label: __('Limit', 'vaptsecure'),
               type: 'number',
               min: 1,
-              disabled: isSaving || isUniversalDomain || formState.license_scope !== 'multisite' || formState.license_type === 'developer_unbound',
+              disabled: isSaving || formState.license_scope !== 'multisite' || formState.license_type === 'developer_unbound',
               value: formState.license_scope === 'multisite' ? formState.installation_limit : 1,
               onChange: (val) => setFormState({ ...formState, installation_limit: parseInt(val) || 1 }),
               style: { marginBottom: 0 }
@@ -1525,11 +1525,11 @@ var vaptLog = window.vaptLog || {
           ]),
 
           el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' } }, [
-            el(SelectControl, {
-              label: __('License Type', 'vaptsecure'),
-              value: formState.license_type,
-              disabled: isSaving || isUniversalDomain,
-              options: [
+              el(SelectControl, {
+                label: __('License Type', 'vaptsecure'),
+                value: formState.license_type,
+                disabled: isSaving,
+                options: [
                 { label: 'Standard (30 Days)', value: 'standard' },
                 { label: 'Pro (One Year)', value: 'pro' },
                 { label: 'Developer (Perpetual)', value: 'developer' },
@@ -1557,7 +1557,7 @@ var vaptLog = window.vaptLog || {
                 label: __('New Expiry Date', 'vaptsecure'),
                 type: 'date',
                 value: formState.manual_expiry_date,
-                disabled: isSaving || isUniversalDomain,
+                disabled: isSaving,
                 onChange: (val) => setFormState({ ...formState, manual_expiry_date: val })
               })
               : el(TextControl, {
@@ -1569,13 +1569,13 @@ var vaptLog = window.vaptLog || {
               })
           ]),
 
-          el(ToggleControl, {
-            label: __('Auto Renew', 'vaptsecure'),
-            checked: (formState.license_type === 'developer') ? true : formState.auto_renew,
-            disabled: isSaving || isUniversalDomain || formState.license_type === 'developer' || formState.license_type === 'developer_unbound',
-            onChange: (val) => setFormState({ ...formState, auto_renew: val }),
-            help: __('Automatically extend expiry if active.', 'vaptsecure')
-          }),
+            el(ToggleControl, {
+              label: __('Auto Renew', 'vaptsecure'),
+              checked: (formState.license_type === 'developer') ? true : formState.auto_renew,
+              disabled: isSaving || formState.license_type === 'developer' || formState.license_type === 'developer_unbound',
+              onChange: (val) => setFormState({ ...formState, auto_renew: val }),
+              help: __('Automatically extend expiry if active.', 'vaptsecure')
+            }),
 
 
 

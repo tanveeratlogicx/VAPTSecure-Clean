@@ -30,6 +30,7 @@ var vaptLog = window.vaptLog || {
     const [loading, setLoading] = useState(true);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [error, setError] = useState(null);
+    const [licenseError, setLicenseError] = useState(null);
     const domain = settings.currentDomain || window.location.hostname;
     const [activeTab, setActiveTab] = useState('all'); // 'all', 'stats', or severity level
     const [saveStatus, setSaveStatus] = useState(null);
@@ -56,6 +57,15 @@ var vaptLog = window.vaptLog || {
       const path = `vaptsecure/v1/features?scope=client&domain=${encodeURIComponent(domain)}`;
       apiFetch({ path })
         .then(data => {
+          if (data && data.error === 'domain_mismatch') {
+            setLicenseError({
+              message: data.message || 'License Validation Failed',
+              domain: data.domain,
+              locked: data.locked_domain
+            });
+            setLoading(false);
+            return;
+          }
           const uniqueFeatures = Array.from(new Map((data.features || []).map(item => [item.key, item])).values());
           setFeatures(uniqueFeatures);
           setLoading(false);
@@ -269,6 +279,57 @@ var vaptLog = window.vaptLog || {
     };
 
     if (loading) return el('div', { className: 'vapt-loading-full', style: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '400px' } }, [el(Spinner), el('p', { style: { marginTop: '15px', color: '#64748b' } }, __('Initializing Secure Environment...', 'vaptsecure'))]);
+
+    // License Validation Error Modal
+    if (licenseError) {
+        return el(Modal, {
+            title: el('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', color: '#dc2626' } }, [
+                el(Icon, { icon: 'warning', size: 24 }),
+                el('span', { style: { fontWeight: 800 } }, __('Security Alert: License Invalid', 'vaptsecure'))
+            ]),
+            onRequestClose: () => {}, // Force stay open
+            shouldCloseOnClickOutside: false,
+            shouldCloseOnEsc: false,
+            className: 'vapt-license-error-modal'
+        }, [
+            el('div', { style: { padding: '30px 20px', textAlign: 'center' } }, [
+                el('div', { 
+                    style: { 
+                        width: '64px', 
+                        height: '64px', 
+                        background: '#fee2e2', 
+                        borderRadius: '50%', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center', 
+                        margin: '0 auto 25px' 
+                    } 
+                }, [
+                    el(Icon, { icon: 'shield', size: 32, style: { color: '#dc2626' } })
+                ]),
+                el('h2', { style: { fontSize: '24px', fontWeight: 900, margin: '0 0 15px', color: '#0f172a', letterSpacing: '-0.02em' } }, __('Unauthorized Domain Detected', 'vaptsecure')),
+                el('p', { 
+                    style: { 
+                        fontSize: '16px', 
+                        color: '#475569', 
+                        lineHeight: '1.6', 
+                        margin: '0 auto',
+                        maxWidth: '400px'
+                    } 
+                }, [
+                    __('This security build is locked to the ', 'vaptsecure'),
+                    el('strong', { style: { color: '#0f172a' } }, licenseError.locked),
+                    __(' domain and cannot be used on ', 'vaptsecure'),
+                    el('strong', { style: { color: '#dc2626' } }, licenseError.domain),
+                    '.'
+                ]),
+                el('div', { style: { marginTop: '20px', fontSize: '12px', color: '#94a3b8', fontWeight: 600 } }, [
+                    sprintf(__('Build Version: v%s', 'vaptsecure'), settings.pluginVersion)
+                ])
+            ])
+        ]);
+    }
+
     if (error) return el(Notice, { status: 'error', isDismissible: false }, error);
 
     const activeDomain = settings.currentDomain || window.location.hostname;
