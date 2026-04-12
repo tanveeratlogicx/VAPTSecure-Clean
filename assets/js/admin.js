@@ -1527,21 +1527,27 @@ var vaptLog = window.vaptLog || {
                 options: [
                   { label: 'Standard (30 Days)', value: 'standard' },
                   { label: 'Pro (One Year)', value: 'pro' },
-                  { label: 'Developer (Perpetual)', value: 'developer' }
+                  { label: 'Developer (Perpetual)', value: 'developer' },
+                  { label: '7-Day Trial', value: '7-day-trial' },
+                  { label: '15-Day Demo', value: '15-day-demo' }
                 ],
                 onChange: (val) => {
                   const baseDate = new Date();
                   let durationDays = 30;
                   if (val === 'pro') durationDays = 365;
                   if (val === 'developer') durationDays = 36500;
+                  if (val === '7-day-trial') durationDays = 7;
+                  if (val === '15-day-demo') durationDays = 15;
 
                   baseDate.setDate(baseDate.getDate() + durationDays);
                   const newExpiry = baseDate.toISOString().split('T')[0];
 
+                  const isTrialDemo = val === '7-day-trial' || val === '15-day-demo';
                   setFormState({
                     ...formState,
                     license_type: val,
-                    manual_expiry_date: newExpiry
+                    manual_expiry_date: newExpiry,
+                    auto_renew: isTrialDemo ? false : formState.auto_renew // 🛡️ Force Auto Renew OFF for Trials/Demos
                   });
                 }
               }),
@@ -1549,10 +1555,12 @@ var vaptLog = window.vaptLog || {
                 el(ToggleControl, {
                   label: __('Auto Renew', 'vaptsecure'),
                   checked: (formState.license_type === 'developer') ? true : formState.auto_renew,
-                  disabled: isSaving || formState.license_type === 'developer',
+                  disabled: isSaving || formState.license_type === 'developer' || formState.license_type === '7-day-trial' || formState.license_type === '15-day-demo',
                   onChange: (val) => setFormState({ ...formState, auto_renew: val }),
-                  help: __('Automatically extend expiry if active.', 'vaptsecure'),
-                  className: `vapt-auto-renew-toggle ${formState.auto_renew ? 'is-enabled' : 'is-disabled'} ${formState.license_type === 'developer' ? 'is-perpetual' : ''}`
+                  help: (formState.license_type === '7-day-trial' || formState.license_type === '15-day-demo') 
+                    ? __('Auto-renewal is unavailable for Trial/Demo licenses.', 'vaptsecure')
+                    : __('Automatically extend expiry if active.', 'vaptsecure'),
+                  className: `vapt-auto-renew-toggle ${formState.auto_renew ? 'is-enabled' : 'is-disabled'} ${formState.license_type === 'developer' ? 'is-perpetual' : ''} ${(formState.license_type === '7-day-trial' || formState.license_type === '15-day-demo') ? 'is-locked' : ''}`
                 })
               ])
             ]),
@@ -1560,7 +1568,9 @@ var vaptLog = window.vaptLog || {
             el('div', null, [
               (formState.license_type !== 'developer')
                 ? el(TextControl, {
-                  label: __('New Expiry Date', 'vaptsecure'),
+                  label: (formState.license_type === '7-day-trial' || formState.license_type === '15-day-demo') 
+                    ? __('Expiry Status (Manual Only)', 'vaptsecure')
+                    : __('New Expiry Date', 'vaptsecure'),
                   type: 'date',
                   value: formState.manual_expiry_date,
                   disabled: isSaving,
