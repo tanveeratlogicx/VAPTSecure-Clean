@@ -35,44 +35,61 @@ class VAPTSECURE_Build
             return copy($source_path, $dest_path);
         }
 
+        // Fetch Release status map from DB
+        global $wpdb;
+        $status_table = $wpdb->prefix . 'vaptsecure_feature_status';
+        $release_features = $wpdb->get_col("SELECT feature_key FROM {$status_table} WHERE status = 'Release'");
+        $release_map = array();
+        if (is_array($release_features)) {
+            foreach ($release_features as $rf) {
+                $release_map[strtoupper(trim((string) $rf))] = true;
+            }
+        }
+
         $raw = file_get_contents($source_path);
         $data = json_decode($raw, true);
         if (!is_array($data)) {
             return copy($source_path, $dest_path);
         }
 
+        // Helper to check if feature is both allowed AND in Release state
+        $is_released_and_allowed = function($key) use ($allowed, $release_map) {
+            $key = strtoupper(trim((string) $key));
+            return isset($allowed[$key]) && isset($release_map[$key]);
+        };
+
         if (isset($data['risk_interfaces']) && is_array($data['risk_interfaces'])) {
             $filtered = array();
             foreach ($data['risk_interfaces'] as $risk_key => $item) {
                 $candidate = strtoupper(trim((string) ($item['risk_id'] ?? $risk_key)));
-                if ($candidate !== '' && isset($allowed[$candidate])) {
+                if ($candidate !== '' && $is_released_and_allowed($candidate)) {
                     $filtered[$risk_key] = $item;
                 }
             }
             $data['risk_interfaces'] = $filtered;
         } elseif (isset($data['risk_catalog']) && is_array($data['risk_catalog'])) {
-            $data['risk_catalog'] = array_values(array_filter($data['risk_catalog'], function ($item) use ($allowed) {
+            $data['risk_catalog'] = array_values(array_filter($data['risk_catalog'], function ($item) use ($is_released_and_allowed) {
                 if (!is_array($item)) {
                     return false;
                 }
                 $candidate = strtoupper(trim((string) ($item['risk_id'] ?? $item['id'] ?? $item['key'] ?? '')));
-                return $candidate !== '' && isset($allowed[$candidate]);
+                return $candidate !== '' && $is_released_and_allowed($candidate);
             }));
         } elseif (isset($data['features']) && is_array($data['features'])) {
-            $data['features'] = array_values(array_filter($data['features'], function ($item) use ($allowed) {
+            $data['features'] = array_values(array_filter($data['features'], function ($item) use ($is_released_and_allowed) {
                 if (!is_array($item)) {
                     return false;
                 }
                 $candidate = strtoupper(trim((string) ($item['risk_id'] ?? $item['id'] ?? $item['key'] ?? '')));
-                return $candidate !== '' && isset($allowed[$candidate]);
+                return $candidate !== '' && $is_released_and_allowed($candidate);
             }));
         } elseif (isset($data['wordpress_vapt']) && is_array($data['wordpress_vapt'])) {
-            $data['wordpress_vapt'] = array_values(array_filter($data['wordpress_vapt'], function ($item) use ($allowed) {
+            $data['wordpress_vapt'] = array_values(array_filter($data['wordpress_vapt'], function ($item) use ($is_released_and_allowed) {
                 if (!is_array($item)) {
                     return false;
                 }
                 $candidate = strtoupper(trim((string) ($item['risk_id'] ?? $item['id'] ?? $item['key'] ?? '')));
-                return $candidate !== '' && isset($allowed[$candidate]);
+                return $candidate !== '' && $is_released_and_allowed($candidate);
             }));
         }
 
@@ -390,17 +407,31 @@ class VAPTSECURE_Build
                     // Allow the data directory itself
                     if ($item->isDir() && (strcasecmp($subPath, 'data') === 0 || strcasecmp($subPath, 'data/') === 0 || strcasecmp($subPath, 'data\\') === 0)) {
                         // Allow
-                    } else {
-                        // Disallow nested folders under /data (keeps the build lean and avoids shipping non-release catalogs)
-                        if ($item->isDir()) {
-                            continue;
+                    } 
+                    // [FEATURE] Include data/Enforcers folder in build
+                    elseif (strpos($subPath, 'data' . DIRECTORY_SEPARATOR . 'Enforcers') === 0) {
+                        // Allow Enforcers folder and its contents
+                    }
+                    else {
+                        // Disallow other nested folders under /data
+                        if ($item->isDir() && strpos($subPath, 'data' . DIRECTORY_SEPARATOR) === 0) {
+                            $parts = explode(DIRECTORY_SEPARATOR, $subPath);
+                            if (count($parts) > 2) { // Deeper than data/Enforcers/ is handled by the Enforcers check above
+                                continue;
+                            }
+                            if (count($parts) === 2 && strcasecmp($parts[1], 'Enforcers') !== 0) {
+                                continue;
+                            }
                         }
 
                         // Only allow a small set of top-level data files
                         $is_top_level_file = (strpos($subPath, 'data/') === 0 || strpos($subPath, 'data\\') === 0) &&
                             (substr_count($subPath, '/') === 1 || substr_count($subPath, '\\') === 1);
                         if (!$is_top_level_file || !in_array($filename, $allowed_data_files, true)) {
-                            continue;
+                            // Check if it's inside Enforcers
+                            if (strpos($subPath, 'data' . DIRECTORY_SEPARATOR . 'Enforcers') !== 0) {
+                                continue;
+                            }
                         }
                     }
 

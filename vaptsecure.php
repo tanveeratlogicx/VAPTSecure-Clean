@@ -27,7 +27,7 @@ if (file_exists(dirname(__FILE__) . '/vendor/autoload.php')) {
 if (defined('VAPTSECURE_BUILD_VERSION')) {
     define('VAPTSECURE_VERSION', VAPTSECURE_BUILD_VERSION);
 } else {
-    define('VAPTSECURE_VERSION', '3.2.0'); // Added 7-Day Trial and 15-Day Demo license types
+    define('VAPTSECURE_VERSION', '3.2.1'); // Fixed Build Generator 'Include Active Data' logic and Enforcer folder inclusion
 }
 if (! defined('VAPTSECURE_DATA_VERSION')) {
     define('VAPTSECURE_DATA_VERSION', '2.5.0');
