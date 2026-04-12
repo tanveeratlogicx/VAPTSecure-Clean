@@ -136,12 +136,15 @@ class VAPTSECURE_License_Manager
         if ($license_type === 'pro') {
             $duration = '+1 year';
             $days = 365;
-        } elseif ($license_type === 'developer') {
+        } elseif ($license_type === 'developer' || $license_type === 'developer_unbound') {
             $duration = '+100 years';
             $days = 36500;
-        } elseif ($license_type === 'developer_unbound') {
-            $duration = '+100 years';
-            $days = 36500;
+        } elseif ($license_type === '7-day-trial') {
+            $duration = '+7 days';
+            $days = 7;
+        } elseif ($license_type === '15-day-demo') {
+            $duration = '+15 days';
+            $days = 15;
         }
 
         // Calculate new expiry date

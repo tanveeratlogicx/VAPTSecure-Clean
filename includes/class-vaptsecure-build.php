@@ -262,6 +262,7 @@ class VAPTSECURE_Build
         $payload = array(
             'build_profile' => 'client',
             'license_type' => (string) $license_type,
+            'is_trial' => in_array($license_type, ['7-day-trial', '15-day-demo']),
             'domain_locked' => ($license_type !== 'developer_unbound') ? (string) $domain : '',
             'build_version' => (string) $version,
             'license_scope' => (string) $license_scope,
@@ -288,8 +289,10 @@ class VAPTSECURE_Build
         $config .= "    function vaptsecure_apply_config_payload( \$payload ) {\n";
         $config .= "        if ( ! is_array( \$payload ) ) { return false; }\n";
         $config .= "        \$license_type = isset( \$payload['license_type'] ) ? (string) \$payload['license_type'] : 'standard';\n";
+        $config .= "        \$is_trial = ! empty( \$payload['is_trial'] );\n";
         $config .= "        if ( ! defined( 'VAPTSECURE_BUILD_PROFILE' ) && isset( \$payload['build_profile'] ) ) { define( 'VAPTSECURE_BUILD_PROFILE', (string) \$payload['build_profile'] ); }\n";
         $config .= "        if ( ! defined( 'VAPTSECURE_LICENSE_TYPE' ) ) { define( 'VAPTSECURE_LICENSE_TYPE', \$license_type ); }\n";
+        $config .= "        if ( ! defined( 'VAPTSECURE_IS_TRIAL' ) ) { define( 'VAPTSECURE_IS_TRIAL', \$is_trial ); }\n";
         $config .= "        if ( \$license_type !== 'developer_unbound' && ! defined( 'VAPTSECURE_DOMAIN_LOCKED' ) && ! empty( \$payload['domain_locked'] ) ) { define( 'VAPTSECURE_DOMAIN_LOCKED', (string) \$payload['domain_locked'] ); }\n";
         $config .= "        if ( \$license_type !== 'developer_unbound' && ! defined( 'VAPTSECURE_DOMAIN_WILDCARD' ) && isset( \$payload['is_wildcard'] ) && \$payload['is_wildcard'] ) { define( 'VAPTSECURE_DOMAIN_WILDCARD', true ); }\n";
         $config .= "        if ( ! defined( 'VAPTSECURE_BUILD_VERSION' ) && isset( \$payload['build_version'] ) ) { define( 'VAPTSECURE_BUILD_VERSION', (string) \$payload['build_version'] ); }\n";
