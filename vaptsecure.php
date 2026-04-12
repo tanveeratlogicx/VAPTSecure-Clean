@@ -3,7 +3,7 @@
 /**
  * Plugin Name: VAPTSecure Clean
  * Description: Ultimate VAPT and OWASP Security Plugin Builder.
- * Version: 3.1.6
+ * Version: 3.1.8
  * Author: Tanveer H. Malik
  * Author URI: https://vapt.copilot.com
  * License: GPL-2.0+
