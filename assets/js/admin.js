@@ -1525,11 +1525,11 @@ var vaptLog = window.vaptLog || {
                 value: formState.license_type,
                 disabled: isSaving,
                 options: [
+                  { label: '7-Day Trial', value: '7-day-trial' },
+                  { label: '15-Day Demo', value: '15-day-demo' },
                   { label: 'Standard (30 Days)', value: 'standard' },
                   { label: 'Pro (One Year)', value: 'pro' },
-                  { label: 'Developer (Perpetual)', value: 'developer' },
-                  { label: '7-Day Trial', value: '7-day-trial' },
-                  { label: '15-Day Demo', value: '15-day-demo' }
+                  { label: 'Developer (Perpetual)', value: 'developer' }
                 ],
                 onChange: (val) => {
                   const baseDate = new Date();
