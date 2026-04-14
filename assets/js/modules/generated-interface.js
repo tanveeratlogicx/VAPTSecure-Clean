@@ -1495,21 +1495,7 @@ var vaptLog = window.vaptLog || {
     ]);
   };
 
-  const GeneratedInterface = (props) => {
-    const {
-      feature,
-      onUpdate,
-      isGuidePanel = false,
-      hideMonitor = false,
-      hideOpNotes = false,
-      hideProtocol = false,
-      hideImplementationControl = false,
-      hideThreatPanel = false, // 🛡️ ADD THIS
-      hideBadges = false,      // 🛡️ ADD THIS
-      showTechnicalTrace = false,
-      showVerificationDetails = true,
-      globalProtection = true
-    } = props;
+  const GeneratedInterface = ({ feature, onUpdate, isGuidePanel = false, hideMonitor = false, hideOpNotes = false, hideProtocol = false, hideImplementationControl = false, hideThreatPanel = false, hideBadges = false, showTechnicalTrace = false, showVerificationDetails = true, globalProtection = true, isCompact = false }) => {
     const isWorkbench = window.location.search.includes('page=vaptsecure-workbench');
     vaptLog.log('GeneratedInterface Render:', { key: feature?.key, controls: feature?.generated_schema?.controls, isGuidePanel });
     let schema = useMemo(() => {
@@ -1639,10 +1625,10 @@ var vaptLog = window.vaptLog || {
               __('STATUS: INACTIVE / REMOVED', 'vaptsecure')
             ]);
 
-          return el('div', { id: control.id, key: uniqueKey, style: { marginBottom: '0' } }, [
+          return el('div', { id: control.id, key: uniqueKey, style: { marginBottom: isCompact ? '0' : '0' } }, [
             el(ToggleControl, {
               disabled: globalProtection === false,
-              label: el('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } }, [
+              label: isCompact ? '' : el('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } }, [
                 el('strong', { style: { fontSize: '12px', color: '#334155' } }, safeRender(label)),
                 el(Tooltip, {
                   text: el('div', { style: { padding: '12px', maxWidth: '450px', maxHeight: '500px', overflowY: 'auto', background: '#1e293b', borderRadius: '8px' } }, [
@@ -1724,36 +1710,11 @@ var vaptLog = window.vaptLog || {
                 timeoutsRef.current[key].push(t1);
               }
             }),
-            // 🛡️ Localized Status Pill (v3.13.12) / Inhibited Status (v3.14.0)
-            !globalProtection && el('div', {
-              style: {
-                marginTop: '-8px',
-                marginBottom: '8px',
-                marginLeft: '35px',
-                display: 'flex'
-              }
-            }, el('span', {
-              style: {
-                fontSize: '10px',
-                fontWeight: '600',
-                padding: '2px 8px',
-                borderRadius: '12px',
-                background: '#f1f5f9',
-                color: '#64748b',
-                border: '1px dashed #cbd5e1',
-                boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px'
-              }
-            }, [
-              el(Icon, { icon: 'warning', size: 12 }),
-              __('Inhibited (Master Switch OFF)', 'vaptsecure')
-            ])),
+            // Status Indicator (v3.14.15 Refactored: Cleaner UI)
             statusMap[key] && el('div', {
               style: {
-                marginTop: '-8px',
-                marginBottom: '8px',
+                marginTop: '-4px',
+                marginBottom: '4px',
                 marginLeft: '35px',
                 display: 'flex'
               }
@@ -1761,42 +1722,21 @@ var vaptLog = window.vaptLog || {
               style: {
                 fontSize: '10px',
                 fontWeight: '600',
-                padding: '2px 8px',
-                borderRadius: '12px',
+                padding: '1px 6px',
+                borderRadius: '4px',
                 background: statusMap[key].type === 'success' ? '#ecfdf5' : (isRemovalContext(key, value) ? '#fef2f2' : '#f0f9ff'),
                 color: statusMap[key].type === 'success' ? '#059669' : (isRemovalContext(key, value) ? '#b91c1c' : '#0369a1'),
                 border: `1px solid ${statusMap[key].type === 'success' ? '#10b981' : (isRemovalContext(key, value) ? '#f87171' : '#0ea5e9')}`,
-                boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '4px'
               }
             }, [
-              el(Icon, { icon: statusMap[key].type === 'success' ? 'yes' : 'update', size: 12 }),
+              el(Icon, { icon: statusMap[key].type === 'success' ? 'yes' : 'update', size: 10 }),
               statusMap[key].message
             ])),
-            // 🛡️ Visual Indicator for Code Addition (v3.13.15 Enhanced)
-            globalProtection && toBool(value) && el('div', {
-              style: {
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px',
-                padding: '2px 8px',
-                background: '#ecfdf5',
-                color: '#059669',
-                borderRadius: '12px',
-                fontSize: '10px',
-                fontWeight: '600',
-                marginTop: '-8px',
-                marginBottom: '8px',
-                marginLeft: '35px',
-                border: '1px solid #10b981',
-                boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
-              }
-            }, [
-              el(Icon, { icon: 'editor-code', size: 12 }),
-              __('Active Protection Confirmed', 'vaptsecure')
-            ])
+            // 🛡️ Visual Indicator for Code Addition (v3.13.15 Enhanced: Removed for Cleaner UI)
+            null
           ]);
 
         case 'input':
@@ -1869,20 +1809,21 @@ var vaptLog = window.vaptLog || {
 
         case 'info':
         case 'html':
+          const isSecurityInsight = (control.content || control.html || label || '').includes('SECURITY INSIGHTS');
           return el('div', {
             id: control.id || `vapt-info-${uniqueKey}`,
             key: uniqueKey,
             style: {
-              padding: '16px 20px',
-              background: '#ffffff',
-              border: '1px solid #e2e8f0',
-              borderTop: '3px solid #0ea5e9',
-              borderRadius: '8px',
-              boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+              padding: '0',
+              background: 'transparent',
+              border: 'none',
+              boxShadow: 'none',
               fontSize: '12.5px',
               color: '#334155',
-              marginBottom: '15px',
-              lineHeight: '1.6'
+              marginBottom: '10px',
+              lineHeight: '1.5',
+              marginTop: isSecurityInsight ? '0' : '0', 
+              display: 'block'
             },
             dangerouslySetInnerHTML: { __html: control.content || control.html || label }
           });
@@ -2151,26 +2092,25 @@ var vaptLog = window.vaptLog || {
 
       // 🛡️ Operational Notes (v3.12.18) - Card UI Transition (v2.4.3)
       !hideOpNotes && opNotes && el('div', {
-        className: 'vapt-op-notes-card',
+        className: 'vapt-op-notes-refactored',
         id: 'vapt-op-notes-container',
         style: {
-          padding: '16px 20px',
-          background: '#ffffff',
-          border: '1px solid #e2e8f0',
-          borderTop: '3px solid #0d9488',
-          borderRadius: '8px',
-          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
-          fontSize: '13px',
+          padding: '0',
+          background: 'transparent',
+          border: 'none',
+          boxShadow: 'none',
+          fontSize: '12.5px',
           color: '#334155',
-          lineHeight: '1.6',
-          marginBottom: '20px'
+          lineHeight: '1.5',
+          marginBottom: '5px', 
+          marginTop: '0'
         }
       }, [
-        el('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', color: '#0d9488', fontWeight: '700', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' } }, [
-          el(Icon, { icon: 'info', size: 16 }),
+        el('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', color: '#0d9488', fontWeight: '700', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', height: '16px', marginBottom: '10px', lineHeight: '1' } }, [
+          el(Icon, { icon: 'info', size: 14 }),
           __('Business Impact & Security Benefit', 'vaptsecure')
         ]),
-        el('div', { style: { color: '#475569' } }, [
+        el('div', { style: { color: '#475569', paddingLeft: '20px' } }, [
           typeof processedNotes === 'string' ? linkify(processedNotes) : JSON.stringify(processedNotes),
           detailElement
         ])
@@ -2219,23 +2159,25 @@ var vaptLog = window.vaptLog || {
       ),
 
       // 🛡️ Manual Verification Protocol (v3.12.18) - Collapsible (v3.12.20)
-      !hideProtocol && protocolSteps && el('details', {
-        className: 'vapt-protocol-panel',
-        open: true, // Default collapsed
+      !hideProtocol && protocolSteps && el('div', {
+        className: 'vapt-protocol-panel-refactored',
         style: {
-          background: '#f8fafc',
-          border: '1px solid #e2e8f0',
-          borderRadius: '8px',
-          padding: '15px'
+          background: 'transparent',
+          border: 'none',
+          borderRadius: 0,
+          padding: '0'
         }
       }, [
-        el('summary', { style: { fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', color: '#334155', cursor: 'pointer', outline: 'none' } }, __('Manual Verification Protocol', 'vaptsecure')),
-        el('ol', { style: { margin: '15px 0 0 0', paddingLeft: '20px', fontSize: '12px', color: '#475569' } },
+        el('div', { style: { fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', color: '#334155', letterSpacing: '0.05em', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' } }, [
+          el(Icon, { icon: 'excerpt-view', size: 14 }),
+          __('Manual Verification Protocol', 'vaptsecure')
+        ]),
+        el('ol', { style: { margin: '0', paddingLeft: '25px', fontSize: '12px', color: '#475569' } },
           (Array.isArray(protocolSteps) ? protocolSteps : [protocolSteps]).map((s, i) => {
             let stepText = typeof s === 'object' ? (s.action || s.description || s.step || JSON.stringify(s)) : s;
             // 🛡️ Enhanced Numbering Cleanup (v3.13.14): Handles "1. ", "Step 1: ", "1) ", etc.
             stepText = stepText.replace(/^(Step\s*\d+[:\s]*|\d+[\.\)]\s*)+/i, '');
-            return el('li', { key: i, style: { marginBottom: '6px' } }, linkify(stepText));
+            return el('li', { key: i, style: { marginBottom: '4px' } }, linkify(stepText));
           })
         )
       ]),
@@ -2243,15 +2185,13 @@ var vaptLog = window.vaptLog || {
       // 🛡️ "No Manual Verification" fallback (v3.14.10)
       !hideProtocol && !protocolSteps && el('div', {
         style: {
-          padding: '15px',
-          background: '#f8fafc',
-          border: '1px solid #e2e8f0',
-          borderRadius: '8px',
+          padding: '0',
+          background: 'transparent',
           fontSize: '12px',
           color: '#64748b',
           fontStyle: 'italic'
         }
-      }, __('No manual verification required for this feature.', 'vaptsecure')),
+      }, __('No manual verification required.', 'vaptsecure')),
 
       localAlert && el(Modal, {
         title: localAlert.type === 'error' ? __('Error', 'vaptsecure') : __('Notice', 'vaptsecure'),

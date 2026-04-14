@@ -804,10 +804,16 @@ class VAPTSECURE_REST
                         $enabled_features = array_column($feat_rows, 0);
                     }
                 }
+                $is_config_build = defined('VAPTSECURE_BUILD_PROFILE') && VAPTSECURE_BUILD_PROFILE === 'client';
                 $features = array_filter(
-                    $features, function ($f) use ($enabled_features, $is_superadmin) {
+                    $features, function ($f) use ($enabled_features, $is_superadmin, $is_config_build) {
                         $s = $f['normalized_status'];
-                        if ($s === 'release') { return true; // Display all release features on the dashboard
+                        if ($s === 'release') {
+                            // On a config build, also restrict to features allowed by the config
+                            if ($is_config_build && !vaptsecure_is_feature_allowed($f['key'] ?? '')) {
+                                return false;
+                            }
+                            return true;
                         }
                         return $is_superadmin && in_array($s, ['draft', 'develop', 'test']);
                     }
@@ -1236,7 +1242,9 @@ class VAPTSECURE_REST
 
             // [v3.13.30] BI-DIRECTIONAL SYNC: Auto-detect Master Toggle in implementation_data
             // [FIX v4.0.x] Also sync is_enforced so toggle affects file enforcement
-            if (is_array($implementation_data)) {
+            // [FIX] Only sync from implementation_data if client didn't explicitly set is_enabled/is_enforced
+            $client_set_enabled = $request->has_param('is_enabled') || $request->has_param('is_enforced');
+            if (is_array($implementation_data) && !$client_set_enabled) {
                 $is_enabled = null;
                 $risk_suffix = str_replace('-', '_', strtolower($key));
                 $auto_key = "vapt_risk_{$risk_suffix}_enabled";
@@ -1253,7 +1261,7 @@ class VAPTSECURE_REST
                     // Sync both is_enabled AND is_enforced for consistent enforcement
                     $meta_updates['is_enabled'] = $is_enabled ? 1 : 0;
                     $meta_updates['is_enforced'] = $is_enabled ? 1 : 0;
-                    error_log("VAPT: Toggled enforcement for $key to " . ($is_enabled ? 'ENABLED' : 'DISABLED') . " (synced to both is_enabled and is_enforced)");
+                    error_log("VAPT: Toggled enforcement for $key to " . ($is_enabled ? 'ENABLED' : 'DISABLED') . " (synced from implementation_data to both is_enabled and is_enforced)");
                 }
             }
         }
@@ -1912,6 +1920,8 @@ class VAPTSECURE_REST
         $data['installation_limit'] = $request->get_param('installation_limit');
         $data['restrict_features'] = $request->get_param('restrict_features');
         $data['is_wildcard'] = $request->get_param('is_wildcard');
+        $data['require_wp'] = $request->get_param('require_wp');
+        $data['require_php'] = $request->get_param('require_php');
 
         // Delegate to Build Class
         include_once VAPTSECURE_PATH . 'includes/class-vaptsecure-build.php';
@@ -1967,17 +1977,51 @@ class VAPTSECURE_REST
         }
 
         $domain_for_files = ($domain === '*' || (is_string($domain) && strpos($domain, '__universal__:') === 0)) ? 'universal' : sanitize_file_name($domain);
-        $version_for_files = sanitize_file_name($version);
 
         include_once VAPTSECURE_PATH . 'includes/class-vaptsecure-build.php';
-        $config_content = VAPTSECURE_Build::generate_config_content($domain, $version, $features, null, $license_type, $license_scope, $installation_limit, $restrict_features, '');
+        $feature_meta_snapshot = is_array($features) && !empty($features) ? VAPTSECURE_Build::get_feature_meta_snapshot_public($features) : array();
+
+        // Generate candidate config at the CURRENT version to detect changes
+        $candidate_content = VAPTSECURE_Build::generate_config_content($domain, $version, $features, null, $license_type, $license_scope, $installation_limit, $restrict_features, '', $feature_meta_snapshot);
+
+        // Extract the B64 payload from the candidate
+        $has_changed = true;
+        if (preg_match("/VAPTSECURE_CONFIG_B64', '([A-Za-z0-9+\/=]+)'/", $candidate_content, $new_m)) {
+            $new_payload_b64 = $new_m[1];
+            // Find the existing config file for this domain at current version
+            $existing_file = VAPTSECURE_PATH . "vapt-{$domain_for_files}-config-" . sanitize_file_name($version) . ".php";
+            if (file_exists($existing_file)) {
+                $existing_content = file_get_contents($existing_file);
+                if (preg_match("/VAPTSECURE_CONFIG_B64', '([A-Za-z0-9+\/=]+)'/", $existing_content, $old_m)) {
+                    // Compare decoded payloads excluding build_at timestamp
+                    $new_decoded = json_decode(base64_decode($new_payload_b64), true);
+                    $old_decoded = json_decode(base64_decode($old_m[1]), true);
+                    if (is_array($new_decoded) && is_array($old_decoded)) {
+                        unset($new_decoded['build_at'], $old_decoded['build_at']);
+                        $has_changed = (json_encode($new_decoded) !== json_encode($old_decoded));
+                    }
+                }
+            }
+        }
+
+        // Bump version only when content actually changed
+        $write_version = $has_changed ? self::bump_semver_patch($version) : $version;
+        $version_for_files = sanitize_file_name($write_version);
+        $config_content = $has_changed
+            ? VAPTSECURE_Build::generate_config_content($domain, $write_version, $features, null, $license_type, $license_scope, $installation_limit, $restrict_features, '', $feature_meta_snapshot)
+            : $candidate_content;
+
         $filename = "vapt-{$domain_for_files}-config-{$version_for_files}.php";
         $filepath = VAPTSECURE_PATH . $filename;
 
         $saved = file_put_contents($filepath, $config_content);
 
         if ($saved !== false) {
-            return new WP_REST_Response(array('success' => true, 'path' => $filepath, 'filename' => $filename), 200);
+            if ($has_changed) {
+                update_option(self::domain_version_key($domain), $write_version);
+            }
+            $next_version = $has_changed ? self::bump_semver_patch($write_version) : $write_version;
+            return new WP_REST_Response(array('success' => true, 'path' => $filepath, 'filename' => $filename, 'built_version' => $write_version, 'next_version' => $next_version, 'changed' => $has_changed), 200);
         } else {
             return new WP_REST_Response(array('error' => 'Failed to write config file to plugin root', 'path' => $filepath), 500);
         }

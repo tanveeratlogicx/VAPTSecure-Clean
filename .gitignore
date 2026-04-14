@@ -62,3 +62,13 @@ wp-config.php
 #/wp-content/themes
 /plans/
 vapt-universal-config-1.0.1.php
+
+# Client build config files (generated — not for VCS)
+vapt-*-config-*.php
+
+# Playwright MCP artifacts
+.playwright-mcp/
+
+# Dashboard screenshots / debug images
+vapt-dashboard.png
+*.png

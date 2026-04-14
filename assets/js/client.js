@@ -144,6 +144,9 @@ var vaptLog = window.vaptLog || {
       })
         .then((res) => {
           if (!silent) setSaveStatus({ message: successMsg || __('Saved', 'vaptsecure'), type: 'success' });
+          if (data.is_enabled !== undefined || data.is_enforced !== undefined) {
+            fetchSecurityInsights();
+          }
           return res;
         })
         .catch(err => {
@@ -323,8 +326,9 @@ var vaptLog = window.vaptLog || {
                     el('strong', { style: { color: '#dc2626' } }, licenseError.domain),
                     '.'
                 ]),
-                el('div', { style: { marginTop: '20px', fontSize: '12px', color: '#94a3b8', fontWeight: 600 } }, [
-                    sprintf(__('Build Version: v%s', 'vaptsecure'), settings.pluginVersion)
+                el('div', { style: { marginTop: '20px', fontSize: '12px', color: '#94a3b8', fontWeight: 600, display: 'flex', flexDirection: 'column', gap: '5px' } }, [
+                    el('div', null, sprintf(__('Build Version: v%s', 'vaptsecure'), settings.pluginVersion)),
+                    settings.buildAt && el('div', null, sprintf(__('Build Generated: %s', 'vaptsecure'), settings.buildAt))
                 ])
             ])
         ]);
@@ -390,7 +394,10 @@ var vaptLog = window.vaptLog || {
       // Main Content
       el('main', { className: 'vapt-client-main', style: { flexGrow: 1, padding: '40px', overflowY: 'auto' } }, [
         activeTab === 'stats' ? [
-          el('h1', { style: { margin: '0 0 30px 0', fontSize: '24px', fontWeight: 800, color: '#1e293b' } }, __('Security Overview')),
+          el('h1', { style: { margin: '0 0 30px 0', fontSize: '24px', fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'baseline', gap: '10px' } }, [
+            __('VAPT Admin Security Overview', 'vaptsecure'),
+            el('span', { style: { fontSize: '14px', fontWeight: 600, color: '#94a3b8', background: '#f1f5f9', padding: '2px 8px', borderRadius: '6px' } }, `v${settings.pluginVersion}`)
+          ]),
           el(StatsDashboard),
           el(LiveSecurityLogs)
         ] : [
@@ -508,7 +515,7 @@ var vaptLog = window.vaptLog || {
 
     // v3.14.0: Enforcement Logic
     const isEnforced = globalProtection
-      ? ((f.normalized_status || f.status || '').toLowerCase() === 'release' ? (f.is_enforced != 0) : (f.is_enforced == 1))
+      ? (f.is_enforced === true || f.is_enforced === 1)
       : false;
 
     const isInhibited = !globalProtection && ((f.normalized_status || f.status || '').toLowerCase() === 'release' || (f.is_enforced == 1));
@@ -561,10 +568,7 @@ var vaptLog = window.vaptLog || {
             ]),
             f.description && el('p', { style: { margin: '6px 0 0 0', fontSize: '12px', color: '#64748b', fontWeight: 500 } }, f.description)
           ]),
-          el('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } }, [
-            el(Icon, { icon: statusObj.icon, size: 16, style: { color: statusObj.color } }),
-            el('span', { style: { fontSize: '11px', fontWeight: 800, color: statusObj.color, textTransform: 'uppercase', letterSpacing: '0.05em' } }, statusObj.label)
-          ])
+          null
         ])
       ]),
       el(CardBody, { style: { padding: '0' } }, [
@@ -596,7 +600,14 @@ var vaptLog = window.vaptLog || {
               ]),
               masterToggleControl ? el(GeneratedInterface, {
                 feature: { ...f, generated_schema: { ...schema, controls: [masterToggleControl] } },
-                onUpdate: (data) => updateFeature(f.key, { implementation_data: data }),
+                onUpdate: (data) => {
+                  const toggleKey = masterToggleControl.key || 'feat_enabled';
+                  const riskSuffix = f.key.replace(/-/g, '_').toLowerCase();
+                  const autoKey = `vapt_risk_${riskSuffix}_enabled`;
+                  const rawVal = data[toggleKey] !== undefined ? data[toggleKey] : (data['enabled'] !== undefined ? data['enabled'] : (data[autoKey] !== undefined ? data[autoKey] : null));
+                  const syncFlags = rawVal !== null ? { is_enabled: rawVal ? 1 : 0, is_enforced: rawVal ? 1 : 0 } : {};
+                  updateFeature(f.key, { implementation_data: data, ...syncFlags });
+                },
                 hideOpNotes: true,
                 hideProtocol: true,
                 hideMonitor: true,
