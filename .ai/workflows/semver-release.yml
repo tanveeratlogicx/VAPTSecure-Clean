@@ -8,7 +8,7 @@ description: Semantic Versioning (SemVer) Release Workflow for VAPTSecure
 
 This workflow defines the rules for bumping VAPTSecure plugin versions following [Semantic Versioning 2.0.0](https://semver.org/) specification.
 
-**Version Format:** `MAJOR.MINOR.PATCH` (e.g., `3.1.0`)
+**Version Format:** `MAJOR.MINOR.PATCH` (e.g., `3.2.0`)
 
 ---
 
@@ -34,6 +34,7 @@ This workflow defines the rules for bumping VAPTSecure plugin versions following
 ### 2. MINOR Version Bump (0.X.0)
 **When to increment:**
 - New features added in a backward-compatible manner
+- New license tiers/types added (e.g., adding Trial/Demo licenses)
 - New REST API endpoints added
 - New enforcer drivers (e.g., adding Cloudflare driver)
 - New risk categories or features in schema
@@ -104,15 +105,15 @@ When bumping version, update in this order:
    - Identify highest impact change type
 
 2. **Determine New Version**
-   - Current: `3.1.0`
+   - Current: `3.2.0`
    - If breaking changes → `4.0.0` (MAJOR)
-   - If new features → `3.2.0` (MINOR)
-   - If only fixes → `3.1.1` (PATCH)
+   - If new features → `3.3.0` (MINOR)
+   - If only fixes → `3.2.1` (PATCH)
 
 3. **Execute Updates**
    ```php
    // vaptsecure.php
-   define('VAPTSECURE_VERSION', '3.1.1');  // Updated
+   define('VAPTSECURE_VERSION', '3.2.1');  // Updated
    ```
 
 4. **Verify Consistency**

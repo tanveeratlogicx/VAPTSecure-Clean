@@ -3,7 +3,7 @@
 /**
  * Plugin Name: VAPTSecure Clean
  * Description: Ultimate VAPT and OWASP Security Plugin Builder.
- * Version: 3.1.8
+ * Version: 3.3.0
  * Author: Tanveer H. Malik
  * Author URI: https://vapt.copilot.com
  * License: GPL-2.0+
@@ -27,7 +27,7 @@ if (file_exists(dirname(__FILE__) . '/vendor/autoload.php')) {
 if (defined('VAPTSECURE_BUILD_VERSION')) {
     define('VAPTSECURE_VERSION', VAPTSECURE_BUILD_VERSION);
 } else {
-    define('VAPTSECURE_VERSION', '3.2.0'); // Added 7-Day Trial and 15-Day Demo license types
+    define('VAPTSECURE_VERSION', '3.3.0'); // v3.3.0 — Fixed Active Enforcements toggle sync & Build Generator version bump on change
 }
 if (! defined('VAPTSECURE_DATA_VERSION')) {
     define('VAPTSECURE_DATA_VERSION', '2.5.0');
@@ -113,6 +113,14 @@ function is_vaptsecure_superadmin($require_auth = false)
  */
 function vaptsecure_is_feature_allowed($feature_key)
 {
+    // On a client build, always enforce the feature constant check.
+    // VAPTSECURE_FEATURE_* constants are set only for features in the config.
+    // This applies regardless of license type — developer_unbound means domain-unlocked, not feature-unlocked.
+    if (defined('VAPTSECURE_BUILD_PROFILE') && VAPTSECURE_BUILD_PROFILE === 'client') {
+        $const_name = 'VAPTSECURE_FEATURE_' . strtoupper(str_replace('-', '_', $feature_key));
+        return defined($const_name) && constant($const_name) === true;
+    }
+
     if (defined('VAPTSECURE_LICENSE_TYPE') && VAPTSECURE_LICENSE_TYPE === 'developer_unbound') {
         return true;
     }
@@ -125,6 +133,33 @@ function vaptsecure_is_feature_allowed($feature_key)
     // Check if the specific feature constant is defined (set in generated config)
     $const_name = 'VAPTSECURE_FEATURE_' . strtoupper(str_replace('-', '_', $feature_key));
     return defined($const_name) && constant($const_name) === true;
+}
+
+/**
+ * Check if the current site domain matches the build's locked domain.
+ * Supports wildcard matching if VAPTSECURE_DOMAIN_WILDCARD is defined.
+ */
+function vaptsecure_is_domain_match()
+{
+    if (!defined('VAPTSECURE_DOMAIN_LOCKED') || empty(VAPTSECURE_DOMAIN_LOCKED)) {
+        return true;
+    }
+
+    $current_host = isset($_SERVER['HTTP_HOST']) ? strtolower(preg_replace('/:\d+$/', '', (string) $_SERVER['HTTP_HOST'])) : '';
+    $locked_domain = strtolower(VAPTSECURE_DOMAIN_LOCKED);
+
+    if ($current_host === $locked_domain) {
+        return true;
+    }
+
+    // Wildcard matching: check if locked domain exists as a substring (both sides wildcard)
+    if (defined('VAPTSECURE_DOMAIN_WILDCARD') && VAPTSECURE_DOMAIN_WILDCARD) {
+        if (strpos($current_host, $locked_domain) !== false) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 function vaptsecure_load_required_config()
@@ -271,6 +306,8 @@ function vaptsecure_load_required_config()
         $out .= "        if ( ! defined( 'VAPTSECURE_BUILD_VERSION' ) && isset( \$payload['build_version'] ) ) { define( 'VAPTSECURE_BUILD_VERSION', (string) \$payload['build_version'] ); }\n";
         $out .= "        if ( ! defined( 'VAPTSECURE_LICENSE_SCOPE' ) && isset( \$payload['license_scope'] ) ) { define( 'VAPTSECURE_LICENSE_SCOPE', (string) \$payload['license_scope'] ); }\n";
         $out .= "        if ( ! defined( 'VAPTSECURE_DOMAIN_LIMIT' ) && isset( \$payload['domain_limit'] ) ) { define( 'VAPTSECURE_DOMAIN_LIMIT', intval( \$payload['domain_limit'] ) ); }\n";
+        $out .= "        if ( ! defined( 'VAPTSECURE_REQUIRE_WP' ) && isset( \$payload['require_wp'] ) ) { define( 'VAPTSECURE_REQUIRE_WP', (string) \$payload['require_wp'] ); }\n";
+        $out .= "        if ( ! defined( 'VAPTSECURE_REQUIRE_PHP' ) && isset( \$payload['require_php'] ) ) { define( 'VAPTSECURE_REQUIRE_PHP', (string) \$payload['require_php'] ); }\n";
         $out .= "        if ( ! defined( 'VAPTSECURE_SECURITY_ALERT_EMAIL' ) && ! empty( \$payload['security_alert_email_b64'] ) ) { define( 'VAPTSECURE_SECURITY_ALERT_EMAIL', base64_decode( (string) \$payload['security_alert_email_b64'] ) ); }\n";
         $out .= "        if ( ! defined( 'VAPTSECURE_ACTIVE_DATA_FILE' ) && ! empty( \$payload['active_data_file'] ) ) { define( 'VAPTSECURE_ACTIVE_DATA_FILE', (string) \$payload['active_data_file'] ); }\n";
         $out .= "        \$restrict = ! empty( \$payload['restrict_features'] );\n";
@@ -534,7 +571,8 @@ function vaptsecure_seed_client_release_features()
         return;
     }
 
-    $seed_key = 'vaptsecure_client_seeded_' . md5($host . '|' . (defined('VAPTSECURE_BUILD_VERSION') ? VAPTSECURE_BUILD_VERSION : VAPTSECURE_VERSION));
+    $config_b64_hash = defined('VAPTSECURE_CONFIG_B64') ? md5(VAPTSECURE_CONFIG_B64) : '';
+    $seed_key = 'vaptsecure_client_seeded_' . md5($host . '|' . (defined('VAPTSECURE_BUILD_VERSION') ? VAPTSECURE_BUILD_VERSION : VAPTSECURE_VERSION) . '|' . $config_b64_hash);
     if (get_option($seed_key)) {
         return;
     }
@@ -596,7 +634,17 @@ function vaptsecure_seed_client_release_features()
             } elseif (array_key_exists($auto_key, $impl_arr)) {
                 $toggle_val = $impl_arr[$auto_key];
             }
-            $is_enabled_flag = ($toggle_val === null) ? true : (bool) filter_var($toggle_val, FILTER_VALIDATE_BOOLEAN);
+
+            // [v3.2.x] Check if is_enabled/is_enforced are explicitly provided in the build config
+            // If explicitly provided, use those values; otherwise derive from implementation_data
+            if (array_key_exists('is_enabled', $meta)) {
+                $is_enabled_flag = (intval($meta['is_enabled']) === 1);
+            } elseif (array_key_exists('is_enforced', $meta)) {
+                $is_enabled_flag = (intval($meta['is_enforced']) === 1);
+            } else {
+                // Fallback: derive from implementation_data toggle, default to true (original behavior)
+                $is_enabled_flag = ($toggle_val === null) ? true : (bool) filter_var($toggle_val, FILTER_VALIDATE_BOOLEAN);
+            }
 
             $row = array(
                 'feature_key' => $feature_key,
@@ -666,12 +714,20 @@ function vaptsecure_seed_client_release_features()
             VAPTSECURE_DB::update_feature_status($feature_key, 'Release');
         }
         $meta_table = $wpdb->prefix . 'vaptsecure_feature_meta';
-        if (empty($feature_meta_snapshot)) {
-            $wpdb->query($wpdb->prepare("INSERT INTO {$meta_table} (feature_key, is_enabled, is_enforced) VALUES (%s, 1, 1) ON DUPLICATE KEY UPDATE is_enabled = 1, is_enforced = 1", $feature_key));
+        
+        // [v3.2.x] Check if this feature has explicit config in the build
+        $has_explicit_config = is_array($feature_meta_snapshot) && isset($feature_meta_snapshot[strtoupper($feature_key)]);
+        
+        if ($has_explicit_config) {
+            // Feature has explicit config - already handled in the snapshot loop above, skip
         } else {
-            $wpdb->query($wpdb->prepare("INSERT IGNORE INTO {$meta_table} (feature_key, is_enabled, is_enforced) VALUES (%s, 1, 1)", $feature_key));
+            // No explicit meta: feature is licensed in the build so default to ENABLED
+            $wpdb->query($wpdb->prepare("INSERT INTO {$meta_table} (feature_key, is_enabled, is_enforced) VALUES (%s, 1, 1) ON DUPLICATE KEY UPDATE is_enabled = 1, is_enforced = 1", $feature_key));
         }
     }
+
+    // [v3.2.x] Clear enforcement cache to ensure fresh count
+    delete_transient('vaptsecure_active_enforcements');
 
     $domains_table = $wpdb->prefix . 'vaptsecure_domains';
     $wpdb->query(
@@ -709,8 +765,47 @@ function vaptsecure_seed_client_release_features()
 
 add_action('init', 'vaptsecure_seed_client_release_features', 1);
 
+/**
+ * Check if the current environment meets the build's requirements.
+ */
+function vaptsecure_check_requirements()
+{
+    if (is_admin() && !defined('DOING_AJAX')) {
+        // [v3.2.3] Check domain match before showing notices
+        if (!vaptsecure_is_domain_match()) {
+            return;
+        }
+
+        // WordPress Version Check
+        if (defined('VAPTSECURE_REQUIRE_WP') && !empty(VAPTSECURE_REQUIRE_WP)) {
+            $current_wp = get_bloginfo('version');
+            if (version_compare($current_wp, VAPTSECURE_REQUIRE_WP, '<')) {
+                add_action('admin_notices', function() use ($current_wp) {
+                    echo '<div class="notice notice-error"><p><strong>VAPT Secure:</strong> This build requires WordPress <strong>' . esc_html(VAPTSECURE_REQUIRE_WP) . '</strong> or higher. Your current version is ' . esc_html($current_wp) . '. Please upgrade WordPress to enable protection.</p></div>';
+                });
+            }
+        }
+
+        // PHP Version Check
+        if (defined('VAPTSECURE_REQUIRE_PHP') && !empty(VAPTSECURE_REQUIRE_PHP)) {
+            $current_php = PHP_VERSION;
+            if (version_compare($current_php, VAPTSECURE_REQUIRE_PHP, '<')) {
+                add_action('admin_notices', function() use ($current_php) {
+                    echo '<div class="notice notice-error"><p><strong>VAPT Secure:</strong> This build requires PHP <strong>' . esc_html(VAPTSECURE_REQUIRE_PHP) . '</strong> or higher. Your current version is ' . esc_html($current_php) . '. Please contact your host to upgrade PHP.</p></div>';
+                });
+            }
+        }
+    }
+}
+add_action('plugins_loaded', 'vaptsecure_check_requirements', 10);
+
 function vaptsecure_enforce_installation_limit()
 {
+    // [v3.2.3] Skip limit enforcement if domain matches (including wildcards)
+    if (vaptsecure_is_domain_match()) {
+        return;
+    }
+
     if (!defined('VAPTSECURE_LICENSE_SCOPE') || VAPTSECURE_LICENSE_SCOPE !== 'multisite') {
         return;
     }
@@ -1313,8 +1408,6 @@ if (! function_exists('vaptsecure_render_client_status_page')) {
     {
         ?>
     <div class="wrap">
-      <h1 class="wp-heading-inline"><?php _e('VAPT Secure', 'vaptsecure'); ?></h1>
-      <hr class="wp-header-end" />
       <div id="vapt-client-root">
         <div style="padding: 40px; text-align: center; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-radius: 4px;">
           <span class="spinner is-active" style="float: none; margin: 0 auto;"></span>
@@ -1514,14 +1607,14 @@ function vaptsecure_enqueue_admin_assets($hook)
         );
     $vapt_settings = array(
         'isSuper' => $is_superadmin,
-        'pluginVersion' => VAPTSECURE_VERSION,
+        'pluginVersion' => defined('VAPTSECURE_BUILD_VERSION') ? VAPTSECURE_BUILD_VERSION : VAPTSECURE_VERSION,
         'pluginName' => 'VAPT Secure',
         'currentDomain' => parse_url(home_url(), PHP_URL_HOST),
         'adminEmail' => get_option('admin_email'),
         'abspath' => ABSPATH,
         'pluginPath' => VAPTSECURE_PATH,
         'uploadPath' => wp_upload_dir()['basedir'],
-    'uploadPath' => wp_upload_dir()['basedir'],
+        'buildAt' => defined('VAPTSECURE_BUILD_AT') ? VAPTSECURE_BUILD_AT : null,
     );
 
     $home_url = esc_url_raw(home_url());

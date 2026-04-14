@@ -124,7 +124,7 @@ class VAPTSECURE_DB
         foreach ($schema_map as $col => $fmt) {
             if ($col === 'feature_key') { continue;
             }
-            if (isset($data[$col]) && in_array($col, $existing_cols)) {
+            if (array_key_exists($col, $data) && in_array($col, $existing_cols)) {
                 $final_data[$col] = $data[$col];
                 $formats[] = $fmt;
             }
@@ -374,13 +374,17 @@ class VAPTSECURE_DB
         if ($is_global) {
             $meta_table = $wpdb->prefix . 'vaptsecure_feature_meta';
             $status_table = $wpdb->prefix . 'vaptsecure_feature_status';
-            $active_features = $wpdb->get_var(
-                "SELECT COUNT(*) 
+            $rows = $wpdb->get_col(
+                "SELECT m.feature_key
                  FROM {$meta_table} m
                  INNER JOIN {$status_table} s ON m.feature_key = s.feature_key
                  WHERE s.status IN ('Release', 'Develop', 'Test')
-                   AND (m.is_enabled = 1 OR m.is_enforced = 1)"
+                   AND m.is_enabled = 1 AND m.is_enforced = 1"
             );
+            if (function_exists('vaptsecure_is_feature_allowed')) {
+                $rows = array_filter($rows, 'vaptsecure_is_feature_allowed');
+            }
+            $active_features = count($rows);
         }
 
         return array(

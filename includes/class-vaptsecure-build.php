@@ -35,44 +35,61 @@ class VAPTSECURE_Build
             return copy($source_path, $dest_path);
         }
 
+        // Fetch Release status map from DB
+        global $wpdb;
+        $status_table = $wpdb->prefix . 'vaptsecure_feature_status';
+        $release_features = $wpdb->get_col("SELECT feature_key FROM {$status_table} WHERE status = 'Release'");
+        $release_map = array();
+        if (is_array($release_features)) {
+            foreach ($release_features as $rf) {
+                $release_map[strtoupper(trim((string) $rf))] = true;
+            }
+        }
+
         $raw = file_get_contents($source_path);
         $data = json_decode($raw, true);
         if (!is_array($data)) {
             return copy($source_path, $dest_path);
         }
 
+        // Helper to check if feature is both allowed AND in Release state
+        $is_released_and_allowed = function($key) use ($allowed, $release_map) {
+            $key = strtoupper(trim((string) $key));
+            return isset($allowed[$key]) && isset($release_map[$key]);
+        };
+
         if (isset($data['risk_interfaces']) && is_array($data['risk_interfaces'])) {
             $filtered = array();
             foreach ($data['risk_interfaces'] as $risk_key => $item) {
                 $candidate = strtoupper(trim((string) ($item['risk_id'] ?? $risk_key)));
-                if ($candidate !== '' && isset($allowed[$candidate])) {
+                if ($candidate !== '' && $is_released_and_allowed($candidate)) {
                     $filtered[$risk_key] = $item;
                 }
             }
             $data['risk_interfaces'] = $filtered;
         } elseif (isset($data['risk_catalog']) && is_array($data['risk_catalog'])) {
-            $data['risk_catalog'] = array_values(array_filter($data['risk_catalog'], function ($item) use ($allowed) {
+            $data['risk_catalog'] = array_values(array_filter($data['risk_catalog'], function ($item) use ($is_released_and_allowed) {
                 if (!is_array($item)) {
                     return false;
                 }
                 $candidate = strtoupper(trim((string) ($item['risk_id'] ?? $item['id'] ?? $item['key'] ?? '')));
-                return $candidate !== '' && isset($allowed[$candidate]);
+                return $candidate !== '' && $is_released_and_allowed($candidate);
             }));
         } elseif (isset($data['features']) && is_array($data['features'])) {
-            $data['features'] = array_values(array_filter($data['features'], function ($item) use ($allowed) {
+            $data['features'] = array_values(array_filter($data['features'], function ($item) use ($is_released_and_allowed) {
                 if (!is_array($item)) {
                     return false;
                 }
                 $candidate = strtoupper(trim((string) ($item['risk_id'] ?? $item['id'] ?? $item['key'] ?? '')));
-                return $candidate !== '' && isset($allowed[$candidate]);
+                return $candidate !== '' && $is_released_and_allowed($candidate);
             }));
         } elseif (isset($data['wordpress_vapt']) && is_array($data['wordpress_vapt'])) {
-            $data['wordpress_vapt'] = array_values(array_filter($data['wordpress_vapt'], function ($item) use ($allowed) {
+            $data['wordpress_vapt'] = array_values(array_filter($data['wordpress_vapt'], function ($item) use ($is_released_and_allowed) {
                 if (!is_array($item)) {
                     return false;
                 }
                 $candidate = strtoupper(trim((string) ($item['risk_id'] ?? $item['id'] ?? $item['key'] ?? '')));
-                return $candidate !== '' && isset($allowed[$candidate]);
+                return $candidate !== '' && $is_released_and_allowed($candidate);
             }));
         }
 
@@ -81,6 +98,11 @@ class VAPTSECURE_Build
             return copy($source_path, $dest_path);
         }
         return file_put_contents($dest_path, $json) !== false;
+    }
+
+    public static function get_feature_meta_snapshot_public($feature_keys = [])
+    {
+        return self::get_feature_meta_snapshot($feature_keys);
     }
 
     private static function get_feature_meta_snapshot($feature_keys = [])
@@ -138,6 +160,8 @@ class VAPTSECURE_Build
                 'dev_instruct' => isset($row['dev_instruct']) ? (string) $row['dev_instruct'] : '',
                 'is_adaptive_deployment' => isset($row['is_adaptive_deployment']) ? (int) $row['is_adaptive_deployment'] : 0,
                 'active_enforcer' => isset($row['active_enforcer']) ? (string) $row['active_enforcer'] : '',
+                'is_enabled' => isset($row['is_enabled']) ? (int) $row['is_enabled'] : 0,
+                'is_enforced' => isset($row['is_enforced']) ? (int) $row['is_enforced'] : 0,
             );
         }
 
@@ -158,6 +182,9 @@ class VAPTSECURE_Build
         $security_alert_email = isset($data['security_alert_email']) ? sanitize_email((string) $data['security_alert_email']) : '';
         $is_universal_domain = ($domain === '*') || (is_string($domain) && strpos($domain, '__universal__:') === 0);
         $domain_for_files = $is_universal_domain ? 'universal' : $domain;
+        
+        // [FIX v3.2.3] Get the is_wildcard flag from the build request data
+        $is_wildcard_flag = isset($data['is_wildcard']) && ($data['is_wildcard'] === true || $data['is_wildcard'] === 'true' || $data['is_wildcard'] === 1 || $data['is_wildcard'] === '1');
 
         // 1. Setup Build Paths
         $upload_dir = wp_upload_dir();
@@ -192,13 +219,23 @@ class VAPTSECURE_Build
         
         $license_scope = isset($data['license_scope']) ? $data['license_scope'] : 'single';
         $domain_limit = isset($data['installation_limit']) ? intval($data['installation_limit']) : 1;
-        $restrict_features = isset($data['restrict_features']) ? filter_var($data['restrict_features'], FILTER_VALIDATE_BOOLEAN) : false;
+        $restrict_features = isset($data['restrict_features']) ? (bool) $data['restrict_features'] : false;
+        $require_wp = isset($data['require_wp']) ? sanitize_text_field($data['require_wp']) : '6.0';
+        $require_php = isset($data['require_php']) ? sanitize_text_field($data['require_php']) : '7.4.33';
 
-        $feature_meta_snapshot = self::get_feature_meta_snapshot($features);
-        $is_wildcard = isset($data['is_wildcard']) && ($data['is_wildcard'] === true || $data['is_wildcard'] === 'true' || $data['is_wildcard'] === 1 || $data['is_wildcard'] === '1');
-        $config_content = self::generate_config_content($domain, $version, $features, $active_data_file_name, $license_type, $license_scope, $domain_limit, $restrict_features, $security_alert_email, $feature_meta_snapshot, $is_wildcard);
+        // Get snapshot of feature metadata (configs, schemas, etc)
+        $feature_meta_snapshot = array();
+        if ($include_config) {
+            $feature_meta_snapshot = self::get_feature_meta_snapshot($features);
+        }
 
-        // If Config Only -> Save and ZIP just that
+        $config_content = self::generate_config_content(
+            $domain, $version, $features, $active_data_file_name, 
+            $license_type, $license_scope, $domain_limit, 
+            $restrict_features, $security_alert_email, 
+            $feature_meta_snapshot, $is_wildcard_flag,
+            $require_wp, $require_php
+        );  // If Config Only -> Save and ZIP just that
         if ($generate_type === 'config_only') {
             $config_filename = "vapt-{$domain_for_files}-config-{$version}.php";
             file_put_contents($build_dir . '/' . $config_filename, $config_content);
@@ -214,7 +251,7 @@ class VAPTSECURE_Build
         }
 
         // 5. Rewrite Main Plugin File Headers & Logic
-        self::rewrite_main_plugin_file($plugin_dir, $plugin_slug, $white_label, $version, $domain, $config_filename, $include_config);
+        self::rewrite_main_plugin_file($plugin_dir, $plugin_slug, $white_label, $version, $domain, $config_filename, $include_config, $require_wp, $require_php);
 
         // 6. Generate Documentation
         self::generate_docs($plugin_dir, $domain, $version, $features);
@@ -255,7 +292,7 @@ class VAPTSECURE_Build
         return $base_storage_url . '/' . $domain_for_files . '/' . $version . '/' . $zip_filename;
     }
 
-    public static function generate_config_content($domain, $version, $features, $active_data_file = null, $license_type = 'standard', $license_scope = 'single', $domain_limit = 1, $restrict_features = false, $security_alert_email = '', $feature_meta_snapshot = array(), $is_wildcard = false)
+    public static function generate_config_content($domain, $version, $features, $active_data_file = null, $license_type = 'standard', $license_scope = 'single', $domain_limit = 1, $restrict_features = false, $security_alert_email = '', $feature_meta_snapshot = array(), $is_wildcard = false, $require_wp = '6.0', $require_php = '7.4.33')
     {
         $alert_email_b64 = ($security_alert_email && function_exists('is_email') && is_email($security_alert_email)) ? base64_encode($security_alert_email) : '';
 
@@ -265,12 +302,15 @@ class VAPTSECURE_Build
             'is_trial' => in_array($license_type, ['7-day-trial', '15-day-demo']),
             'domain_locked' => ($license_type !== 'developer_unbound') ? (string) $domain : '',
             'build_version' => (string) $version,
+            'build_at' => current_time('mysql'),
             'license_scope' => (string) $license_scope,
             'domain_limit' => intval($domain_limit),
             'security_alert_email_b64' => $alert_email_b64,
             'active_data_file' => (string) ($active_data_file ?: ''),
             'restrict_features' => (bool) $restrict_features,
             'is_wildcard' => (bool) $is_wildcard,
+            'require_wp' => (string) $require_wp,
+            'require_php' => (string) $require_php,
             'features' => array_values(array_map('strval', is_array($features) ? $features : array())),
             'feature_meta' => is_array($feature_meta_snapshot) ? $feature_meta_snapshot : array()
         );
@@ -298,7 +338,10 @@ class VAPTSECURE_Build
         $config .= "        if ( ! defined( 'VAPTSECURE_BUILD_VERSION' ) && isset( \$payload['build_version'] ) ) { define( 'VAPTSECURE_BUILD_VERSION', (string) \$payload['build_version'] ); }\n";
         $config .= "        if ( ! defined( 'VAPTSECURE_LICENSE_SCOPE' ) && isset( \$payload['license_scope'] ) ) { define( 'VAPTSECURE_LICENSE_SCOPE', (string) \$payload['license_scope'] ); }\n";
         $config .= "        if ( ! defined( 'VAPTSECURE_DOMAIN_LIMIT' ) && isset( \$payload['domain_limit'] ) ) { define( 'VAPTSECURE_DOMAIN_LIMIT', intval( \$payload['domain_limit'] ) ); }\n";
+        $config .= "        if ( ! defined( 'VAPTSECURE_REQUIRE_WP' ) && isset( \$payload['require_wp'] ) ) { define( 'VAPTSECURE_REQUIRE_WP', (string) \$payload['require_wp'] ); }\n";
+        $config .= "        if ( ! defined( 'VAPTSECURE_REQUIRE_PHP' ) && isset( \$payload['require_php'] ) ) { define( 'VAPTSECURE_REQUIRE_PHP', (string) \$payload['require_php'] ); }\n";
         $config .= "        if ( ! defined( 'VAPTSECURE_SECURITY_ALERT_EMAIL' ) && ! empty( \$payload['security_alert_email_b64'] ) ) { define( 'VAPTSECURE_SECURITY_ALERT_EMAIL', base64_decode( (string) \$payload['security_alert_email_b64'] ) ); }\n";
+        $config .= "        if ( ! defined( 'VAPTSECURE_BUILD_AT' ) && isset( \$payload['build_at'] ) ) { define( 'VAPTSECURE_BUILD_AT', (string) \$payload['build_at'] ); }\n";
         $config .= "        if ( ! defined( 'VAPTSECURE_ACTIVE_DATA_FILE' ) && ! empty( \$payload['active_data_file'] ) ) { define( 'VAPTSECURE_ACTIVE_DATA_FILE', (string) \$payload['active_data_file'] ); }\n";
         $config .= "        \$restrict = ! empty( \$payload['restrict_features'] );\n";
         $config .= "        if ( \$license_type === 'developer_unbound' ) { \$restrict = false; }\n";
@@ -390,17 +433,31 @@ class VAPTSECURE_Build
                     // Allow the data directory itself
                     if ($item->isDir() && (strcasecmp($subPath, 'data') === 0 || strcasecmp($subPath, 'data/') === 0 || strcasecmp($subPath, 'data\\') === 0)) {
                         // Allow
-                    } else {
-                        // Disallow nested folders under /data (keeps the build lean and avoids shipping non-release catalogs)
-                        if ($item->isDir()) {
-                            continue;
+                    } 
+                    // [FEATURE] Include data/Enforcers folder in build
+                    elseif (strpos($subPath, 'data' . DIRECTORY_SEPARATOR . 'Enforcers') === 0) {
+                        // Allow Enforcers folder and its contents
+                    }
+                    else {
+                        // Disallow other nested folders under /data
+                        if ($item->isDir() && strpos($subPath, 'data' . DIRECTORY_SEPARATOR) === 0) {
+                            $parts = explode(DIRECTORY_SEPARATOR, $subPath);
+                            if (count($parts) > 2) { // Deeper than data/Enforcers/ is handled by the Enforcers check above
+                                continue;
+                            }
+                            if (count($parts) === 2 && strcasecmp($parts[1], 'Enforcers') !== 0) {
+                                continue;
+                            }
                         }
 
                         // Only allow a small set of top-level data files
                         $is_top_level_file = (strpos($subPath, 'data/') === 0 || strpos($subPath, 'data\\') === 0) &&
                             (substr_count($subPath, '/') === 1 || substr_count($subPath, '\\') === 1);
                         if (!$is_top_level_file || !in_array($filename, $allowed_data_files, true)) {
-                            continue;
+                            // Check if it's inside Enforcers
+                            if (strpos($subPath, 'data' . DIRECTORY_SEPARATOR . 'Enforcers') !== 0) {
+                                continue;
+                            }
                         }
                     }
 
@@ -468,7 +525,7 @@ class VAPTSECURE_Build
         }
     }
 
-    private static function rewrite_main_plugin_file($plugin_dir, $plugin_slug, $white_label, $version, $domain, $config_filename, $include_config)
+    private static function rewrite_main_plugin_file($plugin_dir, $plugin_slug, $white_label, $version, $domain, $config_filename, $include_config, $require_wp = '6.0', $require_php = '7.4.33')
     {
         // We need to copy vaptsecure.php to the target filename and modify headers
         // [v2.4.11] Keeping vaptsecure.php as the main plugin file to prevent breaking standard WP expectations
@@ -487,6 +544,8 @@ class VAPTSECURE_Build
         $headers .= " * Author: " . $white_label['author'] . "\n";
         $headers .= " * Author URI: " . $white_label['author_uri'] . "\n";
         $headers .= " * Text Domain: " . $white_label['text_domain'] . "\n";
+        $headers .= " * Requires at least: " . $require_wp . "\n";
+        $headers .= " * Requires PHP: " . $require_php . "\n";
         $headers .= " */\n";
 
         // Regex replace the existing header block
@@ -598,9 +657,8 @@ class VAPTSECURE_Build
         $guard_code .= "    return;\n";
         $guard_code .= "}\n\n";
 
-        // [FIX v3.1.1] Support wildcard domain matching - check if is_wildcard flag is passed
-        $is_wildcard = isset($data['is_wildcard']) && ($data['is_wildcard'] === true || $data['is_wildcard'] === 'true' || $data['is_wildcard'] === 1 || $data['is_wildcard'] === '1');
-        $wildcard_check = $is_wildcard ? "strpos(\$current_host, \$locked_host) === false" : "\$current_host !== \$locked_host";
+        // [FIX v3.1.1] Support wildcard domain matching - uses is_wildcard_flag set earlier
+        // is_wildcard_flag is defined at the start of the generate() function
         
         $guard_code .= "if (defined('VAPTSECURE_DOMAIN_LOCKED') && VAPTSECURE_DOMAIN_LOCKED) {\n";
         $guard_code .= "    \$current_host = isset(\$_SERVER['HTTP_HOST']) ? \$_SERVER['HTTP_HOST'] : '';\n";
@@ -609,8 +667,12 @@ class VAPTSECURE_Build
         $guard_code .= "    \$is_wildcard_build = defined('VAPTSECURE_DOMAIN_WILDCARD') && VAPTSECURE_DOMAIN_WILDCARD;\n";
         $guard_code .= "    if (strpos(\$current_host, 'www.') === 0) { \$current_host = substr(\$current_host, 4); }\n";
         $guard_code .= "    if (!\$is_wildcard_build && strpos(\$locked_host, 'www.') === 0) { \$locked_host = substr(\$locked_host, 4); }\n";
-        $guard_code .= "    \$wildcard_check_result = \$is_wildcard_build ? (strpos(\$current_host, \$locked_host) === false) : (\$current_host !== \$locked_host);\n";
-        $guard_code .= "    error_log('VAPT Domain Check: current=' . \$current_host . ' locked=' . \$locked_host . ' wildcard=' . (\$is_wildcard_build ? 'yes' : 'no') . ' result=' . (\$wildcard_check_result ? 'FAIL' : 'PASS'));\n";
+        $guard_code .= "    \$wildcard_check_result = true;\n";
+        $guard_code .= "    if (\$current_host === \$locked_host) {\n";
+        $guard_code .= "        \$wildcard_check_result = false;\n";
+        $guard_code .= "    } elseif (\$is_wildcard_build && strpos(\$current_host, \$locked_host) !== false) {\n";
+        $guard_code .= "        \$wildcard_check_result = false;\n";
+        $guard_code .= "    }\n";
         $guard_code .= "    if (\$wildcard_check_result) {\n";
         $guard_code .= "        \$to = (defined('VAPTSECURE_SECURITY_ALERT_EMAIL') && VAPTSECURE_SECURITY_ALERT_EMAIL) ? VAPTSECURE_SECURITY_ALERT_EMAIL : get_option('admin_email');\n";
         $guard_code .= "        if (\$to && function_exists('wp_mail')) {\n";
