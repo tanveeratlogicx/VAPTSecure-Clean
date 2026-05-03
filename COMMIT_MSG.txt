@@ -1,4 +1,4 @@
-v3.3.0 - Build Generator & Active Enforcements Overhaul
+v3.5.0 - Build Release Bump and Snapshot Refresh
 
 ## What Changed
 
