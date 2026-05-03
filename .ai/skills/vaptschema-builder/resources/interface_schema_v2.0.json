@@ -1,7 +1,6 @@
 {
   "schema_version": "2.0.0",
   "bundle_date": "2026-02-21",
-  "source_file": "VAPT-Risk-Catalogue-Full-125-v3_4_1.json",
   "file_role": "interface_schema",
   "bundle_files": {
     "pattern_library": "enforcer_pattern_library_v2.0.json",
@@ -11,7 +10,7 @@
     "driver_reference": "VAPT_Driver_Reference_v2.0.php",
     "readme": "VAPT_AI_Agent_System_README_v2.0.md"
   },
-  "description": "VAPT Interface Schema v2.0 \u2014 UI component definitions for all 125 risks. platform_implementations.code_ref points to enforcer_pattern_library_v2.0 using consistent lib_key names. driver_ref points to vapt_driver_manifest_v2.0.",
+  "description": "VAPT Interface Schema v2.0 — UI component definitions for all 135 risks. platform_implementations.code_ref points to enforcer_pattern_library_v2.0 using consistent lib_key names. driver_ref points to vapt_driver_manifest_v2.0.",
   "global_ui_config": {
     "severity_badge_colors": {
       "critical": {
@@ -70,7 +69,7 @@
       "component_id": "UI-RISK-{NNN}-{SEQ}",
       "action_id": "ACTION-{NNN}-{SEQ}",
       "handler": "handleRISK{NNN}ToggleChange | handleRISK{NNN}DropdownChange",
-      "settings_key": "vapt_risk_{nnn}_settings",
+      "settings_key": "vapt_risk_{nnn}_enabled",
       "rest_endpoint": "/wp-json/vapt/v1/risk-{nnn}",
       "php_function": "vapt_{descriptive_name}",
       "caddy_matcher": "@risk{nnn} (alphanumeric only, no hyphens)"
@@ -107,7 +106,7 @@
         "owasp_top_10_2025": "A06:2025 - Insecure Design",
         "owasp_top_10_2021_deprecated": "A04:2021 - Insecure Design"
       },
-      "summary": "The WordPress cron system (wp-cron.php) is susceptible to resource exhaustion attacks where repeated automated requests can overload the server and impact site availability.",
+      "summary": "WordPress cron system enabled via wp-cron.php allows resource exhaustion through repeated cron spam requests, leading to server overload.",
       "ui_layout": {
         "card_id": "vapt-card-risk001",
         "section": "Configuration",
@@ -122,7 +121,7 @@
           "label": "Enable protection for wp-cron.php Enabled Leads to DoS Attack",
           "default_value": false,
           "on_change": "handleRISK001ToggleChange",
-          "settings_key": "vapt_risk_risk_001_enabled"
+          "settings_key": "vapt_risk_001_enabled"
         }
       ],
       "actions": [
@@ -213,7 +212,7 @@
         "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
         "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
       },
-      "summary": "The XML-RPC interface allows distributed pingback amplification attacks, enabling malicious actors to use your site as a proxy for launching DDoS attacks against other targets.",
+      "summary": "XML-RPC enabled allows distributed pingback amplification attacks, enabling DDoS via pingback.ping method.",
       "ui_layout": {
         "card_id": "vapt-card-risk002",
         "section": "Information Disclosure",
@@ -228,7 +227,7 @@
           "label": "Enable protection for Xmlrpc enabled Leads to Ping back attack",
           "default_value": false,
           "on_change": "handleRISK002ToggleChange",
-          "settings_key": "vapt_risk_risk_002_enabled"
+          "settings_key": "vapt_risk_002_enabled"
         }
       ],
       "actions": [
@@ -364,7 +363,7 @@
           "label": "Enable protection for Username Enumeration via WordPress REST API",
           "default_value": false,
           "on_change": "handleRISK003ToggleChange",
-          "settings_key": "vapt_risk_risk_003_enabled"
+          "settings_key": "vapt_risk_003_enabled"
         }
       ],
       "actions": [
@@ -500,7 +499,7 @@
           "label": "Enable protection for Email Flooding via Password Reset",
           "default_value": false,
           "on_change": "handleRISK004ToggleChange",
-          "settings_key": "vapt_risk_risk_004_enabled"
+          "settings_key": "vapt_risk_004_enabled"
         }
       ],
       "actions": [
@@ -599,7 +598,7 @@
           "label": "Enable protection for Exposed WordPress Admin Username via Author Query",
           "default_value": false,
           "on_change": "handleRISK005ToggleChange",
-          "settings_key": "vapt_risk_risk_005_enabled"
+          "settings_key": "vapt_risk_005_enabled"
         }
       ],
       "actions": [
@@ -735,7 +734,7 @@
           "label": "Enable protection for Endpoint Disclosure (auto-generated WP REST routes)",
           "default_value": false,
           "on_change": "handleRISK006ToggleChange",
-          "settings_key": "vapt_risk_risk_006_enabled"
+          "settings_key": "vapt_risk_006_enabled"
         }
       ],
       "actions": [
@@ -834,7 +833,7 @@
           "label": "Enable protection for Lack of Rate Limiting on WordPress Login",
           "default_value": false,
           "on_change": "handleRISK007ToggleChange",
-          "settings_key": "vapt_risk_risk_007_enabled"
+          "settings_key": "vapt_risk_007_enabled"
         }
       ],
       "actions": [
@@ -933,7 +932,7 @@
           "label": "Enable protection for Username Enumeration via wp-login.php",
           "default_value": false,
           "on_change": "handleRISK008ToggleChange",
-          "settings_key": "vapt_risk_risk_008_enabled"
+          "settings_key": "vapt_risk_008_enabled"
         }
       ],
       "actions": [
@@ -1032,7 +1031,7 @@
           "label": "Enable protection for Lack of Rate Limiting on Contact and Registration Forms",
           "default_value": false,
           "on_change": "handleRISK009ToggleChange",
-          "settings_key": "vapt_risk_risk_009_enabled"
+          "settings_key": "vapt_risk_009_enabled"
         }
       ],
       "actions": [
@@ -1131,7 +1130,7 @@
           "label": "Enable protection for Server Banner Grabbing",
           "default_value": false,
           "on_change": "handleRISK010ToggleChange",
-          "settings_key": "vapt_risk_risk_010_enabled"
+          "settings_key": "vapt_risk_010_enabled"
         }
       ],
       "actions": [
@@ -1230,7 +1229,7 @@
           "label": "Enable protection for Information Disclosure via readme.html",
           "default_value": false,
           "on_change": "handleRISK011ToggleChange",
-          "settings_key": "vapt_risk_risk_011_enabled"
+          "settings_key": "vapt_risk_011_enabled"
         }
       ],
       "actions": [
@@ -1366,7 +1365,7 @@
           "label": "Enable protection for HSTS Not Implemented",
           "default_value": false,
           "on_change": "handleRISK012ToggleChange",
-          "settings_key": "vapt_risk_risk_012_enabled"
+          "settings_key": "vapt_risk_012_enabled"
         }
       ],
       "actions": [
@@ -1502,7 +1501,7 @@
           "label": "Enable protection for Directory Listing Enabled",
           "default_value": false,
           "on_change": "handleRISK013ToggleChange",
-          "settings_key": "vapt_risk_risk_013_enabled"
+          "settings_key": "vapt_risk_013_enabled"
         }
       ],
       "actions": [
@@ -1636,7 +1635,7 @@
           "label": "Enable protection for Missing X-Frame-Options Header",
           "default_value": false,
           "on_change": "handleRISK014ToggleChange",
-          "settings_key": "vapt_risk_risk_014_enabled"
+          "settings_key": "vapt_risk_014_enabled"
         }
       ],
       "actions": [
@@ -1772,7 +1771,7 @@
           "label": "Enable protection for Missing X-Content-Type-Options Header",
           "default_value": false,
           "on_change": "handleRISK015ToggleChange",
-          "settings_key": "vapt_risk_risk_015_enabled"
+          "settings_key": "vapt_risk_015_enabled"
         }
       ],
       "actions": [
@@ -1908,7 +1907,7 @@
           "label": "Enable protection for Missing X-XSS-Protection Header",
           "default_value": false,
           "on_change": "handleRISK016ToggleChange",
-          "settings_key": "vapt_risk_risk_016_enabled"
+          "settings_key": "vapt_risk_016_enabled"
         }
       ],
       "actions": [
@@ -2044,7 +2043,7 @@
           "label": "Enable protection for Missing Referrer-Policy Header",
           "default_value": false,
           "on_change": "handleRISK017ToggleChange",
-          "settings_key": "vapt_risk_risk_017_enabled"
+          "settings_key": "vapt_risk_017_enabled"
         }
       ],
       "actions": [
@@ -2180,7 +2179,7 @@
           "label": "Enable protection for Missing Permissions-Policy Header",
           "default_value": false,
           "on_change": "handleRISK018ToggleChange",
-          "settings_key": "vapt_risk_risk_018_enabled"
+          "settings_key": "vapt_risk_018_enabled"
         }
       ],
       "actions": [
@@ -2316,7 +2315,7 @@
           "label": "Enable protection for Sensitive Files Accessible",
           "default_value": false,
           "on_change": "handleRISK019ToggleChange",
-          "settings_key": "vapt_risk_risk_019_enabled"
+          "settings_key": "vapt_risk_019_enabled"
         }
       ],
       "actions": [
@@ -2452,7 +2451,7 @@
           "label": "Enable protection for PHP File Execution in Uploads Directory",
           "default_value": false,
           "on_change": "handleRISK020ToggleChange",
-          "settings_key": "vapt_risk_risk_020_enabled"
+          "settings_key": "vapt_risk_020_enabled"
         }
       ],
       "actions": [
@@ -2485,7 +2484,7 @@
           "allowoverride": "",
           "insertion_point": "beginning_of_file",
           "anchor_string": null,
-          "note": "CRITICAL: Place in wp-content/uploads/.htaccess \u2014 a separate file. <Directory> is silently ignored in .htaccess. Apache 2.4+: use Require all denied"
+          "note": "CRITICAL: Place in wp-content/uploads/.htaccess — a separate file. <Directory> is silently ignored in .htaccess. Apache 2.4+: use Require all denied"
         },
         "Cloudflare": {
           "lib_key": "cloudflare",
@@ -2588,7 +2587,7 @@
           "label": "Enable protection for WordPress Config File Accessible",
           "default_value": false,
           "on_change": "handleRISK021ToggleChange",
-          "settings_key": "vapt_risk_risk_021_enabled"
+          "settings_key": "vapt_risk_021_enabled"
         }
       ],
       "actions": [
@@ -2724,7 +2723,7 @@
           "label": "Enable protection for Missing Content-Security-Policy Header",
           "default_value": false,
           "on_change": "handleRISK022ToggleChange",
-          "settings_key": "vapt_risk_risk_022_enabled"
+          "settings_key": "vapt_risk_022_enabled"
         }
       ],
       "actions": [
@@ -2860,7 +2859,7 @@
           "label": "Enable protection for Trace Method Enabled",
           "default_value": false,
           "on_change": "handleRISK023ToggleChange",
-          "settings_key": "vapt_risk_risk_023_enabled"
+          "settings_key": "vapt_risk_023_enabled"
         }
       ],
       "actions": [
@@ -2996,7 +2995,7 @@
           "label": "Enable protection for Server Signature Enabled",
           "default_value": false,
           "on_change": "handleRISK024ToggleChange",
-          "settings_key": "vapt_risk_risk_024_enabled"
+          "settings_key": "vapt_risk_024_enabled"
         }
       ],
       "actions": [
@@ -3132,7 +3131,7 @@
           "label": "Enable protection for ETags Information Leakage",
           "default_value": false,
           "on_change": "handleRISK025ToggleChange",
-          "settings_key": "vapt_risk_risk_025_enabled"
+          "settings_key": "vapt_risk_025_enabled"
         }
       ],
       "actions": [
@@ -3266,7 +3265,7 @@
           "label": "Enable protection for Symbolic Links Following Enabled",
           "default_value": false,
           "on_change": "handleRISK026ToggleChange",
-          "settings_key": "vapt_risk_risk_026_enabled"
+          "settings_key": "vapt_risk_026_enabled"
         }
       ],
       "actions": [
@@ -3400,7 +3399,7 @@
           "label": "Enable protection for WordPress Install File Accessible",
           "default_value": false,
           "on_change": "handleRISK027ToggleChange",
-          "settings_key": "vapt_risk_risk_027_enabled"
+          "settings_key": "vapt_risk_027_enabled"
         }
       ],
       "actions": [
@@ -3536,7 +3535,7 @@
           "label": "Enable protection for WordPress Upgrade File Accessible",
           "default_value": false,
           "on_change": "handleRISK028ToggleChange",
-          "settings_key": "vapt_risk_risk_028_enabled"
+          "settings_key": "vapt_risk_028_enabled"
         }
       ],
       "actions": [
@@ -3672,7 +3671,7 @@
           "label": "Enable protection for Backup Files Accessible",
           "default_value": false,
           "on_change": "handleRISK029ToggleChange",
-          "settings_key": "vapt_risk_risk_029_enabled"
+          "settings_key": "vapt_risk_029_enabled"
         }
       ],
       "actions": [
@@ -3808,7 +3807,7 @@
           "label": "Enable protection for Log Files Accessible",
           "default_value": false,
           "on_change": "handleRISK030ToggleChange",
-          "settings_key": "vapt_risk_risk_030_enabled"
+          "settings_key": "vapt_risk_030_enabled"
         }
       ],
       "actions": [
@@ -3944,7 +3943,7 @@
           "label": "Enable protection for Missing Cross-Origin-Resource-Policy",
           "default_value": false,
           "on_change": "handleRISK031ToggleChange",
-          "settings_key": "vapt_risk_risk_031_enabled"
+          "settings_key": "vapt_risk_031_enabled"
         }
       ],
       "actions": [
@@ -4080,7 +4079,7 @@
           "label": "Enable protection for Missing Cross-Origin-Embedder-Policy",
           "default_value": false,
           "on_change": "handleRISK032ToggleChange",
-          "settings_key": "vapt_risk_risk_032_enabled"
+          "settings_key": "vapt_risk_032_enabled"
         }
       ],
       "actions": [
@@ -4216,7 +4215,7 @@
           "label": "Enable protection for Missing Cross-Origin-Opener-Policy",
           "default_value": false,
           "on_change": "handleRISK033ToggleChange",
-          "settings_key": "vapt_risk_risk_033_enabled"
+          "settings_key": "vapt_risk_033_enabled"
         }
       ],
       "actions": [
@@ -4352,7 +4351,7 @@
           "label": "Enable protection for WordPress Debug Log Exposed",
           "default_value": false,
           "on_change": "handleRISK034ToggleChange",
-          "settings_key": "vapt_risk_risk_034_enabled"
+          "settings_key": "vapt_risk_034_enabled"
         }
       ],
       "actions": [
@@ -4488,7 +4487,7 @@
           "label": "Enable protection for Apache Status Page Accessible",
           "default_value": false,
           "on_change": "handleRISK035ToggleChange",
-          "settings_key": "vapt_risk_risk_035_enabled"
+          "settings_key": "vapt_risk_035_enabled"
         }
       ],
       "actions": [
@@ -4624,7 +4623,7 @@
           "label": "Enable protection for PHP Error Display Enabled",
           "default_value": false,
           "on_change": "handleRISK036ToggleChange",
-          "settings_key": "vapt_risk_risk_036_enabled"
+          "settings_key": "vapt_risk_036_enabled"
         }
       ],
       "actions": [
@@ -4723,7 +4722,7 @@
           "label": "Enable protection for PHP Version Exposed in Headers",
           "default_value": false,
           "on_change": "handleRISK037ToggleChange",
-          "settings_key": "vapt_risk_risk_037_enabled"
+          "settings_key": "vapt_risk_037_enabled"
         }
       ],
       "actions": [
@@ -4822,7 +4821,7 @@
           "label": "Enable protection for WordPress Version Exposed",
           "default_value": false,
           "on_change": "handleRISK038ToggleChange",
-          "settings_key": "vapt_risk_risk_038_enabled"
+          "settings_key": "vapt_risk_038_enabled"
         }
       ],
       "actions": [
@@ -4921,7 +4920,7 @@
           "label": "Enable protection for Plugin Version Exposed",
           "default_value": false,
           "on_change": "handleRISK039ToggleChange",
-          "settings_key": "vapt_risk_risk_039_enabled"
+          "settings_key": "vapt_risk_039_enabled"
         }
       ],
       "actions": [
@@ -5020,7 +5019,7 @@
           "label": "Enable protection for WordPress Login Page Not Protected",
           "default_value": false,
           "on_change": "handleRISK040ToggleChange",
-          "settings_key": "vapt_risk_risk_040_enabled"
+          "settings_key": "vapt_risk_040_enabled"
         }
       ],
       "actions": [
@@ -5119,7 +5118,7 @@
           "label": "Enable protection for Weak Password Policy",
           "default_value": false,
           "on_change": "handleRISK041ToggleChange",
-          "settings_key": "vapt_risk_risk_041_enabled"
+          "settings_key": "vapt_risk_041_enabled"
         }
       ],
       "actions": [
@@ -5218,7 +5217,7 @@
           "label": "Enable protection for Session Timeout Not Configured",
           "default_value": false,
           "on_change": "handleRISK042ToggleChange",
-          "settings_key": "vapt_risk_risk_042_enabled"
+          "settings_key": "vapt_risk_042_enabled"
         }
       ],
       "actions": [
@@ -5317,7 +5316,7 @@
           "label": "Enable protection for No Account Lockout Policy",
           "default_value": false,
           "on_change": "handleRISK043ToggleChange",
-          "settings_key": "vapt_risk_risk_043_enabled"
+          "settings_key": "vapt_risk_043_enabled"
         }
       ],
       "actions": [
@@ -5416,7 +5415,7 @@
           "label": "Enable protection for User Registration Without Verification",
           "default_value": false,
           "on_change": "handleRISK044ToggleChange",
-          "settings_key": "vapt_risk_risk_044_enabled"
+          "settings_key": "vapt_risk_044_enabled"
         }
       ],
       "actions": [
@@ -5515,7 +5514,7 @@
           "label": "Enable protection for Default Admin Account Exists",
           "default_value": false,
           "on_change": "handleRISK045ToggleChange",
-          "settings_key": "vapt_risk_risk_045_enabled"
+          "settings_key": "vapt_risk_045_enabled"
         }
       ],
       "actions": [
@@ -5614,7 +5613,7 @@
           "label": "Enable protection for No Two-Factor Authentication",
           "default_value": false,
           "on_change": "handleRISK046ToggleChange",
-          "settings_key": "vapt_risk_risk_046_enabled"
+          "settings_key": "vapt_risk_046_enabled"
         }
       ],
       "actions": [
@@ -5713,7 +5712,7 @@
           "label": "Enable protection for File Upload Without Validation",
           "default_value": false,
           "on_change": "handleRISK047ToggleChange",
-          "settings_key": "vapt_risk_risk_047_enabled"
+          "settings_key": "vapt_risk_047_enabled"
         }
       ],
       "actions": [
@@ -5812,7 +5811,7 @@
           "label": "Enable protection for SQL Injection via Search",
           "default_value": false,
           "on_change": "handleRISK048ToggleChange",
-          "settings_key": "vapt_risk_risk_048_enabled"
+          "settings_key": "vapt_risk_048_enabled"
         }
       ],
       "actions": [
@@ -5911,7 +5910,7 @@
           "label": "Enable protection for Cross-Site Scripting in Comments",
           "default_value": false,
           "on_change": "handleRISK049ToggleChange",
-          "settings_key": "vapt_risk_risk_049_enabled"
+          "settings_key": "vapt_risk_049_enabled"
         }
       ],
       "actions": [
@@ -6010,7 +6009,7 @@
           "label": "Enable protection for CSRF Protection Missing",
           "default_value": false,
           "on_change": "handleRISK050ToggleChange",
-          "settings_key": "vapt_risk_risk_050_enabled"
+          "settings_key": "vapt_risk_050_enabled"
         }
       ],
       "actions": [
@@ -6109,7 +6108,7 @@
           "label": "Enable protection for Unfiltered HTML in Posts",
           "default_value": false,
           "on_change": "handleRISK051ToggleChange",
-          "settings_key": "vapt_risk_risk_051_enabled"
+          "settings_key": "vapt_risk_051_enabled"
         }
       ],
       "actions": [
@@ -6208,7 +6207,7 @@
           "label": "Enable protection for Theme Editor Enabled",
           "default_value": false,
           "on_change": "handleRISK052ToggleChange",
-          "settings_key": "vapt_risk_risk_052_enabled"
+          "settings_key": "vapt_risk_052_enabled"
         }
       ],
       "actions": [
@@ -6307,7 +6306,7 @@
           "label": "Enable protection for Plugin Editor Enabled",
           "default_value": false,
           "on_change": "handleRISK053ToggleChange",
-          "settings_key": "vapt_risk_risk_053_enabled"
+          "settings_key": "vapt_risk_053_enabled"
         }
       ],
       "actions": [
@@ -6406,7 +6405,7 @@
           "label": "Enable protection for XML External Entity Processing",
           "default_value": false,
           "on_change": "handleRISK054ToggleChange",
-          "settings_key": "vapt_risk_risk_054_enabled"
+          "settings_key": "vapt_risk_054_enabled"
         }
       ],
       "actions": [
@@ -6505,7 +6504,7 @@
           "label": "Enable protection for PHP Deserialization Vulnerability",
           "default_value": false,
           "on_change": "handleRISK055ToggleChange",
-          "settings_key": "vapt_risk_risk_055_enabled"
+          "settings_key": "vapt_risk_055_enabled"
         }
       ],
       "actions": [
@@ -6604,7 +6603,7 @@
           "label": "Enable protection for Open Redirect Vulnerability",
           "default_value": false,
           "on_change": "handleRISK056ToggleChange",
-          "settings_key": "vapt_risk_risk_056_enabled"
+          "settings_key": "vapt_risk_056_enabled"
         }
       ],
       "actions": [
@@ -6703,7 +6702,7 @@
           "label": "Enable protection for Information Leak via JSON API",
           "default_value": false,
           "on_change": "handleRISK057ToggleChange",
-          "settings_key": "vapt_risk_risk_057_enabled"
+          "settings_key": "vapt_risk_057_enabled"
         }
       ],
       "actions": [
@@ -6802,7 +6801,7 @@
           "label": "Enable protection for Comment Spam Not Protected",
           "default_value": false,
           "on_change": "handleRISK058ToggleChange",
-          "settings_key": "vapt_risk_risk_058_enabled"
+          "settings_key": "vapt_risk_058_enabled"
         }
       ],
       "actions": [
@@ -6901,7 +6900,7 @@
           "label": "Enable protection for Pingback XML-RPC Enabled",
           "default_value": false,
           "on_change": "handleRISK059ToggleChange",
-          "settings_key": "vapt_risk_risk_059_enabled"
+          "settings_key": "vapt_risk_059_enabled"
         }
       ],
       "actions": [
@@ -7000,7 +6999,7 @@
           "label": "Enable protection for Trackback Enabled",
           "default_value": false,
           "on_change": "handleRISK060ToggleChange",
-          "settings_key": "vapt_risk_risk_060_enabled"
+          "settings_key": "vapt_risk_060_enabled"
         }
       ],
       "actions": [
@@ -7099,7 +7098,7 @@
           "label": "Enable protection for WordPress Salts Not Configured",
           "default_value": false,
           "on_change": "handleRISK061ToggleChange",
-          "settings_key": "vapt_risk_risk_061_enabled"
+          "settings_key": "vapt_risk_061_enabled"
         }
       ],
       "actions": [
@@ -7207,7 +7206,7 @@
           "label": "Enable protection for Database Credentials Exposed",
           "default_value": false,
           "on_change": "handleRISK062ToggleChange",
-          "settings_key": "vapt_risk_risk_062_enabled"
+          "settings_key": "vapt_risk_062_enabled"
         }
       ],
       "actions": [
@@ -7313,7 +7312,7 @@
           "label": "Enable protection for Debug Mode Enabled in Production",
           "default_value": false,
           "on_change": "handleRISK063ToggleChange",
-          "settings_key": "vapt_risk_risk_063_enabled"
+          "settings_key": "vapt_risk_063_enabled"
         }
       ],
       "actions": [
@@ -7419,7 +7418,7 @@
           "label": "Enable protection for Script Debug Enabled",
           "default_value": false,
           "on_change": "handleRISK064ToggleChange",
-          "settings_key": "vapt_risk_risk_064_enabled"
+          "settings_key": "vapt_risk_064_enabled"
         }
       ],
       "actions": [
@@ -7525,7 +7524,7 @@
           "label": "Enable protection for Save Queries Enabled",
           "default_value": false,
           "on_change": "handleRISK065ToggleChange",
-          "settings_key": "vapt_risk_risk_065_enabled"
+          "settings_key": "vapt_risk_065_enabled"
         }
       ],
       "actions": [
@@ -7631,7 +7630,7 @@
           "label": "Enable protection for File Edit Not Disabled",
           "default_value": false,
           "on_change": "handleRISK066ToggleChange",
-          "settings_key": "vapt_risk_risk_066_enabled"
+          "settings_key": "vapt_risk_066_enabled"
         }
       ],
       "actions": [
@@ -7737,7 +7736,7 @@
           "label": "Enable protection for File Modification Not Restricted",
           "default_value": false,
           "on_change": "handleRISK067ToggleChange",
-          "settings_key": "vapt_risk_risk_067_enabled"
+          "settings_key": "vapt_risk_067_enabled"
         }
       ],
       "actions": [
@@ -7843,7 +7842,7 @@
           "label": "Enable protection for Automatic Updates Disabled",
           "default_value": false,
           "on_change": "handleRISK068ToggleChange",
-          "settings_key": "vapt_risk_risk_068_enabled"
+          "settings_key": "vapt_risk_068_enabled"
         }
       ],
       "actions": [
@@ -7949,7 +7948,7 @@
           "label": "Enable protection for SSL Not Enforced for Admin",
           "default_value": false,
           "on_change": "handleRISK069ToggleChange",
-          "settings_key": "vapt_risk_risk_069_enabled"
+          "settings_key": "vapt_risk_069_enabled"
         }
       ],
       "actions": [
@@ -8055,7 +8054,7 @@
           "label": "Enable protection for SSL Not Enforced for Login",
           "default_value": false,
           "on_change": "handleRISK070ToggleChange",
-          "settings_key": "vapt_risk_risk_070_enabled"
+          "settings_key": "vapt_risk_070_enabled"
         }
       ],
       "actions": [
@@ -8161,7 +8160,7 @@
           "label": "Enable protection for Cookie Domain Not Set",
           "default_value": false,
           "on_change": "handleRISK071ToggleChange",
-          "settings_key": "vapt_risk_risk_071_enabled"
+          "settings_key": "vapt_risk_071_enabled"
         }
       ],
       "actions": [
@@ -8267,7 +8266,7 @@
           "label": "Enable protection for Cookie Path Not Restricted",
           "default_value": false,
           "on_change": "handleRISK072ToggleChange",
-          "settings_key": "vapt_risk_risk_072_enabled"
+          "settings_key": "vapt_risk_072_enabled"
         }
       ],
       "actions": [
@@ -8373,7 +8372,7 @@
           "label": "Enable protection for Trash Auto-Delete Not Configured",
           "default_value": false,
           "on_change": "handleRISK073ToggleChange",
-          "settings_key": "vapt_risk_risk_073_enabled"
+          "settings_key": "vapt_risk_073_enabled"
         }
       ],
       "actions": [
@@ -8479,7 +8478,7 @@
           "label": "Enable protection for Post Revisions Unlimited",
           "default_value": false,
           "on_change": "handleRISK074ToggleChange",
-          "settings_key": "vapt_risk_risk_074_enabled"
+          "settings_key": "vapt_risk_074_enabled"
         }
       ],
       "actions": [
@@ -8585,7 +8584,7 @@
           "label": "Enable protection for Autosave Interval Too Long",
           "default_value": false,
           "on_change": "handleRISK075ToggleChange",
-          "settings_key": "vapt_risk_risk_075_enabled"
+          "settings_key": "vapt_risk_075_enabled"
         }
       ],
       "actions": [
@@ -8691,7 +8690,7 @@
           "label": "Enable protection for Memory Limit Too Low",
           "default_value": false,
           "on_change": "handleRISK076ToggleChange",
-          "settings_key": "vapt_risk_risk_076_enabled"
+          "settings_key": "vapt_risk_076_enabled"
         }
       ],
       "actions": [
@@ -8797,7 +8796,7 @@
           "label": "Enable protection for Max Memory Limit Not Set",
           "default_value": false,
           "on_change": "handleRISK077ToggleChange",
-          "settings_key": "vapt_risk_risk_077_enabled"
+          "settings_key": "vapt_risk_077_enabled"
         }
       ],
       "actions": [
@@ -8903,7 +8902,7 @@
           "label": "Enable protection for Table Prefix Default",
           "default_value": false,
           "on_change": "handleRISK078ToggleChange",
-          "settings_key": "vapt_risk_risk_078_enabled"
+          "settings_key": "vapt_risk_078_enabled"
         }
       ],
       "actions": [
@@ -9009,7 +9008,7 @@
           "label": "Enable protection for Database Host Exposed",
           "default_value": false,
           "on_change": "handleRISK079ToggleChange",
-          "settings_key": "vapt_risk_risk_079_enabled"
+          "settings_key": "vapt_risk_079_enabled"
         }
       ],
       "actions": [
@@ -9115,7 +9114,7 @@
           "label": "Enable protection for Custom User Table Not Defined",
           "default_value": false,
           "on_change": "handleRISK080ToggleChange",
-          "settings_key": "vapt_risk_risk_080_enabled"
+          "settings_key": "vapt_risk_080_enabled"
         }
       ],
       "actions": [
@@ -9221,7 +9220,7 @@
           "label": "Enable protection for XML-RPC Brute Force Not Blocked",
           "default_value": false,
           "on_change": "handleRISK081ToggleChange",
-          "settings_key": "vapt_risk_risk_081_enabled"
+          "settings_key": "vapt_risk_081_enabled"
         }
       ],
       "actions": [
@@ -9320,7 +9319,7 @@
           "label": "Enable protection for WP-Admin Brute Force Not Blocked",
           "default_value": false,
           "on_change": "handleRISK082ToggleChange",
-          "settings_key": "vapt_risk_risk_082_enabled"
+          "settings_key": "vapt_risk_082_enabled"
         }
       ],
       "actions": [
@@ -9419,7 +9418,7 @@
           "label": "Enable protection for 404 Exploit Scanning Not Blocked",
           "default_value": false,
           "on_change": "handleRISK083ToggleChange",
-          "settings_key": "vapt_risk_risk_083_enabled"
+          "settings_key": "vapt_risk_083_enabled"
         }
       ],
       "actions": [
@@ -9518,7 +9517,7 @@
           "label": "Enable protection for Comment Spam Not Rate Limited",
           "default_value": false,
           "on_change": "handleRISK084ToggleChange",
-          "settings_key": "vapt_risk_risk_084_enabled"
+          "settings_key": "vapt_risk_084_enabled"
         }
       ],
       "actions": [
@@ -9617,7 +9616,7 @@
           "label": "Enable protection for Registration Spam Not Blocked",
           "default_value": false,
           "on_change": "handleRISK085ToggleChange",
-          "settings_key": "vapt_risk_risk_085_enabled"
+          "settings_key": "vapt_risk_085_enabled"
         }
       ],
       "actions": [
@@ -9716,7 +9715,7 @@
           "label": "Enable protection for REST API Abuse Not Blocked",
           "default_value": false,
           "on_change": "handleRISK086ToggleChange",
-          "settings_key": "vapt_risk_risk_086_enabled"
+          "settings_key": "vapt_risk_086_enabled"
         }
       ],
       "actions": [
@@ -9815,7 +9814,7 @@
           "label": "Enable protection for Password Reset Abuse Not Blocked",
           "default_value": false,
           "on_change": "handleRISK087ToggleChange",
-          "settings_key": "vapt_risk_risk_087_enabled"
+          "settings_key": "vapt_risk_087_enabled"
         }
       ],
       "actions": [
@@ -9914,7 +9913,7 @@
           "label": "Enable protection for File Upload Abuse Not Blocked",
           "default_value": false,
           "on_change": "handleRISK088ToggleChange",
-          "settings_key": "vapt_risk_risk_088_enabled"
+          "settings_key": "vapt_risk_088_enabled"
         }
       ],
       "actions": [
@@ -10013,7 +10012,7 @@
           "label": "Enable protection for Search Query Abuse Not Blocked",
           "default_value": false,
           "on_change": "handleRISK089ToggleChange",
-          "settings_key": "vapt_risk_risk_089_enabled"
+          "settings_key": "vapt_risk_089_enabled"
         }
       ],
       "actions": [
@@ -10112,7 +10111,7 @@
           "label": "Enable protection for Bot Traffic Not Blocked",
           "default_value": false,
           "on_change": "handleRISK090ToggleChange",
-          "settings_key": "vapt_risk_risk_090_enabled"
+          "settings_key": "vapt_risk_090_enabled"
         }
       ],
       "actions": [
@@ -10211,7 +10210,7 @@
           "label": "Enable protection for HTTP Method Abuse Not Blocked",
           "default_value": false,
           "on_change": "handleRISK091ToggleChange",
-          "settings_key": "vapt_risk_risk_091_enabled"
+          "settings_key": "vapt_risk_091_enabled"
         }
       ],
       "actions": [
@@ -10310,7 +10309,7 @@
           "label": "Enable protection for User Agent Abuse Not Blocked",
           "default_value": false,
           "on_change": "handleRISK092ToggleChange",
-          "settings_key": "vapt_risk_risk_092_enabled"
+          "settings_key": "vapt_risk_092_enabled"
         }
       ],
       "actions": [
@@ -10409,7 +10408,7 @@
           "label": "Enable protection for XML-RPC Pingback Abuse Not Blocked",
           "default_value": false,
           "on_change": "handleRISK093ToggleChange",
-          "settings_key": "vapt_risk_risk_093_enabled"
+          "settings_key": "vapt_risk_093_enabled"
         }
       ],
       "actions": [
@@ -10508,7 +10507,7 @@
           "label": "Enable protection for WooCommerce Login Not Protected",
           "default_value": false,
           "on_change": "handleRISK094ToggleChange",
-          "settings_key": "vapt_risk_risk_094_enabled"
+          "settings_key": "vapt_risk_094_enabled"
         }
       ],
       "actions": [
@@ -10607,7 +10606,7 @@
           "label": "Enable protection for Long Duration Attacks Not Blocked",
           "default_value": false,
           "on_change": "handleRISK095ToggleChange",
-          "settings_key": "vapt_risk_risk_095_enabled"
+          "settings_key": "vapt_risk_095_enabled"
         }
       ],
       "actions": [
@@ -10706,7 +10705,7 @@
           "label": "Enable protection for WordPress Cron Not Replaced with Server Cron",
           "default_value": false,
           "on_change": "handleRISK096ToggleChange",
-          "settings_key": "vapt_risk_risk_096_enabled"
+          "settings_key": "vapt_risk_096_enabled"
         }
       ],
       "actions": [
@@ -10805,7 +10804,7 @@
           "label": "Enable protection for No Automated Backup Schedule",
           "default_value": false,
           "on_change": "handleRISK097ToggleChange",
-          "settings_key": "vapt_risk_risk_097_enabled"
+          "settings_key": "vapt_risk_097_enabled"
         }
       ],
       "actions": [
@@ -10904,7 +10903,7 @@
           "label": "Enable protection for No Security Scan Schedule",
           "default_value": false,
           "on_change": "handleRISK098ToggleChange",
-          "settings_key": "vapt_risk_risk_098_enabled"
+          "settings_key": "vapt_risk_098_enabled"
         }
       ],
       "actions": [
@@ -11003,7 +11002,7 @@
           "label": "Enable protection for No Log Rotation Configured",
           "default_value": false,
           "on_change": "handleRISK099ToggleChange",
-          "settings_key": "vapt_risk_risk_099_enabled"
+          "settings_key": "vapt_risk_099_enabled"
         }
       ],
       "actions": [
@@ -11102,7 +11101,7 @@
           "label": "Enable protection for No Plugin Update Schedule",
           "default_value": false,
           "on_change": "handleRISK100ToggleChange",
-          "settings_key": "vapt_risk_risk_100_enabled"
+          "settings_key": "vapt_risk_100_enabled"
         }
       ],
       "actions": [
@@ -11201,7 +11200,7 @@
           "label": "Enable protection for No Core Update Schedule",
           "default_value": false,
           "on_change": "handleRISK101ToggleChange",
-          "settings_key": "vapt_risk_risk_101_enabled"
+          "settings_key": "vapt_risk_101_enabled"
         }
       ],
       "actions": [
@@ -11300,7 +11299,7 @@
           "label": "Enable protection for No Database Optimization Schedule",
           "default_value": false,
           "on_change": "handleRISK102ToggleChange",
-          "settings_key": "vapt_risk_risk_102_enabled"
+          "settings_key": "vapt_risk_102_enabled"
         }
       ],
       "actions": [
@@ -11399,7 +11398,7 @@
           "label": "Enable protection for No Spam Cleanup Schedule",
           "default_value": false,
           "on_change": "handleRISK103ToggleChange",
-          "settings_key": "vapt_risk_risk_103_enabled"
+          "settings_key": "vapt_risk_103_enabled"
         }
       ],
       "actions": [
@@ -11498,7 +11497,7 @@
           "label": "Enable protection for No Failed Login Log Rotation",
           "default_value": false,
           "on_change": "handleRISK104ToggleChange",
-          "settings_key": "vapt_risk_risk_104_enabled"
+          "settings_key": "vapt_risk_104_enabled"
         }
       ],
       "actions": [
@@ -11597,7 +11596,7 @@
           "label": "Enable protection for No SSL Certificate Renewal",
           "default_value": false,
           "on_change": "handleRISK105ToggleChange",
-          "settings_key": "vapt_risk_risk_105_enabled"
+          "settings_key": "vapt_risk_105_enabled"
         }
       ],
       "actions": [
@@ -11696,7 +11695,7 @@
           "label": "Enable protection for Inactive Plugins Present",
           "default_value": false,
           "on_change": "handleRISK106ToggleChange",
-          "settings_key": "vapt_risk_risk_106_enabled"
+          "settings_key": "vapt_risk_106_enabled"
         }
       ],
       "actions": [
@@ -11795,7 +11794,7 @@
           "label": "Enable protection for Inactive Themes Present",
           "default_value": false,
           "on_change": "handleRISK107ToggleChange",
-          "settings_key": "vapt_risk_risk_107_enabled"
+          "settings_key": "vapt_risk_107_enabled"
         }
       ],
       "actions": [
@@ -11894,7 +11893,7 @@
           "label": "Enable protection for Default Theme Not Deleted",
           "default_value": false,
           "on_change": "handleRISK108ToggleChange",
-          "settings_key": "vapt_risk_risk_108_enabled"
+          "settings_key": "vapt_risk_108_enabled"
         }
       ],
       "actions": [
@@ -11993,7 +11992,7 @@
           "label": "Enable protection for Hello Dolly Plugin Active",
           "default_value": false,
           "on_change": "handleRISK109ToggleChange",
-          "settings_key": "vapt_risk_risk_109_enabled"
+          "settings_key": "vapt_risk_109_enabled"
         }
       ],
       "actions": [
@@ -12092,7 +12091,7 @@
           "label": "Enable protection for WordPress Version Publicly Visible",
           "default_value": false,
           "on_change": "handleRISK110ToggleChange",
-          "settings_key": "vapt_risk_risk_110_enabled"
+          "settings_key": "vapt_risk_110_enabled"
         }
       ],
       "actions": [
@@ -12191,7 +12190,7 @@
           "label": "Enable protection for Emoji Scripts Loaded",
           "default_value": false,
           "on_change": "handleRISK111ToggleChange",
-          "settings_key": "vapt_risk_risk_111_enabled"
+          "settings_key": "vapt_risk_111_enabled"
         }
       ],
       "actions": [
@@ -12290,7 +12289,7 @@
           "label": "Enable protection for oEmbed Discovery Enabled",
           "default_value": false,
           "on_change": "handleRISK112ToggleChange",
-          "settings_key": "vapt_risk_risk_112_enabled"
+          "settings_key": "vapt_risk_112_enabled"
         }
       ],
       "actions": [
@@ -12389,7 +12388,7 @@
           "label": "Enable protection for RSD Link Exposed",
           "default_value": false,
           "on_change": "handleRISK113ToggleChange",
-          "settings_key": "vapt_risk_risk_113_enabled"
+          "settings_key": "vapt_risk_113_enabled"
         }
       ],
       "actions": [
@@ -12488,7 +12487,7 @@
           "label": "Enable protection for WLWManifest Link Exposed",
           "default_value": false,
           "on_change": "handleRISK114ToggleChange",
-          "settings_key": "vapt_risk_risk_114_enabled"
+          "settings_key": "vapt_risk_114_enabled"
         }
       ],
       "actions": [
@@ -12587,7 +12586,7 @@
           "label": "Enable protection for Shortlink Header Exposed",
           "default_value": false,
           "on_change": "handleRISK115ToggleChange",
-          "settings_key": "vapt_risk_risk_115_enabled"
+          "settings_key": "vapt_risk_115_enabled"
         }
       ],
       "actions": [
@@ -12686,7 +12685,7 @@
           "label": "Enable protection for Nginx Version Exposed",
           "default_value": false,
           "on_change": "handleRISK116ToggleChange",
-          "settings_key": "vapt_risk_risk_116_enabled"
+          "settings_key": "vapt_risk_116_enabled"
         }
       ],
       "actions": [
@@ -12785,7 +12784,7 @@
           "label": "Enable protection for Apache Version Exposed",
           "default_value": false,
           "on_change": "handleRISK117ToggleChange",
-          "settings_key": "vapt_risk_risk_117_enabled"
+          "settings_key": "vapt_risk_117_enabled"
         }
       ],
       "actions": [
@@ -12884,7 +12883,7 @@
           "label": "Enable protection for Nginx Buffer Size Misconfigured",
           "default_value": false,
           "on_change": "handleRISK118ToggleChange",
-          "settings_key": "vapt_risk_risk_118_enabled"
+          "settings_key": "vapt_risk_118_enabled"
         }
       ],
       "actions": [
@@ -12983,7 +12982,7 @@
           "label": "Enable protection for Nginx Timeout Not Configured",
           "default_value": false,
           "on_change": "handleRISK119ToggleChange",
-          "settings_key": "vapt_risk_risk_119_enabled"
+          "settings_key": "vapt_risk_119_enabled"
         }
       ],
       "actions": [
@@ -13082,7 +13081,7 @@
           "label": "Enable protection for Nginx Rate Limiting Not Configured",
           "default_value": false,
           "on_change": "handleRISK120ToggleChange",
-          "settings_key": "vapt_risk_risk_120_enabled"
+          "settings_key": "vapt_risk_120_enabled"
         }
       ],
       "actions": [
@@ -13181,7 +13180,7 @@
           "label": "Enable protection for Apache ModSecurity Not Enabled",
           "default_value": false,
           "on_change": "handleRISK121ToggleChange",
-          "settings_key": "vapt_risk_risk_121_enabled"
+          "settings_key": "vapt_risk_121_enabled"
         }
       ],
       "actions": [
@@ -13280,7 +13279,7 @@
           "label": "Enable protection for Nginx Gzip Compression Not Configured",
           "default_value": false,
           "on_change": "handleRISK122ToggleChange",
-          "settings_key": "vapt_risk_risk_122_enabled"
+          "settings_key": "vapt_risk_122_enabled"
         }
       ],
       "actions": [
@@ -13379,7 +13378,7 @@
           "label": "Enable protection for Caddy Server Version Exposed",
           "default_value": false,
           "on_change": "handleRISK123ToggleChange",
-          "settings_key": "vapt_risk_risk_123_enabled"
+          "settings_key": "vapt_risk_123_enabled"
         }
       ],
       "actions": [
@@ -13478,7 +13477,7 @@
           "label": "Enable protection for Caddy Admin Interface Exposed",
           "default_value": false,
           "on_change": "handleRISK124ToggleChange",
-          "settings_key": "vapt_risk_risk_124_enabled"
+          "settings_key": "vapt_risk_124_enabled"
         }
       ],
       "actions": [
@@ -13577,7 +13576,7 @@
           "label": "Enable protection for Nginx SSL Configuration Weak",
           "default_value": false,
           "on_change": "handleRISK125ToggleChange",
-          "settings_key": "vapt_risk_risk_125_enabled"
+          "settings_key": "vapt_risk_125_enabled"
         }
       ],
       "actions": [
@@ -13601,6 +13600,1149 @@
           "target_file": "Nginx",
           "backup_required": true,
           "implementation_type": ""
+        }
+      },
+      "status_indicators": {
+        "protected": {
+          "color": "text-green-600",
+          "icon": "shield-check",
+          "label": "Protected"
+        },
+        "unprotected": {
+          "color": "text-red-600",
+          "icon": "shield-x",
+          "label": "Not Protected"
+        },
+        "partial": {
+          "color": "text-yellow-600",
+          "icon": "shield-alert",
+          "label": "Partial"
+        },
+        "scanning": {
+          "color": "text-blue-600",
+          "icon": "loader",
+          "label": "Scanning..."
+        },
+        "error": {
+          "color": "text-red-700",
+          "icon": "alert-triangle",
+          "label": "Error"
+        }
+      }
+    },
+    "RISK-126": {
+      "risk_id": "RISK-126",
+      "title": "Outdated and Vulnerable WordPress Plugins",
+      "category": "Configuration",
+      "severity": {
+        "level": "high",
+        "cvss": 8.1,
+        "colors": {
+          "bg": "bg-orange-100",
+          "text": "text-orange-800",
+          "border": "border-orange-300",
+          "badge": "bg-orange-500 text-white"
+        }
+      },
+      "owasp": {
+        "pci_dss": [
+          "Requirement-6.2"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-937"
+        ],
+        "owasp_top_10_2025": "A06:2025 - Vulnerable Components",
+        "owasp_top_10_2021_deprecated": "A06:2021 - Vulnerable Components"
+      },
+      "summary": "Outdated plugins with known vulnerabilities pose significant security risks.",
+      "ui_layout": {
+        "card_id": "vapt-card-risk126",
+        "section": "Configuration",
+        "order": 126,
+        "collapsible": true,
+        "default_expanded": true
+      },
+      "components": [
+        {
+          "component_id": "UI-RISK-126-001",
+          "type": "toggle",
+          "label": "Enable protection for Outdated and Vulnerable WordPress Plugins",
+          "default_value": false,
+          "on_change": "handleRISK126ToggleChange",
+          "settings_key": "vapt_risk_126_enabled"
+        }
+      ],
+      "actions": [
+        {
+          "action_id": "ACTION-126-001",
+          "type": "enable",
+          "label": "Apply Protection",
+          "confirmation_required": true,
+          "rest_endpoint": "/wp-json/vapt/v1/risk-126"
+        }
+      ],
+      "available_platforms": [
+        "WordPress Core"
+      ],
+      "platform_implementations": {
+        "WordPress Core": {
+          "lib_key": "wordpress_core",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-126.wordpress_core",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-126.steps[*enforcer=WordPress Core]",
+          "operation": "add_filter_hook",
+          "target_file": "WordPress Core",
+          "backup_required": true,
+          "implementation_type": ""
+        }
+      },
+      "status_indicators": {
+        "protected": {
+          "color": "text-green-600",
+          "icon": "shield-check",
+          "label": "Protected"
+        },
+        "unprotected": {
+          "color": "text-red-600",
+          "icon": "shield-x",
+          "label": "Not Protected"
+        },
+        "partial": {
+          "color": "text-yellow-600",
+          "icon": "shield-alert",
+          "label": "Partial"
+        },
+        "scanning": {
+          "color": "text-blue-600",
+          "icon": "loader",
+          "label": "Scanning..."
+        },
+        "error": {
+          "color": "text-red-700",
+          "icon": "alert-triangle",
+          "label": "Error"
+        }
+      }
+    },
+    "RISK-127": {
+      "risk_id": "RISK-127",
+      "title": "No Input Validation",
+      "category": "Configuration",
+      "severity": {
+        "level": "critical",
+        "cvss": 9.8,
+        "colors": {
+          "bg": "bg-red-100",
+          "text": "text-red-800",
+          "border": "border-red-300",
+          "badge": "bg-red-600 text-white"
+        }
+      },
+      "owasp": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-20"
+        ],
+        "owasp_top_10_2025": "A03:2025 - Injection",
+        "owasp_top_10_2021_deprecated": "A03:2021 - Injection"
+      },
+      "summary": "Lack of proper input validation enables injection attacks and data corruption.",
+      "ui_layout": {
+        "card_id": "vapt-card-risk127",
+        "section": "Configuration",
+        "order": 127,
+        "collapsible": true,
+        "default_expanded": true
+      },
+      "components": [
+        {
+          "component_id": "UI-RISK-127-001",
+          "type": "toggle",
+          "label": "Enable protection for No Input Validation",
+          "default_value": false,
+          "on_change": "handleRISK127ToggleChange",
+          "settings_key": "vapt_risk_127_enabled"
+        }
+      ],
+      "actions": [
+        {
+          "action_id": "ACTION-127-001",
+          "type": "enable",
+          "label": "Apply Protection",
+          "confirmation_required": true,
+          "rest_endpoint": "/wp-json/vapt/v1/risk-127"
+        }
+      ],
+      "available_platforms": [
+        "PHP Functions"
+      ],
+      "platform_implementations": {
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-127.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-127.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": ""
+        }
+      },
+      "status_indicators": {
+        "protected": {
+          "color": "text-green-600",
+          "icon": "shield-check",
+          "label": "Protected"
+        },
+        "unprotected": {
+          "color": "text-red-600",
+          "icon": "shield-x",
+          "label": "Not Protected"
+        },
+        "partial": {
+          "color": "text-yellow-600",
+          "icon": "shield-alert",
+          "label": "Partial"
+        },
+        "scanning": {
+          "color": "text-blue-600",
+          "icon": "loader",
+          "label": "Scanning..."
+        },
+        "error": {
+          "color": "text-red-700",
+          "icon": "alert-triangle",
+          "label": "Error"
+        }
+      }
+    },
+    "RISK-128": {
+      "risk_id": "RISK-128",
+      "title": "WordPress Cron Job Vulnerability (DoS)",
+      "category": "Configuration",
+      "severity": {
+        "level": "high",
+        "cvss": 7.5,
+        "colors": {
+          "bg": "bg-orange-100",
+          "text": "text-orange-800",
+          "border": "border-orange-300",
+          "badge": "bg-orange-500 text-white"
+        }
+      },
+      "owasp": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-400"
+        ],
+        "owasp_top_10_2025": "A06:2025 - Insecure Design",
+        "owasp_top_10_2021_deprecated": "A04:2021 - Insecure Design"
+      },
+      "summary": "Independent client-facing entry for wp-cron.php request abuse that can cause resource exhaustion and denial of service.",
+      "ui_layout": {
+        "card_id": "vapt-card-risk128",
+        "section": "Configuration",
+        "order": 128,
+        "collapsible": true,
+        "default_expanded": true
+      },
+      "components": [
+        {
+          "component_id": "UI-RISK-128-001",
+          "type": "toggle",
+          "label": "Enable protection for WordPress Cron Job Vulnerability (DoS)",
+          "default_value": false,
+          "on_change": "handleRISK128ToggleChange",
+          "settings_key": "vapt_risk_128_enabled"
+        }
+      ],
+      "actions": [
+        {
+          "action_id": "ACTION-128-001",
+          "type": "enable",
+          "label": "Apply Protection",
+          "confirmation_required": true,
+          "rest_endpoint": "/wp-json/vapt/v1/risk-128"
+        }
+      ],
+      "available_platforms": [
+        "wp-config.php"
+      ],
+      "platform_implementations": {
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-128.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-128.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "",
+          "target_constants": [
+            "DISABLE_WP_CRON"
+          ],
+          "target_values": [
+            "true"
+          ],
+          "insertion_rule": "Must be placed BEFORE: require_once ABSPATH . 'wp-settings.php';"
+        }
+      },
+      "status_indicators": {
+        "protected": {
+          "color": "text-green-600",
+          "icon": "shield-check",
+          "label": "Protected"
+        },
+        "unprotected": {
+          "color": "text-red-600",
+          "icon": "shield-x",
+          "label": "Not Protected"
+        },
+        "partial": {
+          "color": "text-yellow-600",
+          "icon": "shield-alert",
+          "label": "Partial"
+        },
+        "scanning": {
+          "color": "text-blue-600",
+          "icon": "loader",
+          "label": "Scanning..."
+        },
+        "error": {
+          "color": "text-red-700",
+          "icon": "alert-triangle",
+          "label": "Error"
+        }
+      }
+    },
+    "RISK-129": {
+      "risk_id": "RISK-129",
+      "title": "XML-RPC Leads to Unauthenticated Blind SSRF",
+      "category": "Information Disclosure",
+      "severity": {
+        "level": "high",
+        "cvss": 7.5,
+        "colors": {
+          "bg": "bg-orange-100",
+          "text": "text-orange-800",
+          "border": "border-orange-300",
+          "badge": "bg-orange-500 text-white"
+        }
+      },
+      "owasp": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-918"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "summary": "Independent client-facing entry for XML-RPC exposure that can enable unauthenticated blind SSRF-style callbacks and pingback abuse.",
+      "ui_layout": {
+        "card_id": "vapt-card-risk129",
+        "section": "Information Disclosure",
+        "order": 129,
+        "collapsible": true,
+        "default_expanded": true
+      },
+      "components": [
+        {
+          "component_id": "UI-RISK-129-001",
+          "type": "toggle",
+          "label": "Enable protection for XML-RPC Leads to Unauthenticated Blind SSRF",
+          "default_value": false,
+          "on_change": "handleRISK129ToggleChange",
+          "settings_key": "vapt_risk_129_enabled"
+        }
+      ],
+      "actions": [
+        {
+          "action_id": "ACTION-129-001",
+          "type": "enable",
+          "label": "Apply Protection",
+          "confirmation_required": true,
+          "rest_endpoint": "/wp-json/vapt/v1/risk-129"
+        }
+      ],
+      "available_platforms": [
+        ".htaccess",
+        "Caddy",
+        "Cloudflare",
+        "IIS"
+      ],
+      "platform_implementations": {
+        ".htaccess": {
+          "lib_key": "htaccess",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-129.htaccess",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-129.steps[*enforcer=.htaccess]",
+          "operation": "add_files_block",
+          "target_file": ".htaccess",
+          "backup_required": true,
+          "implementation_type": "",
+          "requires": [
+            "mod_authz_host"
+          ],
+          "allowoverride": "",
+          "insertion_point": "beginning_of_file",
+          "anchor_string": null,
+          "note": "Apache 2.4+: use Require all denied"
+        },
+        "Cloudflare": {
+          "lib_key": "cloudflare",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-129.cloudflare",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-129.steps[*enforcer=Cloudflare]",
+          "operation": "",
+          "target_file": "",
+          "backup_required": true,
+          "implementation_type": "waf_custom_rule"
+        },
+        "IIS": {
+          "lib_key": "iis",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-129.iis",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-129.steps[*enforcer=IIS]",
+          "operation": "",
+          "target_file": "",
+          "backup_required": true,
+          "implementation_type": "web_config_request_filtering"
+        },
+        "Caddy": {
+          "lib_key": "caddy",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-129.caddy",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-129.steps[*enforcer=Caddy]",
+          "operation": "",
+          "target_file": "Caddy",
+          "backup_required": true,
+          "implementation_type": "caddy_respond_block"
+        }
+      },
+      "status_indicators": {
+        "protected": {
+          "color": "text-green-600",
+          "icon": "shield-check",
+          "label": "Protected"
+        },
+        "unprotected": {
+          "color": "text-red-600",
+          "icon": "shield-x",
+          "label": "Not Protected"
+        },
+        "partial": {
+          "color": "text-yellow-600",
+          "icon": "shield-alert",
+          "label": "Partial"
+        },
+        "scanning": {
+          "color": "text-blue-600",
+          "icon": "loader",
+          "label": "Scanning..."
+        },
+        "error": {
+          "color": "text-red-700",
+          "icon": "alert-triangle",
+          "label": "Error"
+        }
+      }
+    },
+    "RISK-130": {
+      "risk_id": "RISK-130",
+      "title": "Directory Listing Vulnerability",
+      "category": "Configuration",
+      "severity": {
+        "level": "high",
+        "cvss": 7.5,
+        "colors": {
+          "bg": "bg-orange-100",
+          "text": "text-orange-800",
+          "border": "border-orange-300",
+          "badge": "bg-orange-500 text-white"
+        }
+      },
+      "owasp": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-548"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "summary": "Independent client-facing entry for enabled directory indexing that exposes directory contents and file structure.",
+      "ui_layout": {
+        "card_id": "vapt-card-risk130",
+        "section": "Configuration",
+        "order": 130,
+        "collapsible": true,
+        "default_expanded": true
+      },
+      "components": [
+        {
+          "component_id": "UI-RISK-130-001",
+          "type": "toggle",
+          "label": "Enable protection for Directory Listing Vulnerability",
+          "default_value": false,
+          "on_change": "handleRISK130ToggleChange",
+          "settings_key": "vapt_risk_130_enabled"
+        }
+      ],
+      "actions": [
+        {
+          "action_id": "ACTION-130-001",
+          "type": "enable",
+          "label": "Apply Protection",
+          "confirmation_required": true,
+          "rest_endpoint": "/wp-json/vapt/v1/risk-130"
+        }
+      ],
+      "available_platforms": [
+        ".htaccess",
+        "Caddy",
+        "Cloudflare",
+        "IIS"
+      ],
+      "platform_implementations": {
+        ".htaccess": {
+          "lib_key": "htaccess",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-130.htaccess",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-130.steps[*enforcer=.htaccess]",
+          "operation": "add_directive",
+          "target_file": ".htaccess",
+          "backup_required": true,
+          "implementation_type": "",
+          "requires": [],
+          "allowoverride": "Options",
+          "insertion_point": "beginning_of_file",
+          "anchor_string": null,
+          "note": "Requires AllowOverride Options or All. Silently fails without it."
+        },
+        "Cloudflare": {
+          "lib_key": "cloudflare",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-130.cloudflare",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-130.steps[*enforcer=Cloudflare]",
+          "operation": "",
+          "target_file": "",
+          "backup_required": true,
+          "implementation_type": "notes_only"
+        },
+        "IIS": {
+          "lib_key": "iis",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-130.iis",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-130.steps[*enforcer=IIS]",
+          "operation": "",
+          "target_file": "",
+          "backup_required": true,
+          "implementation_type": "web_config_directory_browsing"
+        },
+        "Caddy": {
+          "lib_key": "caddy",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-130.caddy",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-130.steps[*enforcer=Caddy]",
+          "operation": "",
+          "target_file": "Caddy",
+          "backup_required": true,
+          "implementation_type": "caddy_file_server"
+        }
+      },
+      "status_indicators": {
+        "protected": {
+          "color": "text-green-600",
+          "icon": "shield-check",
+          "label": "Protected"
+        },
+        "unprotected": {
+          "color": "text-red-600",
+          "icon": "shield-x",
+          "label": "Not Protected"
+        },
+        "partial": {
+          "color": "text-yellow-600",
+          "icon": "shield-alert",
+          "label": "Partial"
+        },
+        "scanning": {
+          "color": "text-blue-600",
+          "icon": "loader",
+          "label": "Scanning..."
+        },
+        "error": {
+          "color": "text-red-700",
+          "icon": "alert-triangle",
+          "label": "Error"
+        }
+      }
+    },
+    "RISK-131": {
+      "risk_id": "RISK-131",
+      "title": "Lack of Rate Limiting on Contact Form",
+      "category": "Configuration",
+      "severity": {
+        "level": "medium",
+        "cvss": 5.3,
+        "colors": {
+          "bg": "bg-yellow-100",
+          "text": "text-yellow-800",
+          "border": "border-yellow-300",
+          "badge": "bg-yellow-400 text-black"
+        }
+      },
+      "owasp": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-770"
+        ],
+        "owasp_top_10_2025": "A06:2025 - Insecure Design",
+        "owasp_top_10_2021_deprecated": "A04:2021 - Insecure Design"
+      },
+      "summary": "Independent client-facing entry for contact form submissions that lack throttling or anti-automation controls.",
+      "ui_layout": {
+        "card_id": "vapt-card-risk131",
+        "section": "Configuration",
+        "order": 131,
+        "collapsible": true,
+        "default_expanded": false
+      },
+      "components": [
+        {
+          "component_id": "UI-RISK-131-001",
+          "type": "toggle",
+          "label": "Enable protection for Lack of Rate Limiting on Contact Form",
+          "default_value": false,
+          "on_change": "handleRISK131ToggleChange",
+          "settings_key": "vapt_risk_131_enabled"
+        }
+      ],
+      "actions": [
+        {
+          "action_id": "ACTION-131-001",
+          "type": "enable",
+          "label": "Apply Protection",
+          "confirmation_required": false,
+          "rest_endpoint": "/wp-json/vapt/v1/risk-131"
+        }
+      ],
+      "available_platforms": [
+        "PHP Functions"
+      ],
+      "platform_implementations": {
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-131.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-131.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": ""
+        }
+      },
+      "status_indicators": {
+        "protected": {
+          "color": "text-green-600",
+          "icon": "shield-check",
+          "label": "Protected"
+        },
+        "unprotected": {
+          "color": "text-red-600",
+          "icon": "shield-x",
+          "label": "Not Protected"
+        },
+        "partial": {
+          "color": "text-yellow-600",
+          "icon": "shield-alert",
+          "label": "Partial"
+        },
+        "scanning": {
+          "color": "text-blue-600",
+          "icon": "loader",
+          "label": "Scanning..."
+        },
+        "error": {
+          "color": "text-red-700",
+          "icon": "alert-triangle",
+          "label": "Error"
+        }
+      }
+    },
+    "RISK-132": {
+      "risk_id": "RISK-132",
+      "title": "Banner Grabbing Vulnerability",
+      "category": "Information Disclosure",
+      "severity": {
+        "level": "low",
+        "cvss": 3.7,
+        "colors": {
+          "bg": "bg-blue-100",
+          "text": "text-blue-800",
+          "border": "border-blue-300",
+          "badge": "bg-blue-400 text-white"
+        }
+      },
+      "owasp": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-200"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "summary": "Independent client-facing entry for exposed server/version banners that assist targeted reconnaissance.",
+      "ui_layout": {
+        "card_id": "vapt-card-risk132",
+        "section": "Information Disclosure",
+        "order": 132,
+        "collapsible": true,
+        "default_expanded": false
+      },
+      "components": [
+        {
+          "component_id": "UI-RISK-132-001",
+          "type": "toggle",
+          "label": "Enable protection for Banner Grabbing Vulnerability",
+          "default_value": false,
+          "on_change": "handleRISK132ToggleChange",
+          "settings_key": "vapt_risk_132_enabled"
+        }
+      ],
+      "actions": [
+        {
+          "action_id": "ACTION-132-001",
+          "type": "enable",
+          "label": "Apply Protection",
+          "confirmation_required": false,
+          "rest_endpoint": "/wp-json/vapt/v1/risk-132"
+        }
+      ],
+      "available_platforms": [
+        "Nginx"
+      ],
+      "platform_implementations": {
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-132.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-132.steps[*enforcer=Nginx]",
+          "operation": "modify_server_tokens",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": ""
+        }
+      },
+      "status_indicators": {
+        "protected": {
+          "color": "text-green-600",
+          "icon": "shield-check",
+          "label": "Protected"
+        },
+        "unprotected": {
+          "color": "text-red-600",
+          "icon": "shield-x",
+          "label": "Not Protected"
+        },
+        "partial": {
+          "color": "text-yellow-600",
+          "icon": "shield-alert",
+          "label": "Partial"
+        },
+        "scanning": {
+          "color": "text-blue-600",
+          "icon": "loader",
+          "label": "Scanning..."
+        },
+        "error": {
+          "color": "text-red-700",
+          "icon": "alert-triangle",
+          "label": "Error"
+        }
+      }
+    },
+    "RISK-133": {
+      "risk_id": "RISK-133",
+      "title": "Unauthenticated Exposure of WordPress REST API Endpoints",
+      "category": "API Security",
+      "severity": {
+        "level": "low",
+        "cvss": 3.7,
+        "colors": {
+          "bg": "bg-blue-100",
+          "text": "text-blue-800",
+          "border": "border-blue-300",
+          "badge": "bg-blue-400 text-white"
+        }
+      },
+      "owasp": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-200"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "summary": "Independent client-facing entry for REST API endpoints exposed without authentication or permission checks.",
+      "ui_layout": {
+        "card_id": "vapt-card-risk133",
+        "section": "API Security",
+        "order": 133,
+        "collapsible": true,
+        "default_expanded": false
+      },
+      "components": [
+        {
+          "component_id": "UI-RISK-133-001",
+          "type": "toggle",
+          "label": "Enable protection for Unauthenticated Exposure of WordPress REST API Endpoints",
+          "default_value": false,
+          "on_change": "handleRISK133ToggleChange",
+          "settings_key": "vapt_risk_133_enabled"
+        }
+      ],
+      "actions": [
+        {
+          "action_id": "ACTION-133-001",
+          "type": "enable",
+          "label": "Apply Protection",
+          "confirmation_required": false,
+          "rest_endpoint": "/wp-json/vapt/v1/risk-133"
+        }
+      ],
+      "available_platforms": [
+        "WordPress Core"
+      ],
+      "platform_implementations": {
+        "WordPress Core": {
+          "lib_key": "wordpress_core",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-133.wordpress_core",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-133.steps[*enforcer=WordPress Core]",
+          "operation": "add_filter_hook",
+          "target_file": "WordPress Core",
+          "backup_required": true,
+          "implementation_type": ""
+        }
+      },
+      "status_indicators": {
+        "protected": {
+          "color": "text-green-600",
+          "icon": "shield-check",
+          "label": "Protected"
+        },
+        "unprotected": {
+          "color": "text-red-600",
+          "icon": "shield-x",
+          "label": "Not Protected"
+        },
+        "partial": {
+          "color": "text-yellow-600",
+          "icon": "shield-alert",
+          "label": "Partial"
+        },
+        "scanning": {
+          "color": "text-blue-600",
+          "icon": "loader",
+          "label": "Scanning..."
+        },
+        "error": {
+          "color": "text-red-700",
+          "icon": "alert-triangle",
+          "label": "Error"
+        }
+      }
+    },
+    "RISK-134": {
+      "risk_id": "RISK-134",
+      "title": "Clickjacking",
+      "category": "Configuration",
+      "severity": {
+        "level": "medium",
+        "cvss": 5.3,
+        "colors": {
+          "bg": "bg-yellow-100",
+          "text": "text-yellow-800",
+          "border": "border-yellow-300",
+          "badge": "bg-yellow-400 text-black"
+        }
+      },
+      "owasp": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-1021"
+        ],
+        "owasp_top_10_2025": "A01:2025 - Broken Access Control",
+        "owasp_top_10_2021_deprecated": "A01:2021 - Broken Access Control"
+      },
+      "summary": "Independent client-facing entry for clickjacking exposure caused by missing or insufficient anti-framing controls.",
+      "ui_layout": {
+        "card_id": "vapt-card-risk134",
+        "section": "Configuration",
+        "order": 134,
+        "collapsible": true,
+        "default_expanded": false
+      },
+      "components": [
+        {
+          "component_id": "UI-RISK-134-001",
+          "type": "toggle",
+          "label": "Enable protection for Clickjacking",
+          "default_value": false,
+          "on_change": "handleRISK134ToggleChange",
+          "settings_key": "vapt_risk_134_enabled"
+        }
+      ],
+      "actions": [
+        {
+          "action_id": "ACTION-134-001",
+          "type": "enable",
+          "label": "Apply Protection",
+          "confirmation_required": false,
+          "rest_endpoint": "/wp-json/vapt/v1/risk-134"
+        }
+      ],
+      "available_platforms": [
+        ".htaccess",
+        "Caddy",
+        "Cloudflare",
+        "IIS"
+      ],
+      "platform_implementations": {
+        ".htaccess": {
+          "lib_key": "htaccess",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-134.htaccess",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-134.steps[*enforcer=.htaccess]",
+          "operation": "add_header",
+          "target_file": ".htaccess",
+          "backup_required": true,
+          "implementation_type": "",
+          "requires": [
+            "mod_headers"
+          ],
+          "allowoverride": "FileInfo",
+          "insertion_point": "beginning_of_file",
+          "anchor_string": null,
+          "note": ""
+        },
+        "Cloudflare": {
+          "lib_key": "cloudflare",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-134.cloudflare",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-134.steps[*enforcer=Cloudflare]",
+          "operation": "",
+          "target_file": "",
+          "backup_required": true,
+          "implementation_type": "transform_rule"
+        },
+        "IIS": {
+          "lib_key": "iis",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-134.iis",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-134.steps[*enforcer=IIS]",
+          "operation": "",
+          "target_file": "",
+          "backup_required": true,
+          "implementation_type": "web_config_http_headers"
+        },
+        "Caddy": {
+          "lib_key": "caddy",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-134.caddy",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-134.steps[*enforcer=Caddy]",
+          "operation": "",
+          "target_file": "Caddy",
+          "backup_required": true,
+          "implementation_type": "caddy_header"
+        }
+      },
+      "status_indicators": {
+        "protected": {
+          "color": "text-green-600",
+          "icon": "shield-check",
+          "label": "Protected"
+        },
+        "unprotected": {
+          "color": "text-red-600",
+          "icon": "shield-x",
+          "label": "Not Protected"
+        },
+        "partial": {
+          "color": "text-yellow-600",
+          "icon": "shield-alert",
+          "label": "Partial"
+        },
+        "scanning": {
+          "color": "text-blue-600",
+          "icon": "loader",
+          "label": "Scanning..."
+        },
+        "error": {
+          "color": "text-red-700",
+          "icon": "alert-triangle",
+          "label": "Error"
+        }
+      }
+    },
+    "RISK-135": {
+      "risk_id": "RISK-135",
+      "title": "Public Exposure of Debug Log File",
+      "category": "Information Disclosure",
+      "severity": {
+        "level": "medium",
+        "cvss": 5.3,
+        "colors": {
+          "bg": "bg-yellow-100",
+          "text": "text-yellow-800",
+          "border": "border-yellow-300",
+          "badge": "bg-yellow-400 text-black"
+        }
+      },
+      "owasp": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-532"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "summary": "Independent client-facing entry for publicly accessible debug.log files that may disclose sensitive application/runtime data.",
+      "ui_layout": {
+        "card_id": "vapt-card-risk135",
+        "section": "Information Disclosure",
+        "order": 135,
+        "collapsible": true,
+        "default_expanded": false
+      },
+      "components": [
+        {
+          "component_id": "UI-RISK-135-001",
+          "type": "toggle",
+          "label": "Enable protection for Public Exposure of Debug Log File",
+          "default_value": false,
+          "on_change": "handleRISK135ToggleChange",
+          "settings_key": "vapt_risk_135_enabled"
+        }
+      ],
+      "actions": [
+        {
+          "action_id": "ACTION-135-001",
+          "type": "enable",
+          "label": "Apply Protection",
+          "confirmation_required": false,
+          "rest_endpoint": "/wp-json/vapt/v1/risk-135"
+        }
+      ],
+      "available_platforms": [
+        ".htaccess",
+        "Caddy",
+        "Cloudflare",
+        "IIS"
+      ],
+      "platform_implementations": {
+        ".htaccess": {
+          "lib_key": "htaccess",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-135.htaccess",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-135.steps[*enforcer=.htaccess]",
+          "operation": "add_files_block",
+          "target_file": ".htaccess",
+          "backup_required": true,
+          "implementation_type": "",
+          "requires": [
+            "mod_authz_host"
+          ],
+          "allowoverride": "",
+          "insertion_point": "beginning_of_file",
+          "anchor_string": null,
+          "note": "Apache 2.4+: use Require all denied"
+        },
+        "Cloudflare": {
+          "lib_key": "cloudflare",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-135.cloudflare",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-135.steps[*enforcer=Cloudflare]",
+          "operation": "",
+          "target_file": "",
+          "backup_required": true,
+          "implementation_type": "waf_custom_rule"
+        },
+        "IIS": {
+          "lib_key": "iis",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-135.iis",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-135.steps[*enforcer=IIS]",
+          "operation": "",
+          "target_file": "",
+          "backup_required": true,
+          "implementation_type": "web_config_request_filtering"
+        },
+        "Caddy": {
+          "lib_key": "caddy",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-135.caddy",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-135.steps[*enforcer=Caddy]",
+          "operation": "",
+          "target_file": "Caddy",
+          "backup_required": true,
+          "implementation_type": "caddy_respond_block"
         }
       },
       "status_indicators": {

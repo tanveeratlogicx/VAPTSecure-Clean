@@ -1,7 +1,6 @@
 {
   "schema_version": "2.0.0",
   "bundle_date": "2026-02-21",
-  "source_file": "VAPT-Risk-Catalogue-Full-125-v3_4_1.json",
   "file_role": "enforcer_pattern_library",
   "bundle_files": {
     "pattern_library": "enforcer_pattern_library_v2.0.json",
@@ -11,16 +10,16 @@
     "driver_reference": "VAPT_Driver_Reference_v2.0.php",
     "readme": "VAPT_AI_Agent_System_README_v2.0.md"
   },
-  "description": "VAPT Enforcer Pattern Library v2.0 \u2014 All 125 risks, all enforcer types. Keys are enforcer-named (htaccess, wp_config, php_functions, wordpress, wordpress_core, fail2ban, nginx, apache, caddy_native, cloudflare, iis, caddy). Every entry includes a driver{} sub-object with machine-executable fields consumed by vapt_driver_manifest_v2.0.json.",
+  "description": "VAPT Enforcer Pattern Library v2.0 — All 135 risks, all enforcer types. Keys are enforcer-named (htaccess, wp_config, php_functions, wordpress, wordpress_core, fail2ban, nginx, apache, caddy_native, cloudflare, iis, caddy). Every entry includes a driver{} sub-object with machine-executable fields consumed by vapt_driver_manifest_v2.0.json.",
   "enforcer_key_map": {
-    "htaccess": ".htaccess enforcer \u2014 corrected rules + cloudflare/iis/caddy variants",
-    "wp_config": "wp-config.php enforcer \u2014 enriched with target_constants, insertion anchor",
-    "php_functions": "PHP Functions enforcer \u2014 hook-based code for functions.php / plugin file",
-    "wordpress": "WordPress enforcer \u2014 WP action/filter hooks",
-    "wordpress_core": "WordPress Core enforcer \u2014 core filter hooks",
-    "fail2ban": "fail2ban enforcer \u2014 jail.local config blocks",
-    "nginx": "Nginx enforcer \u2014 nginx.conf directives",
-    "apache": "Apache enforcer \u2014 httpd.conf / VirtualHost directives",
+    "htaccess": ".htaccess enforcer — corrected rules + cloudflare/iis/caddy variants",
+    "wp_config": "wp-config.php enforcer — enriched with target_constants, insertion anchor",
+    "php_functions": "PHP Functions enforcer — hook-based code for functions.php / plugin file",
+    "wordpress": "WordPress enforcer — WP action/filter hooks",
+    "wordpress_core": "WordPress Core enforcer — core filter hooks",
+    "fail2ban": "fail2ban enforcer — jail.local config blocks",
+    "nginx": "Nginx enforcer — nginx.conf directives",
+    "apache": "Apache enforcer — httpd.conf / VirtualHost directives",
     "caddy_native": "Native Caddy enforcer risks (RISK-123, RISK-124)",
     "cloudflare": "Cloudflare edge implementation derived from .htaccess correction",
     "iis": "IIS web.config implementation derived from .htaccess correction",
@@ -118,7 +117,7 @@
         "name": "VAPT RISK-002",
         "expression": "(http.request.uri.path ends_with \".xmlrpc\") or (http.request.uri.path ends_with \".php\")",
         "action": "Block",
-        "dashboard_path": "Cloudflare \u2192 Security \u2192 WAF \u2192 Custom Rules \u2192 Create Rule",
+        "dashboard_path": "Cloudflare → Security → WAF → Custom Rules → Create Rule",
         "verification": "curl -sI https://yoursite.com/blocked-file | grep HTTP"
       },
       "iis": {
@@ -151,8 +150,8 @@
           "mod_rewrite"
         ],
         "allowoverride": "FileInfo",
-        "code": "<IfModule mod_rewrite.c>\n    RewriteEngine On\n    RewriteBase /\n    RewriteCond %{REQUEST_URI} !/wp-json/wp/v2/users/me [NC]\n    RewriteRule ^wp-json/wp/v2/users - [F,L]\n</IfModule>",
-        "wrapped_code": "# BEGIN VAPT RISK-003\n<IfModule mod_rewrite.c>\n    RewriteEngine On\n    RewriteBase /\n    RewriteCond %{REQUEST_URI} !/wp-json/wp/v2/users/me [NC]\n    RewriteRule ^wp-json/wp/v2/users - [F,L]\n</IfModule>\n# END VAPT RISK-003",
+        "code": "<IfModule mod_rewrite.c>\n    RewriteEngine On\n    RewriteBase /\n    RewriteRule ^wp-json/wp/v2/users$ - [F,L]\n    RewriteRule ^wp-json/wp/v2/users/ - [F,L]\n</IfModule>",
+        "wrapped_code": "# BEGIN VAPT RISK-003\n<IfModule mod_rewrite.c>\n    RewriteEngine On\n    RewriteBase /\n    RewriteRule ^wp-json/wp/v2/users$ - [F,L]\n    RewriteRule ^wp-json/wp/v2/users/ - [F,L]\n</IfModule>\n# END VAPT RISK-003",
         "begin_marker": "# BEGIN VAPT RISK-003",
         "end_marker": "# END VAPT RISK-003",
         "note": "Must be BEFORE # BEGIN WordPress. WP [L] catch-all makes anything after # END WordPress a dead zone. Covers /users and /users/ variants.",
@@ -164,7 +163,7 @@
         "driver": {
           "write_mode": "insert_at_anchor",
           "target_file": "{ABSPATH}.htaccess",
-          "write_block": "# BEGIN VAPT RISK-003\n<IfModule mod_rewrite.c>\n    RewriteEngine On\n    RewriteBase /\n    RewriteCond %{REQUEST_URI} !/wp-json/wp/v2/users/me [NC]\n    RewriteRule ^wp-json/wp/v2/users - [F,L]\n</IfModule>\n# END VAPT RISK-003",
+          "write_block": "# BEGIN VAPT RISK-003\n<IfModule mod_rewrite.c>\n    RewriteEngine On\n    RewriteBase /\n    RewriteRule ^wp-json/wp/v2/users$ - [F,L]\n    RewriteRule ^wp-json/wp/v2/users/ - [F,L]\n</IfModule>\n# END VAPT RISK-003",
           "anchor_string": "# BEGIN WordPress",
           "anchor_position": "before",
           "fallback": "prepend",
@@ -177,14 +176,14 @@
         "name": "VAPT RISK-003",
         "expression": "(http.request.uri.path eq \"/wp-json/wp/v2/users\") or (http.request.uri.path wildcard \"/wp-json/wp/v2/users/*\")",
         "action": "Block",
-        "dashboard_path": "Cloudflare \u2192 Security \u2192 WAF \u2192 Custom Rules \u2192 Create Rule",
+        "dashboard_path": "Cloudflare → Security → WAF → Custom Rules → Create Rule",
         "verification": "curl -sI https://yoursite.com | grep HTTP"
       },
       "iis": {
         "implementation_type": "web_config_url_rewrite",
         "web_config_snippet": "<!-- BEGIN VAPT RISK-003 -->\n<configuration>\n  <system.webServer>\n    <rewrite><rules>\n      <rule name=\"VAPT RISK-003\" stopProcessing=\"true\">\n        <match url=\"^wp-json/wp/v2/users.*\" />\n        <action type=\"CustomResponse\" statusCode=\"403\" statusReason=\"Forbidden\" statusDescription=\"Blocked by VAPT RISK-003\" />\n      </rule>\n    </rules></rewrite>\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-003 -->",
         "requirements": [
-          "IIS URL Rewrite Module 2.1 \u2014 install from Web Platform Installer"
+          "IIS URL Rewrite Module 2.1 — install from Web Platform Installer"
         ],
         "verification": "appcmd validate config && curl -sI https://yoursite.com | findstr HTTP"
       },
@@ -279,14 +278,14 @@
         "name": "VAPT RISK-005",
         "expression": "(http.request.uri.query contains \"author=\")",
         "action": "Block",
-        "dashboard_path": "Cloudflare \u2192 Security \u2192 WAF \u2192 Custom Rules \u2192 Create Rule",
+        "dashboard_path": "Cloudflare → Security → WAF → Custom Rules → Create Rule",
         "verification": "curl -sI https://yoursite.com | grep HTTP"
       },
       "iis": {
         "implementation_type": "web_config_url_rewrite",
         "web_config_snippet": "<!-- BEGIN VAPT RISK-005 -->\n<configuration>\n  <system.webServer>\n    <rewrite><rules>\n      <rule name=\"VAPT RISK-005\" stopProcessing=\"true\">\n          <conditions><add input=\"{QUERY_STRING}\" pattern=\"author=\\d+\" /></conditions>\n        <match url=\".*\" />\n        <action type=\"CustomResponse\" statusCode=\"403\" statusReason=\"Forbidden\" statusDescription=\"Blocked by VAPT RISK-005\" />\n      </rule>\n    </rules></rewrite>\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-005 -->",
         "requirements": [
-          "IIS URL Rewrite Module 2.1 \u2014 install from Web Platform Installer"
+          "IIS URL Rewrite Module 2.1 — install from Web Platform Installer"
         ],
         "verification": "appcmd validate config && curl -sI https://yoursite.com | findstr HTTP"
       },
@@ -471,8 +470,8 @@
           "position": "after",
           "fallback": "append"
         },
-        "code": "ServerTokens Prod\nServerSignature Off",
-        "wrapped_code": "# BEGIN VAPT RISK-010\nServerTokens Prod\nServerSignature Off\n# END VAPT RISK-010",
+        "code": "server_tokens off;",
+        "wrapped_code": "# BEGIN VAPT RISK-010\nserver_tokens off;\n# END VAPT RISK-010",
         "begin_marker": "# BEGIN VAPT RISK-010",
         "end_marker": "# END VAPT RISK-010",
         "target_hook": null,
@@ -487,13 +486,14 @@
         "driver": {
           "write_mode": "insert_at_anchor",
           "target_file": "/etc/nginx/conf.d/vapt-security.conf",
-          "write_block": "# BEGIN VAPT RISK-010\nServerTokens Prod\nServerSignature Off\n# END VAPT RISK-010",
+          "write_block": "# BEGIN VAPT RISK-010\nserver_tokens off;\n# END VAPT RISK-010",
           "anchor_string": "http {",
           "anchor_position": "after",
           "fallback": "append",
           "idempotency_check": "# BEGIN VAPT RISK-010",
           "if_found": "skip"
-        }
+        },
+        "note": "Nginx syntax: server_tokens off; hides version details. Do not use Apache ServerTokens/ServerSignature directives in Nginx config."
       }
     },
     "RISK-011": {
@@ -541,7 +541,7 @@
         "name": "VAPT RISK-011",
         "expression": "(http.request.uri.path ends_with \".readme\") or (http.request.uri.path ends_with \".html\")",
         "action": "Block",
-        "dashboard_path": "Cloudflare \u2192 Security \u2192 WAF \u2192 Custom Rules \u2192 Create Rule",
+        "dashboard_path": "Cloudflare → Security → WAF → Custom Rules → Create Rule",
         "verification": "curl -sI https://yoursite.com/blocked-file | grep HTTP"
       },
       "iis": {
@@ -1013,7 +1013,7 @@
         "name": "VAPT RISK-019",
         "expression": "(http.request.uri.path ends_with \".env\") or (http.request.uri.path ends_with \".git\") or (http.request.uri.path ends_with \".sql\") or (http.request.uri.path ends_with \".log\") or (http.request.uri.path ends_with \".ini\") or (http.request.uri.path ends_with \".yml\")",
         "action": "Block",
-        "dashboard_path": "Cloudflare \u2192 Security \u2192 WAF \u2192 Custom Rules \u2192 Create Rule",
+        "dashboard_path": "Cloudflare → Security → WAF → Custom Rules → Create Rule",
         "verification": "curl -sI https://yoursite.com/blocked-file | grep HTTP"
       },
       "iis": {
@@ -1050,7 +1050,7 @@
         "wrapped_code": "# BEGIN VAPT RISK-020\n<FilesMatch \"\\.php$\">\n    Order Deny,Allow\n    Deny from all\n</FilesMatch>\n# END VAPT RISK-020",
         "begin_marker": "# BEGIN VAPT RISK-020",
         "end_marker": "# END VAPT RISK-020",
-        "note": "CRITICAL: Place in wp-content/uploads/.htaccess \u2014 a separate file. <Directory> is silently ignored in .htaccess. Apache 2.4+: use Require all denied",
+        "note": "CRITICAL: Place in wp-content/uploads/.htaccess — a separate file. <Directory> is silently ignored in .htaccess. Apache 2.4+: use Require all denied",
         "verification": {
           "command": "apachectl -t",
           "expected": "Exit 0, no syntax errors"
@@ -1072,7 +1072,7 @@
         "name": "VAPT RISK-020",
         "expression": "(http.request.uri.path ends_with \".php\")",
         "action": "Block",
-        "dashboard_path": "Cloudflare \u2192 Security \u2192 WAF \u2192 Custom Rules \u2192 Create Rule",
+        "dashboard_path": "Cloudflare → Security → WAF → Custom Rules → Create Rule",
         "verification": "curl -sI https://yoursite.com/blocked-file | grep HTTP"
       },
       "iis": {
@@ -1131,7 +1131,7 @@
         "name": "VAPT RISK-021",
         "expression": "(http.request.uri.path ends_with \".wp\") or (http.request.uri.path ends_with \".config\") or (http.request.uri.path ends_with \".php\")",
         "action": "Block",
-        "dashboard_path": "Cloudflare \u2192 Security \u2192 WAF \u2192 Custom Rules \u2192 Create Rule",
+        "dashboard_path": "Cloudflare → Security → WAF → Custom Rules → Create Rule",
         "verification": "curl -sI https://yoursite.com/blocked-file | grep HTTP"
       },
       "iis": {
@@ -1250,14 +1250,14 @@
         "name": "VAPT RISK-023",
         "expression": "(http.request.method eq \"TRACE\")",
         "action": "Block",
-        "dashboard_path": "Cloudflare \u2192 Security \u2192 WAF \u2192 Custom Rules \u2192 Create Rule",
+        "dashboard_path": "Cloudflare → Security → WAF → Custom Rules → Create Rule",
         "verification": "curl -sI https://yoursite.com | grep HTTP"
       },
       "iis": {
         "implementation_type": "web_config_url_rewrite",
         "web_config_snippet": "<!-- BEGIN VAPT RISK-023 -->\n<configuration>\n  <system.webServer>\n    <rewrite><rules>\n      <rule name=\"VAPT RISK-023\" stopProcessing=\"true\">\n          <conditions><add input=\"{REQUEST_METHOD}\" pattern=\"^TRACE$\" /></conditions>\n        <match url=\".*\" />\n        <action type=\"CustomResponse\" statusCode=\"403\" statusReason=\"Forbidden\" statusDescription=\"Blocked by VAPT RISK-023\" />\n      </rule>\n    </rules></rewrite>\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-023 -->",
         "requirements": [
-          "IIS URL Rewrite Module 2.1 \u2014 install from Web Platform Installer"
+          "IIS URL Rewrite Module 2.1 — install from Web Platform Installer"
         ],
         "verification": "appcmd validate config && curl -sI https://yoursite.com | findstr HTTP"
       },
@@ -1479,7 +1479,7 @@
         "name": "VAPT RISK-027",
         "expression": "(http.request.uri.path ends_with \".install\") or (http.request.uri.path ends_with \".php\")",
         "action": "Block",
-        "dashboard_path": "Cloudflare \u2192 Security \u2192 WAF \u2192 Custom Rules \u2192 Create Rule",
+        "dashboard_path": "Cloudflare → Security → WAF → Custom Rules → Create Rule",
         "verification": "curl -sI https://yoursite.com/blocked-file | grep HTTP"
       },
       "iis": {
@@ -1538,7 +1538,7 @@
         "name": "VAPT RISK-028",
         "expression": "(http.request.uri.path ends_with \".upgrade\") or (http.request.uri.path ends_with \".php\")",
         "action": "Block",
-        "dashboard_path": "Cloudflare \u2192 Security \u2192 WAF \u2192 Custom Rules \u2192 Create Rule",
+        "dashboard_path": "Cloudflare → Security → WAF → Custom Rules → Create Rule",
         "verification": "curl -sI https://yoursite.com/blocked-file | grep HTTP"
       },
       "iis": {
@@ -1597,7 +1597,7 @@
         "name": "VAPT RISK-029",
         "expression": "(http.request.uri.path ends_with \".bak\") or (http.request.uri.path ends_with \".backup\") or (http.request.uri.path ends_with \".old\") or (http.request.uri.path ends_with \".orig\") or (http.request.uri.path ends_with \".save\") or (http.request.uri.path ends_with \".swp\")",
         "action": "Block",
-        "dashboard_path": "Cloudflare \u2192 Security \u2192 WAF \u2192 Custom Rules \u2192 Create Rule",
+        "dashboard_path": "Cloudflare → Security → WAF → Custom Rules → Create Rule",
         "verification": "curl -sI https://yoursite.com/blocked-file | grep HTTP"
       },
       "iis": {
@@ -1656,7 +1656,7 @@
         "name": "VAPT RISK-030",
         "expression": "(http.request.uri.path ends_with \".log\")",
         "action": "Block",
-        "dashboard_path": "Cloudflare \u2192 Security \u2192 WAF \u2192 Custom Rules \u2192 Create Rule",
+        "dashboard_path": "Cloudflare → Security → WAF → Custom Rules → Create Rule",
         "verification": "curl -sI https://yoursite.com/blocked-file | grep HTTP"
       },
       "iis": {
@@ -1895,7 +1895,7 @@
         "name": "VAPT RISK-034",
         "expression": "(http.request.uri.path ends_with \".debug\") or (http.request.uri.path ends_with \".log\")",
         "action": "Block",
-        "dashboard_path": "Cloudflare \u2192 Security \u2192 WAF \u2192 Custom Rules \u2192 Create Rule",
+        "dashboard_path": "Cloudflare → Security → WAF → Custom Rules → Create Rule",
         "verification": "curl -sI https://yoursite.com/blocked-file | grep HTTP"
       },
       "iis": {
@@ -1954,14 +1954,14 @@
         "name": "VAPT RISK-035",
         "expression": "(http.request.uri.path eq \"/server-status\") or (http.request.uri.path eq \"/server-info\")",
         "action": "Block",
-        "dashboard_path": "Cloudflare \u2192 Security \u2192 WAF \u2192 Custom Rules \u2192 Create Rule",
+        "dashboard_path": "Cloudflare → Security → WAF → Custom Rules → Create Rule",
         "verification": "curl -sI https://yoursite.com | grep HTTP"
       },
       "iis": {
         "implementation_type": "web_config_url_rewrite",
         "web_config_snippet": "<!-- BEGIN VAPT RISK-035 -->\n<configuration>\n  <system.webServer>\n    <rewrite><rules>\n      <rule name=\"VAPT RISK-035\" stopProcessing=\"true\">\n        <match url=\"^(server-status|server-info)$\" />\n        <action type=\"CustomResponse\" statusCode=\"403\" statusReason=\"Forbidden\" statusDescription=\"Blocked by VAPT RISK-035\" />\n      </rule>\n    </rules></rewrite>\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-035 -->",
         "requirements": [
-          "IIS URL Rewrite Module 2.1 \u2014 install from Web Platform Installer"
+          "IIS URL Rewrite Module 2.1 — install from Web Platform Installer"
         ],
         "verification": "appcmd validate config && curl -sI https://yoursite.com | findstr HTTP"
       },
@@ -2000,7 +2000,7 @@
         },
         "rollback": "Remove // BEGIN VAPT RISK-036...// END VAPT RISK-036 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "write_block": "// BEGIN VAPT RISK-036\nadd_action('init', function() { @ini_set('display_errors', 0); });\n// END VAPT RISK-036",
           "anchor_string": null,
@@ -2040,7 +2040,7 @@
         },
         "rollback": "Remove // BEGIN VAPT RISK-037...// END VAPT RISK-037 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "write_block": "// BEGIN VAPT RISK-037\nadd_action('init', function() { header_remove('X-Powered-By'); });\n// END VAPT RISK-037",
           "anchor_string": null,
@@ -2080,7 +2080,7 @@
         },
         "rollback": "Remove // BEGIN VAPT RISK-038...// END VAPT RISK-038 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "write_block": "// BEGIN VAPT RISK-038\nremove_action('wp_head', 'wp_generator');\n// END VAPT RISK-038",
           "anchor_string": null,
@@ -2120,7 +2120,7 @@
         },
         "rollback": "Remove // BEGIN VAPT RISK-039...// END VAPT RISK-039 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "write_block": "// BEGIN VAPT RISK-039\nadd_filter('style_loader_src', 'vapt_remove_version_query'); add_filter('script_loader_src', 'vapt_remove_version_query');\n// END VAPT RISK-039",
           "anchor_string": null,
@@ -2160,7 +2160,7 @@
         },
         "rollback": "Remove // BEGIN VAPT RISK-040...// END VAPT RISK-040 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "write_block": "// BEGIN VAPT RISK-040\nadd_action('login_init', 'vapt_restrict_login_by_ip');\n// END VAPT RISK-040",
           "anchor_string": null,
@@ -2200,7 +2200,7 @@
         },
         "rollback": "Remove // BEGIN VAPT RISK-041...// END VAPT RISK-041 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "write_block": "// BEGIN VAPT RISK-041\nadd_action('validate_password_reset', 'vapt_enforce_strong_password', 10, 2);\n// END VAPT RISK-041",
           "anchor_string": null,
@@ -2240,7 +2240,7 @@
         },
         "rollback": "Remove // BEGIN VAPT RISK-042...// END VAPT RISK-042 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "write_block": "// BEGIN VAPT RISK-042\nadd_filter('auth_cookie_expiration', 'vapt_set_session_timeout', 10, 3);\n// END VAPT RISK-042",
           "anchor_string": null,
@@ -2280,7 +2280,7 @@
         },
         "rollback": "Remove // BEGIN VAPT RISK-043...// END VAPT RISK-043 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "write_block": "// BEGIN VAPT RISK-043\nadd_action('wp_login_failed', 'vapt_track_failed_logins');\n// END VAPT RISK-043",
           "anchor_string": null,
@@ -2320,7 +2320,7 @@
         },
         "rollback": "Remove // BEGIN VAPT RISK-044...// END VAPT RISK-044 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "write_block": "// BEGIN VAPT RISK-044\nadd_action('user_register', 'vapt_require_email_verification');\n// END VAPT RISK-044",
           "anchor_string": null,
@@ -2360,7 +2360,7 @@
         },
         "rollback": "Remove // BEGIN VAPT RISK-045...// END VAPT RISK-045 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "write_block": "// BEGIN VAPT RISK-045\nadd_action('admin_init', 'vapt_check_default_admin');\n// END VAPT RISK-045",
           "anchor_string": null,
@@ -2400,7 +2400,7 @@
         },
         "rollback": "Remove // BEGIN VAPT RISK-046...// END VAPT RISK-046 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "write_block": "// BEGIN VAPT RISK-046\nadd_action('wp_login', 'vapt_require_2fa_for_admins', 10, 2);\n// END VAPT RISK-046",
           "anchor_string": null,
@@ -2440,7 +2440,7 @@
         },
         "rollback": "Remove // BEGIN VAPT RISK-047...// END VAPT RISK-047 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "write_block": "// BEGIN VAPT RISK-047\nadd_filter('upload_mimes', 'vapt_restrict_upload_types');\n// END VAPT RISK-047",
           "anchor_string": null,
@@ -2480,7 +2480,7 @@
         },
         "rollback": "Remove // BEGIN VAPT RISK-048...// END VAPT RISK-048 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "write_block": "// BEGIN VAPT RISK-048\nadd_filter('query_vars', 'vapt_sanitize_search_queries');\n// END VAPT RISK-048",
           "anchor_string": null,
@@ -2520,7 +2520,7 @@
         },
         "rollback": "Remove // BEGIN VAPT RISK-049...// END VAPT RISK-049 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "write_block": "// BEGIN VAPT RISK-049\nadd_filter('pre_comment_content', 'vapt_sanitize_comment_content');\n// END VAPT RISK-049",
           "anchor_string": null,
@@ -2560,7 +2560,7 @@
         },
         "rollback": "Remove // BEGIN VAPT RISK-050...// END VAPT RISK-050 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "write_block": "// BEGIN VAPT RISK-050\nadd_action('init', 'vapt_verify_form_nonces');\n// END VAPT RISK-050",
           "anchor_string": null,
@@ -2600,7 +2600,7 @@
         },
         "rollback": "Remove // BEGIN VAPT RISK-051...// END VAPT RISK-051 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "write_block": "// BEGIN VAPT RISK-051\nadd_filter('content_save_pre', 'vapt_filter_post_html');\n// END VAPT RISK-051",
           "anchor_string": null,
@@ -2640,7 +2640,7 @@
         },
         "rollback": "Remove // BEGIN VAPT RISK-052...// END VAPT RISK-052 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "write_block": "// BEGIN VAPT RISK-052\nadd_action('admin_init', 'vapt_disable_theme_editor');\n// END VAPT RISK-052",
           "anchor_string": null,
@@ -2680,7 +2680,7 @@
         },
         "rollback": "Remove // BEGIN VAPT RISK-053...// END VAPT RISK-053 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "write_block": "// BEGIN VAPT RISK-053\nadd_action('admin_init', 'vapt_disable_plugin_editor');\n// END VAPT RISK-053",
           "anchor_string": null,
@@ -2720,7 +2720,7 @@
         },
         "rollback": "Remove // BEGIN VAPT RISK-054...// END VAPT RISK-054 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "write_block": "// BEGIN VAPT RISK-054\nlibxml_disable_entity_loader(true);\n// END VAPT RISK-054",
           "anchor_string": null,
@@ -2760,7 +2760,7 @@
         },
         "rollback": "Remove // BEGIN VAPT RISK-055...// END VAPT RISK-055 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "write_block": "// BEGIN VAPT RISK-055\nadd_filter('wp_check_filetype', 'vapt_prevent_phar_deserialization');\n// END VAPT RISK-055",
           "anchor_string": null,
@@ -2800,7 +2800,7 @@
         },
         "rollback": "Remove // BEGIN VAPT RISK-056...// END VAPT RISK-056 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "write_block": "// BEGIN VAPT RISK-056\nadd_filter('wp_redirect', 'vapt_validate_redirects');\n// END VAPT RISK-056",
           "anchor_string": null,
@@ -2840,7 +2840,7 @@
         },
         "rollback": "Remove // BEGIN VAPT RISK-057...// END VAPT RISK-057 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "write_block": "// BEGIN VAPT RISK-057\nadd_filter('rest_prepare_user', 'vapt_filter_user_api_response');\n// END VAPT RISK-057",
           "anchor_string": null,
@@ -2880,7 +2880,7 @@
         },
         "rollback": "Remove // BEGIN VAPT RISK-058...// END VAPT RISK-058 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "write_block": "// BEGIN VAPT RISK-058\nadd_filter('preprocess_comment', 'vapt_check_comment_spam');\n// END VAPT RISK-058",
           "anchor_string": null,
@@ -2920,7 +2920,7 @@
         },
         "rollback": "Remove // BEGIN VAPT RISK-059...// END VAPT RISK-059 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "write_block": "// BEGIN VAPT RISK-059\nadd_filter('xmlrpc_methods', 'vapt_disable_pingback_method');\n// END VAPT RISK-059",
           "anchor_string": null,
@@ -2960,7 +2960,7 @@
         },
         "rollback": "Remove // BEGIN VAPT RISK-060...// END VAPT RISK-060 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "write_block": "// BEGIN VAPT RISK-060\nadd_action('init', 'vapt_disable_trackbacks');\n// END VAPT RISK-060",
           "anchor_string": null,
@@ -3922,7 +3922,7 @@
         },
         "rollback": "Remove # BEGIN VAPT RISK-081...# END VAPT RISK-081 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/fail2ban/jail.local",
           "write_block": "# BEGIN VAPT RISK-081\n[wordpress-xmlrpc]\nenabled = true\nport = http,https\nfilter = wordpress-xmlrpc\nlogpath = /var/log/apache2/access.log\nmaxretry = 3\nbantime = 3600\n# END VAPT RISK-081",
           "anchor_string": null,
@@ -3962,7 +3962,7 @@
         },
         "rollback": "Remove # BEGIN VAPT RISK-082...# END VAPT RISK-082 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/fail2ban/jail.local",
           "write_block": "# BEGIN VAPT RISK-082\n[wordpress-admin]\nenabled = true\nport = http,https\nfilter = wordpress-admin\nlogpath = /var/log/apache2/access.log\nmaxretry = 5\nbantime = 3600\n# END VAPT RISK-082",
           "anchor_string": null,
@@ -4002,7 +4002,7 @@
         },
         "rollback": "Remove # BEGIN VAPT RISK-083...# END VAPT RISK-083 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/fail2ban/jail.local",
           "write_block": "# BEGIN VAPT RISK-083\n[wordpress-404]\nenabled = true\nport = http,https\nfilter = wordpress-404\nlogpath = /var/log/apache2/access.log\nmaxretry = 10\nbantime = 1800\n# END VAPT RISK-083",
           "anchor_string": null,
@@ -4042,7 +4042,7 @@
         },
         "rollback": "Remove # BEGIN VAPT RISK-084...# END VAPT RISK-084 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/fail2ban/jail.local",
           "write_block": "# BEGIN VAPT RISK-084\n[wordpress-comments]\nenabled = true\nport = http,https\nfilter = wordpress-comments\nlogpath = /var/log/apache2/access.log\nmaxretry = 5\nbantime = 3600\n# END VAPT RISK-084",
           "anchor_string": null,
@@ -4082,7 +4082,7 @@
         },
         "rollback": "Remove # BEGIN VAPT RISK-085...# END VAPT RISK-085 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/fail2ban/jail.local",
           "write_block": "# BEGIN VAPT RISK-085\n[wordpress-register]\nenabled = true\nport = http,https\nfilter = wordpress-register\nlogpath = /var/log/apache2/access.log\nmaxretry = 3\nbantime = 3600\n# END VAPT RISK-085",
           "anchor_string": null,
@@ -4122,7 +4122,7 @@
         },
         "rollback": "Remove # BEGIN VAPT RISK-086...# END VAPT RISK-086 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/fail2ban/jail.local",
           "write_block": "# BEGIN VAPT RISK-086\n[wordpress-rest]\nenabled = true\nport = http,https\nfilter = wordpress-rest\nlogpath = /var/log/apache2/access.log\nmaxretry = 20\nbantime = 1800\n# END VAPT RISK-086",
           "anchor_string": null,
@@ -4162,7 +4162,7 @@
         },
         "rollback": "Remove # BEGIN VAPT RISK-087...# END VAPT RISK-087 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/fail2ban/jail.local",
           "write_block": "# BEGIN VAPT RISK-087\n[wordpress-reset]\nenabled = true\nport = http,https\nfilter = wordpress-reset\nlogpath = /var/log/apache2/access.log\nmaxretry = 3\nbantime = 3600\n# END VAPT RISK-087",
           "anchor_string": null,
@@ -4202,7 +4202,7 @@
         },
         "rollback": "Remove # BEGIN VAPT RISK-088...# END VAPT RISK-088 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/fail2ban/jail.local",
           "write_block": "# BEGIN VAPT RISK-088\n[wordpress-upload]\nenabled = true\nport = http,https\nfilter = wordpress-upload\nlogpath = /var/log/apache2/access.log\nmaxretry = 10\nbantime = 3600\n# END VAPT RISK-088",
           "anchor_string": null,
@@ -4242,7 +4242,7 @@
         },
         "rollback": "Remove # BEGIN VAPT RISK-089...# END VAPT RISK-089 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/fail2ban/jail.local",
           "write_block": "# BEGIN VAPT RISK-089\n[wordpress-search]\nenabled = true\nport = http,https\nfilter = wordpress-search\nlogpath = /var/log/apache2/access.log\nmaxretry = 15\nbantime = 1800\n# END VAPT RISK-089",
           "anchor_string": null,
@@ -4282,7 +4282,7 @@
         },
         "rollback": "Remove # BEGIN VAPT RISK-090...# END VAPT RISK-090 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/fail2ban/jail.local",
           "write_block": "# BEGIN VAPT RISK-090\n[wordpress-badbots]\nenabled = true\nport = http,https\nfilter = wordpress-badbots\nlogpath = /var/log/apache2/access.log\nmaxretry = 1\nbantime = 86400\n# END VAPT RISK-090",
           "anchor_string": null,
@@ -4322,7 +4322,7 @@
         },
         "rollback": "Remove # BEGIN VAPT RISK-091...# END VAPT RISK-091 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/fail2ban/jail.local",
           "write_block": "# BEGIN VAPT RISK-091\n[wordpress-methods]\nenabled = true\nport = http,https\nfilter = wordpress-methods\nlogpath = /var/log/apache2/access.log\nmaxretry = 5\nbantime = 3600\n# END VAPT RISK-091",
           "anchor_string": null,
@@ -4362,7 +4362,7 @@
         },
         "rollback": "Remove # BEGIN VAPT RISK-092...# END VAPT RISK-092 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/fail2ban/jail.local",
           "write_block": "# BEGIN VAPT RISK-092\n[wordpress-useragent]\nenabled = true\nport = http,https\nfilter = wordpress-useragent\nlogpath = /var/log/apache2/access.log\nmaxretry = 3\nbantime = 3600\n# END VAPT RISK-092",
           "anchor_string": null,
@@ -4402,7 +4402,7 @@
         },
         "rollback": "Remove # BEGIN VAPT RISK-093...# END VAPT RISK-093 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/fail2ban/jail.local",
           "write_block": "# BEGIN VAPT RISK-093\n[wordpress-pingback]\nenabled = true\nport = http,https\nfilter = wordpress-pingback\nlogpath = /var/log/apache2/access.log\nmaxretry = 2\nbantime = 86400\n# END VAPT RISK-093",
           "anchor_string": null,
@@ -4442,7 +4442,7 @@
         },
         "rollback": "Remove # BEGIN VAPT RISK-094...# END VAPT RISK-094 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/fail2ban/jail.local",
           "write_block": "# BEGIN VAPT RISK-094\n[woocommerce-login]\nenabled = true\nport = http,https\nfilter = woocommerce-login\nlogpath = /var/log/apache2/access.log\nmaxretry = 3\nbantime = 3600\n# END VAPT RISK-094",
           "anchor_string": null,
@@ -4482,7 +4482,7 @@
         },
         "rollback": "Remove # BEGIN VAPT RISK-095...# END VAPT RISK-095 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/fail2ban/jail.local",
           "write_block": "# BEGIN VAPT RISK-095\n[wordpress-slow]\nenabled = true\nport = http,https\nfilter = wordpress-slow\nlogpath = /var/log/apache2/access.log\nfindtime = 86400\nmaxretry = 10\nbantime = 86400\n# END VAPT RISK-095",
           "anchor_string": null,
@@ -4522,7 +4522,7 @@
         },
         "rollback": "Remove # BEGIN VAPT RISK-096...# END VAPT RISK-096 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "crontab",
           "write_block": "# BEGIN VAPT RISK-096\n*/5 * * * * curl -s https://site.com/wp-cron.php?doing_wp_cron > /dev/null 2>&1\n# END VAPT RISK-096",
           "anchor_string": null,
@@ -4562,7 +4562,7 @@
         },
         "rollback": "Remove # BEGIN VAPT RISK-097...# END VAPT RISK-097 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "crontab",
           "write_block": "# BEGIN VAPT RISK-097\n0 2 * * * /usr/local/bin/wp-backup.sh > /var/log/wp-backup.log 2>&1\n# END VAPT RISK-097",
           "anchor_string": null,
@@ -4602,7 +4602,7 @@
         },
         "rollback": "Remove # BEGIN VAPT RISK-098...# END VAPT RISK-098 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "crontab",
           "write_block": "# BEGIN VAPT RISK-098\n0 3 * * 0 /usr/local/bin/wp-security-scan.sh > /var/log/wp-scan.log 2>&1\n# END VAPT RISK-098",
           "anchor_string": null,
@@ -4642,7 +4642,7 @@
         },
         "rollback": "Remove # BEGIN VAPT RISK-099...# END VAPT RISK-099 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "crontab",
           "write_block": "# BEGIN VAPT RISK-099\n0 0 * * 0 /usr/sbin/logrotate -f /etc/logrotate.d/wordpress\n# END VAPT RISK-099",
           "anchor_string": null,
@@ -4682,7 +4682,7 @@
         },
         "rollback": "Remove # BEGIN VAPT RISK-100...# END VAPT RISK-100 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "crontab",
           "write_block": "# BEGIN VAPT RISK-100\n0 4 * * * cd /var/www/html && wp plugin update --all --allow-root > /var/log/wp-plugin-update.log 2>&1\n# END VAPT RISK-100",
           "anchor_string": null,
@@ -4722,7 +4722,7 @@
         },
         "rollback": "Remove # BEGIN VAPT RISK-101...# END VAPT RISK-101 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "crontab",
           "write_block": "# BEGIN VAPT RISK-101\n0 5 * * * cd /var/www/html && wp core update --allow-root > /var/log/wp-core-update.log 2>&1\n# END VAPT RISK-101",
           "anchor_string": null,
@@ -4762,7 +4762,7 @@
         },
         "rollback": "Remove # BEGIN VAPT RISK-102...# END VAPT RISK-102 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "crontab",
           "write_block": "# BEGIN VAPT RISK-102\n0 2 * * 0 cd /var/www/html && wp db optimize --allow-root > /var/log/wp-db-optimize.log 2>&1\n# END VAPT RISK-102",
           "anchor_string": null,
@@ -4802,7 +4802,7 @@
         },
         "rollback": "Remove # BEGIN VAPT RISK-103...# END VAPT RISK-103 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "crontab",
           "write_block": "# BEGIN VAPT RISK-103\n0 1 * * * cd /var/www/html && wp comment delete --status=spam --allow-root > /var/log/wp-spam-cleanup.log 2>&1\n# END VAPT RISK-103",
           "anchor_string": null,
@@ -4842,7 +4842,7 @@
         },
         "rollback": "Remove # BEGIN VAPT RISK-104...# END VAPT RISK-104 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "crontab",
           "write_block": "# BEGIN VAPT RISK-104\n0 0 * * 0 /usr/sbin/logrotate -f /etc/logrotate.d/fail2ban\n# END VAPT RISK-104",
           "anchor_string": null,
@@ -4882,7 +4882,7 @@
         },
         "rollback": "Remove # BEGIN VAPT RISK-105...# END VAPT RISK-105 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "crontab",
           "write_block": "# BEGIN VAPT RISK-105\n0 0 1 * * /usr/bin/certbot renew --quiet --post-hook 'systemctl reload nginx'\n# END VAPT RISK-105",
           "anchor_string": null,
@@ -4922,7 +4922,7 @@
         },
         "rollback": "Remove // BEGIN VAPT RISK-106...// END VAPT RISK-106 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "write_block": "// BEGIN VAPT RISK-106\nadd_action('admin_init', 'vapt_remove_inactive_plugins');\n// END VAPT RISK-106",
           "anchor_string": null,
@@ -4962,7 +4962,7 @@
         },
         "rollback": "Remove // BEGIN VAPT RISK-107...// END VAPT RISK-107 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "write_block": "// BEGIN VAPT RISK-107\nadd_action('admin_init', 'vapt_remove_inactive_themes');\n// END VAPT RISK-107",
           "anchor_string": null,
@@ -5002,7 +5002,7 @@
         },
         "rollback": "Remove // BEGIN VAPT RISK-108...// END VAPT RISK-108 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "write_block": "// BEGIN VAPT RISK-108\nadd_action('admin_init', 'vapt_remove_default_themes');\n// END VAPT RISK-108",
           "anchor_string": null,
@@ -5042,7 +5042,7 @@
         },
         "rollback": "Remove // BEGIN VAPT RISK-109...// END VAPT RISK-109 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "write_block": "// BEGIN VAPT RISK-109\nadd_action('admin_init', 'vapt_remove_hello_dolly');\n// END VAPT RISK-109",
           "anchor_string": null,
@@ -5082,7 +5082,7 @@
         },
         "rollback": "Remove // BEGIN VAPT RISK-110...// END VAPT RISK-110 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "write_block": "// BEGIN VAPT RISK-110\nadd_filter('the_generator', '__return_empty_string');\n// END VAPT RISK-110",
           "anchor_string": null,
@@ -5122,7 +5122,7 @@
         },
         "rollback": "Remove // BEGIN VAPT RISK-111...// END VAPT RISK-111 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "write_block": "// BEGIN VAPT RISK-111\nremove_action('wp_head', 'print_emoji_detection_script', 7); remove_action('wp_print_styles', 'print_emoji_styles');\n// END VAPT RISK-111",
           "anchor_string": null,
@@ -5162,7 +5162,7 @@
         },
         "rollback": "Remove // BEGIN VAPT RISK-112...// END VAPT RISK-112 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "write_block": "// BEGIN VAPT RISK-112\nremove_action('wp_head', 'wp_oembed_add_discovery_links');\n// END VAPT RISK-112",
           "anchor_string": null,
@@ -5202,7 +5202,7 @@
         },
         "rollback": "Remove // BEGIN VAPT RISK-113...// END VAPT RISK-113 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "write_block": "// BEGIN VAPT RISK-113\nremove_action('wp_head', 'rsd_link');\n// END VAPT RISK-113",
           "anchor_string": null,
@@ -5242,7 +5242,7 @@
         },
         "rollback": "Remove // BEGIN VAPT RISK-114...// END VAPT RISK-114 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "write_block": "// BEGIN VAPT RISK-114\nremove_action('wp_head', 'wlwmanifest_link');\n// END VAPT RISK-114",
           "anchor_string": null,
@@ -5282,7 +5282,7 @@
         },
         "rollback": "Remove // BEGIN VAPT RISK-115...// END VAPT RISK-115 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "write_block": "// BEGIN VAPT RISK-115\nremove_action('wp_head', 'wp_shortlink_wp_head');\n// END VAPT RISK-115",
           "anchor_string": null,
@@ -5362,7 +5362,7 @@
         },
         "rollback": "Remove # BEGIN VAPT RISK-117...# END VAPT RISK-117 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/apache2/conf-available/vapt-security.conf",
           "write_block": "# BEGIN VAPT RISK-117\nServerTokens Prod\nServerSignature Off\n# END VAPT RISK-117",
           "anchor_string": null,
@@ -5402,7 +5402,7 @@
         },
         "rollback": "Remove # BEGIN VAPT RISK-118...# END VAPT RISK-118 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/nginx/conf.d/vapt-security.conf",
           "write_block": "# BEGIN VAPT RISK-118\nclient_body_buffer_size 10M;\nclient_header_buffer_size 1k;\nlarge_client_header_buffers 4 8k;\n# END VAPT RISK-118",
           "anchor_string": null,
@@ -5442,7 +5442,7 @@
         },
         "rollback": "Remove # BEGIN VAPT RISK-119...# END VAPT RISK-119 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/nginx/conf.d/vapt-security.conf",
           "write_block": "# BEGIN VAPT RISK-119\nclient_body_timeout 10s;\nclient_header_timeout 10s;\nkeepalive_timeout 30s;\nsend_timeout 10s;\n# END VAPT RISK-119",
           "anchor_string": null,
@@ -5482,7 +5482,7 @@
         },
         "rollback": "Remove # BEGIN VAPT RISK-120...# END VAPT RISK-120 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/nginx/conf.d/vapt-security.conf",
           "write_block": "# BEGIN VAPT RISK-120\nlimit_req_zone $binary_remote_addr zone=one:10m rate=1r/s;\nlimit_req zone=one burst=5 nodelay;\n# END VAPT RISK-120",
           "anchor_string": null,
@@ -5522,7 +5522,7 @@
         },
         "rollback": "Remove # BEGIN VAPT RISK-121...# END VAPT RISK-121 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/apache2/conf-available/vapt-security.conf",
           "write_block": "# BEGIN VAPT RISK-121\nLoadModule security2_module modules/mod_security2.so\nInclude modsecurity.d/*.conf\n# END VAPT RISK-121",
           "anchor_string": null,
@@ -5562,7 +5562,7 @@
         },
         "rollback": "Remove # BEGIN VAPT RISK-122...# END VAPT RISK-122 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/nginx/conf.d/vapt-security.conf",
           "write_block": "# BEGIN VAPT RISK-122\ngzip on;\ngzip_types text/plain text/css application/json application/javascript;\n# END VAPT RISK-122",
           "anchor_string": null,
@@ -5602,7 +5602,7 @@
         },
         "rollback": "Remove # BEGIN VAPT RISK-123...# END VAPT RISK-123 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/caddy/Caddyfile",
           "write_block": "# BEGIN VAPT RISK-123\nheader -Server\n# END VAPT RISK-123",
           "anchor_string": null,
@@ -5642,7 +5642,7 @@
         },
         "rollback": "Remove # BEGIN VAPT RISK-124...# END VAPT RISK-124 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/caddy/Caddyfile",
           "write_block": "# BEGIN VAPT RISK-124\nadmin off\n# END VAPT RISK-124",
           "anchor_string": null,
@@ -5682,7 +5682,7 @@
         },
         "rollback": "Remove # BEGIN VAPT RISK-125...# END VAPT RISK-125 from target file",
         "driver": {
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/nginx/conf.d/vapt-security.conf",
           "write_block": "# BEGIN VAPT RISK-125\nssl_protocols TLSv1.2 TLSv1.3;\nssl_ciphers 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';\nssl_prefer_server_ciphers on;\n# END VAPT RISK-125",
           "anchor_string": null,
@@ -5691,6 +5691,484 @@
           "idempotency_check": "# BEGIN VAPT RISK-125",
           "if_found": "skip"
         }
+      }
+    },
+    "RISK-126": {
+      "risk_id": "RISK-126",
+      "title": "Outdated and Vulnerable WordPress Plugins",
+      "category": "Configuration",
+      "severity": "high",
+      "wordpress_core": {
+        "enforcer": "WordPress Core",
+        "operation": "add_filter_hook",
+        "target_file": "WordPress Core",
+        "insertion_point": "functions_php",
+        "anchor": {
+          "search": null,
+          "position": "append",
+          "fallback": null
+        },
+        "code": "add_filter('site_transient_update_plugins', 'vapt_check_outdated_plugins');\nfunction vapt_check_outdated_plugins($transient) {\n    if (!is_object($transient) || empty($transient->response)) {\n        return $transient;\n    }\n    add_action('admin_notices', function() {\n        if (current_user_can('update_plugins')) {\n            echo '<div class=\"notice notice-warning\"><p>VAPT: Outdated plugins detected. Please review and update vulnerable plugins immediately.</p></div>';\n        }\n    });\n    return $transient;\n}",
+        "wrapped_code": "// BEGIN VAPT RISK-126\nadd_filter('site_transient_update_plugins', 'vapt_check_outdated_plugins');\nfunction vapt_check_outdated_plugins($transient) {\n    if (!is_object($transient) || empty($transient->response)) {\n        return $transient;\n    }\n    add_action('admin_notices', function() {\n        if (current_user_can('update_plugins')) {\n            echo '<div class=\"notice notice-warning\"><p>VAPT: Outdated plugins detected. Please review and update vulnerable plugins immediately.</p></div>';\n        }\n    });\n    return $transient;\n}\n// END VAPT RISK-126",
+        "begin_marker": "// BEGIN VAPT RISK-126",
+        "end_marker": "// END VAPT RISK-126",
+        "target_hook": "site_transient_update_plugins",
+        "target_jail": null,
+        "target_constant": null,
+        "target_value": null,
+        "verification": {
+          "command": "wp plugin list --update=available",
+          "expected": "Lists outdated plugins when updates are available"
+        },
+        "rollback": "Remove // BEGIN VAPT RISK-126...// END VAPT RISK-126 from target file",
+        "driver": {
+          "write_mode": "append_to_file",
+          "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
+          "write_block": "// BEGIN VAPT RISK-126\nadd_filter('site_transient_update_plugins', 'vapt_check_outdated_plugins');\nfunction vapt_check_outdated_plugins($transient) {\n    if (!is_object($transient) || empty($transient->response)) {\n        return $transient;\n    }\n    add_action('admin_notices', function() {\n        if (current_user_can('update_plugins')) {\n            echo '<div class=\"notice notice-warning\"><p>VAPT: Outdated plugins detected. Please review and update vulnerable plugins immediately.</p></div>';\n        }\n    });\n    return $transient;\n}\n// END VAPT RISK-126",
+          "anchor_string": null,
+          "anchor_position": "append",
+          "fallback": null,
+          "idempotency_check": "// BEGIN VAPT RISK-126",
+          "if_found": "skip"
+        }
+      }
+    },
+    "RISK-127": {
+      "risk_id": "RISK-127",
+      "title": "No Input Validation",
+      "category": "Configuration",
+      "severity": "critical",
+      "php_functions": {
+        "enforcer": "PHP Functions",
+        "operation": "add_action_hook",
+        "target_file": "PHP Functions",
+        "insertion_point": "functions_php",
+        "anchor": {
+          "search": null,
+          "position": "append",
+          "fallback": null
+        },
+        "code": "add_action('init', 'vapt_register_input_validation_guards');\nfunction vapt_register_input_validation_guards() {\n    add_filter('preprocess_comment', 'vapt_sanitize_comment_input');\n}\nfunction vapt_sanitize_comment_input($commentdata) {\n    if (isset($commentdata['comment_content'])) {\n        $commentdata['comment_content'] = sanitize_textarea_field($commentdata['comment_content']);\n    }\n    if (isset($commentdata['comment_author'])) {\n        $commentdata['comment_author'] = sanitize_text_field($commentdata['comment_author']);\n    }\n    if (isset($commentdata['comment_author_email'])) {\n        $commentdata['comment_author_email'] = sanitize_email($commentdata['comment_author_email']);\n    }\n    return $commentdata;\n}",
+        "wrapped_code": "// BEGIN VAPT RISK-127\nadd_action('init', 'vapt_register_input_validation_guards');\nfunction vapt_register_input_validation_guards() {\n    add_filter('preprocess_comment', 'vapt_sanitize_comment_input');\n}\nfunction vapt_sanitize_comment_input($commentdata) {\n    if (isset($commentdata['comment_content'])) {\n        $commentdata['comment_content'] = sanitize_textarea_field($commentdata['comment_content']);\n    }\n    if (isset($commentdata['comment_author'])) {\n        $commentdata['comment_author'] = sanitize_text_field($commentdata['comment_author']);\n    }\n    if (isset($commentdata['comment_author_email'])) {\n        $commentdata['comment_author_email'] = sanitize_email($commentdata['comment_author_email']);\n    }\n    return $commentdata;\n}\n// END VAPT RISK-127",
+        "begin_marker": "// BEGIN VAPT RISK-127",
+        "end_marker": "// END VAPT RISK-127",
+        "target_hook": "init",
+        "target_jail": null,
+        "target_constant": null,
+        "target_value": null,
+        "verification": {
+          "command": "wp eval \"echo sanitize_text_field('<script>alert(1)</script>');\" --skip-themes",
+          "expected": "Sanitized output without executable script tags"
+        },
+        "rollback": "Remove // BEGIN VAPT RISK-127...// END VAPT RISK-127 from target file",
+        "driver": {
+          "write_mode": "append_to_file",
+          "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
+          "write_block": "// BEGIN VAPT RISK-127\nadd_action('init', 'vapt_register_input_validation_guards');\nfunction vapt_register_input_validation_guards() {\n    add_filter('preprocess_comment', 'vapt_sanitize_comment_input');\n}\nfunction vapt_sanitize_comment_input($commentdata) {\n    if (isset($commentdata['comment_content'])) {\n        $commentdata['comment_content'] = sanitize_textarea_field($commentdata['comment_content']);\n    }\n    if (isset($commentdata['comment_author'])) {\n        $commentdata['comment_author'] = sanitize_text_field($commentdata['comment_author']);\n    }\n    if (isset($commentdata['comment_author_email'])) {\n        $commentdata['comment_author_email'] = sanitize_email($commentdata['comment_author_email']);\n    }\n    return $commentdata;\n}\n// END VAPT RISK-127",
+          "anchor_string": null,
+          "anchor_position": "append",
+          "fallback": null,
+          "idempotency_check": "// BEGIN VAPT RISK-127",
+          "if_found": "skip"
+        }
+      }
+    },
+    "RISK-128": {
+      "risk_id": "RISK-128",
+      "title": "WordPress Cron Job Vulnerability (DoS)",
+      "category": "Configuration",
+      "severity": "high",
+      "wp_config": {
+        "enforcer": "wp-config.php",
+        "operation": "add_constant",
+        "target_file": "wp-config.php",
+        "insertion_point": "before_wp_settings",
+        "anchor": {
+          "search": "require_once ABSPATH",
+          "position": "before",
+          "fallback": "append"
+        },
+        "target_constants": [
+          "DISABLE_WP_CRON"
+        ],
+        "target_values": [
+          "true"
+        ],
+        "target_constant": "DISABLE_WP_CRON",
+        "target_value": "true",
+        "value_type": "boolean",
+        "code": "define('DISABLE_WP_CRON', true);",
+        "wrapped_code": "/* BEGIN VAPT RISK-128 */\ndefine('DISABLE_WP_CRON', true);\n/* END VAPT RISK-128 */",
+        "begin_marker": "/* BEGIN VAPT RISK-128 */",
+        "end_marker": "/* END VAPT RISK-128 */",
+        "insertion_rule": "Must be placed BEFORE: require_once ABSPATH . 'wp-settings.php';",
+        "verification": {
+          "command": "wp config get DISABLE_WP_CRON",
+          "expected": "true"
+        },
+        "rollback": "wp config delete DISABLE_WP_CRON",
+        "driver": {
+          "write_mode": "insert_at_anchor",
+          "target_file": "{ABSPATH}wp-config.php",
+          "write_block": "/* BEGIN VAPT RISK-128 */\ndefine('DISABLE_WP_CRON', true);\n/* END VAPT RISK-128 */",
+          "anchor_string": "require_once ABSPATH",
+          "anchor_position": "before",
+          "fallback": "append",
+          "idempotency_check": "/* BEGIN VAPT RISK-128 */",
+          "if_found": "skip"
+        }
+      }
+    },
+    "RISK-129": {
+      "risk_id": "RISK-129",
+      "title": "XML-RPC Leads to Unauthenticated Blind SSRF",
+      "category": "Information Disclosure",
+      "severity": "high",
+      "htaccess": {
+        "enforcer": ".htaccess",
+        "operation": "add_files_block",
+        "target_file": ".htaccess",
+        "insertion_point": "beginning_of_file",
+        "anchor": {
+          "search": null,
+          "position": "prepend",
+          "fallback": null
+        },
+        "requires": [
+          "mod_authz_host"
+        ],
+        "allowoverride": "",
+        "code": "<Files \"xmlrpc.php\">\n    Order Deny,Allow\n    Deny from all\n</Files>",
+        "wrapped_code": "# BEGIN VAPT RISK-129\n<Files \"xmlrpc.php\">\n    Order Deny,Allow\n    Deny from all\n</Files>\n# END VAPT RISK-129",
+        "begin_marker": "# BEGIN VAPT RISK-129",
+        "end_marker": "# END VAPT RISK-129",
+        "note": "Apache 2.4+: use Require all denied",
+        "verification": {
+          "command": "apachectl -t",
+          "expected": "Exit 0, no syntax errors"
+        },
+        "rollback": "Remove # BEGIN VAPT RISK-129 ... # END VAPT RISK-129 block from .htaccess",
+        "driver": {
+          "write_mode": "prepend_to_file",
+          "target_file": "{ABSPATH}.htaccess",
+          "write_block": "# BEGIN VAPT RISK-129\n<Files \"xmlrpc.php\">\n    Order Deny,Allow\n    Deny from all\n</Files>\n# END VAPT RISK-129",
+          "anchor_string": null,
+          "anchor_position": "prepend",
+          "fallback": null,
+          "idempotency_check": "# BEGIN VAPT RISK-129",
+          "if_found": "skip"
+        }
+      },
+      "cloudflare": {
+        "implementation_type": "waf_custom_rule",
+        "name": "VAPT RISK-129",
+        "expression": "(http.request.uri.path ends_with \".xmlrpc\") or (http.request.uri.path ends_with \".php\")",
+        "action": "Block",
+        "dashboard_path": "Cloudflare → Security → WAF → Custom Rules → Create Rule",
+        "verification": "curl -sI https://yoursite.com/blocked-file | grep HTTP"
+      },
+      "iis": {
+        "implementation_type": "web_config_request_filtering",
+        "web_config_snippet": "<!-- BEGIN VAPT RISK-129 -->\n<configuration>\n  <system.webServer>\n    <security><requestFiltering><hiddenSegments>\n      <add segment=\"xmlrpc.php\" />\n    </hiddenSegments></requestFiltering></security>\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-129 -->",
+        "verification": "curl -sI https://yoursite.com/xmlrpc.php | findstr HTTP"
+      },
+      "caddy": {
+        "implementation_type": "caddy_respond_block",
+        "caddyfile_snippet": "# BEGIN VAPT RISK-129\n@risk129 {\n    path /xmlrpc.php\n}\nrespond @risk129 \"Access Denied\" 403\n# END VAPT RISK-129",
+        "verification": "caddy validate && curl -sI https://yoursite.com/blocked | grep HTTP"
+      }
+    },
+    "RISK-130": {
+      "risk_id": "RISK-130",
+      "title": "Directory Listing Vulnerability",
+      "category": "Configuration",
+      "severity": "high",
+      "htaccess": {
+        "enforcer": ".htaccess",
+        "operation": "add_directive",
+        "target_file": ".htaccess",
+        "insertion_point": "beginning_of_file",
+        "anchor": {
+          "search": null,
+          "position": "prepend",
+          "fallback": null
+        },
+        "requires": [],
+        "allowoverride": "Options",
+        "code": "Options -Indexes",
+        "wrapped_code": "# BEGIN VAPT RISK-130\nOptions -Indexes\n# END VAPT RISK-130",
+        "begin_marker": "# BEGIN VAPT RISK-130",
+        "end_marker": "# END VAPT RISK-130",
+        "note": "Requires AllowOverride Options or All. Silently fails without it.",
+        "verification": {
+          "command": "apachectl -t",
+          "expected": "Exit 0, no syntax errors"
+        },
+        "rollback": "Remove # BEGIN VAPT RISK-130 ... # END VAPT RISK-130 block from .htaccess",
+        "driver": {
+          "write_mode": "prepend_to_file",
+          "target_file": "{ABSPATH}.htaccess",
+          "write_block": "# BEGIN VAPT RISK-130\nOptions -Indexes\n# END VAPT RISK-130",
+          "anchor_string": null,
+          "anchor_position": "prepend",
+          "fallback": null,
+          "idempotency_check": "# BEGIN VAPT RISK-130",
+          "if_found": "skip"
+        }
+      },
+      "cloudflare": {
+        "implementation_type": "notes_only",
+        "note": "'Options -Indexes' has no Cloudflare edge equivalent. Enforce at origin server."
+      },
+      "iis": {
+        "implementation_type": "web_config_directory_browsing",
+        "web_config_snippet": "<!-- BEGIN VAPT RISK-130 -->\n<configuration>\n  <system.webServer>\n    <directoryBrowse enabled=\"false\" />\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-130 -->",
+        "verification": "curl -s https://yoursite.com/wp-content/uploads/ | findstr Index"
+      },
+      "caddy": {
+        "implementation_type": "caddy_file_server",
+        "caddyfile_snippet": "# BEGIN VAPT RISK-130\n# Directory listing disabled by default in Caddy file_server.\n# Ensure \"browse\" is NOT present:\nfile_server\n# END VAPT RISK-130",
+        "note": "Caddy disables directory listing by default. Remove 'browse' if present."
+      }
+    },
+    "RISK-131": {
+      "risk_id": "RISK-131",
+      "title": "Lack of Rate Limiting on Contact Form",
+      "category": "Configuration",
+      "severity": "medium",
+      "php_functions": {
+        "enforcer": "PHP Functions",
+        "operation": "add_action_hook",
+        "target_file": "PHP Functions",
+        "insertion_point": "functions_php",
+        "anchor": {
+          "search": null,
+          "position": "append",
+          "fallback": null
+        },
+        "code": "add_action('wp_enqueue_scripts', 'vapt_add_recaptcha_v3_risk131');\nfunction vapt_add_recaptcha_v3_risk131() {\n    wp_enqueue_script('google-recaptcha', 'https://www.google.com/recaptcha/api.js?render=YOUR_SITE_KEY');\n}",
+        "wrapped_code": "// BEGIN VAPT RISK-131\nadd_action('wp_enqueue_scripts', 'vapt_add_recaptcha_v3_risk131');\nfunction vapt_add_recaptcha_v3_risk131() {\n    wp_enqueue_script('google-recaptcha', 'https://www.google.com/recaptcha/api.js?render=YOUR_SITE_KEY');\n}\n// END VAPT RISK-131",
+        "begin_marker": "// BEGIN VAPT RISK-131",
+        "end_marker": "// END VAPT RISK-131",
+        "target_hook": "wp_enqueue_scripts",
+        "target_jail": null,
+        "target_constant": null,
+        "target_value": null,
+        "verification": {
+          "command": "wp eval \"do_action('wp_enqueue_scripts');\" --skip-themes",
+          "expected": "No errors"
+        },
+        "rollback": "Remove // BEGIN VAPT RISK-131...// END VAPT RISK-131 from target file",
+        "driver": {
+          "write_mode": "append_to_file",
+          "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
+          "write_block": "// BEGIN VAPT RISK-131\nadd_action('wp_enqueue_scripts', 'vapt_add_recaptcha_v3_risk131');\nfunction vapt_add_recaptcha_v3_risk131() {\n    wp_enqueue_script('google-recaptcha', 'https://www.google.com/recaptcha/api.js?render=YOUR_SITE_KEY');\n}\n// END VAPT RISK-131",
+          "anchor_string": null,
+          "anchor_position": "append",
+          "fallback": null,
+          "idempotency_check": "// BEGIN VAPT RISK-131",
+          "if_found": "skip"
+        }
+      }
+    },
+    "RISK-132": {
+      "risk_id": "RISK-132",
+      "title": "Banner Grabbing Vulnerability",
+      "category": "Information Disclosure",
+      "severity": "low",
+      "nginx": {
+        "enforcer": "Nginx",
+        "operation": "modify_server_tokens",
+        "target_file": "Nginx",
+        "insertion_point": "http_block",
+        "anchor": {
+          "search": "http {",
+          "position": "after",
+          "fallback": "append"
+        },
+        "code": "server_tokens off;",
+        "wrapped_code": "# BEGIN VAPT RISK-132\nserver_tokens off;\n# END VAPT RISK-132",
+        "begin_marker": "# BEGIN VAPT RISK-132",
+        "end_marker": "# END VAPT RISK-132",
+        "target_hook": null,
+        "target_jail": null,
+        "target_constant": null,
+        "target_value": "off",
+        "verification": {
+          "command": "nginx -t && nginx -s reload",
+          "expected": "No errors"
+        },
+        "rollback": "Remove # BEGIN VAPT RISK-132...# END VAPT RISK-132 from target file",
+        "driver": {
+          "write_mode": "insert_at_anchor",
+          "target_file": "/etc/nginx/conf.d/vapt-security.conf",
+          "write_block": "# BEGIN VAPT RISK-132\nserver_tokens off;\n# END VAPT RISK-132",
+          "anchor_string": "http {",
+          "anchor_position": "after",
+          "fallback": "append",
+          "idempotency_check": "# BEGIN VAPT RISK-132",
+          "if_found": "skip"
+        },
+        "note": "Nginx syntax: server_tokens off; hides version details. Do not use Apache ServerTokens/ServerSignature directives in Nginx config."
+      }
+    },
+    "RISK-133": {
+      "risk_id": "RISK-133",
+      "title": "Unauthenticated Exposure of WordPress REST API Endpoints",
+      "category": "API Security",
+      "severity": "low",
+      "wordpress_core": {
+        "enforcer": "WordPress Core",
+        "operation": "add_filter_hook",
+        "target_file": "WordPress Core",
+        "insertion_point": "functions_php",
+        "anchor": {
+          "search": null,
+          "position": "append",
+          "fallback": null
+        },
+        "code": "add_filter('rest_authentication_errors', 'vapt_restrict_rest_api_risk133');\nfunction vapt_restrict_rest_api_risk133($result) {\n    if (!empty($result)) return $result;\n    if (!is_user_logged_in()) {\n        return new WP_Error('rest_not_logged_in', 'Authentication required.', array('status' => 401));\n    }\n    return $result;\n}",
+        "wrapped_code": "// BEGIN VAPT RISK-133\nadd_filter('rest_authentication_errors', 'vapt_restrict_rest_api_risk133');\nfunction vapt_restrict_rest_api_risk133($result) {\n    if (!empty($result)) return $result;\n    if (!is_user_logged_in()) {\n        return new WP_Error('rest_not_logged_in', 'Authentication required.', array('status' => 401));\n    }\n    return $result;\n}\n// END VAPT RISK-133",
+        "begin_marker": "// BEGIN VAPT RISK-133",
+        "end_marker": "// END VAPT RISK-133",
+        "target_hook": "rest_authentication_errors",
+        "target_jail": null,
+        "target_constant": null,
+        "target_value": null,
+        "verification": {
+          "command": "wp eval \"do_action('rest_authentication_errors');\" --skip-themes",
+          "expected": "No errors"
+        },
+        "rollback": "Remove // BEGIN VAPT RISK-133...// END VAPT RISK-133 from target file",
+        "driver": {
+          "write_mode": "append_to_file",
+          "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
+          "write_block": "// BEGIN VAPT RISK-133\nadd_filter('rest_authentication_errors', 'vapt_restrict_rest_api_risk133');\nfunction vapt_restrict_rest_api_risk133($result) {\n    if (!empty($result)) return $result;\n    if (!is_user_logged_in()) {\n        return new WP_Error('rest_not_logged_in', 'Authentication required.', array('status' => 401));\n    }\n    return $result;\n}\n// END VAPT RISK-133",
+          "anchor_string": null,
+          "anchor_position": "append",
+          "fallback": null,
+          "idempotency_check": "// BEGIN VAPT RISK-133",
+          "if_found": "skip"
+        }
+      }
+    },
+    "RISK-134": {
+      "risk_id": "RISK-134",
+      "title": "Clickjacking",
+      "category": "Configuration",
+      "severity": "medium",
+      "htaccess": {
+        "enforcer": ".htaccess",
+        "operation": "add_header",
+        "target_file": ".htaccess",
+        "insertion_point": "beginning_of_file",
+        "anchor": {
+          "search": null,
+          "position": "prepend",
+          "fallback": null
+        },
+        "requires": [
+          "mod_headers"
+        ],
+        "allowoverride": "FileInfo",
+        "code": "Header always set X-Frame-Options \"SAMEORIGIN\"",
+        "wrapped_code": "# BEGIN VAPT RISK-134\nHeader always set X-Frame-Options \"SAMEORIGIN\"\n# END VAPT RISK-134",
+        "begin_marker": "# BEGIN VAPT RISK-134",
+        "end_marker": "# END VAPT RISK-134",
+        "note": "",
+        "verification": {
+          "command": "apachectl -t && curl -sI https://yoursite.com | grep -i 'X-Frame-Options'",
+          "expected": "Exit 0, no syntax errors"
+        },
+        "rollback": "Remove # BEGIN VAPT RISK-134 ... # END VAPT RISK-134 block from .htaccess",
+        "driver": {
+          "write_mode": "prepend_to_file",
+          "target_file": "{ABSPATH}.htaccess",
+          "write_block": "# BEGIN VAPT RISK-134\nHeader always set X-Frame-Options \"SAMEORIGIN\"\n# END VAPT RISK-134",
+          "anchor_string": null,
+          "anchor_position": "prepend",
+          "fallback": null,
+          "idempotency_check": "# BEGIN VAPT RISK-134",
+          "if_found": "skip"
+        }
+      },
+      "cloudflare": {
+        "implementation_type": "transform_rule",
+        "product": "Transform Rules > Modify Response Header",
+        "action": "Set",
+        "name": "X-Frame-Options",
+        "value": "SAMEORIGIN",
+        "expression": "true",
+        "verification": "curl -sI https://yoursite.com | grep -i 'X-Frame-Options'"
+      },
+      "iis": {
+        "implementation_type": "web_config_http_headers",
+        "web_config_snippet": "<!-- BEGIN VAPT RISK-134 -->\n<configuration>\n  <system.webServer>\n    <httpProtocol>\n      <customHeaders>\n        <remove name=\"X-Frame-Options\" />\n        <add name=\"X-Frame-Options\" value=\"SAMEORIGIN\" />\n      </customHeaders>\n    </httpProtocol>\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-134 -->",
+        "verification": "curl -sI https://yoursite.com | findstr \"X-Frame-Options\""
+      },
+      "caddy": {
+        "implementation_type": "caddy_header",
+        "caddyfile_snippet": "# BEGIN VAPT RISK-134\nheader {\n    X-Frame-Options \"SAMEORIGIN\"\n    defer\n}\n# END VAPT RISK-134",
+        "verification": "caddy validate && curl -sI https://yoursite.com | grep -i 'X-Frame-Options'"
+      }
+    },
+    "RISK-135": {
+      "risk_id": "RISK-135",
+      "title": "Public Exposure of Debug Log File",
+      "category": "Information Disclosure",
+      "severity": "medium",
+      "htaccess": {
+        "enforcer": ".htaccess",
+        "operation": "add_files_block",
+        "target_file": ".htaccess",
+        "insertion_point": "beginning_of_file",
+        "anchor": {
+          "search": null,
+          "position": "prepend",
+          "fallback": null
+        },
+        "requires": [
+          "mod_authz_host"
+        ],
+        "allowoverride": "",
+        "code": "<Files \"debug.log\">\n    Order Deny,Allow\n    Deny from all\n</Files>",
+        "wrapped_code": "# BEGIN VAPT RISK-135\n<Files \"debug.log\">\n    Order Deny,Allow\n    Deny from all\n</Files>\n# END VAPT RISK-135",
+        "begin_marker": "# BEGIN VAPT RISK-135",
+        "end_marker": "# END VAPT RISK-135",
+        "note": "Apache 2.4+: use Require all denied",
+        "verification": {
+          "command": "apachectl -t",
+          "expected": "Exit 0, no syntax errors"
+        },
+        "rollback": "Remove # BEGIN VAPT RISK-135 ... # END VAPT RISK-135 block from .htaccess",
+        "driver": {
+          "write_mode": "prepend_to_file",
+          "target_file": "{ABSPATH}.htaccess",
+          "write_block": "# BEGIN VAPT RISK-135\n<Files \"debug.log\">\n    Order Deny,Allow\n    Deny from all\n</Files>\n# END VAPT RISK-135",
+          "anchor_string": null,
+          "anchor_position": "prepend",
+          "fallback": null,
+          "idempotency_check": "# BEGIN VAPT RISK-135",
+          "if_found": "skip"
+        }
+      },
+      "cloudflare": {
+        "implementation_type": "waf_custom_rule",
+        "name": "VAPT RISK-135",
+        "expression": "(http.request.uri.path ends_with \".debug\") or (http.request.uri.path ends_with \".log\")",
+        "action": "Block",
+        "dashboard_path": "Cloudflare → Security → WAF → Custom Rules → Create Rule",
+        "verification": "curl -sI https://yoursite.com/blocked-file | grep HTTP"
+      },
+      "iis": {
+        "implementation_type": "web_config_request_filtering",
+        "web_config_snippet": "<!-- BEGIN VAPT RISK-135 -->\n<configuration>\n  <system.webServer>\n    <security><requestFiltering><hiddenSegments>\n      <add segment=\"debug.log\" />\n    </hiddenSegments></requestFiltering></security>\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-135 -->",
+        "verification": "curl -sI https://yoursite.com/debug.log | findstr HTTP"
+      },
+      "caddy": {
+        "implementation_type": "caddy_respond_block",
+        "caddyfile_snippet": "# BEGIN VAPT RISK-135\n@risk135 {\n    path /debug.log\n}\nrespond @risk135 \"Access Denied\" 403\n# END VAPT RISK-135",
+        "verification": "caddy validate && curl -sI https://yoursite.com/blocked | grep HTTP"
       }
     }
   }

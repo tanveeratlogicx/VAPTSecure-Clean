@@ -1,9 +1,9 @@
-// VAPTSecure Clean - A+ Adaptive Schema Generator v3.5.0
+// VAPTSecure Clean - A+ Adaptive Schema Generator v3.5.1
 // Implementation of rules/vapt-client-multienv-v3.2.agrules
 
 (function () {
   const APlusGenerator = {
-    version: "3.5.0",
+    version: "3.5.1",
 
     /**
      * Generates a v3.2 A+ Adaptive Schema from feature context.

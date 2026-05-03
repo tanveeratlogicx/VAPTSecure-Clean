@@ -1,7 +1,7 @@
 # VAPTSecure Clean - WordPress Plugin Analysis Report
 
 **Generated:** April 15, 2026
-**Plugin Version:** 3.5.0
+**Plugin Version:** 3.5.1
 
 ---
 

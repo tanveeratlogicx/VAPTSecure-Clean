@@ -1,6 +1,6 @@
 # VAPT Risk Catalogue — AI Agent System
 ## Unified Bundle v2.0
-**Version:** 2.0.0 | **Date:** 2026-02-21 | **Source:** VAPT-Risk-Catalogue-Full-125-v3_4_1.json (125 risks)
+**Version:** 2.0.0 | **Date:** 2026-02-21
 
 > **v2.0 — Full Rebuild.** All five files generated together from source as a single coherent bundle. Every cross-reference between files was validated before release (0 errors). This replaces all prior versioned files (v1.0–v1.3).
 
@@ -23,7 +23,7 @@ All five files share the same version (`2.0.0`), the same `bundle_files` cross-r
 
 | File | Role | Size |
 |------|------|------|
-| `enforcer_pattern_library_v2.0.json` | All 125 risks × all enforcer types — corrected code, driver sub-objects, Cloudflare/IIS/Caddy derivations | ~204 KB |
+| `enforcer_pattern_library_v2.0.json` | All 135 risks × all enforcer types — corrected code, driver sub-objects, Cloudflare/IIS/Caddy derivations | ~204 KB |
 | `interface_schema_v2.0.json` | UI component definitions, `code_ref` and `driver_ref` pointers, available platforms per risk | ~281 KB |
 | `ai_agent_instructions_v2.0.json` | System prompt, task definitions, .htaccess syntax guard, 19-point self-check rubric, example workflows | ~20 KB |
 
@@ -31,7 +31,7 @@ All five files share the same version (`2.0.0`), the same `bundle_files` cross-r
 
 | File | Role | Size |
 |------|------|------|
-| `vapt_driver_manifest_v2.0.json` | Machine-executable instructions for all 125 risks — every field directly usable by the PHP driver | ~145 KB |
+| `vapt_driver_manifest_v2.0.json` | Machine-executable instructions for all 135 risks — every field directly usable by the PHP driver | ~145 KB |
 | `VAPT_Driver_Reference_v2.0.php` | Drop-in `VAPT_Driver` PHP class — implements the full apply/rollback contract against the manifest | ~8 KB |
 
 ---
@@ -83,7 +83,7 @@ The pattern library uses consistent snake_case keys for every enforcer type. The
 | Enforcer | Risks |
 |----------|-------|
 | .htaccess (Apache) | 28 |
-| PHP Functions | 28 |
+| PHP Functions | 29 |
 | wp-config.php | 21 |
 | fail2ban | 16 |
 | Server Cron | 10 |
@@ -91,14 +91,14 @@ The pattern library uses consistent snake_case keys for every enforcer type. The
 | Nginx | 7 |
 | Apache | 2 |
 | Caddy (native) | 2 |
-| WordPress Core | 1 |
+| WordPress Core | 2 |
 
 Platform derivations (Cloudflare, IIS, Caddy v2) added for all 28 `.htaccess` risks.
 
 | Severity | Count |
 |----------|-------|
-| Critical | 9 |
-| High | 36 |
+| Critical | 10 |
+| High | 37 |
 | Medium | 46 |
 | Low | 34 |
 
@@ -479,3 +479,39 @@ All five files generated together from source in a single build pass. Prior vers
 ---
 
 *VAPT Risk Catalogue Transformation System — Bundle v2.0.0 | 2026-02-21*
+
+
+---
+
+## Selective Independent Client-Reported Risk Addendum
+
+This addendum avoids duplicating client-reported titles that already exist exactly in the original catalogue. Exact-title matches remain on their existing RiskIDs. Only non-exact client-reported titles were added as independent risk entities.
+
+- Total risk entries after this addendum: **135**.
+- Newly added independent risks: **8**.
+- JSON files updated: interface schema, enforcer pattern library, driver manifest, and AI agent instructions.
+- Prior integrity fixes are retained: normalized settings keys, corrected RISK-010 Nginx syntax, and corrected append-only write_mode semantics.
+
+### Existing exact-title matches retained
+
+| Existing RiskID | Exact client-reported title |
+|---|---|
+| RISK-007 | Lack of Rate Limiting on WordPress Login |
+| RISK-003 | Username Enumeration via WordPress REST API |
+| RISK-008 | Username Enumeration via wp-login.php |
+| RISK-126 | Outdated and Vulnerable WordPress Plugins |
+| RISK-011 | Information Disclosure via readme.html |
+| RISK-127 | No Input Validation |
+
+### New independent entries added for non-exact titles
+
+| New RiskID | Exact client-reported title | Based on canonical control |
+|---|---|---|
+| RISK-128 | WordPress Cron Job Vulnerability (DoS) | RISK-001 |
+| RISK-129 | XML-RPC Leads to Unauthenticated Blind SSRF | RISK-002 |
+| RISK-130 | Directory Listing Vulnerability | RISK-013 |
+| RISK-131 | Lack of Rate Limiting on Contact Form | RISK-009 |
+| RISK-132 | Banner Grabbing Vulnerability | RISK-010 |
+| RISK-133 | Unauthenticated Exposure of WordPress REST API Endpoints | RISK-006 |
+| RISK-134 | Clickjacking | RISK-014 |
+| RISK-135 | Public Exposure of Debug Log File | RISK-034 |

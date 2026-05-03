@@ -3,11 +3,11 @@
  * VAPT Protection Suite — Driver Reference Implementation
  * Version: 2.0.0 | Bundle: 2026-02-21
  *
- * Reads vapt_driver_manifest_v2.0.selective_client_risks.json and executes each step:
+ * Reads vapt_driver_manifest_v2.0.json and executes each step:
  *   resolve → idempotency check → backup → insert → write → verify → rollback on failure
  *
  * Usage:
- *   $driver  = new VAPT_Driver( ABSPATH, plugin_dir_path(__FILE__) . 'vapt_driver_manifest_v2.0.selective_client_risks.json' );
+ *   $driver  = new VAPT_Driver( ABSPATH, plugin_dir_path(__FILE__) . 'vapt_driver_manifest_v2.0.json' );
  *   $results = $driver->apply( 'RISK-003' );
  *   $results = $driver->rollback( 'RISK-003' );
  */
@@ -149,7 +149,7 @@ class VAPT_Driver {
  * ── WordPress integration ────────────────────────────────────────────
  *
  * add_action( 'vapt_apply_protection', function( string $risk_id ) {
- *     $driver  = new VAPT_Driver( ABSPATH, plugin_dir_path(__FILE__) . 'vapt_driver_manifest_v2.0.selective_client_risks.json' );
+ *     $driver  = new VAPT_Driver( ABSPATH, plugin_dir_path(__FILE__) . 'vapt_driver_manifest_v2.0.json' );
  *     $results = $driver->apply( $risk_id );
  *     foreach ( $results as $r ) {
  *         if ( ! $r['success'] ) error_log( 'VAPT: ' . $r['message'] );
@@ -160,12 +160,12 @@ class VAPT_Driver {
  * do_action( 'vapt_apply_protection', 'RISK-003' );
  *
  * // Apply all risks:
- * $manifest = json_decode( file_get_contents( plugin_dir_path(__FILE__) . 'vapt_driver_manifest_v2.0.selective_client_risks.json' ), true );
+ * $manifest = json_decode( file_get_contents( plugin_dir_path(__FILE__) . 'vapt_driver_manifest_v2.0.json' ), true );
  * foreach ( array_keys( $manifest['risks'] ) as $rid ) {
  *     do_action( 'vapt_apply_protection', $rid );
  * }
  *
  * // Rollback one risk:
- * $driver = new VAPT_Driver( ABSPATH, plugin_dir_path(__FILE__) . 'vapt_driver_manifest_v2.0.selective_client_risks.json' );
+ * $driver = new VAPT_Driver( ABSPATH, plugin_dir_path(__FILE__) . 'vapt_driver_manifest_v2.0.json' );
  * $driver->rollback( 'RISK-003' );
  */

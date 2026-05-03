@@ -1,7 +1,6 @@
 {
   "schema_version": "2.0.0",
   "bundle_date": "2026-02-21",
-  "source_file": "VAPT-Risk-Catalogue-Full-125-v3_4_1.json",
   "file_role": "driver_manifest",
   "bundle_files": {
     "pattern_library": "enforcer_pattern_library_v2.0.json",
@@ -11,18 +10,18 @@
     "driver_reference": "VAPT_Driver_Reference_v2.0.php",
     "readme": "VAPT_AI_Agent_System_README_v2.0.md"
   },
-  "description": "VAPT Driver Manifest v2.0 \u2014 Machine-executable instructions for the WordPress plugin driver. Every field is directly usable with no inference required. Enforcer lib_key names match enforcer_pattern_library_v2.0 exactly.",
+  "description": "VAPT Driver Manifest v2.0 — Machine-executable instructions for the WordPress plugin driver. Every field is directly usable with no inference required. Enforcer lib_key names match enforcer_pattern_library_v2.0 exactly.",
   "driver_contract": {
     "read_sequence": [
       "1. Resolve {ABSPATH} in target_file to full filesystem path",
       "2. Create target file if it does not exist (especially wp-content/uploads/.htaccess)",
-      "3. Read idempotency.check_string \u2014 if found in file AND if_found=skip \u2192 stop, return already-applied",
+      "3. Read idempotency.check_string — if found in file AND if_found=skip → stop, return already-applied",
       "4. If backup_required=true, copy target_file to target_file + '.vapt.bak.' + timestamp",
-      "5. Read insertion.anchor_string \u2014 search target_file content for this exact string",
+      "5. Read insertion.anchor_string — search target_file content for this exact string",
       "6. If anchor found: apply anchor_position (before/after/prepend/append) to place write_block",
       "7. If anchor NOT found: use insertion.fallback strategy (prepend/append)",
       "8. Write new content to target_file",
-      "9. Run verification.command \u2014 check output matches verification.expected",
+      "9. Run verification.command — check output matches verification.expected",
       "10. On failure: remove begin_marker..end_marker block from target_file (rollback)"
     ],
     "write_modes": {
@@ -483,10 +482,10 @@
             "anchor_position": "after",
             "fallback": "append"
           },
-          "write_block": "# BEGIN VAPT RISK-010\nServerTokens Prod\nServerSignature Off\n# END VAPT RISK-010",
+          "write_block": "# BEGIN VAPT RISK-010\nserver_tokens off;\n# END VAPT RISK-010",
           "begin_marker": "# BEGIN VAPT RISK-010",
           "end_marker": "# END VAPT RISK-010",
-          "raw_code": "ServerTokens Prod\nServerSignature Off",
+          "raw_code": "server_tokens off;",
           "verification": {
             "command": "nginx -t && nginx -s reload",
             "expected": "No errors"
@@ -1510,7 +1509,7 @@
           "enforcer": "PHP Functions",
           "lib_key": "php_functions",
           "operation": "hook_active",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "backup_required": true,
           "idempotency": {
@@ -1550,7 +1549,7 @@
           "enforcer": "PHP Functions",
           "lib_key": "php_functions",
           "operation": "hook_active",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "backup_required": true,
           "idempotency": {
@@ -1590,7 +1589,7 @@
           "enforcer": "PHP Functions",
           "lib_key": "php_functions",
           "operation": "hook_removed",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "backup_required": true,
           "idempotency": {
@@ -1630,7 +1629,7 @@
           "enforcer": "PHP Functions",
           "lib_key": "php_functions",
           "operation": "filter_applied",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "backup_required": true,
           "idempotency": {
@@ -1670,7 +1669,7 @@
           "enforcer": "PHP Functions",
           "lib_key": "php_functions",
           "operation": "hook_active",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "backup_required": true,
           "idempotency": {
@@ -1710,7 +1709,7 @@
           "enforcer": "PHP Functions",
           "lib_key": "php_functions",
           "operation": "hook_active",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "backup_required": true,
           "idempotency": {
@@ -1750,7 +1749,7 @@
           "enforcer": "PHP Functions",
           "lib_key": "php_functions",
           "operation": "filter_applied",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "backup_required": true,
           "idempotency": {
@@ -1790,7 +1789,7 @@
           "enforcer": "PHP Functions",
           "lib_key": "php_functions",
           "operation": "hook_active",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "backup_required": true,
           "idempotency": {
@@ -1830,7 +1829,7 @@
           "enforcer": "PHP Functions",
           "lib_key": "php_functions",
           "operation": "hook_active",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "backup_required": true,
           "idempotency": {
@@ -1870,7 +1869,7 @@
           "enforcer": "PHP Functions",
           "lib_key": "php_functions",
           "operation": "hook_active",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "backup_required": true,
           "idempotency": {
@@ -1910,7 +1909,7 @@
           "enforcer": "PHP Functions",
           "lib_key": "php_functions",
           "operation": "hook_active",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "backup_required": true,
           "idempotency": {
@@ -1950,7 +1949,7 @@
           "enforcer": "PHP Functions",
           "lib_key": "php_functions",
           "operation": "filter_applied",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "backup_required": true,
           "idempotency": {
@@ -1990,7 +1989,7 @@
           "enforcer": "PHP Functions",
           "lib_key": "php_functions",
           "operation": "filter_applied",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "backup_required": true,
           "idempotency": {
@@ -2030,7 +2029,7 @@
           "enforcer": "PHP Functions",
           "lib_key": "php_functions",
           "operation": "filter_applied",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "backup_required": true,
           "idempotency": {
@@ -2070,7 +2069,7 @@
           "enforcer": "PHP Functions",
           "lib_key": "php_functions",
           "operation": "hook_active",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "backup_required": true,
           "idempotency": {
@@ -2110,7 +2109,7 @@
           "enforcer": "PHP Functions",
           "lib_key": "php_functions",
           "operation": "filter_applied",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "backup_required": true,
           "idempotency": {
@@ -2150,7 +2149,7 @@
           "enforcer": "PHP Functions",
           "lib_key": "php_functions",
           "operation": "hook_active",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "backup_required": true,
           "idempotency": {
@@ -2190,7 +2189,7 @@
           "enforcer": "PHP Functions",
           "lib_key": "php_functions",
           "operation": "hook_active",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "backup_required": true,
           "idempotency": {
@@ -2230,7 +2229,7 @@
           "enforcer": "PHP Functions",
           "lib_key": "php_functions",
           "operation": "function_called",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "backup_required": true,
           "idempotency": {
@@ -2270,7 +2269,7 @@
           "enforcer": "PHP Functions",
           "lib_key": "php_functions",
           "operation": "filter_applied",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "backup_required": true,
           "idempotency": {
@@ -2310,7 +2309,7 @@
           "enforcer": "PHP Functions",
           "lib_key": "php_functions",
           "operation": "filter_applied",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "backup_required": true,
           "idempotency": {
@@ -2350,7 +2349,7 @@
           "enforcer": "PHP Functions",
           "lib_key": "php_functions",
           "operation": "filter_applied",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "backup_required": true,
           "idempotency": {
@@ -2390,7 +2389,7 @@
           "enforcer": "PHP Functions",
           "lib_key": "php_functions",
           "operation": "filter_applied",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "backup_required": true,
           "idempotency": {
@@ -2430,7 +2429,7 @@
           "enforcer": "PHP Functions",
           "lib_key": "php_functions",
           "operation": "filter_applied",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "backup_required": true,
           "idempotency": {
@@ -2470,7 +2469,7 @@
           "enforcer": "PHP Functions",
           "lib_key": "php_functions",
           "operation": "hook_active",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "backup_required": true,
           "idempotency": {
@@ -3310,7 +3309,7 @@
           "enforcer": "fail2ban",
           "lib_key": "fail2ban",
           "operation": "service_restart",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/fail2ban/jail.local",
           "backup_required": true,
           "idempotency": {
@@ -3350,7 +3349,7 @@
           "enforcer": "fail2ban",
           "lib_key": "fail2ban",
           "operation": "service_restart",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/fail2ban/jail.local",
           "backup_required": true,
           "idempotency": {
@@ -3390,7 +3389,7 @@
           "enforcer": "fail2ban",
           "lib_key": "fail2ban",
           "operation": "service_restart",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/fail2ban/jail.local",
           "backup_required": true,
           "idempotency": {
@@ -3430,7 +3429,7 @@
           "enforcer": "fail2ban",
           "lib_key": "fail2ban",
           "operation": "service_restart",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/fail2ban/jail.local",
           "backup_required": true,
           "idempotency": {
@@ -3470,7 +3469,7 @@
           "enforcer": "fail2ban",
           "lib_key": "fail2ban",
           "operation": "service_restart",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/fail2ban/jail.local",
           "backup_required": true,
           "idempotency": {
@@ -3510,7 +3509,7 @@
           "enforcer": "fail2ban",
           "lib_key": "fail2ban",
           "operation": "service_restart",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/fail2ban/jail.local",
           "backup_required": true,
           "idempotency": {
@@ -3550,7 +3549,7 @@
           "enforcer": "fail2ban",
           "lib_key": "fail2ban",
           "operation": "service_restart",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/fail2ban/jail.local",
           "backup_required": true,
           "idempotency": {
@@ -3590,7 +3589,7 @@
           "enforcer": "fail2ban",
           "lib_key": "fail2ban",
           "operation": "service_restart",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/fail2ban/jail.local",
           "backup_required": true,
           "idempotency": {
@@ -3630,7 +3629,7 @@
           "enforcer": "fail2ban",
           "lib_key": "fail2ban",
           "operation": "service_restart",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/fail2ban/jail.local",
           "backup_required": true,
           "idempotency": {
@@ -3670,7 +3669,7 @@
           "enforcer": "fail2ban",
           "lib_key": "fail2ban",
           "operation": "service_restart",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/fail2ban/jail.local",
           "backup_required": true,
           "idempotency": {
@@ -3710,7 +3709,7 @@
           "enforcer": "fail2ban",
           "lib_key": "fail2ban",
           "operation": "service_restart",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/fail2ban/jail.local",
           "backup_required": true,
           "idempotency": {
@@ -3750,7 +3749,7 @@
           "enforcer": "fail2ban",
           "lib_key": "fail2ban",
           "operation": "service_restart",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/fail2ban/jail.local",
           "backup_required": true,
           "idempotency": {
@@ -3790,7 +3789,7 @@
           "enforcer": "fail2ban",
           "lib_key": "fail2ban",
           "operation": "service_restart",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/fail2ban/jail.local",
           "backup_required": true,
           "idempotency": {
@@ -3830,7 +3829,7 @@
           "enforcer": "fail2ban",
           "lib_key": "fail2ban",
           "operation": "service_restart",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/fail2ban/jail.local",
           "backup_required": true,
           "idempotency": {
@@ -3870,7 +3869,7 @@
           "enforcer": "fail2ban",
           "lib_key": "fail2ban",
           "operation": "service_restart",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/fail2ban/jail.local",
           "backup_required": true,
           "idempotency": {
@@ -3910,7 +3909,7 @@
           "enforcer": "Server Cron",
           "lib_key": "server_cron",
           "operation": "cron_job_exists",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "crontab",
           "backup_required": true,
           "idempotency": {
@@ -3950,7 +3949,7 @@
           "enforcer": "Server Cron",
           "lib_key": "server_cron",
           "operation": "cron_job_exists",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "crontab",
           "backup_required": true,
           "idempotency": {
@@ -3990,7 +3989,7 @@
           "enforcer": "Server Cron",
           "lib_key": "server_cron",
           "operation": "cron_job_exists",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "crontab",
           "backup_required": true,
           "idempotency": {
@@ -4030,7 +4029,7 @@
           "enforcer": "Server Cron",
           "lib_key": "server_cron",
           "operation": "cron_job_exists",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "crontab",
           "backup_required": true,
           "idempotency": {
@@ -4070,7 +4069,7 @@
           "enforcer": "Server Cron",
           "lib_key": "server_cron",
           "operation": "cron_job_exists",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "crontab",
           "backup_required": true,
           "idempotency": {
@@ -4110,7 +4109,7 @@
           "enforcer": "Server Cron",
           "lib_key": "server_cron",
           "operation": "cron_job_exists",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "crontab",
           "backup_required": true,
           "idempotency": {
@@ -4150,7 +4149,7 @@
           "enforcer": "Server Cron",
           "lib_key": "server_cron",
           "operation": "cron_job_exists",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "crontab",
           "backup_required": true,
           "idempotency": {
@@ -4190,7 +4189,7 @@
           "enforcer": "Server Cron",
           "lib_key": "server_cron",
           "operation": "cron_job_exists",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "crontab",
           "backup_required": true,
           "idempotency": {
@@ -4230,7 +4229,7 @@
           "enforcer": "Server Cron",
           "lib_key": "server_cron",
           "operation": "cron_job_exists",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "crontab",
           "backup_required": true,
           "idempotency": {
@@ -4270,7 +4269,7 @@
           "enforcer": "Server Cron",
           "lib_key": "server_cron",
           "operation": "cron_job_exists",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "crontab",
           "backup_required": true,
           "idempotency": {
@@ -4310,7 +4309,7 @@
           "enforcer": "WordPress",
           "lib_key": "wordpress",
           "operation": "hook_active",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "backup_required": true,
           "idempotency": {
@@ -4350,7 +4349,7 @@
           "enforcer": "WordPress",
           "lib_key": "wordpress",
           "operation": "hook_active",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "backup_required": true,
           "idempotency": {
@@ -4390,7 +4389,7 @@
           "enforcer": "WordPress",
           "lib_key": "wordpress",
           "operation": "hook_active",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "backup_required": true,
           "idempotency": {
@@ -4430,7 +4429,7 @@
           "enforcer": "WordPress",
           "lib_key": "wordpress",
           "operation": "hook_active",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "backup_required": true,
           "idempotency": {
@@ -4470,7 +4469,7 @@
           "enforcer": "WordPress",
           "lib_key": "wordpress",
           "operation": "filter_applied",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "backup_required": true,
           "idempotency": {
@@ -4510,7 +4509,7 @@
           "enforcer": "WordPress",
           "lib_key": "wordpress",
           "operation": "hook_removed",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "backup_required": true,
           "idempotency": {
@@ -4550,7 +4549,7 @@
           "enforcer": "WordPress",
           "lib_key": "wordpress",
           "operation": "hook_removed",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "backup_required": true,
           "idempotency": {
@@ -4590,7 +4589,7 @@
           "enforcer": "WordPress",
           "lib_key": "wordpress",
           "operation": "hook_removed",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "backup_required": true,
           "idempotency": {
@@ -4630,7 +4629,7 @@
           "enforcer": "WordPress",
           "lib_key": "wordpress",
           "operation": "hook_removed",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "backup_required": true,
           "idempotency": {
@@ -4670,7 +4669,7 @@
           "enforcer": "WordPress",
           "lib_key": "wordpress",
           "operation": "hook_removed",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
           "backup_required": true,
           "idempotency": {
@@ -4750,7 +4749,7 @@
           "enforcer": "Apache",
           "lib_key": "apache",
           "operation": "configtest_pass",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/apache2/conf-available/vapt-security.conf",
           "backup_required": true,
           "idempotency": {
@@ -4790,7 +4789,7 @@
           "enforcer": "Nginx",
           "lib_key": "nginx",
           "operation": "configtest_pass",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/nginx/conf.d/vapt-security.conf",
           "backup_required": true,
           "idempotency": {
@@ -4830,7 +4829,7 @@
           "enforcer": "Nginx",
           "lib_key": "nginx",
           "operation": "configtest_pass",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/nginx/conf.d/vapt-security.conf",
           "backup_required": true,
           "idempotency": {
@@ -4870,7 +4869,7 @@
           "enforcer": "Nginx",
           "lib_key": "nginx",
           "operation": "configtest_pass",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/nginx/conf.d/vapt-security.conf",
           "backup_required": true,
           "idempotency": {
@@ -4910,7 +4909,7 @@
           "enforcer": "Apache",
           "lib_key": "apache",
           "operation": "configtest_pass",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/apache2/conf-available/vapt-security.conf",
           "backup_required": true,
           "idempotency": {
@@ -4950,7 +4949,7 @@
           "enforcer": "Nginx",
           "lib_key": "nginx",
           "operation": "configtest_pass",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/nginx/conf.d/vapt-security.conf",
           "backup_required": true,
           "idempotency": {
@@ -4990,7 +4989,7 @@
           "enforcer": "Caddy",
           "lib_key": "caddy_native",
           "operation": "configtest_pass",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/caddy/Caddyfile",
           "backup_required": true,
           "idempotency": {
@@ -5030,7 +5029,7 @@
           "enforcer": "Caddy",
           "lib_key": "caddy_native",
           "operation": "configtest_pass",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/caddy/Caddyfile",
           "backup_required": true,
           "idempotency": {
@@ -5070,7 +5069,7 @@
           "enforcer": "Nginx",
           "lib_key": "nginx",
           "operation": "configtest_pass",
-          "write_mode": "insert_at_anchor",
+          "write_mode": "append_to_file",
           "target_file": "/etc/nginx/conf.d/vapt-security.conf",
           "backup_required": true,
           "idempotency": {
@@ -5096,6 +5095,406 @@
             "begin_marker": "# BEGIN VAPT RISK-125",
             "end_marker": "# END VAPT RISK-125",
             "target_file": "/etc/nginx/conf.d/vapt-security.conf"
+          }
+        }
+      ]
+    },
+    "RISK-126": {
+      "risk_id": "RISK-126",
+      "title": "Outdated and Vulnerable WordPress Plugins",
+      "category": "Configuration",
+      "severity": "high",
+      "steps": [
+        {
+          "enforcer": "WordPress Core",
+          "lib_key": "wordpress_core",
+          "operation": "add_filter_hook",
+          "write_mode": "append_to_file",
+          "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
+          "backup_required": true,
+          "idempotency": {
+            "check_string": "// BEGIN VAPT RISK-126",
+            "if_found": "skip",
+            "if_not_found": "insert"
+          },
+          "insertion": {
+            "anchor_string": null,
+            "anchor_position": "append",
+            "fallback": null
+          },
+          "write_block": "// BEGIN VAPT RISK-126\nadd_filter('site_transient_update_plugins', 'vapt_check_outdated_plugins');\nfunction vapt_check_outdated_plugins($transient) {\n    if (!is_object($transient) || empty($transient->response)) {\n        return $transient;\n    }\n    add_action('admin_notices', function() {\n        if (current_user_can('update_plugins')) {\n            echo '<div class=\"notice notice-warning\"><p>VAPT: Outdated plugins detected. Please review and update vulnerable plugins immediately.</p></div>';\n        }\n    });\n    return $transient;\n}\n// END VAPT RISK-126",
+          "begin_marker": "// BEGIN VAPT RISK-126",
+          "end_marker": "// END VAPT RISK-126",
+          "raw_code": "add_filter('site_transient_update_plugins', 'vapt_check_outdated_plugins');\nfunction vapt_check_outdated_plugins($transient) {\n    if (!is_object($transient) || empty($transient->response)) {\n        return $transient;\n    }\n    add_action('admin_notices', function() {\n        if (current_user_can('update_plugins')) {\n            echo '<div class=\"notice notice-warning\"><p>VAPT: Outdated plugins detected. Please review and update vulnerable plugins immediately.</p></div>';\n        }\n    });\n    return $transient;\n}",
+          "verification": {
+            "command": "wp plugin list --update=available",
+            "expected": "Lists outdated plugins when updates are available"
+          },
+          "rollback": {
+            "action": "remove_block",
+            "begin_marker": "// BEGIN VAPT RISK-126",
+            "end_marker": "// END VAPT RISK-126",
+            "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php"
+          }
+        }
+      ]
+    },
+    "RISK-127": {
+      "risk_id": "RISK-127",
+      "title": "No Input Validation",
+      "category": "Configuration",
+      "severity": "critical",
+      "steps": [
+        {
+          "enforcer": "PHP Functions",
+          "lib_key": "php_functions",
+          "operation": "add_action_hook",
+          "write_mode": "append_to_file",
+          "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
+          "backup_required": true,
+          "idempotency": {
+            "check_string": "// BEGIN VAPT RISK-127",
+            "if_found": "skip",
+            "if_not_found": "insert"
+          },
+          "insertion": {
+            "anchor_string": null,
+            "anchor_position": "append",
+            "fallback": null
+          },
+          "write_block": "// BEGIN VAPT RISK-127\nadd_action('init', 'vapt_register_input_validation_guards');\nfunction vapt_register_input_validation_guards() {\n    add_filter('preprocess_comment', 'vapt_sanitize_comment_input');\n}\nfunction vapt_sanitize_comment_input($commentdata) {\n    if (isset($commentdata['comment_content'])) {\n        $commentdata['comment_content'] = sanitize_textarea_field($commentdata['comment_content']);\n    }\n    if (isset($commentdata['comment_author'])) {\n        $commentdata['comment_author'] = sanitize_text_field($commentdata['comment_author']);\n    }\n    if (isset($commentdata['comment_author_email'])) {\n        $commentdata['comment_author_email'] = sanitize_email($commentdata['comment_author_email']);\n    }\n    return $commentdata;\n}\n// END VAPT RISK-127",
+          "begin_marker": "// BEGIN VAPT RISK-127",
+          "end_marker": "// END VAPT RISK-127",
+          "raw_code": "add_action('init', 'vapt_register_input_validation_guards');\nfunction vapt_register_input_validation_guards() {\n    add_filter('preprocess_comment', 'vapt_sanitize_comment_input');\n}\nfunction vapt_sanitize_comment_input($commentdata) {\n    if (isset($commentdata['comment_content'])) {\n        $commentdata['comment_content'] = sanitize_textarea_field($commentdata['comment_content']);\n    }\n    if (isset($commentdata['comment_author'])) {\n        $commentdata['comment_author'] = sanitize_text_field($commentdata['comment_author']);\n    }\n    if (isset($commentdata['comment_author_email'])) {\n        $commentdata['comment_author_email'] = sanitize_email($commentdata['comment_author_email']);\n    }\n    return $commentdata;\n}",
+          "verification": {
+            "command": "wp eval \"echo sanitize_text_field('<script>alert(1)</script>');\" --skip-themes",
+            "expected": "Sanitized output without executable script tags"
+          },
+          "rollback": {
+            "action": "remove_block",
+            "begin_marker": "// BEGIN VAPT RISK-127",
+            "end_marker": "// END VAPT RISK-127",
+            "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php"
+          }
+        }
+      ]
+    },
+    "RISK-128": {
+      "risk_id": "RISK-128",
+      "title": "WordPress Cron Job Vulnerability (DoS)",
+      "category": "Configuration",
+      "severity": "high",
+      "steps": [
+        {
+          "enforcer": "wp-config.php",
+          "lib_key": "wp_config",
+          "operation": "add_constant",
+          "write_mode": "insert_at_anchor",
+          "target_file": "{ABSPATH}wp-config.php",
+          "backup_required": true,
+          "idempotency": {
+            "check_string": "/* BEGIN VAPT RISK-128 */",
+            "if_found": "skip",
+            "if_not_found": "insert"
+          },
+          "insertion": {
+            "anchor_string": "require_once ABSPATH",
+            "anchor_position": "before",
+            "fallback": "append"
+          },
+          "write_block": "/* BEGIN VAPT RISK-128 */\ndefine('DISABLE_WP_CRON', true);\n/* END VAPT RISK-128 */",
+          "begin_marker": "/* BEGIN VAPT RISK-128 */",
+          "end_marker": "/* END VAPT RISK-128 */",
+          "raw_code": "define('DISABLE_WP_CRON', true);",
+          "verification": {
+            "command": "wp config get DISABLE_WP_CRON",
+            "expected": "true"
+          },
+          "rollback": {
+            "action": "remove_block",
+            "begin_marker": "/* BEGIN VAPT RISK-128 */",
+            "end_marker": "/* END VAPT RISK-128 */",
+            "target_file": "{ABSPATH}wp-config.php"
+          }
+        }
+      ]
+    },
+    "RISK-129": {
+      "risk_id": "RISK-129",
+      "title": "XML-RPC Leads to Unauthenticated Blind SSRF",
+      "category": "Information Disclosure",
+      "severity": "high",
+      "steps": [
+        {
+          "enforcer": ".htaccess",
+          "lib_key": "htaccess",
+          "operation": "add_files_block",
+          "write_mode": "prepend_to_file",
+          "target_file": "{ABSPATH}.htaccess",
+          "backup_required": true,
+          "idempotency": {
+            "check_string": "# BEGIN VAPT RISK-129",
+            "if_found": "skip",
+            "if_not_found": "insert"
+          },
+          "insertion": {
+            "anchor_string": null,
+            "anchor_position": "prepend",
+            "fallback": null
+          },
+          "write_block": "# BEGIN VAPT RISK-129\n<Files \"xmlrpc.php\">\n    Order Deny,Allow\n    Deny from all\n</Files>\n# END VAPT RISK-129",
+          "begin_marker": "# BEGIN VAPT RISK-129",
+          "end_marker": "# END VAPT RISK-129",
+          "raw_code": "<Files \"xmlrpc.php\">\n    Order Deny,Allow\n    Deny from all\n</Files>",
+          "verification": {
+            "command": "apachectl -t",
+            "expected": "Exit 0, no syntax errors"
+          },
+          "rollback": {
+            "action": "remove_block",
+            "begin_marker": "# BEGIN VAPT RISK-129",
+            "end_marker": "# END VAPT RISK-129",
+            "target_file": "{ABSPATH}.htaccess"
+          }
+        }
+      ]
+    },
+    "RISK-130": {
+      "risk_id": "RISK-130",
+      "title": "Directory Listing Vulnerability",
+      "category": "Configuration",
+      "severity": "high",
+      "steps": [
+        {
+          "enforcer": ".htaccess",
+          "lib_key": "htaccess",
+          "operation": "add_directive",
+          "write_mode": "prepend_to_file",
+          "target_file": "{ABSPATH}.htaccess",
+          "backup_required": true,
+          "idempotency": {
+            "check_string": "# BEGIN VAPT RISK-130",
+            "if_found": "skip",
+            "if_not_found": "insert"
+          },
+          "insertion": {
+            "anchor_string": null,
+            "anchor_position": "prepend",
+            "fallback": null
+          },
+          "write_block": "# BEGIN VAPT RISK-130\nOptions -Indexes\n# END VAPT RISK-130",
+          "begin_marker": "# BEGIN VAPT RISK-130",
+          "end_marker": "# END VAPT RISK-130",
+          "raw_code": "Options -Indexes",
+          "verification": {
+            "command": "apachectl -t",
+            "expected": "Exit 0, no syntax errors"
+          },
+          "rollback": {
+            "action": "remove_block",
+            "begin_marker": "# BEGIN VAPT RISK-130",
+            "end_marker": "# END VAPT RISK-130",
+            "target_file": "{ABSPATH}.htaccess"
+          }
+        }
+      ]
+    },
+    "RISK-131": {
+      "risk_id": "RISK-131",
+      "title": "Lack of Rate Limiting on Contact Form",
+      "category": "Configuration",
+      "severity": "medium",
+      "steps": [
+        {
+          "enforcer": "PHP Functions",
+          "lib_key": "php_functions",
+          "operation": "add_action_hook",
+          "write_mode": "append_to_file",
+          "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
+          "backup_required": true,
+          "idempotency": {
+            "check_string": "// BEGIN VAPT RISK-131",
+            "if_found": "skip",
+            "if_not_found": "insert"
+          },
+          "insertion": {
+            "anchor_string": null,
+            "anchor_position": "append",
+            "fallback": null
+          },
+          "write_block": "// BEGIN VAPT RISK-131\nadd_action('wp_enqueue_scripts', 'vapt_add_recaptcha_v3_risk131');\nfunction vapt_add_recaptcha_v3_risk131() {\n    wp_enqueue_script('google-recaptcha', 'https://www.google.com/recaptcha/api.js?render=YOUR_SITE_KEY');\n}\n// END VAPT RISK-131",
+          "begin_marker": "// BEGIN VAPT RISK-131",
+          "end_marker": "// END VAPT RISK-131",
+          "raw_code": "add_action('wp_enqueue_scripts', 'vapt_add_recaptcha_v3_risk131');\nfunction vapt_add_recaptcha_v3_risk131() {\n    wp_enqueue_script('google-recaptcha', 'https://www.google.com/recaptcha/api.js?render=YOUR_SITE_KEY');\n}",
+          "verification": {
+            "command": "wp eval \"do_action('wp_enqueue_scripts');\" --skip-themes",
+            "expected": "No errors"
+          },
+          "rollback": {
+            "action": "remove_block",
+            "begin_marker": "// BEGIN VAPT RISK-131",
+            "end_marker": "// END VAPT RISK-131",
+            "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php"
+          }
+        }
+      ]
+    },
+    "RISK-132": {
+      "risk_id": "RISK-132",
+      "title": "Banner Grabbing Vulnerability",
+      "category": "Information Disclosure",
+      "severity": "low",
+      "steps": [
+        {
+          "enforcer": "Nginx",
+          "lib_key": "nginx",
+          "operation": "modify_server_tokens",
+          "write_mode": "insert_at_anchor",
+          "target_file": "/etc/nginx/conf.d/vapt-security.conf",
+          "backup_required": true,
+          "idempotency": {
+            "check_string": "# BEGIN VAPT RISK-132",
+            "if_found": "skip",
+            "if_not_found": "insert"
+          },
+          "insertion": {
+            "anchor_string": "http {",
+            "anchor_position": "after",
+            "fallback": "append"
+          },
+          "write_block": "# BEGIN VAPT RISK-132\nserver_tokens off;\n# END VAPT RISK-132",
+          "begin_marker": "# BEGIN VAPT RISK-132",
+          "end_marker": "# END VAPT RISK-132",
+          "raw_code": "server_tokens off;",
+          "verification": {
+            "command": "nginx -t && nginx -s reload",
+            "expected": "No errors"
+          },
+          "rollback": {
+            "action": "remove_block",
+            "begin_marker": "# BEGIN VAPT RISK-132",
+            "end_marker": "# END VAPT RISK-132",
+            "target_file": "/etc/nginx/conf.d/vapt-security.conf"
+          }
+        }
+      ]
+    },
+    "RISK-133": {
+      "risk_id": "RISK-133",
+      "title": "Unauthenticated Exposure of WordPress REST API Endpoints",
+      "category": "API Security",
+      "severity": "low",
+      "steps": [
+        {
+          "enforcer": "WordPress Core",
+          "lib_key": "wordpress_core",
+          "operation": "add_filter_hook",
+          "write_mode": "append_to_file",
+          "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
+          "backup_required": true,
+          "idempotency": {
+            "check_string": "// BEGIN VAPT RISK-133",
+            "if_found": "skip",
+            "if_not_found": "insert"
+          },
+          "insertion": {
+            "anchor_string": null,
+            "anchor_position": "append",
+            "fallback": null
+          },
+          "write_block": "// BEGIN VAPT RISK-133\nadd_filter('rest_authentication_errors', 'vapt_restrict_rest_api_risk133');\nfunction vapt_restrict_rest_api_risk133($result) {\n    if (!empty($result)) return $result;\n    if (!is_user_logged_in()) {\n        return new WP_Error('rest_not_logged_in', 'Authentication required.', array('status' => 401));\n    }\n    return $result;\n}\n// END VAPT RISK-133",
+          "begin_marker": "// BEGIN VAPT RISK-133",
+          "end_marker": "// END VAPT RISK-133",
+          "raw_code": "add_filter('rest_authentication_errors', 'vapt_restrict_rest_api_risk133');\nfunction vapt_restrict_rest_api_risk133($result) {\n    if (!empty($result)) return $result;\n    if (!is_user_logged_in()) {\n        return new WP_Error('rest_not_logged_in', 'Authentication required.', array('status' => 401));\n    }\n    return $result;\n}",
+          "verification": {
+            "command": "wp eval \"do_action('rest_authentication_errors');\" --skip-themes",
+            "expected": "No errors"
+          },
+          "rollback": {
+            "action": "remove_block",
+            "begin_marker": "// BEGIN VAPT RISK-133",
+            "end_marker": "// END VAPT RISK-133",
+            "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php"
+          }
+        }
+      ]
+    },
+    "RISK-134": {
+      "risk_id": "RISK-134",
+      "title": "Clickjacking",
+      "category": "Configuration",
+      "severity": "medium",
+      "steps": [
+        {
+          "enforcer": ".htaccess",
+          "lib_key": "htaccess",
+          "operation": "add_header",
+          "write_mode": "prepend_to_file",
+          "target_file": "{ABSPATH}.htaccess",
+          "backup_required": true,
+          "idempotency": {
+            "check_string": "# BEGIN VAPT RISK-134",
+            "if_found": "skip",
+            "if_not_found": "insert"
+          },
+          "insertion": {
+            "anchor_string": null,
+            "anchor_position": "prepend",
+            "fallback": null
+          },
+          "write_block": "# BEGIN VAPT RISK-134\nHeader always set X-Frame-Options \"SAMEORIGIN\"\n# END VAPT RISK-134",
+          "begin_marker": "# BEGIN VAPT RISK-134",
+          "end_marker": "# END VAPT RISK-134",
+          "raw_code": "Header always set X-Frame-Options \"SAMEORIGIN\"",
+          "verification": {
+            "command": "apachectl -t && curl -sI https://yoursite.com | grep -i 'X-Frame-Options'",
+            "expected": "Exit 0, no syntax errors"
+          },
+          "rollback": {
+            "action": "remove_block",
+            "begin_marker": "# BEGIN VAPT RISK-134",
+            "end_marker": "# END VAPT RISK-134",
+            "target_file": "{ABSPATH}.htaccess"
+          }
+        }
+      ]
+    },
+    "RISK-135": {
+      "risk_id": "RISK-135",
+      "title": "Public Exposure of Debug Log File",
+      "category": "Information Disclosure",
+      "severity": "medium",
+      "steps": [
+        {
+          "enforcer": ".htaccess",
+          "lib_key": "htaccess",
+          "operation": "add_files_block",
+          "write_mode": "prepend_to_file",
+          "target_file": "{ABSPATH}.htaccess",
+          "backup_required": true,
+          "idempotency": {
+            "check_string": "# BEGIN VAPT RISK-135",
+            "if_found": "skip",
+            "if_not_found": "insert"
+          },
+          "insertion": {
+            "anchor_string": null,
+            "anchor_position": "prepend",
+            "fallback": null
+          },
+          "write_block": "# BEGIN VAPT RISK-135\n<Files \"debug.log\">\n    Order Deny,Allow\n    Deny from all\n</Files>\n# END VAPT RISK-135",
+          "begin_marker": "# BEGIN VAPT RISK-135",
+          "end_marker": "# END VAPT RISK-135",
+          "raw_code": "<Files \"debug.log\">\n    Order Deny,Allow\n    Deny from all\n</Files>",
+          "verification": {
+            "command": "apachectl -t",
+            "expected": "Exit 0, no syntax errors"
+          },
+          "rollback": {
+            "action": "remove_block",
+            "begin_marker": "# BEGIN VAPT RISK-135",
+            "end_marker": "# END VAPT RISK-135",
+            "target_file": "{ABSPATH}.htaccess"
           }
         }
       ]

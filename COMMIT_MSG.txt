@@ -1,4 +1,4 @@
-v3.5.0 - Build Release Bump and Snapshot Refresh
+v3.5.1 - Patch Release Bump and SSoT Normalization
 
 ## What Changed
 
