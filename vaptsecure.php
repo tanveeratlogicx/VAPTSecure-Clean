@@ -3,7 +3,7 @@
 /**
  * Plugin Name: VAPTSecure Clean
  * Description: Ultimate VAPT and OWASP Security Plugin Builder.
- * Version: 3.5.1
+ * Version: 3.5.2
  * Author: Tanveer Hayat Malik
  * Author URI: https://vapt.copilot.com
  * License: GPL-2.0+
@@ -27,7 +27,7 @@ if (file_exists(dirname(__FILE__) . "/vendor/autoload.php")) {
 if (defined("VAPTSECURE_BUILD_VERSION")) {
     define("VAPTSECURE_VERSION", VAPTSECURE_BUILD_VERSION);
 } else {
-    define("VAPTSECURE_VERSION", "3.5.1"); // v3.5.1 — Patch release bump for the normalized VAPTSecure Clean snapshot
+    define("VAPTSECURE_VERSION", "3.5.2"); // v3.5.2 — Patch release bump for the normalized VAPTSecure Clean snapshot
 }
 if (!defined("VAPTSECURE_DATA_VERSION")) {
     define("VAPTSECURE_DATA_VERSION", "2.5.0");
@@ -132,6 +132,15 @@ function is_vaptsecure_superadmin($require_auth = false)
  */
 function vaptsecure_is_feature_allowed($feature_key)
 {
+    if (
+        function_exists("vaptsecure_is_builder_context") &&
+        vaptsecure_is_builder_context() &&
+        function_exists("is_vaptsecure_superadmin") &&
+        is_vaptsecure_superadmin(false)
+    ) {
+        return true;
+    }
+
     // On a client build, always enforce the feature constant check.
     // VAPTSECURE_FEATURE_* constants are set only for features in the config.
     // This applies regardless of license type — developer_unbound means domain-unlocked, not feature-unlocked.
@@ -200,6 +209,18 @@ function vaptsecure_is_domain_match()
     return false;
 }
 
+/**
+ * Detects when the builder admin UI is available.
+ * Generated client builds strip the workbench/admin renderers, so their
+ * presence indicates the plugin is still running in builder mode.
+ */
+function vaptsecure_is_builder_context()
+{
+    return function_exists("vaptsecure_render_workbench_page") ||
+        function_exists("vaptsecure_render_admin_page") ||
+        function_exists("vaptsecure_master_dashboard_page");
+}
+
 function vaptsecure_load_required_config()
 {
     $is_already_loaded =
@@ -229,6 +250,30 @@ function vaptsecure_load_required_config()
         }
         return false;
     };
+
+    if (
+        function_exists("vaptsecure_is_builder_context") &&
+        vaptsecure_is_builder_context() &&
+        function_exists("is_vaptsecure_superadmin") &&
+        is_vaptsecure_superadmin(false)
+    ) {
+        if (!defined("VAPTSECURE_LICENSE_TYPE")) {
+            define("VAPTSECURE_LICENSE_TYPE", "standard");
+        }
+        if (!defined("VAPTSECURE_LICENSE_SCOPE")) {
+            define("VAPTSECURE_LICENSE_SCOPE", "single");
+        }
+        if (!defined("VAPTSECURE_DOMAIN_LIMIT")) {
+            define("VAPTSECURE_DOMAIN_LIMIT", 1);
+        }
+        if (!defined("VAPTSECURE_RESTRICT_FEATURES")) {
+            define("VAPTSECURE_RESTRICT_FEATURES", false);
+        }
+        if (!defined("VAPTSECURE_CONFIG_LOADED")) {
+            define("VAPTSECURE_CONFIG_LOADED", true);
+        }
+        return true;
+    }
 
     $root = VAPTSECURE_PATH;
     $candidates = [];

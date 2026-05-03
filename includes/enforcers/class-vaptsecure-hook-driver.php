@@ -141,6 +141,35 @@ class VAPTSECURE_Hook_Driver implements VAPTSECURE_Driver_Interface
             : [];
 
         if (empty($mappings)) {
+            $specialized_method = self::resolve_feature_specific_method($schema, $key);
+            if ($specialized_method) {
+                $toggle_key = null;
+                foreach (['feat_enabled', 'enabled'] as $candidate) {
+                    if (array_key_exists($candidate, $resolved_data)) {
+                        $toggle_key = $candidate;
+                        break;
+                    }
+                }
+
+                if ($toggle_key === null) {
+                    $risk_suffix = str_replace('-', '_', strtolower($key));
+                    $auto_key = "vapt_risk_{$risk_suffix}_enabled";
+                    if (array_key_exists($auto_key, $resolved_data)) {
+                        $toggle_key = $auto_key;
+                    }
+                }
+
+                if ($toggle_key === null && !empty($resolved_data)) {
+                    $toggle_key = array_key_first($resolved_data);
+                }
+
+                if ($toggle_key !== null) {
+                    $mappings[$toggle_key] = $specialized_method;
+                }
+            }
+        }
+
+        if (empty($mappings)) {
             // Dynamic Fallback
             foreach ($resolved_data as $k => $v) {
                 if ($v == true 
@@ -340,6 +369,49 @@ class VAPTSECURE_Hook_Driver implements VAPTSECURE_Driver_Interface
                 return $method;
             }
         }
+        return null;
+    }
+
+    /**
+     * Resolve a method for known feature families when the schema omits
+     * an explicit mapping.
+     */
+    private static function resolve_feature_specific_method($schema, $feature_key)
+    {
+        $blob = strtolower(
+            trim(
+                (string) $feature_key . ' ' .
+                (string) ($schema['title'] ?? '') . ' ' .
+                (string) ($schema['name'] ?? '') . ' ' .
+                (string) ($schema['summary'] ?? '') . ' ' .
+                (string) ($schema['description'] ?? '')
+            )
+        );
+
+        if ($blob === '') {
+            return null;
+        }
+
+        if (strpos($blob, 'cron') !== false) {
+            return 'block_wp_cron';
+        }
+
+        if (strpos($blob, 'pingback') !== false) {
+            return 'disable_xmlrpc_pingback';
+        }
+
+        if (strpos($blob, 'xmlrpc') !== false || strpos($blob, 'xml-rpc') !== false) {
+            return 'block_xmlrpc';
+        }
+
+        if (strpos($blob, 'username enumeration') !== false
+            || strpos($blob, 'user enumeration') !== false
+            || strpos($blob, 'rest api') !== false
+            || strpos($blob, '/wp-json/wp/v2/users') !== false
+        ) {
+            return 'block_author_enumeration';
+        }
+
         return null;
     }
 

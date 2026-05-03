@@ -349,8 +349,43 @@
     },
 
     suggestVerificationTests: function (feature, riskId) {
+      const inferProbePath = (featureData, featureKey = '') => {
+        const parts = [
+          featureKey,
+          featureData && (featureData.label || featureData.title || featureData.name || ''),
+          featureData && (featureData.summary || featureData.description || featureData.remediation || ''),
+          featureData && Array.isArray(featureData.wp_paths) ? featureData.wp_paths.join(' ') : '',
+          featureData && featureData.context && Array.isArray(featureData.context.wp_paths) ? featureData.context.wp_paths.join(' ') : '',
+          featureData && Array.isArray(featureData.available_platforms) ? featureData.available_platforms.join(' ') : ''
+        ];
+
+        if (featureData && featureData.platform_implementations && typeof featureData.platform_implementations === 'object') {
+          Object.values(featureData.platform_implementations).forEach(impl => {
+            if (!impl || typeof impl !== 'object') return;
+            if (impl.target_file) parts.push(impl.target_file);
+            if (impl.path) parts.push(impl.path);
+            if (impl.request_path) parts.push(impl.request_path);
+          });
+        }
+
+        const text = parts.filter(Boolean).join(' ').toLowerCase();
+        const has = (...terms) => terms.some(term => text.includes(term));
+
+        if (has('cron')) return '/wp-cron.php';
+        if (has('xmlrpc', 'xml-rpc')) return '/xmlrpc.php';
+        if (has('login', 'brute', 'password reset', 'lost password', 'auth')) return '/wp-login.php';
+        if (has('author', 'user enumeration', 'username enumeration')) return '/?author=1';
+        if (has('directory', 'indexing', 'uploads')) return '/wp-content/uploads/';
+        if (has('rest api', 'endpoint disclosure', 'rest')) return '/wp-json/wp/v2/users';
+
+        return '/';
+      };
+
       const tests = [];
       const featureKey = feature.key || feature.id || '';
+      const inferredPath = inferProbePath(feature, featureKey);
+      const headerProbePath = `${inferredPath}?vapt_header_check=1`;
+      const activeProbePath = inferredPath === '/' ? '/index.php' : inferredPath;
 
       // 1. A+ Header Check - Verify VAPT enforcement headers
       // [FIX v2.4.25] Only check x-vapt-enforced - no enforcer emits x-vapt-risk-id
@@ -361,12 +396,12 @@
         key: 'verify_aplus_headers',
         test_logic: 'check_headers',
         test_config: {
-          path: '/?vapt_header_check=1',
+          path: headerProbePath,
           expected_headers: {
-            'x-vapt-enforced': 'htaccess|nginx|php-headers'
+            'x-vapt-enforced': 'htaccess|nginx|php-headers|php-cron'
           }
         },
-        help: 'Verifies that A+ Adaptive headers (x-vapt-enforced) are correctly injected by the active enforcer.'
+        help: `Verifies that A+ Adaptive headers (x-vapt-enforced) are correctly injected by the active enforcer for ${inferredPath}.`
       });
 
       // 2. Specific Functional Probes
@@ -425,9 +460,9 @@
           key: 'verify_active_protection',
           test_logic: 'universal_probe',
           test_config: {
-            path: '/index.php',
+            path: activeProbePath,
             params: { vapt_test: 'active' },
-            expected_headers: { 'x-vapt-enforced': 'htaccess|nginx|php-headers' }
+            expected_headers: { 'x-vapt-enforced': 'htaccess|nginx|php-headers|php-cron' }
           },
           help: 'Runs a generic probe to verify server-level enforcement.'
         });

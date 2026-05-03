@@ -189,6 +189,15 @@ var vaptLog = window.vaptLog || {
       const schema = typeof f.generated_schema === 'string' ? JSON.parse(f.generated_schema) : (f.generated_schema || { controls: [] });
       vaptLog.log(`Rendering Feature ${f.key}:`, schema);
       const isVerifEngine = f.include_verification_engine;
+      const featureBlob = [
+        f.key,
+        f.label,
+        f.title,
+        f.name,
+        f.description,
+        f.summary,
+        f.remediation
+      ].filter(Boolean).join(' ').toLowerCase();
 
       // 🛡️ Resilience: Auto-Inject Verification Controls (Moved from GeneratedInterface v3.6.19)
       // This ensures they are correctly filtered into 'automControls' and don't appear in 'implControls'
@@ -198,12 +207,38 @@ var vaptLog = window.vaptLog || {
 
         if (!hasTests) {
           // 1. Rate Limiting / Brute Force
-          if (['limit-login-attempts', 'rate-limiting', 'login-protection', 'xmlrpc-protection'].some(k => featureKey.includes(k))) {
+          if (['limit-login-attempts', 'rate-limiting', 'login-protection'].some(k => featureBlob.includes(k))) {
             schema.controls.push({
               type: 'test_action',
-              label: featureKey.includes('xmlrpc') ? 'Test: XML-RPC Block' : 'Test: Rate Limit (Spike)',
+              label: featureBlob.includes('xmlrpc') ? 'Test: XML-RPC Block' : 'Test: Rate Limit (Spike)',
               key: 'auto_verify_resilience',
-              test_logic: featureKey.includes('xmlrpc') ? 'block_xmlrpc' : 'spam_requests',
+              test_logic: featureBlob.includes('xmlrpc') ? 'block_xmlrpc' : 'spam_requests',
+              help: __('Auto-injected verification test.', 'vaptsecure')
+            });
+          }
+          // 1b. Core file blocking: WP-Cron
+          else if (featureBlob.includes('cron') || featureBlob.includes('wp-cron')) {
+            schema.controls.push({
+              type: 'test_action',
+              label: 'Test: WP-Cron Block',
+              key: 'auto_verify_cron',
+              test_logic: 'check_headers',
+              test_config: {
+                path: '/wp-cron.php',
+                expected_headers: {
+                  'x-vapt-enforced': 'php-cron'
+                }
+              },
+              help: __('Auto-injected verification test.', 'vaptsecure')
+            });
+          }
+          // 1c. REST user enumeration / XML-RPC / pingback / username enumeration
+          else if (featureBlob.includes('xmlrpc') || featureBlob.includes('pingback') || featureBlob.includes('rest api') || featureBlob.includes('username enumeration') || featureBlob.includes('user enumeration') || featureBlob.includes('author enumeration')) {
+            schema.controls.push({
+              type: 'test_action',
+              label: featureBlob.includes('pingback') ? 'Test: XML-RPC Pingback Block' : (featureBlob.includes('xmlrpc') ? 'Test: XML-RPC Block' : 'Test: REST User Enumeration Block'),
+              key: 'auto_verify_access_control',
+              test_logic: featureBlob.includes('pingback') ? 'disable_xmlrpc_pingback' : (featureBlob.includes('xmlrpc') ? 'block_xmlrpc' : 'block_author_enumeration'),
               help: __('Auto-injected verification test.', 'vaptsecure')
             });
           }
@@ -220,9 +255,32 @@ var vaptLog = window.vaptLog || {
         }
       }
 
+      const effectiveSchema = schema && Array.isArray(schema.controls)
+        ? {
+            ...schema,
+            controls: schema.controls.map((control) => {
+              const controlLabel = String(control.label || '').toLowerCase();
+              const controlPath = String(control.test_config?.path || '').toLowerCase();
+              const isPingbackControl =
+                featureBlob.includes('pingback') &&
+                control.type === 'test_action' &&
+                (control.test_logic === 'check_headers' || control.test_logic === 'block_xmlrpc' || controlLabel.includes('xml-rpc')) &&
+                (controlPath.includes('xmlrpc.php') || controlLabel.includes('header verification') || controlLabel.includes('xml-rpc'));
+
+              if (!isPingbackControl) return control;
+
+              return {
+                ...control,
+                label: 'Test: XML-RPC Pingback Block',
+                test_logic: 'disable_xmlrpc_pingback'
+              };
+            })
+          }
+        : schema;
+
       // Filter controls
       // 1. Implementation Controls (Left Column)
-      const implControls = schema.controls ? schema.controls.filter(c =>
+      const implControls = effectiveSchema.controls ? effectiveSchema.controls.filter(c =>
         !['test_action', 'risk_indicators', 'assurance_badges', 'test_checklist', 'evidence_list', 'header', 'html', 'info', 'warning', 'alert'].includes(c.type) &&
         !['feat_enabled', 'is_enabled', 'is_enforced'].includes(c.key) &&
         !c.label?.toLowerCase().includes('notes') &&
@@ -231,14 +289,14 @@ var vaptLog = window.vaptLog || {
       ) : [];
 
       // 1.1. Security Insights / HTML blocks for Row 1 Right Column
-      const insightControls = schema.controls ? schema.controls.filter(c => (c.type === 'html' || c.type === 'info' || c.type === 'warning' || c.type === 'alert') && !c.label?.toLowerCase().includes('enable protection') && !c.label?.toLowerCase().includes('enable feature')) : [];
+      const insightControls = effectiveSchema.controls ? effectiveSchema.controls.filter(c => (c.type === 'html' || c.type === 'info' || c.type === 'warning' || c.type === 'alert') && !c.label?.toLowerCase().includes('enable protection') && !c.label?.toLowerCase().includes('enable feature')) : [];
 
       // 1.2. Master Toggle Control (The one with the tooltip)
-      const masterToggleControl = schema.controls ? schema.controls.find(c => c.type === 'toggle' && (c.key === 'feat_enabled' || c.label?.toLowerCase().includes('enable protection') || c.label?.toLowerCase().includes('enable feature'))) : null;
+      const masterToggleControl = effectiveSchema.controls ? effectiveSchema.controls.find(c => c.type === 'toggle' && (c.key === 'feat_enabled' || c.label?.toLowerCase().includes('enable protection') || c.label?.toLowerCase().includes('enable feature'))) : null;
 
       // 2. Automated Controls (Right Column)
-      const automControls = schema.controls ? schema.controls.filter(c => c.type === 'test_action') : [];
-      const noteControls = (schema.controls || []).filter(c => {
+      const automControls = effectiveSchema.controls ? effectiveSchema.controls.filter(c => c.type === 'test_action') : [];
+      const noteControls = (effectiveSchema.controls || []).filter(c => {
         const isNote = c.label?.toLowerCase().includes('notes') || c.key?.includes('notes');
         if (!isNote) return false;
 
@@ -311,7 +369,7 @@ var vaptLog = window.vaptLog || {
               el('div', { style: { flex: 1, minWidth: 0, overflow: 'hidden' } }, [
                 f.generated_schema && GeneratedInterface
                   ? el(GeneratedInterface, { 
-                      feature: { ...f, generated_schema: { ...schema, controls: implControls } }, 
+                      feature: { ...f, generated_schema: { ...effectiveSchema, controls: implControls } }, 
                       onUpdate: (data) => updateFeature(f.key, { implementation_data: data }), 
                       hideProtocol: true, // 🛡️ v3.14.14: Explicitly hide protocol from left panel
                       hideImplementationControl: true,
@@ -332,7 +390,7 @@ var vaptLog = window.vaptLog || {
                 // 🛡️ Enable Protection Toggle next to title
                 masterToggleControl ? el('div', { className: 'vapt-inline-master-toggle', style: { transform: 'scale(0.85)', marginRight: '-10px', display: 'flex', alignItems: 'center' } }, [
                   el(GeneratedInterface, {
-                    feature: { ...f, generated_schema: { ...schema, controls: [masterToggleControl] } },
+                    feature: { ...f, generated_schema: { ...effectiveSchema, controls: [masterToggleControl] } },
                     onUpdate: (data) => updateFeature(f.key, { implementation_data: data }),
                     hideOpNotes: true,
                     hideProtocol: true,
@@ -350,9 +408,9 @@ var vaptLog = window.vaptLog || {
                 ])
               ]),
               el('div', { style: { padding: '10px 0' } }, [
-                // Render Security Insights / HTML controls
-                insightControls.length > 0 && el(GeneratedInterface, {
-                  feature: { ...f, generated_schema: { ...schema, controls: insightControls } },
+              // Render Security Insights / HTML controls
+              insightControls.length > 0 && el(GeneratedInterface, {
+                  feature: { ...f, generated_schema: { ...effectiveSchema, controls: insightControls } },
                   onUpdate: (data) => updateFeature(f.key, { implementation_data: data }),
                   hideOpNotes: true,
                   hideProtocol: true,

@@ -467,6 +467,82 @@ class VAPTSECURE_REST
         return new WP_REST_Response($events, 200);
     }
 
+    public function verify_implementation($request)
+    {
+        if (!class_exists('VAPTSECURE_DB')) {
+            return new WP_REST_Response(array('error' => 'DB helper not loaded'), 500);
+        }
+
+        $key = sanitize_text_field((string) $request->get_param('key'));
+        if ($key === '') {
+            return new WP_REST_Response(array('error' => 'Missing feature key'), 400);
+        }
+
+        $meta = VAPTSECURE_DB::get_feature_meta($key);
+        if (!$meta) {
+            return new WP_REST_Response(array('error' => 'Feature not found', 'key' => $key), 404);
+        }
+
+        $status = isset($meta['status']) ? strtolower((string) $meta['status']) : 'draft';
+        $raw_schema = ($status === 'test' && !empty($meta['override_schema'])) ? $meta['override_schema'] : ($meta['generated_schema'] ?? null);
+        $schema = $raw_schema ? json_decode($raw_schema, true) : array();
+        $raw_impl = ($status === 'test' && !empty($meta['override_implementation_data'])) ? $meta['override_implementation_data'] : ($meta['implementation_data'] ?? null);
+        $implementation_data = $raw_impl ? json_decode($raw_impl, true) : array();
+        if (!is_array($implementation_data)) {
+            $implementation_data = array();
+        }
+
+        $runtime_verified = false;
+        if (class_exists('VAPTSECURE_Hook_Driver')) {
+            $runtime_verified = (bool) VAPTSECURE_Hook_Driver::verify($key, $implementation_data, is_array($schema) ? $schema : array());
+        }
+
+        $blob = strtolower(trim(
+            (string) $key . ' ' .
+            (string) ($schema['title'] ?? '') . ' ' .
+            (string) ($schema['summary'] ?? '') . ' ' .
+            (string) ($schema['description'] ?? '')
+        ));
+
+        $probe = array(
+            'path' => '/',
+            'method' => 'GET',
+            'expected_statuses' => array(200),
+            'expected_enforcer' => null,
+        );
+
+        if (strpos($blob, 'cron') !== false) {
+            $probe['path'] = '/wp-cron.php';
+            $probe['expected_statuses'] = array(403);
+            $probe['expected_enforcer'] = 'php-cron';
+        } elseif (strpos($blob, 'xmlrpc') !== false || strpos($blob, 'xml-rpc') !== false || strpos($blob, 'pingback') !== false) {
+            $probe['path'] = '/xmlrpc.php';
+            $probe['method'] = 'POST';
+            $probe['expected_statuses'] = array(401, 403, 404, 405);
+            $probe['expected_enforcer'] = 'php-xmlrpc';
+        } elseif (strpos($blob, 'username enumeration') !== false
+            || strpos($blob, 'user enumeration') !== false
+            || strpos($blob, 'rest api') !== false
+            || strpos($blob, '/wp-json/wp/v2/users') !== false
+        ) {
+            $probe['path'] = '/wp-json/wp/v2/users';
+            $probe['expected_statuses'] = array(401, 403, 404, 405);
+            $probe['expected_enforcer'] = 'php-author-enum';
+        }
+
+        return new WP_REST_Response(array(
+            'success' => $runtime_verified,
+            'key' => $key,
+            'title' => $schema['title'] ?? ($meta['feature_name'] ?? $key),
+            'status' => $meta['status'] ?? 'unknown',
+            'probe' => $probe,
+            'runtime_verified' => $runtime_verified,
+            'message' => $runtime_verified
+                ? 'Runtime enforcement is registered for this feature.'
+                : 'Runtime enforcement is not currently registered for this feature.',
+        ), 200);
+    }
+
     public function get_features($request)
     {
         try {
@@ -805,12 +881,13 @@ class VAPTSECURE_REST
                     }
                 }
                 $is_config_build = defined('VAPTSECURE_BUILD_PROFILE') && VAPTSECURE_BUILD_PROFILE === 'client';
+                $is_builder_context = function_exists('vaptsecure_is_builder_context') && vaptsecure_is_builder_context();
                 $features = array_filter(
-                    $features, function ($f) use ($enabled_features, $is_superadmin, $is_config_build) {
+                    $features, function ($f) use ($enabled_features, $is_superadmin, $is_config_build, $is_builder_context) {
                         $s = $f['normalized_status'];
                         if ($s === 'release') {
                             // On a config build, also restrict to features allowed by the config
-                            if ($is_config_build && !vaptsecure_is_feature_allowed($f['key'] ?? '')) {
+                            if ($is_config_build && !$is_builder_context && !vaptsecure_is_feature_allowed($f['key'] ?? '')) {
                                 return false;
                             }
                             return true;

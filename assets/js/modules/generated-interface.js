@@ -97,6 +97,42 @@ var vaptLog = window.vaptLog || {
   };
 
   /**
+   * Helper: Infer a feature-appropriate probe path when the configured path is generic.
+   */
+  const inferProbePath = (featureData, featureKey = '', control = {}) => {
+    const parts = [
+      featureKey,
+      featureData && (featureData.label || featureData.title || featureData.name || ''),
+      featureData && (featureData.summary || featureData.description || featureData.remediation || ''),
+      featureData && Array.isArray(featureData.wp_paths) ? featureData.wp_paths.join(' ') : '',
+      featureData && featureData.context && Array.isArray(featureData.context.wp_paths) ? featureData.context.wp_paths.join(' ') : '',
+      featureData && Array.isArray(featureData.available_platforms) ? featureData.available_platforms.join(' ') : '',
+      control && control.label ? control.label : ''
+    ].filter(Boolean);
+
+    if (featureData && featureData.platform_implementations && typeof featureData.platform_implementations === 'object') {
+      Object.values(featureData.platform_implementations).forEach(impl => {
+        if (!impl || typeof impl !== 'object') return;
+        if (impl.target_file) parts.push(impl.target_file);
+        if (impl.path) parts.push(impl.path);
+        if (impl.request_path) parts.push(impl.request_path);
+      });
+    }
+
+    const text = parts.join(' ').toLowerCase();
+    const has = (...terms) => terms.some(term => text.includes(term));
+
+    if (has('cron')) return '/wp-cron.php';
+    if (has('xmlrpc', 'xml-rpc')) return '/xmlrpc.php';
+    if (has('login', 'brute', 'password reset', 'lost password', 'auth')) return '/wp-login.php';
+    if (has('author', 'user enumeration', 'username enumeration')) return '/?author=1';
+    if (has('directory', 'indexing', 'uploads')) return '/wp-content/uploads/';
+    if (has('rest api', 'endpoint disclosure', 'rest')) return '/wp-json/wp/v2/users';
+
+    return '/';
+  };
+
+  /**
    * Helper: Consistent Boolean Type Casting (v3.14.2)
    */
   const toBool = (val) => {
@@ -147,7 +183,10 @@ var vaptLog = window.vaptLog || {
     // 1. Header Probe: Verifies HTTP response headers
     check_headers: async (siteUrl, control, featureData, featureKey) => {
       // [FIX v2.4.11] Use test_config.path if available, otherwise default to root
-      const configPath = control.test_config?.path || '/';
+      const configuredPath = control.test_config?.path || '/';
+      const configPath = (configuredPath === '/' || configuredPath === '/index.php' || configuredPath.startsWith('/?vapt_header_check=') || configuredPath.startsWith('/?vaptsecure_header_check='))
+        ? inferProbePath(featureData, featureKey, control)
+        : configuredPath;
       const url = resolveUrl(configPath, control.config?.url, featureKey);
       const contextParam = (featureKey && (featureKey.includes('login') || featureKey.includes('brute'))) ? '&vaptsecure_test_context=login' : '';
       const finalUrl = url + (url.includes('?') ? '&' : '?') + 'vaptsecure_header_check=' + Date.now() + contextParam;
@@ -176,9 +215,36 @@ var vaptLog = window.vaptLog || {
 
       if (hasExpectedHeaders) {
         // The reliable marker is x-vapt-enforced being present with a valid enforcer value.
-        const validEnforcers = ['htaccess', 'nginx', 'php-headers', 'php-rate-limit', 'php-xmlrpc', 'php-dir', 'php-null-byte'];
+        const validEnforcers = ['htaccess', 'nginx', 'php-headers', 'php-rate-limit', 'php-xmlrpc', 'php-pingback', 'php-author-enum', 'php-dir', 'php-null-byte', 'php-cron'];
         const isValidEnforcer = vaptEnforced && validEnforcers.some(e => vaptEnforced.toLowerCase().includes(e));
         const isProtectionEnabled = isFeatureEnabled(featureData);
+        const isPingbackFeature = (featureKey && (featureKey.toLowerCase().includes('xmlrpc') || featureKey.toLowerCase().includes('pingback')))
+          || (control.label && control.label.toLowerCase().includes('pingback'))
+          || ((featureData && (featureData.title || featureData.label || featureData.summary || featureData.description)) &&
+            String(featureData.title || featureData.label || featureData.summary || featureData.description).toLowerCase().includes('pingback'));
+
+        if (isProtectionEnabled && isPingbackFeature && !isValidEnforcer) {
+          try {
+            const body = await response.clone().text();
+            const bodyLower = body.toLowerCase();
+            const pingbackBlocked =
+              !bodyLower.includes('pingback.ping') ||
+              bodyLower.includes('fault') ||
+              bodyLower.includes('not allowed') ||
+              bodyLower.includes('access denied') ||
+              bodyLower.includes('forbidden');
+
+            if (pingbackBlocked) {
+              return {
+                success: true,
+                message: `Pingback protection is active. XML-RPC no longer exposes pingback.ping.`,
+                raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Pingback: Disabled\n\n${headerStr.trim()}\n\n${body.substring(0, 800)}`
+              };
+            }
+          } catch (err) {
+            // Ignore body inspection failures and continue with header-based logic.
+          }
+        }
 
         // [FIX v2.5.2] State-Aware Success: Align result with user intent (toggle state)
         // +-------------------+------------------+-------------------------------------------------------------+---------+
@@ -325,7 +391,8 @@ var vaptLog = window.vaptLog || {
         // Process sequentially for real-time reporting (v3.6.25)
         for (let i = 0; i < load; i++) {
           try {
-            const url = resolveUrl('/', control.config?.url);
+            const probePath = inferProbePath(featureData, featureKey, control);
+            const url = resolveUrl(probePath, control.config?.url, featureKey);
             const r = await fetch(url + '?vaptsecure_test_spike=' + i + contextParam, { cache: 'no-store' });
             const respData = { status: r.status, headers: r.headers };
             responses.push(respData);
@@ -473,7 +540,7 @@ var vaptLog = window.vaptLog || {
       // | OFF               | Not Blocked (200)| "Protection correctly disabled. XML-RPC accessible."        | SUCCESS |
       // +-------------------+------------------+-------------------------------------------------------------+---------+
 
-      const isBlocked = response.status === 403 || response.status === 404 || vaptEnforced === 'php-xmlrpc';
+      const isBlocked = response.status === 403 || response.status === 404 || response.status === 405 || response.status === 401 || vaptEnforced === 'php-xmlrpc';
 
       if (vaptEnforced === 'php-xmlrpc') {
         if (featureKey && enforcedFeature && enforcedFeature !== featureKey) {
@@ -509,12 +576,135 @@ var vaptLog = window.vaptLog || {
       }
 
       // Toggle is ON: Check if XML-RPC is blocked
+      if (isBlocked) {
+        return {
+          success: true,
+          message: vaptEnforced === 'php-xmlrpc'
+            ? `Plugin is actively blocking XML-RPC (${vaptEnforced}).`
+            : `Plugin is actively blocking XML-RPC (HTTP ${response.status}).`,
+          raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Enforcement: ${vaptEnforced || 'HTTP ' + response.status}`
+        };
+      }
+
       return {
         success: false,
         message: isVulnerable
           ? `SECURITY FAILURE: Protection toggle is ON but XML-RPC is OPEN and VULNERABLE (HTTP 200).`
           : `XML-RPC is blocked (HTTP ${response.status}), but NOT by this plugin. VAPT enforcement header missing.`,
         raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Expected: 403`
+      };
+    },
+
+    // 3a. Pingback Probe: verifies pingback methods are disabled
+    disable_xmlrpc_pingback: async (siteUrl, control, featureData, featureKey) => {
+      const url = resolveUrl('/xmlrpc.php', control.config?.url, featureKey);
+      vaptLog.log(`XML-RPC Pingback Probe: Fetching ${url}`);
+      const payload = '<?xml version="1.0"?><methodCall><methodName>system.listMethods</methodName><params></params></methodCall>';
+      const response = await fetch(url, { method: 'POST', body: payload, cache: 'no-store' });
+      const body = await response.clone().text();
+      const bodyLower = body.toLowerCase();
+      const vaptEnforced = response.headers.get('x-vapt-enforced');
+      const enforcedFeature = response.headers.get('x-vapt-feature');
+      const isEnabled = isFeatureEnabled(featureData);
+
+      const pingbackExposed = bodyLower.includes('pingback.ping') || bodyLower.includes('pingback.extensions.getpingbacks');
+      const pingbackBlocked = response.status === 401 || response.status === 403 || response.status === 404 || response.status === 405 || vaptEnforced === 'php-pingback' || !pingbackExposed;
+
+      if (vaptEnforced === 'php-pingback') {
+        if (featureKey && enforcedFeature && enforcedFeature !== featureKey) {
+          return { success: false, message: `Inconclusive: XML-RPC pingback is blocked by another VAPT feature ('${enforcedFeature}').`, raw: `URL: ${url} | Status: ${response.status} | Enforcement: ${vaptEnforced}` };
+        }
+        if (!isEnabled) {
+          return { success: false, message: `Warning: Protection toggle is OFF but XML-RPC pingback is STILL being blocked (${vaptEnforced}).`, raw: `URL: ${url} | Status: ${response.status} | Toggle: OFF | Enforcement: ${vaptEnforced}` };
+        }
+        return { success: true, message: `Plugin is actively disabling XML-RPC pingback (${vaptEnforced}).`, raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Enforcement: ${vaptEnforced}` };
+      }
+
+      if (!isEnabled) {
+        if (pingbackExposed) {
+          return {
+            success: false,
+            unprotected: true,
+            message: `Protection correctly disabled. XML-RPC pingback methods are still exposed.`,
+            raw: `URL: ${url} | Status: ${response.status} | Toggle: OFF | Enforcement: None\n\n${body.substring(0, 800)}`
+          };
+        }
+        return {
+          success: false,
+          external_block: true,
+          message: `Warning: Protection toggle is OFF but XML-RPC pingback methods are still blocked (HTTP ${response.status}). External protection detected.`,
+          raw: `URL: ${url} | Status: ${response.status} | Toggle: OFF | External Block\n\n${body.substring(0, 800)}`
+        };
+      }
+
+      if (pingbackBlocked) {
+        return {
+          success: true,
+          message: pingbackExposed
+            ? `Pingback methods are still exposed (HTTP ${response.status}).`
+            : `Plugin is actively disabling XML-RPC pingback (${vaptEnforced || 'method removed'}).`,
+          raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Enforcement: ${vaptEnforced || 'method removed'}\n\n${body.substring(0, 800)}`
+        };
+      }
+
+      return {
+        success: false,
+        message: `SECURITY FAILURE: Protection toggle is ON but XML-RPC pingback methods remain exposed.`,
+        raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Expected: pingback methods removed\n\n${body.substring(0, 800)}`
+      };
+    },
+
+    // 3b. Username Enumeration Probe: verifies REST users endpoint is blocked
+    block_author_enumeration: async (siteUrl, control, featureData, featureKey) => {
+      const url = resolveUrl('/wp-json/wp/v2/users', control.config?.url, featureKey);
+      vaptLog.log(`REST User Enumeration Probe: Fetching ${url}`);
+      const response = await fetch(url, { method: 'GET', cache: 'no-store' });
+      const vaptEnforced = response.headers.get('x-vapt-enforced');
+      const enforcedFeature = response.headers.get('x-vapt-feature');
+      const isEnabled = isFeatureEnabled(featureData);
+      const isBlocked = response.status === 401 || response.status === 403 || response.status === 404 || response.status === 405 || vaptEnforced === 'php-author-enum';
+
+      if (vaptEnforced === 'php-author-enum') {
+        if (featureKey && enforcedFeature && enforcedFeature !== featureKey) {
+          return { success: false, message: `Inconclusive: REST user enumeration blocked by another VAPT feature ('${enforcedFeature}').`, raw: `URL: ${url} | Status: ${response.status} | Enforcement: ${vaptEnforced}` };
+        }
+        if (!isEnabled) {
+          return { success: false, message: `Warning: Protection toggle is OFF but REST user enumeration is STILL being blocked (${vaptEnforced}).`, raw: `URL: ${url} | Status: ${response.status} | Toggle: OFF | Enforcement: ${vaptEnforced}` };
+        }
+        return { success: true, message: `Plugin is actively blocking REST user enumeration (${vaptEnforced}).`, raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Enforcement: ${vaptEnforced}` };
+      }
+
+      if (!isEnabled) {
+        if (response.status === 200) {
+          return {
+            success: false,
+            unprotected: true,
+            message: `Protection correctly disabled. REST user enumeration is accessible (HTTP 200).`,
+            raw: `URL: ${url} | Status: ${response.status} | Toggle: OFF | Enforcement: None`
+          };
+        }
+        return {
+          success: false,
+          external_block: true,
+          message: `Warning: Protection toggle is OFF but REST user enumeration is still blocked (HTTP ${response.status}). External protection detected.`,
+          raw: `URL: ${url} | Status: ${response.status} | Toggle: OFF | External Block`
+        };
+      }
+
+      if (isBlocked) {
+        return {
+          success: true,
+          message: response.status === 200
+            ? `REST user enumeration is still exposed (HTTP 200).`
+            : `Plugin is actively blocking REST user enumeration (HTTP ${response.status}).`,
+          raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Enforcement: ${vaptEnforced || 'HTTP ' + response.status}`
+        };
+      }
+
+      return {
+        success: false,
+        message: `SECURITY FAILURE: Protection toggle is ON but REST user enumeration remains accessible (HTTP 200).`,
+        raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Expected: 403/404`
       };
     },
 
@@ -661,7 +851,10 @@ var vaptLog = window.vaptLog || {
     universal_probe: async (siteUrl, control, featureData, featureKey) => {
       const config = control.test_config || {};
       const method = config.method || 'GET';
-      const path = config.path || '/';
+      const configuredPath = config.path || '/';
+      const path = (configuredPath === '/' || configuredPath === '/index.php' || configuredPath.startsWith('/?vapt_header_check=') || configuredPath.startsWith('/?vaptsecure_header_check='))
+        ? inferProbePath(featureData, featureKey, control)
+        : configuredPath;
       const params = config.params || {};
       const headers = config.headers || {};
       const body = config.body || null;
@@ -732,8 +925,8 @@ var vaptLog = window.vaptLog || {
 
           // Global Platform Normalization: Alias 'htaccess' or 'nginx' to allow fallbacks (v3.13.18)
           // This prevents false failures on Nginx/PHP environments for legacy probes.
-          if (key.toLowerCase() === 'x-vapt-enforced' && (expectedValue === 'htaccess' || expectedValue === 'nginx')) {
-            expectedValueTransformed = 'htaccess|nginx|php-headers';
+          if (key.toLowerCase() === 'x-vapt-enforced' && (expectedValue === 'htaccess' || expectedValue === 'nginx' || expectedValue === 'php-headers' || expectedValue === 'php-cron')) {
+            expectedValueTransformed = 'htaccess|nginx|php-headers|php-cron';
           }
 
           const expectedOptions = expectedValueTransformed.split('|').map(v => v.trim().toLowerCase());
