@@ -141,7 +141,7 @@ var vaptLog = window.vaptLog || {
     render() {
       if (this.state.hasError) {
         return el('div', { className: 'notice notice-error inline', style: { padding: '20px', margin: '20px' } }, [
-          el('h3', null, 'Something went wrong rendering the VAPT Secure Dashboard.'),
+          el('h3', null, 'Something went wrong rendering the VAPTSecure Clean Dashboard.'),
           el('details', { style: { whiteSpace: 'pre-wrap', marginTop: '10px' } },
             this.state.error && this.state.error.toString(),
             el('br'),
@@ -525,7 +525,7 @@ var vaptLog = window.vaptLog || {
 {
   "site_context": {
     "home_url": "${settings.homeUrl || ''}",
-    "plugin_name": "${settings.pluginName || 'VAPT Secure'}",
+    "plugin_name": "${settings.pluginName || 'VAPTSecure Clean'}",
     "environment": "production",
     "mandate": "All URLs generated in the final JSON schema MUST be absolute URLs, using the provided home_url as the base."
   },
@@ -887,7 +887,7 @@ var vaptLog = window.vaptLog || {
 
       const finalPrompt = `
       --- ROLE & OBJECTIVE ---
-      You are the **VAPT Security Expert Agent**. Your mandate is to generate production-ready Interface Schema JSONs for the **${settings.pluginName || 'VAPT Secure'}** workbench. You MUST achieve \u226590% accuracy by following the deterministic instructions below.
+      You are the **VAPT Security Expert Agent**. Your mandate is to generate production-ready Interface Schema JSONs for the **${settings.pluginName || 'VAPTSecure Clean'}** workbench. You MUST achieve \u226590% accuracy by following the deterministic instructions below.
 
       --- THE FOUR PILLARS OF ACCURACY ---
       1. **Schema-First Generation**: ALWAYS use the provided context as ground truth. Never infer component types, default values, or sections.
@@ -2998,7 +2998,7 @@ var vaptLog = window.vaptLog || {
     const [includeConfig, setIncludeConfig] = useState(true);
     const [includeData, setIncludeData] = useState(false);
     const [whiteLabel, setWhiteLabel] = useState({
-      name: 'VAPT Secure',
+      name: 'VAPTSecure Clean',
       description: '',
       author: 'Tanveer Malik',
       plugin_uri: 'https://vaptsecure.net',
@@ -3008,7 +3008,7 @@ var vaptLog = window.vaptLog || {
     // Local draft state: captures typed values without triggering effects on every keystroke.
     // Fields bind to draftLabel for display/onChange, and commit to whiteLabel on onBlur.
     const [draftLabel, setDraftLabel] = useState({
-      name: 'VAPT Secure',
+      name: 'VAPTSecure Clean',
       author: 'Tanveer Malik',
       plugin_uri: 'https://vaptsecure.net',
       author_uri: '#'
@@ -6282,7 +6282,7 @@ var vaptLog = window.vaptLog || {
 
     if (error) {
       return el('div', { id: 'vapt-admin-dashboard--error', className: 'vapt-admin-wrap' }, [
-        el('h1', null, __('VAPT Secure Dashboard', 'vaptsecure')),
+        el('h1', null, __('VAPTSecure Clean Dashboard', 'vaptsecure')),
         el(Notice, { status: 'error', isDismissible: false }, error),
         el(Button, { isSecondary: true, onClick: () => fetchData() }, __('Retry', 'vaptsecure'))
       ]);
@@ -6304,7 +6304,7 @@ var vaptLog = window.vaptLog || {
       }, [
         // Left Column: Title
         el('div', { style: { display: 'flex', alignItems: 'baseline', gap: '10px' } }, [
-          el('h1', { style: { margin: 0, fontSize: '20px', fontWeight: '600', color: '#1d2327', lineHeight: '1.2', padding: '15px 0' } }, __('VAPT Secure Dashboard', 'vaptsecure')),
+          el('h1', { style: { margin: 0, fontSize: '20px', fontWeight: '600', color: '#1d2327', lineHeight: '1.2', padding: '15px 0' } }, __('VAPTSecure Clean Dashboard', 'vaptsecure')),
           el('span', { style: { fontSize: '11px', color: '#646970' } }, `v${settings.pluginVersion}`)
         ]),
 

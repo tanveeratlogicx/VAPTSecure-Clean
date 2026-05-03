@@ -35,7 +35,7 @@ class VAPTSECURE_Config_Cleaner
 
         $success_count = count(array_filter($results));
         error_log(sprintf(
-            '[VAPT Secure] Config cleaning complete. %d/%d files cleaned.',
+            '[VAPTSecure Clean] Config cleaning complete. %d/%d files cleaned.',
             $success_count,
             count($results)
         ));
@@ -57,13 +57,13 @@ class VAPTSECURE_Config_Cleaner
         }
 
         if (!is_writable($htaccess)) {
-            error_log('[VAPT Secure] Cannot clean .htaccess: file not writable');
+            error_log('[VAPTSecure Clean] Cannot clean .htaccess: file not writable');
             return false;
         }
 
         $content = file_get_contents($htaccess);
         if ($content === false) {
-            error_log('[VAPT Secure] Cannot clean .htaccess: failed to read file');
+            error_log('[VAPTSecure Clean] Cannot clean .htaccess: failed to read file');
             return false;
         }
 
@@ -77,11 +77,11 @@ class VAPTSECURE_Config_Cleaner
         $result = file_put_contents($htaccess, $content);
         
         if ($result !== false) {
-            error_log('[VAPT Secure] Cleaned .htaccess');
+            error_log('[VAPTSecure Clean] Cleaned .htaccess');
             return true;
         }
         
-        error_log('[VAPT Secure] Failed to write cleaned .htaccess');
+        error_log('[VAPTSecure Clean] Failed to write cleaned .htaccess');
         return false;
     }
 
@@ -104,13 +104,13 @@ class VAPTSECURE_Config_Cleaner
         }
 
         if (!is_writable($wp_config)) {
-            error_log('[VAPT Secure] Cannot clean wp-config.php: file not writable');
+            error_log('[VAPTSecure Clean] Cannot clean wp-config.php: file not writable');
             return false;
         }
 
         $content = file_get_contents($wp_config);
         if ($content === false) {
-            error_log('[VAPT Secure] Cannot clean wp-config.php: failed to read file');
+            error_log('[VAPTSecure Clean] Cannot clean wp-config.php: failed to read file');
             return false;
         }
 
@@ -124,11 +124,11 @@ class VAPTSECURE_Config_Cleaner
         $result = file_put_contents($wp_config, $content);
         
         if ($result !== false) {
-            error_log('[VAPT Secure] Cleaned wp-config.php');
+            error_log('[VAPTSecure Clean] Cleaned wp-config.php');
             return true;
         }
         
-        error_log('[VAPT Secure] Failed to write cleaned wp-config.php');
+        error_log('[VAPTSecure Clean] Failed to write cleaned wp-config.php');
         return false;
     }
 
@@ -146,21 +146,21 @@ class VAPTSECURE_Config_Cleaner
         }
 
         if (!is_writable($vapt_func)) {
-            error_log('[VAPT Secure] Cannot clean vapt-functions.php: file not writable');
+            error_log('[VAPTSecure Clean] Cannot clean vapt-functions.php: file not writable');
             return false;
         }
 
         // Write minimal stub file indicating license expired
-        $content = "<?php\n\n/**\n * VAPT Secure Functions\n * License Expired - Functions Disabled\n */\n\nif (!defined('ABSPATH')) { exit; }\n\n";
+        $content = "<?php\n\n/**\n * VAPTSecure Clean Functions\n * License Expired - Functions Disabled\n */\n\nif (!defined('ABSPATH')) { exit; }\n\n";
         
         $result = file_put_contents($vapt_func, $content);
         
         if ($result !== false) {
-            error_log('[VAPT Secure] Cleaned vapt-functions.php');
+            error_log('[VAPTSecure Clean] Cleaned vapt-functions.php');
             return true;
         }
         
-        error_log('[VAPT Secure] Failed to write cleaned vapt-functions.php');
+        error_log('[VAPTSecure Clean] Failed to write cleaned vapt-functions.php');
         return false;
     }
 
@@ -178,13 +178,13 @@ class VAPTSECURE_Config_Cleaner
         }
 
         if (!is_writable($nginx_conf)) {
-            error_log('[VAPT Secure] Cannot clean nginx.conf: file not writable');
+            error_log('[VAPTSecure Clean] Cannot clean nginx.conf: file not writable');
             return false;
         }
 
         $content = file_get_contents($nginx_conf);
         if ($content === false) {
-            error_log('[VAPT Secure] Cannot clean nginx.conf: failed to read file');
+            error_log('[VAPTSecure Clean] Cannot clean nginx.conf: failed to read file');
             return false;
         }
 
@@ -194,11 +194,11 @@ class VAPTSECURE_Config_Cleaner
         $result = file_put_contents($nginx_conf, $content);
         
         if ($result !== false) {
-            error_log('[VAPT Secure] Cleaned nginx.conf');
+            error_log('[VAPTSecure Clean] Cleaned nginx.conf');
             return true;
         }
         
-        error_log('[VAPT Secure] Failed to write cleaned nginx.conf');
+        error_log('[VAPTSecure Clean] Failed to write cleaned nginx.conf');
         return false;
     }
 
@@ -216,13 +216,13 @@ class VAPTSECURE_Config_Cleaner
         }
 
         if (!is_writable($web_config)) {
-            error_log('[VAPT Secure] Cannot clean web.config: file not writable');
+            error_log('[VAPTSecure Clean] Cannot clean web.config: file not writable');
             return false;
         }
 
         $content = file_get_contents($web_config);
         if ($content === false) {
-            error_log('[VAPT Secure] Cannot clean web.config: failed to read file');
+            error_log('[VAPTSecure Clean] Cannot clean web.config: failed to read file');
             return false;
         }
 
@@ -232,11 +232,11 @@ class VAPTSECURE_Config_Cleaner
         $result = file_put_contents($web_config, $content);
         
         if ($result !== false) {
-            error_log('[VAPT Secure] Cleaned web.config');
+            error_log('[VAPTSecure Clean] Cleaned web.config');
             return true;
         }
         
-        error_log('[VAPT Secure] Failed to write cleaned web.config');
+        error_log('[VAPTSecure Clean] Failed to write cleaned web.config');
         return false;
     }
 
@@ -254,13 +254,13 @@ class VAPTSECURE_Config_Cleaner
         }
 
         if (!is_writable($caddyfile)) {
-            error_log('[VAPT Secure] Cannot clean Caddyfile: file not writable');
+            error_log('[VAPTSecure Clean] Cannot clean Caddyfile: file not writable');
             return false;
         }
 
         $content = file_get_contents($caddyfile);
         if ($content === false) {
-            error_log('[VAPT Secure] Cannot clean Caddyfile: failed to read file');
+            error_log('[VAPTSecure Clean] Cannot clean Caddyfile: failed to read file');
             return false;
         }
 
@@ -270,11 +270,11 @@ class VAPTSECURE_Config_Cleaner
         $result = file_put_contents($caddyfile, $content);
         
         if ($result !== false) {
-            error_log('[VAPT Secure] Cleaned Caddyfile');
+            error_log('[VAPTSecure Clean] Cleaned Caddyfile');
             return true;
         }
         
-        error_log('[VAPT Secure] Failed to write cleaned Caddyfile');
+        error_log('[VAPTSecure Clean] Failed to write cleaned Caddyfile');
         return false;
     }
 }

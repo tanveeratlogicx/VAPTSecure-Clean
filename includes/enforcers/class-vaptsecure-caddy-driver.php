@@ -84,7 +84,7 @@ class VAPTSECURE_Caddy_Driver implements VAPTSECURE_Driver_Interface
         $upload_dir = wp_upload_dir();
         $file_path = $upload_dir['basedir'] . '/vapt-caddy-rules.conf';
 
-        $content = "# VAPT Secure - Auto Generated Caddy Rules\n";
+        $content = "# VAPTSecure Clean - Auto Generated Caddy Rules\n";
         $content .= "# Import this file in your Caddyfile site block.\n";
         $content .= "# Last Updated: " . date('Y-m-d H:i:s') . "\n\n";
 
@@ -109,7 +109,7 @@ class VAPTSECURE_Caddy_Driver implements VAPTSECURE_Driver_Interface
         }
 
         // Write empty content (just header)
-        $content = "# VAPT Secure - Auto Generated Caddy Rules\n";
+        $content = "# VAPTSecure Clean - Auto Generated Caddy Rules\n";
         $content .= "# Import this file in your Caddyfile site block.\n";
         $content .= "# Last Updated: " . date('Y-m-d H:i:s') . "\n";
         $content .= "# All rules have been cleaned.\n";

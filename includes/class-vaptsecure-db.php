@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Database Helper Class for VAPT Secure
+ * Database Helper Class for VAPTSecure Clean
  */
 
 if (! defined('ABSPATH')) {

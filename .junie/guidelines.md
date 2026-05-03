@@ -43,9 +43,9 @@ Your primary role is to:
 ## 🏗️ Project Context
 
 **Project**: VAPTSecure WordPress Plugin
-**Version**: 2.5.9
+**Version**: 3.2.0
 **Domain**: WordPress Security & Vulnerability Management
-**Architecture**: Plugin-based with REST API integration
+**Architecture**: Plugin-based with REST API integration (125 Feature Dataset)
 
 ### Key Directories
 
@@ -210,6 +210,7 @@ $rules = str_replace('{domain}', wp_parse_url($domain, PHP_URL_HOST), $rules);
 | **Plugin Deactivation** | `register_deactivation_hook()` | CRITICAL | Yes |
 | **Plugin Uninstall / Removal** | `register_uninstall_hook()` | CRITICAL | Yes |
 | **License Expiration** | `vapt_license_check` WP-Cron | HIGH | Partial |
+| **Trial/Demo Expiry** | Manual Renewal Required | HIGH | No (Manual) |
 | **Feature Enabled** | `vapt_feature_enable($id)` | HIGH | Yes |
 | **Feature Disabled** | `vapt_feature_disable($id)` | HIGH | Yes |
 | **`.htaccess` Rule Added** | `vapt_htaccess_write()` | MEDIUM | Yes |

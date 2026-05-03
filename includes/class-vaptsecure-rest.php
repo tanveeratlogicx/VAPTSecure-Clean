@@ -1,7 +1,7 @@
 <?php
 
 /**
- * REST API Handler for VAPT Secure
+ * REST API Handler for VAPTSecure Clean
  */
 
 if (! defined('ABSPATH')) {
@@ -11,7 +11,7 @@ if (! defined('ABSPATH')) {
 class VAPTSECURE_REST
 {
     private static $cached_pattern_library = null;
-    
+
     private static function bump_semver_patch($version)
     {
         $version = trim((string) $version);
@@ -214,7 +214,7 @@ class VAPTSECURE_REST
                 'permission_callback' => array($this, 'check_permission'),
             )
         );
-        
+
         // License status check endpoint
         register_rest_route(
             'vaptsecure/v1', '/license/status', array(
@@ -223,7 +223,7 @@ class VAPTSECURE_REST
                 'permission_callback' => array($this, 'check_permission'),
             )
         );
-        
+
         // Manual restore from cache endpoint
         register_rest_route(
             'vaptsecure/v1', '/license/restore', array(
@@ -232,7 +232,7 @@ class VAPTSECURE_REST
                 'permission_callback' => array($this, 'check_permission'),
             )
         );
-        
+
         // Force license check endpoint
         register_rest_route(
             'vaptsecure/v1', '/license/check', array(
@@ -241,7 +241,7 @@ class VAPTSECURE_REST
                 'permission_callback' => array($this, 'check_permission'),
             )
         );
-        
+
         register_rest_route(
             'vaptsecure/v1', '/build/generate', array(
             'methods'  => 'POST',
@@ -535,7 +535,7 @@ class VAPTSECURE_REST
             // [v1.4.2] Detected Environment Profile for dynamic enforcer mapping
             include_once VAPTSECURE_PATH . 'includes/class-vaptsecure-environment-detector.php';
             $detector = new VAPTSECURE_Environment_Detector();
-      
+
             // Force redetect if requested or one-time for cache clearing after logic update
             if ($request->get_param('redetect')) {
                 $environment_profile = $detector->redetect();
@@ -651,7 +651,7 @@ class VAPTSECURE_REST
                         $item['root_ai_agent_instructions']  = null;
                         $item['root_global_settings']        = isset($raw_data['global_ui_config']) ? $raw_data['global_ui_config'] : null;
                         $item['source_file']                 = $file;
-            
+
                         // [FIX v2.4.11] Extract remediation code from platform_implementations.htaccess
                         if (isset($item['platform_implementations'])) {
                             $pattern_lib = self::get_cached_pattern_library();
@@ -668,7 +668,7 @@ class VAPTSECURE_REST
                                               break;
                                         }
                                     }
-                  
+
                                     if (is_string($current_node)) {
                                         $plat_data['code'] = $current_node;
                                     } elseif (is_array($current_node) && isset($current_node['code'])) {
@@ -681,15 +681,15 @@ class VAPTSECURE_REST
                             }
                             unset($plat_data);
 
-                            $htaccessImpl = $item['platform_implementations']['.htaccess'] ?? 
-                             $item['platform_implementations']['htaccess'] ?? 
-                             $item['platform_implementations']['apache_htaccess'] ?? 
+                            $htaccessImpl = $item['platform_implementations']['.htaccess'] ??
+                             $item['platform_implementations']['htaccess'] ??
+                             $item['platform_implementations']['apache_htaccess'] ??
                              null;
                             if ($htaccessImpl && isset($htaccessImpl['code'])) {
                                 $item['remediation'] = $htaccessImpl['code'];
                             }
                         }
-            
+
                         $current_features[] = $item;
                     }
                     $current_schema = isset($raw_data['schema']) ? $raw_data['schema'] : array(
@@ -825,7 +825,7 @@ class VAPTSECURE_REST
             if (!empty($severity_param)) {
                 $severity_values = array_map('trim', explode(',', $severity_param));
                 $severity_values = array_map('strtolower', $severity_values);
-                
+
                 $features = array_filter(
                     $features,
                     function ($f) use ($severity_values) {
@@ -924,7 +924,7 @@ class VAPTSECURE_REST
     public function handle_active_file($request)
     {
         $method = $request->get_method();
-        
+
         if ($method === 'GET') {
             // Get current active file
             $active_file = defined('VAPTSECURE_ACTIVE_DATA_FILE') ? VAPTSECURE_ACTIVE_DATA_FILE : get_option('vaptsecure_active_feature_file', '');
@@ -938,24 +938,24 @@ class VAPTSECURE_REST
             if (!$filename) {
                 return new WP_REST_Response(['error' => 'Missing filename parameter'], 400);
             }
-            
+
             // Validate file exists
             $data_dir = VAPTSECURE_PATH . 'data';
             $file_path = $data_dir . '/' . $filename;
             if (!file_exists($file_path)) {
                 return new WP_REST_Response(['error' => 'File does not exist'], 404);
             }
-            
+
             // Update the active file option
             update_option('vaptsecure_active_feature_file', $filename);
-            
+
             error_log("VAPT REST: Active file set to '{$filename}'");
             return new WP_REST_Response([
                 'active_file' => $filename,
                 'success' => true
             ], 200);
         }
-        
+
         return new WP_REST_Response(['error' => 'Method not allowed'], 405);
     }
 
@@ -1055,7 +1055,7 @@ class VAPTSECURE_REST
 
         $force_inject_impl = false;
         $force_sync_val = ($is_enforced_param !== null) ? filter_var($is_enforced_param, FILTER_VALIDATE_BOOLEAN) : (($is_enabled_param !== null) ? filter_var($is_enabled_param, FILTER_VALIDATE_BOOLEAN) : null);
-        
+
         if ($force_sync_val !== null) {
             $risk_suffix = str_replace('-', '_', strtolower($key));
             $auto_key = "vapt_risk_{$risk_suffix}_enabled";
@@ -1205,7 +1205,7 @@ class VAPTSECURE_REST
 
             // Reverse sync: Ensure implementations reflect UI toggle enforce switch (Fix for deployment overrides)
             if (isset($force_sync_val) && $force_sync_val !== null) {
-                if (!is_array($implementation_data)) { 
+                if (!is_array($implementation_data)) {
                     $existing_meta = VAPTSECURE_DB::get_feature_meta($key);
                     $implementation_data = ($existing_meta && !empty($existing_meta['implementation_data'])) ? json_decode($existing_meta['implementation_data'], true) : [];
                     if (!is_array($implementation_data)) { $implementation_data = []; }
@@ -1413,19 +1413,19 @@ class VAPTSECURE_REST
 
     public function upload_json($request)
     {
-        error_log('VAPT Secure: Starting JSON upload...');
+        error_log('VAPTSecure Clean: Starting JSON upload...');
 
         $files = $request->get_file_params();
         if (empty($files['file'])) {
-            error_log('VAPT Secure: No file param found.');
+            error_log('VAPTSecure Clean: No file param found.');
             return new WP_REST_Response(array('error' => 'No file uploaded'), 400);
         }
 
         $file = $files['file'];
-        error_log('VAPT Secure: Received file ' . $file['name'] . ' size ' . $file['size']);
+        error_log('VAPTSecure Clean: Received file ' . $file['name'] . ' size ' . $file['size']);
 
         if ($file['error'] !== UPLOAD_ERR_OK) {
-            error_log('VAPT Secure: PHP Upload Error ' . $file['error']);
+            error_log('VAPTSecure Clean: PHP Upload Error ' . $file['error']);
             return new WP_REST_Response(array('error' => 'PHP Upload Error: ' . $file['error']), 500);
         }
 
@@ -1433,13 +1433,13 @@ class VAPTSECURE_REST
         $content = file_get_contents($file['tmp_name']);
 
         if ($content === false) {
-            error_log('VAPT Secure: Could not read temp file.');
+            error_log('VAPTSecure Clean: Could not read temp file.');
             return new WP_REST_Response(array('error' => 'Failed to read uploaded file.'), 500);
         }
 
         $data = json_decode($content, true);
         if (is_null($data)) {
-            error_log('VAPT Secure: Invalid JSON content.');
+            error_log('VAPTSecure Clean: Invalid JSON content.');
             return new WP_REST_Response(array('error' => 'Invalid JSON'), 400);
         }
 
@@ -1476,7 +1476,7 @@ class VAPTSECURE_REST
             return new WP_REST_Response(array('error' => 'WP_Filesystem failed to write file to: ' . $json_path), 500);
         }
 
-        error_log('VAPT Secure: Upload successful to ' . $json_path);
+        error_log('VAPTSecure Clean: Upload successful to ' . $json_path);
 
         // ... rest of the logic remains same ...
 
@@ -1594,8 +1594,8 @@ class VAPTSECURE_REST
       SELECT m.feature_key, m.implementation_data, s.status
       FROM $table m
       LEFT JOIN {$wpdb->prefix}vaptsecure_feature_status s ON m.feature_key = s.feature_key
-      WHERE m.implementation_data IS NOT NULL 
-        AND m.implementation_data != '' 
+      WHERE m.implementation_data IS NOT NULL
+        AND m.implementation_data != ''
         AND m.implementation_data != '{}'
         AND m.implementation_data != 'null'
     ", ARRAY_A
@@ -1838,11 +1838,11 @@ class VAPTSECURE_REST
         }
 
         $result_id = VAPTSECURE_DB::update_domain($domain, $is_wildcard ? 1 : 0, $is_enabled ? 1 : 0, $id, $license_id, $license_type, $manual_expiry_date, $auto_renew, $renewals_count, $history, $license_scope, $installation_limit, $user_notes);
-        
+
         if ($result_id === false) {
             return new WP_REST_Response(array('error' => 'Database update failed'), 500);
         }
-        
+
         // Check if license was previously expired and is now valid (restoration scenario)
         $was_expired = get_transient('vaptsecure_license_cache_' . $domain . '_expired_handled');
         if ($was_expired && $new_exp_ts > $today_ts && $current_exp_ts < $today_ts) {
@@ -1851,9 +1851,9 @@ class VAPTSECURE_REST
                 VAPTSECURE_License_Manager::restore_from_cache($domain);
             }
         }
-        
+
         $fresh = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}vaptsecure_domains WHERE id = %d", $result_id), ARRAY_A);
-        
+
         return new WP_REST_Response(array('success' => true, 'domain' => $fresh), 200);
         }
 
@@ -2169,24 +2169,24 @@ class VAPTSECURE_REST
      * ========================================================================
      * SCHEMA VALIDATION METHODS
      * ========================================================================
-     * 
-     * The following validation methods have been extracted to 
+     *
+     * The following validation methods have been extracted to
      * class-vaptsecure-schema-validator.php for shared usage:
-     * 
+     *
      * - analyze_enforcement_strategy() -> VAPTSECURE_Schema_Validator::analyze_enforcement_strategy()
      * - sanitize_and_fix_schema() -> VAPTSECURE_Schema_Validator::sanitize_and_fix_schema()
      * - validate_schema() -> VAPTSECURE_Schema_Validator::validate_schema()
      * - validate_implementation_data() -> VAPTSECURE_Schema_Validator::validate_implementation_data()
      * - translate_url_placeholders() -> VAPTSECURE_Schema_Validator::translate_url_placeholders()
-     * 
+     *
      * @deprecated Use VAPTSECURE_Schema_Validator methods directly
      */
 
     /**
      * 🛡️ INTELLIGENT ENFORCEMENT STRATEGY (v3.3.9)
-     * Analyzes the schema and automatically corrects driver selection 
+     * Analyzes the schema and automatically corrects driver selection
      * if it detects physical file targets being handled by PHP hooks.
-     * 
+     *
      * @deprecated Use VAPTSECURE_Schema_Validator::analyze_enforcement_strategy()
      */
     private static function analyze_enforcement_strategy($schema, $feature_key)
@@ -2196,7 +2196,7 @@ class VAPTSECURE_REST
 
     /**
      * Auto-fix common schema issues before validation.
-     * 
+     *
      * @deprecated Use VAPTSECURE_Schema_Validator::sanitize_and_fix_schema()
      */
     private static function sanitize_and_fix_schema($schema)
@@ -2206,7 +2206,7 @@ class VAPTSECURE_REST
 
     /**
      * Validates the feature schema structure.
-     * 
+     *
      * @deprecated Use VAPTSECURE_Schema_Validator::validate_schema()
      */
     private static function validate_schema($schema)
@@ -2217,7 +2217,7 @@ class VAPTSECURE_REST
     /**
      * 🛡️ IMPLEMENTATION VALIDATOR (v3.6.19)
      * Validates user-provided implementation settings against the feature's JSON schema.
-     * 
+     *
      * @deprecated Use VAPTSECURE_Schema_Validator::validate_implementation_data()
      */
     private static function validate_implementation_data($data, $schema)
@@ -2227,7 +2227,7 @@ class VAPTSECURE_REST
 
     /**
      * Translate URL placeholders in schema to fully qualified URLs (v3.12.17)
-     * 
+     *
      * @deprecated Use VAPTSECURE_Schema_Validator::translate_url_placeholders()
      */
     private static function translate_url_placeholders($schema)

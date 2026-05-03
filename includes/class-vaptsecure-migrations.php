@@ -2,15 +2,15 @@
 /**
  * VAPTSECURE Migrations
  *
- * Versioned database migration system for VAPT Secure plugin.
+ * Versioned database migration system for VAPTSecure Clean plugin.
  * Consolidates scattered ALTER TABLE statements into ordered, idempotent migrations.
  *
  * @package VAPT-Secure
  * @since 2.6.2
  */
 
-if (!defined('ABSPATH')) {
-    exit;
+if (!defined("ABSPATH")) {
+    exit();
 }
 
 /**
@@ -21,7 +21,7 @@ class VAPTSECURE_Migrations
     /**
      * @var string Migration tracking table name
      */
-    private static $migration_table = 'vaptsecure_migrations';
+    private static $migration_table = "vaptsecure_migrations";
 
     /**
      * Initialize the migration system.
@@ -40,7 +40,7 @@ class VAPTSECURE_Migrations
             PRIMARY KEY (migration_id)
         ) {$charset_collate};";
 
-        require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+        require_once ABSPATH . "wp-admin/includes/upgrade.php";
         dbDelta($sql);
     }
 
@@ -73,33 +73,33 @@ class VAPTSECURE_Migrations
     private static function get_defined_migrations()
     {
         return [
-            '001_create_domains_table',
-            '002_create_domain_features_table',
-            '003_create_feature_status_table',
-            '004_create_feature_meta_table',
-            '005_create_feature_history_table',
-            '006_create_domain_builds_table',
-            '007_create_security_events_table',
-            '008_add_is_enabled_to_feature_meta',
-            '009_add_is_enforced_to_feature_meta',
-            '010_add_active_enforcer_to_feature_meta',
-            '011_add_wireframe_url_to_feature_meta',
-            '012_add_generated_schema_to_feature_meta',
-            '013_add_implementation_data_to_feature_meta',
-            '014_add_dev_instruct_to_feature_meta',
-            '015_add_is_adaptive_deployment_to_feature_meta',
-            '016_add_override_schema_to_feature_meta',
-            '017_add_override_impl_data_to_feature_meta',
-            '018_add_manual_expiry_to_domains',
-            '019_add_assigned_to_to_feature_status',
-            '020_normalize_status_enum_to_title_case',
-            '021_add_license_scope_to_domains',
-            '022_add_installation_limit_to_domains',
-            '023_add_id_pk_to_domains',
-            '024_add_include_verification_engine_to_meta',
-            '025_add_include_verification_guidance_to_meta',
-            '026_add_include_manual_protocol_to_meta',
-            '027_add_include_operational_notes_to_meta',
+            "001_create_domains_table",
+            "002_create_domain_features_table",
+            "003_create_feature_status_table",
+            "004_create_feature_meta_table",
+            "005_create_feature_history_table",
+            "006_create_domain_builds_table",
+            "007_create_security_events_table",
+            "008_add_is_enabled_to_feature_meta",
+            "009_add_is_enforced_to_feature_meta",
+            "010_add_active_enforcer_to_feature_meta",
+            "011_add_wireframe_url_to_feature_meta",
+            "012_add_generated_schema_to_feature_meta",
+            "013_add_implementation_data_to_feature_meta",
+            "014_add_dev_instruct_to_feature_meta",
+            "015_add_is_adaptive_deployment_to_feature_meta",
+            "016_add_override_schema_to_feature_meta",
+            "017_add_override_impl_data_to_feature_meta",
+            "018_add_manual_expiry_to_domains",
+            "019_add_assigned_to_to_feature_status",
+            "020_normalize_status_enum_to_title_case",
+            "021_add_license_scope_to_domains",
+            "022_add_installation_limit_to_domains",
+            "023_add_id_pk_to_domains",
+            "024_add_include_verification_engine_to_meta",
+            "025_add_include_verification_guidance_to_meta",
+            "026_add_include_manual_protocol_to_meta",
+            "027_add_include_operational_notes_to_meta",
         ];
     }
 
@@ -138,27 +138,30 @@ class VAPTSECURE_Migrations
     private static function run_migration($migration_id)
     {
         global $wpdb;
-        
+
         // Call the migration method
-        $method_name = 'migration_' . $migration_id;
+        $method_name = "migration_" . $migration_id;
         if (method_exists(__CLASS__, $method_name)) {
             try {
                 call_user_func([__CLASS__, $method_name]);
-                
+
                 // Record migration as applied
                 $table_name = $wpdb->prefix . self::$migration_table;
                 $wpdb->insert($table_name, [
-                    'migration_id' => $migration_id,
-                    'applied_at' => current_time('mysql'),
+                    "migration_id" => $migration_id,
+                    "applied_at" => current_time("mysql"),
                 ]);
-                
+
                 return true;
             } catch (Exception $e) {
-                error_log("VAPTSECURE Migration Error ({$migration_id}): " . $e->getMessage());
+                error_log(
+                    "VAPTSECURE Migration Error ({$migration_id}): " .
+                        $e->getMessage(),
+                );
                 return false;
             }
         }
-        
+
         error_log("VAPTSECURE Migration Not Found: {$migration_id}");
         return false;
     }
@@ -170,7 +173,7 @@ class VAPTSECURE_Migrations
     {
         global $wpdb;
         $charset_collate = $wpdb->get_charset_collate();
-        $table_name = $wpdb->prefix . 'vaptsecure_domains';
+        $table_name = $wpdb->prefix . "vaptsecure_domains";
 
         $sql = "CREATE TABLE IF NOT EXISTS {$table_name} (
             id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -190,7 +193,7 @@ class VAPTSECURE_Migrations
             UNIQUE KEY domain (domain)
         ) {$charset_collate};";
 
-        require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+        require_once ABSPATH . "wp-admin/includes/upgrade.php";
         dbDelta($sql);
     }
 
@@ -201,7 +204,7 @@ class VAPTSECURE_Migrations
     {
         global $wpdb;
         $charset_collate = $wpdb->get_charset_collate();
-        $table_name = $wpdb->prefix . 'vaptsecure_domain_features';
+        $table_name = $wpdb->prefix . "vaptsecure_domain_features";
 
         $sql = "CREATE TABLE IF NOT EXISTS {$table_name} (
             id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -212,7 +215,7 @@ class VAPTSECURE_Migrations
             KEY domain_id (domain_id)
         ) {$charset_collate};";
 
-        require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+        require_once ABSPATH . "wp-admin/includes/upgrade.php";
         dbDelta($sql);
     }
 
@@ -223,7 +226,7 @@ class VAPTSECURE_Migrations
     {
         global $wpdb;
         $charset_collate = $wpdb->get_charset_collate();
-        $table_name = $wpdb->prefix . 'vaptsecure_feature_status';
+        $table_name = $wpdb->prefix . "vaptsecure_feature_status";
 
         $sql = "CREATE TABLE IF NOT EXISTS {$table_name} (
             feature_key VARCHAR(100) NOT NULL,
@@ -233,7 +236,7 @@ class VAPTSECURE_Migrations
             PRIMARY KEY  (feature_key)
         ) {$charset_collate};";
 
-        require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+        require_once ABSPATH . "wp-admin/includes/upgrade.php";
         dbDelta($sql);
     }
 
@@ -244,7 +247,7 @@ class VAPTSECURE_Migrations
     {
         global $wpdb;
         $charset_collate = $wpdb->get_charset_collate();
-        $table_name = $wpdb->prefix . 'vaptsecure_feature_meta';
+        $table_name = $wpdb->prefix . "vaptsecure_feature_meta";
 
         $sql = "CREATE TABLE IF NOT EXISTS {$table_name} (
             feature_key VARCHAR(100) NOT NULL,
@@ -270,7 +273,7 @@ class VAPTSECURE_Migrations
             PRIMARY KEY  (feature_key)
         ) {$charset_collate};";
 
-        require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+        require_once ABSPATH . "wp-admin/includes/upgrade.php";
         dbDelta($sql);
     }
 
@@ -281,7 +284,7 @@ class VAPTSECURE_Migrations
     {
         global $wpdb;
         $charset_collate = $wpdb->get_charset_collate();
-        $table_name = $wpdb->prefix . 'vaptsecure_feature_history';
+        $table_name = $wpdb->prefix . "vaptsecure_feature_history";
 
         $sql = "CREATE TABLE IF NOT EXISTS {$table_name} (
             id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -295,7 +298,7 @@ class VAPTSECURE_Migrations
             KEY feature_key (feature_key)
         ) {$charset_collate};";
 
-        require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+        require_once ABSPATH . "wp-admin/includes/upgrade.php";
         dbDelta($sql);
     }
 
@@ -306,7 +309,7 @@ class VAPTSECURE_Migrations
     {
         global $wpdb;
         $charset_collate = $wpdb->get_charset_collate();
-        $table_name = $wpdb->prefix . 'vaptsecure_domain_builds';
+        $table_name = $wpdb->prefix . "vaptsecure_domain_builds";
 
         $sql = "CREATE TABLE IF NOT EXISTS {$table_name} (
             id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -318,7 +321,7 @@ class VAPTSECURE_Migrations
             KEY domain (domain)
         ) {$charset_collate};";
 
-        require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+        require_once ABSPATH . "wp-admin/includes/upgrade.php";
         dbDelta($sql);
     }
 
@@ -329,7 +332,7 @@ class VAPTSECURE_Migrations
     {
         global $wpdb;
         $charset_collate = $wpdb->get_charset_collate();
-        $table_name = $wpdb->prefix . 'vaptsecure_security_events';
+        $table_name = $wpdb->prefix . "vaptsecure_security_events";
 
         $sql = "CREATE TABLE IF NOT EXISTS {$table_name} (
             id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -344,7 +347,7 @@ class VAPTSECURE_Migrations
             KEY created_at (created_at)
         ) {$charset_collate};";
 
-        require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+        require_once ABSPATH . "wp-admin/includes/upgrade.php";
         dbDelta($sql);
     }
 
@@ -354,15 +357,21 @@ class VAPTSECURE_Migrations
     private static function migration_008_add_is_enabled_to_feature_meta()
     {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'vaptsecure_feature_meta';
-        
-        $column = $wpdb->get_results($wpdb->prepare(
-            "SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s AND COLUMN_NAME = %s",
-            DB_NAME, $table_name, 'is_enabled'
-        ));
-        
+        $table_name = $wpdb->prefix . "vaptsecure_feature_meta";
+
+        $column = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s AND COLUMN_NAME = %s",
+                DB_NAME,
+                $table_name,
+                "is_enabled",
+            ),
+        );
+
         if (empty($column)) {
-            $wpdb->query("ALTER TABLE {$table_name} ADD COLUMN is_enabled TINYINT(1) DEFAULT 0");
+            $wpdb->query(
+                "ALTER TABLE {$table_name} ADD COLUMN is_enabled TINYINT(1) DEFAULT 0",
+            );
         }
     }
 
@@ -372,15 +381,21 @@ class VAPTSECURE_Migrations
     private static function migration_009_add_is_enforced_to_feature_meta()
     {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'vaptsecure_feature_meta';
-        
-        $column = $wpdb->get_results($wpdb->prepare(
-            "SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s AND COLUMN_NAME = %s",
-            DB_NAME, $table_name, 'is_enforced'
-        ));
-        
+        $table_name = $wpdb->prefix . "vaptsecure_feature_meta";
+
+        $column = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s AND COLUMN_NAME = %s",
+                DB_NAME,
+                $table_name,
+                "is_enforced",
+            ),
+        );
+
         if (empty($column)) {
-            $wpdb->query("ALTER TABLE {$table_name} ADD COLUMN is_enforced TINYINT(1) DEFAULT 0");
+            $wpdb->query(
+                "ALTER TABLE {$table_name} ADD COLUMN is_enforced TINYINT(1) DEFAULT 0",
+            );
         }
     }
 
@@ -390,15 +405,21 @@ class VAPTSECURE_Migrations
     private static function migration_010_add_active_enforcer_to_feature_meta()
     {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'vaptsecure_feature_meta';
-        
-        $column = $wpdb->get_results($wpdb->prepare(
-            "SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s AND COLUMN_NAME = %s",
-            DB_NAME, $table_name, 'active_enforcer'
-        ));
-        
+        $table_name = $wpdb->prefix . "vaptsecure_feature_meta";
+
+        $column = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s AND COLUMN_NAME = %s",
+                DB_NAME,
+                $table_name,
+                "active_enforcer",
+            ),
+        );
+
         if (empty($column)) {
-            $wpdb->query("ALTER TABLE {$table_name} ADD COLUMN active_enforcer VARCHAR(100) DEFAULT NULL");
+            $wpdb->query(
+                "ALTER TABLE {$table_name} ADD COLUMN active_enforcer VARCHAR(100) DEFAULT NULL",
+            );
         }
     }
 
@@ -408,14 +429,19 @@ class VAPTSECURE_Migrations
     private static function migration_011_add_wireframe_url_to_feature_meta()
     {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'vaptsecure_feature_meta';
-        
-        $column = $wpdb->get_results($wpdb->prepare(
-            "SHOW COLUMNS FROM {$table_name} LIKE %s", 'wireframe_url'
-        ));
-        
+        $table_name = $wpdb->prefix . "vaptsecure_feature_meta";
+
+        $column = $wpdb->get_results(
+            $wpdb->prepare(
+                "SHOW COLUMNS FROM {$table_name} LIKE %s",
+                "wireframe_url",
+            ),
+        );
+
         if (empty($column)) {
-            $wpdb->query("ALTER TABLE {$table_name} ADD COLUMN wireframe_url TEXT DEFAULT NULL");
+            $wpdb->query(
+                "ALTER TABLE {$table_name} ADD COLUMN wireframe_url TEXT DEFAULT NULL",
+            );
         }
     }
 
@@ -425,14 +451,19 @@ class VAPTSECURE_Migrations
     private static function migration_012_add_generated_schema_to_feature_meta()
     {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'vaptsecure_feature_meta';
-        
-        $column = $wpdb->get_results($wpdb->prepare(
-            "SHOW COLUMNS FROM {$table_name} LIKE %s", 'generated_schema'
-        ));
-        
+        $table_name = $wpdb->prefix . "vaptsecure_feature_meta";
+
+        $column = $wpdb->get_results(
+            $wpdb->prepare(
+                "SHOW COLUMNS FROM {$table_name} LIKE %s",
+                "generated_schema",
+            ),
+        );
+
         if (empty($column)) {
-            $wpdb->query("ALTER TABLE {$table_name} ADD COLUMN generated_schema LONGTEXT DEFAULT NULL");
+            $wpdb->query(
+                "ALTER TABLE {$table_name} ADD COLUMN generated_schema LONGTEXT DEFAULT NULL",
+            );
         }
     }
 
@@ -442,14 +473,19 @@ class VAPTSECURE_Migrations
     private static function migration_013_add_implementation_data_to_feature_meta()
     {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'vaptsecure_feature_meta';
-        
-        $column = $wpdb->get_results($wpdb->prepare(
-            "SHOW COLUMNS FROM {$table_name} LIKE %s", 'implementation_data'
-        ));
-        
+        $table_name = $wpdb->prefix . "vaptsecure_feature_meta";
+
+        $column = $wpdb->get_results(
+            $wpdb->prepare(
+                "SHOW COLUMNS FROM {$table_name} LIKE %s",
+                "implementation_data",
+            ),
+        );
+
         if (empty($column)) {
-            $wpdb->query("ALTER TABLE {$table_name} ADD COLUMN implementation_data LONGTEXT DEFAULT NULL");
+            $wpdb->query(
+                "ALTER TABLE {$table_name} ADD COLUMN implementation_data LONGTEXT DEFAULT NULL",
+            );
         }
     }
 
@@ -459,14 +495,19 @@ class VAPTSECURE_Migrations
     private static function migration_014_add_dev_instruct_to_feature_meta()
     {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'vaptsecure_feature_meta';
-        
-        $column = $wpdb->get_results($wpdb->prepare(
-            "SHOW COLUMNS FROM {$table_name} LIKE %s", 'dev_instruct'
-        ));
-        
+        $table_name = $wpdb->prefix . "vaptsecure_feature_meta";
+
+        $column = $wpdb->get_results(
+            $wpdb->prepare(
+                "SHOW COLUMNS FROM {$table_name} LIKE %s",
+                "dev_instruct",
+            ),
+        );
+
         if (empty($column)) {
-            $wpdb->query("ALTER TABLE {$table_name} ADD COLUMN dev_instruct LONGTEXT DEFAULT NULL");
+            $wpdb->query(
+                "ALTER TABLE {$table_name} ADD COLUMN dev_instruct LONGTEXT DEFAULT NULL",
+            );
         }
     }
 
@@ -476,14 +517,19 @@ class VAPTSECURE_Migrations
     private static function migration_015_add_is_adaptive_deployment_to_feature_meta()
     {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'vaptsecure_feature_meta';
-        
-        $column = $wpdb->get_results($wpdb->prepare(
-            "SHOW COLUMNS FROM {$table_name} LIKE %s", 'is_adaptive_deployment'
-        ));
-        
+        $table_name = $wpdb->prefix . "vaptsecure_feature_meta";
+
+        $column = $wpdb->get_results(
+            $wpdb->prepare(
+                "SHOW COLUMNS FROM {$table_name} LIKE %s",
+                "is_adaptive_deployment",
+            ),
+        );
+
         if (empty($column)) {
-            $wpdb->query("ALTER TABLE {$table_name} ADD COLUMN is_adaptive_deployment TINYINT(1) DEFAULT 0");
+            $wpdb->query(
+                "ALTER TABLE {$table_name} ADD COLUMN is_adaptive_deployment TINYINT(1) DEFAULT 0",
+            );
         }
     }
 
@@ -493,14 +539,19 @@ class VAPTSECURE_Migrations
     private static function migration_016_add_override_schema_to_feature_meta()
     {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'vaptsecure_feature_meta';
-        
-        $column = $wpdb->get_results($wpdb->prepare(
-            "SHOW COLUMNS FROM {$table_name} LIKE %s", 'override_schema'
-        ));
-        
+        $table_name = $wpdb->prefix . "vaptsecure_feature_meta";
+
+        $column = $wpdb->get_results(
+            $wpdb->prepare(
+                "SHOW COLUMNS FROM {$table_name} LIKE %s",
+                "override_schema",
+            ),
+        );
+
         if (empty($column)) {
-            $wpdb->query("ALTER TABLE {$table_name} ADD COLUMN override_schema LONGTEXT DEFAULT NULL");
+            $wpdb->query(
+                "ALTER TABLE {$table_name} ADD COLUMN override_schema LONGTEXT DEFAULT NULL",
+            );
         }
     }
 
@@ -510,14 +561,19 @@ class VAPTSECURE_Migrations
     private static function migration_017_add_override_impl_data_to_feature_meta()
     {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'vaptsecure_feature_meta';
-        
-        $column = $wpdb->get_results($wpdb->prepare(
-            "SHOW COLUMNS FROM {$table_name} LIKE %s", 'override_implementation_data'
-        ));
-        
+        $table_name = $wpdb->prefix . "vaptsecure_feature_meta";
+
+        $column = $wpdb->get_results(
+            $wpdb->prepare(
+                "SHOW COLUMNS FROM {$table_name} LIKE %s",
+                "override_implementation_data",
+            ),
+        );
+
         if (empty($column)) {
-            $wpdb->query("ALTER TABLE {$table_name} ADD COLUMN override_implementation_data LONGTEXT DEFAULT NULL");
+            $wpdb->query(
+                "ALTER TABLE {$table_name} ADD COLUMN override_implementation_data LONGTEXT DEFAULT NULL",
+            );
         }
     }
 
@@ -527,14 +583,19 @@ class VAPTSECURE_Migrations
     private static function migration_018_add_manual_expiry_to_domains()
     {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'vaptsecure_domains';
-        
-        $column = $wpdb->get_results($wpdb->prepare(
-            "SHOW COLUMNS FROM {$table_name} LIKE %s", 'manual_expiry_date'
-        ));
-        
+        $table_name = $wpdb->prefix . "vaptsecure_domains";
+
+        $column = $wpdb->get_results(
+            $wpdb->prepare(
+                "SHOW COLUMNS FROM {$table_name} LIKE %s",
+                "manual_expiry_date",
+            ),
+        );
+
         if (empty($column)) {
-            $wpdb->query("ALTER TABLE {$table_name} ADD COLUMN manual_expiry_date DATETIME DEFAULT NULL");
+            $wpdb->query(
+                "ALTER TABLE {$table_name} ADD COLUMN manual_expiry_date DATETIME DEFAULT NULL",
+            );
         }
     }
 
@@ -544,14 +605,19 @@ class VAPTSECURE_Migrations
     private static function migration_019_add_assigned_to_to_feature_status()
     {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'vaptsecure_feature_status';
-        
-        $column = $wpdb->get_results($wpdb->prepare(
-            "SHOW COLUMNS FROM {$table_name} LIKE %s", 'assigned_to'
-        ));
-        
+        $table_name = $wpdb->prefix . "vaptsecure_feature_status";
+
+        $column = $wpdb->get_results(
+            $wpdb->prepare(
+                "SHOW COLUMNS FROM {$table_name} LIKE %s",
+                "assigned_to",
+            ),
+        );
+
         if (empty($column)) {
-            $wpdb->query("ALTER TABLE {$table_name} ADD COLUMN assigned_to BIGINT(20) UNSIGNED DEFAULT NULL");
+            $wpdb->query(
+                "ALTER TABLE {$table_name} ADD COLUMN assigned_to BIGINT(20) UNSIGNED DEFAULT NULL",
+            );
         }
     }
 
@@ -561,15 +627,23 @@ class VAPTSECURE_Migrations
     private static function migration_020_normalize_status_enum_to_title_case()
     {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'vaptsecure_feature_status';
-        
+        $table_name = $wpdb->prefix . "vaptsecure_feature_status";
+
         // Modify ENUM definition
-        $wpdb->query("ALTER TABLE {$table_name} MODIFY COLUMN status ENUM('Draft', 'Develop', 'Release') DEFAULT 'Draft'");
-        
+        $wpdb->query(
+            "ALTER TABLE {$table_name} MODIFY COLUMN status ENUM('Draft', 'Develop', 'Release') DEFAULT 'Draft'",
+        );
+
         // Update existing lowercase statuses
-        $wpdb->query("UPDATE {$table_name} SET status = 'Draft' WHERE status IN ('draft', 'available')");
-        $wpdb->query("UPDATE {$table_name} SET status = 'Develop' WHERE status IN ('develop', 'in_progress', 'test', 'Test')");
-        $wpdb->query("UPDATE {$table_name} SET status = 'Release' WHERE status IN ('release', 'implemented')");
+        $wpdb->query(
+            "UPDATE {$table_name} SET status = 'Draft' WHERE status IN ('draft', 'available')",
+        );
+        $wpdb->query(
+            "UPDATE {$table_name} SET status = 'Develop' WHERE status IN ('develop', 'in_progress', 'test', 'Test')",
+        );
+        $wpdb->query(
+            "UPDATE {$table_name} SET status = 'Release' WHERE status IN ('release', 'implemented')",
+        );
     }
 
     /**
@@ -578,14 +652,19 @@ class VAPTSECURE_Migrations
     private static function migration_021_add_license_scope_to_domains()
     {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'vaptsecure_domains';
-        
-        $column = $wpdb->get_results($wpdb->prepare(
-            "SHOW COLUMNS FROM {$table_name} LIKE %s", 'license_scope'
-        ));
-        
+        $table_name = $wpdb->prefix . "vaptsecure_domains";
+
+        $column = $wpdb->get_results(
+            $wpdb->prepare(
+                "SHOW COLUMNS FROM {$table_name} LIKE %s",
+                "license_scope",
+            ),
+        );
+
         if (empty($column)) {
-            $wpdb->query("ALTER TABLE {$table_name} ADD COLUMN license_scope VARCHAR(50) DEFAULT 'single'");
+            $wpdb->query(
+                "ALTER TABLE {$table_name} ADD COLUMN license_scope VARCHAR(50) DEFAULT 'single'",
+            );
         }
     }
 
@@ -595,14 +674,19 @@ class VAPTSECURE_Migrations
     private static function migration_022_add_installation_limit_to_domains()
     {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'vaptsecure_domains';
-        
-        $column = $wpdb->get_results($wpdb->prepare(
-            "SHOW COLUMNS FROM {$table_name} LIKE %s", 'installation_limit'
-        ));
-        
+        $table_name = $wpdb->prefix . "vaptsecure_domains";
+
+        $column = $wpdb->get_results(
+            $wpdb->prepare(
+                "SHOW COLUMNS FROM {$table_name} LIKE %s",
+                "installation_limit",
+            ),
+        );
+
         if (empty($column)) {
-            $wpdb->query("ALTER TABLE {$table_name} ADD COLUMN installation_limit INT DEFAULT 1");
+            $wpdb->query(
+                "ALTER TABLE {$table_name} ADD COLUMN installation_limit INT DEFAULT 1",
+            );
         }
     }
 
@@ -612,24 +696,31 @@ class VAPTSECURE_Migrations
     private static function migration_023_add_id_pk_to_domains()
     {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'vaptsecure_domains';
-        
-        $column = $wpdb->get_results($wpdb->prepare(
-            "SHOW COLUMNS FROM {$table_name} LIKE %s", 'id'
-        ));
-        
+        $table_name = $wpdb->prefix . "vaptsecure_domains";
+
+        $column = $wpdb->get_results(
+            $wpdb->prepare("SHOW COLUMNS FROM {$table_name} LIKE %s", "id"),
+        );
+
         if (empty($column)) {
             // Add id column and set as primary key
             $wpdb->query("ALTER TABLE {$table_name} DROP PRIMARY KEY");
-            $wpdb->query("ALTER TABLE {$table_name} ADD COLUMN id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT FIRST, ADD PRIMARY KEY (id)");
+            $wpdb->query(
+                "ALTER TABLE {$table_name} ADD COLUMN id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT FIRST, ADD PRIMARY KEY (id)",
+            );
         } else {
             // Ensure id is primary key
-            $pk_check = $wpdb->get_row($wpdb->prepare(
-                "SHOW KEYS FROM {$table_name} WHERE Key_name = %s", 'PRIMARY'
-            ));
-            if (!$pk_check || $pk_check->Column_name !== 'id') {
+            $pk_check = $wpdb->get_row(
+                $wpdb->prepare(
+                    "SHOW KEYS FROM {$table_name} WHERE Key_name = %s",
+                    "PRIMARY",
+                ),
+            );
+            if (!$pk_check || $pk_check->Column_name !== "id") {
                 $wpdb->query("ALTER TABLE {$table_name} DROP PRIMARY KEY");
-                $wpdb->query("ALTER TABLE {$table_name} MODIFY COLUMN id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)");
+                $wpdb->query(
+                    "ALTER TABLE {$table_name} MODIFY COLUMN id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)",
+                );
             }
         }
     }
@@ -640,14 +731,19 @@ class VAPTSECURE_Migrations
     private static function migration_024_add_include_verification_engine_to_meta()
     {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'vaptsecure_feature_meta';
-        
-        $column = $wpdb->get_results($wpdb->prepare(
-            "SHOW COLUMNS FROM {$table_name} LIKE %s", 'include_verification_engine'
-        ));
-        
+        $table_name = $wpdb->prefix . "vaptsecure_feature_meta";
+
+        $column = $wpdb->get_results(
+            $wpdb->prepare(
+                "SHOW COLUMNS FROM {$table_name} LIKE %s",
+                "include_verification_engine",
+            ),
+        );
+
         if (empty($column)) {
-            $wpdb->query("ALTER TABLE {$table_name} ADD COLUMN include_verification_engine TINYINT(1) DEFAULT 0");
+            $wpdb->query(
+                "ALTER TABLE {$table_name} ADD COLUMN include_verification_engine TINYINT(1) DEFAULT 0",
+            );
         }
     }
 
@@ -657,14 +753,19 @@ class VAPTSECURE_Migrations
     private static function migration_025_add_include_verification_guidance_to_meta()
     {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'vaptsecure_feature_meta';
-        
-        $column = $wpdb->get_results($wpdb->prepare(
-            "SHOW COLUMNS FROM {$table_name} LIKE %s", 'include_verification_guidance'
-        ));
-        
+        $table_name = $wpdb->prefix . "vaptsecure_feature_meta";
+
+        $column = $wpdb->get_results(
+            $wpdb->prepare(
+                "SHOW COLUMNS FROM {$table_name} LIKE %s",
+                "include_verification_guidance",
+            ),
+        );
+
         if (empty($column)) {
-            $wpdb->query("ALTER TABLE {$table_name} ADD COLUMN include_verification_guidance TINYINT(1) DEFAULT 1");
+            $wpdb->query(
+                "ALTER TABLE {$table_name} ADD COLUMN include_verification_guidance TINYINT(1) DEFAULT 1",
+            );
         }
     }
 
@@ -674,14 +775,19 @@ class VAPTSECURE_Migrations
     private static function migration_026_add_include_manual_protocol_to_meta()
     {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'vaptsecure_feature_meta';
-        
-        $column = $wpdb->get_results($wpdb->prepare(
-            "SHOW COLUMNS FROM {$table_name} LIKE %s", 'include_manual_protocol'
-        ));
-        
+        $table_name = $wpdb->prefix . "vaptsecure_feature_meta";
+
+        $column = $wpdb->get_results(
+            $wpdb->prepare(
+                "SHOW COLUMNS FROM {$table_name} LIKE %s",
+                "include_manual_protocol",
+            ),
+        );
+
         if (empty($column)) {
-            $wpdb->query("ALTER TABLE {$table_name} ADD COLUMN include_manual_protocol TINYINT(1) DEFAULT 1");
+            $wpdb->query(
+                "ALTER TABLE {$table_name} ADD COLUMN include_manual_protocol TINYINT(1) DEFAULT 1",
+            );
         }
     }
 
@@ -691,14 +797,19 @@ class VAPTSECURE_Migrations
     private static function migration_027_add_include_operational_notes_to_meta()
     {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'vaptsecure_feature_meta';
-        
-        $column = $wpdb->get_results($wpdb->prepare(
-            "SHOW COLUMNS FROM {$table_name} LIKE %s", 'include_operational_notes'
-        ));
-        
+        $table_name = $wpdb->prefix . "vaptsecure_feature_meta";
+
+        $column = $wpdb->get_results(
+            $wpdb->prepare(
+                "SHOW COLUMNS FROM {$table_name} LIKE %s",
+                "include_operational_notes",
+            ),
+        );
+
         if (empty($column)) {
-            $wpdb->query("ALTER TABLE {$table_name} ADD COLUMN include_operational_notes TINYINT(1) DEFAULT 1");
+            $wpdb->query(
+                "ALTER TABLE {$table_name} ADD COLUMN include_operational_notes TINYINT(1) DEFAULT 1",
+            );
         }
     }
 }

@@ -648,7 +648,7 @@ class VAPTSECURE_Enforcer
         // Clean vapt-functions.php
         $vapt_func = VAPTSECURE_PATH . 'vapt-functions.php';
         if (file_exists($vapt_func) && is_writable($vapt_func)) {
-            $content = "<?php\n\n/**\n * VAPT Secure Functions\n * License Expired - Functions Disabled\n */\n\nif (!defined('ABSPATH')) { exit; }\n\n";
+            $content = "<?php\n\n/**\n * VAPTSecure Clean Functions\n * License Expired - Functions Disabled\n */\n\nif (!defined('ABSPATH')) { exit; }\n\n";
             $results['php_functions'] = (bool) file_put_contents($vapt_func, $content);
         } else {
             $results['php_functions'] = !file_exists($vapt_func);

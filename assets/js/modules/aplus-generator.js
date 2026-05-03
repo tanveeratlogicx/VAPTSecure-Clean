@@ -1,4 +1,4 @@
-// VAPT Secure - A+ Adaptive Schema Generator v3.3.0
+// VAPTSecure Clean - A+ Adaptive Schema Generator v3.3.0
 // Implementation of rules/vapt-client-multienv-v3.2.agrules
 
 (function () {

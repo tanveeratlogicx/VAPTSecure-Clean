@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Base REST Controller for VAPT Secure
+ * Base REST Controller for VAPTSecure Clean
  */
 
 if (! defined('ABSPATH')) {

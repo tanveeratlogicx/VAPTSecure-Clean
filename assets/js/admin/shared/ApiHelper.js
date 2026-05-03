@@ -1,4 +1,4 @@
-// API Helper for VAPT Secure Admin
+// API Helper for VAPTSecure Clean Admin
 // Centralized API calls with error handling
 
 (function () {

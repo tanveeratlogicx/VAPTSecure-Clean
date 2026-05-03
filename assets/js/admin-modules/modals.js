@@ -39,7 +39,7 @@
     render() {
       if (this.state.hasError) {
         return el('div', { className: 'notice notice-error inline', style: { padding: '20px', margin: '20px' } }, [
-          el('h3', null, 'Something went wrong rendering the VAPT Secure Dashboard.'),
+          el('h3', null, 'Something went wrong rendering the VAPTSecure Clean Dashboard.'),
           el('details', { style: { whiteSpace: 'pre-wrap', marginTop: '10px' } },
             this.state.error && this.state.error.toString(),
             el('br'),

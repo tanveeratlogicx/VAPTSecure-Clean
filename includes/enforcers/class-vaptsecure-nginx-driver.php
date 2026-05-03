@@ -5,7 +5,8 @@
  * Handles enforcement of rules for Nginx via a generated include file.
  */
 
-if (!defined('ABSPATH')) { exit;
+if (!defined("ABSPATH")) {
+    exit();
 }
 
 class VAPTSECURE_Nginx_Driver implements VAPTSECURE_Driver_Interface
@@ -20,20 +21,28 @@ class VAPTSECURE_Nginx_Driver implements VAPTSECURE_Driver_Interface
     public static function generate_rules($data, $schema)
     {
         // 🛡️ TWO-WAY DEACTIVATION (v3.6.19)
-        $is_enabled = isset($data['enabled']) ? (bool)$data['enabled'] : true;
+        $is_enabled = isset($data["enabled"]) ? (bool) $data["enabled"] : true;
         if (!$is_enabled) {
-            return array();
+            return [];
         }
 
-        $enf_config = isset($schema['enforcement']) ? $schema['enforcement'] : array();
-        $rules = array();
-        $mappings = isset($enf_config['mappings']) ? $enf_config['mappings'] : array();
+        $enf_config = isset($schema["enforcement"])
+            ? $schema["enforcement"]
+            : [];
+        $rules = [];
+        $mappings = isset($enf_config["mappings"])
+            ? $enf_config["mappings"]
+            : [];
 
         foreach ($mappings as $key => $directive) {
             if (!empty($data[$key])) {
                 // [v1.4.1] Support for v1.1/v2.0 rich mappings (Platform Objects)
-                $directive = VAPTSECURE_Enforcer::extract_code_from_mapping($directive, 'nginx');
-                if (empty($directive)) { continue;
+                $directive = VAPTSECURE_Enforcer::extract_code_from_mapping(
+                    $directive,
+                    "nginx",
+                );
+                if (empty($directive)) {
+                    continue;
                 }
 
                 $nginx_rule = self::translate_to_nginx($key, $directive);
@@ -45,11 +54,14 @@ class VAPTSECURE_Nginx_Driver implements VAPTSECURE_Driver_Interface
         }
 
         if (!empty($rules)) {
-            $feature_key = isset($schema['feature_key']) ? $schema['feature_key'] : 'unknown';
-            $title = isset($schema['title']) ? $schema['title'] : '';
+            $feature_key = isset($schema["feature_key"])
+                ? $schema["feature_key"]
+                : "unknown";
+            $title = isset($schema["title"]) ? $schema["title"] : "";
 
-            $wrapped_rules = array();
-            $wrapped_rules[] = "# BEGIN VAPT $feature_key" . ($title ? " \u2014 $title" : "");
+            $wrapped_rules = [];
+            $wrapped_rules[] =
+                "# BEGIN VAPT $feature_key" . ($title ? " \u2014 $title" : "");
             foreach ($rules as $rule) {
                 $wrapped_rules[] = $rule;
             }
@@ -59,7 +71,7 @@ class VAPTSECURE_Nginx_Driver implements VAPTSECURE_Driver_Interface
             return $wrapped_rules;
         }
 
-        return array(); // Return empty array if no rules were generated
+        return []; // Return empty array if no rules were generated
     }
 
     /**
@@ -68,14 +80,14 @@ class VAPTSECURE_Nginx_Driver implements VAPTSECURE_Driver_Interface
     public static function verify($key, $impl_data, $schema)
     {
         $upload_dir = wp_upload_dir();
-        $file_path = $upload_dir['basedir'] . '/vapt-nginx-rules.conf';
+        $file_path = $upload_dir["basedir"] . "/vapt-nginx-rules.conf";
 
         if (!file_exists($file_path)) {
             return false;
         }
 
         $content = file_get_contents($file_path);
-        return (strpos($content, "X-VAPT-Feature \"$key\"") !== false);
+        return strpos($content, "X-VAPT-Feature \"$key\"") !== false;
     }
 
     /**
@@ -86,39 +98,43 @@ class VAPTSECURE_Nginx_Driver implements VAPTSECURE_Driver_Interface
         // 1. Headers
         // Apache: Header set X-Frame-Options "SAMEORIGIN"
         // Nginx: add_header X-Frame-Options "SAMEORIGIN" always;
-        if (strpos($directive, 'Header set') !== false) {
-            $clean = str_replace(['Header set ', '"'], ['', ''], $directive);
-            $parts = explode(' ', $clean, 2);
+        if (strpos($directive, "Header set") !== false) {
+            $clean = str_replace(["Header set ", '"'], ["", ""], $directive);
+            $parts = explode(" ", $clean, 2);
             if (count($parts) == 2) {
-                return 'add_header ' . $parts[0] . ' "' . $parts[1] . '" always;';
+                return "add_header " .
+                    $parts[0] .
+                    ' "' .
+                    $parts[1] .
+                    '" always;';
             }
         }
 
         // 2. Directory Listing
         // Apache: Options -Indexes
         // Nginx: autoindex off;
-        if (strpos($directive, 'Options -Indexes') !== false) {
-            return 'autoindex off;';
+        if (strpos($directive, "Options -Indexes") !== false) {
+            return "autoindex off;";
         }
 
         // 3. Block Files (xmlrpc, etc)
         // Apache: <Files xmlrpc.php> ... </Files>
         // Nginx: location = /xmlrpc.php { deny all; }
-        if ($key === 'block_xmlrpc') {
-            return 'location = /xmlrpc.php { deny all; return 403; }';
+        if ($key === "block_xmlrpc") {
+            return "location = /xmlrpc.php { deny all; return 403; }";
         }
 
         // 4. Block Dot Files
-        if ($key === 'block_sensitive_files') {
-            return 'location ~ /\. { deny all; return 403; }';
+        if ($key === "block_sensitive_files") {
+            return "location ~ /\. { deny all; return 403; }";
         }
 
         // 5. Generic File Blocking (regex)
         // Apache: <FilesMatch ...>
         // Nginx: location ~ ...
-        if (strpos($directive, '<Files') !== false) {
+        if (strpos($directive, "<Files") !== false) {
             // Fallback: convert common file blocks manually if known
-            if (strpos($directive, 'debug.log') !== false) {
+            if (strpos($directive, "debug.log") !== false) {
                 return 'location ~ /debug\.log$ { deny all; return 403; }';
             }
         }
@@ -133,15 +149,15 @@ class VAPTSECURE_Nginx_Driver implements VAPTSECURE_Driver_Interface
      * @param string $target Target location identifier (not used for nginx driver)
      * @return bool Success status
      */
-    public static function write_batch($rules, $target = 'root')
+    public static function write_batch($rules, $target = "root")
     {
         $all_rules_array = $rules;
         $upload_dir = wp_upload_dir();
-        $file_path = $upload_dir['basedir'] . '/vapt-nginx-rules.conf';
+        $file_path = $upload_dir["basedir"] . "/vapt-nginx-rules.conf";
 
-        $content = "# VAPT Secure - Auto Generated Nginx Rules\n";
+        $content = "# VAPTSecure Clean - Auto Generated Nginx Rules\n";
         $content .= "# Include this file in your nginx.conf server block.\n";
-        $content .= "# Last Updated: " . date('Y-m-d H:i:s') . "\n\n";
+        $content .= "# Last Updated: " . date("Y-m-d H:i:s") . "\n\n";
 
         $content .= implode("\n", $all_rules_array);
 
@@ -150,7 +166,11 @@ class VAPTSECURE_Nginx_Driver implements VAPTSECURE_Driver_Interface
         if ($result !== false) {
             // Set a persistent option to verify file matches current state?
             // Or just transient for admin notice?
-            set_transient('vaptsecure_nginx_rules_updated', $file_path, HOUR_IN_SECONDS * 24);
+            set_transient(
+                "vaptsecure_nginx_rules_updated",
+                $file_path,
+                HOUR_IN_SECONDS * 24,
+            );
             return true;
         }
 
@@ -163,19 +183,19 @@ class VAPTSECURE_Nginx_Driver implements VAPTSECURE_Driver_Interface
      * @param string $target Target location (unused for nginx, kept for interface compatibility)
      * @return bool Success status
      */
-    public static function clean($target = 'root')
+    public static function clean($target = "root")
     {
         $upload_dir = wp_upload_dir();
-        $file_path = $upload_dir['basedir'] . '/vapt-nginx-rules.conf';
+        $file_path = $upload_dir["basedir"] . "/vapt-nginx-rules.conf";
 
         if (!file_exists($file_path)) {
             return true; // Nothing to clean
         }
 
         // Write empty content (just header)
-        $content = "# VAPT Secure - Auto Generated Nginx Rules\n";
+        $content = "# VAPTSecure Clean - Auto Generated Nginx Rules\n";
         $content .= "# Include this file in your nginx.conf server block.\n";
-        $content .= "# Last Updated: " . date('Y-m-d H:i:s') . "\n";
+        $content .= "# Last Updated: " . date("Y-m-d H:i:s") . "\n";
         $content .= "# All rules have been cleaned.\n";
 
         $result = @file_put_contents($file_path, $content);

@@ -3,7 +3,7 @@
 /**
  * VAPTSECURE_Driver_Interface
  * 
- * Contract for all enforcement drivers in VAPT Secure.
+ * Contract for all enforcement drivers in VAPTSecure Clean.
  * Implementing this interface ensures consistent behavior across
  * all driver implementations (htaccess, nginx, php, config, etc.)
  * 

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * VAPT Secure: Centralized PHP Protections
+ * VAPTSecure Clean: Centralized PHP Protections
  */
 
 if (!defined('ABSPATH')) exit;

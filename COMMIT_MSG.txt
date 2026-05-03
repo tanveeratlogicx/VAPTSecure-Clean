@@ -1,0 +1,44 @@
+v3.3.0 - Build Generator & Active Enforcements Overhaul
+
+## What Changed
+
+### Bug Fixes
+- [CRITICAL] Fixed Active Enforcements count never updating on toggle-off
+  update_feature_meta() used isset() to check incoming data values,
+  which silently dropped 0 (falsy). Replaced with array_key_exists()
+  so is_enabled=0 and is_enforced=0 are correctly written to the DB.
+
+- Fixed stats query using OR instead of AND
+  get_security_stats_summary() counted a feature as enforced if
+  is_enabled=1 OR is_enforced=1. Changed to AND -- both flags must
+  be active for a feature to count as an Active Enforcement.
+
+- Fixed masterToggleControl not syncing is_enabled/is_enforced
+  Schema-driven GeneratedInterface toggles only sent implementation_data.
+  Added extraction of toggle value to also send is_enabled/is_enforced
+  in the same REST call, with an immediate fetchSecurityInsights() refresh.
+
+- Fixed Build Generator Active Features showing 14 instead of 2
+  Build Status panel was using raw selectedDomain.features.length (all
+  domain features). Replaced with enabledReleaseCount which cross-checks
+  domain features against Release status.
+
+### Improvements
+- Build Generator: Smart version bump on Save to Server
+  Version is bumped only when config content has substantively changed
+  vs the existing file on disk (B64 payload diff, excluding build_at).
+  No change = no version bump. Persists version via domain_version_key.
+
+- Client feature scope enforcement
+  vaptsecure_is_feature_allowed() now enforces VAPTSECURE_FEATURE_*
+  constants on client builds regardless of developer_unbound license type,
+  preventing extra features bleeding into client deployments.
+
+- Seed key includes config hash for automatic re-seeding on config change.
+
+- Stats panel refreshes immediately after any is_enabled/is_enforced toggle.
+
+- Updated .gitignore to exclude generated client config files,
+  Playwright MCP artifacts, and debug screenshots from the repository.
+
+Now, apparently it's all Good for Release.. Including the Stats.

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Build Generator for VAPT Secure
+ * Build Generator for VAPTSecure Clean
  */
 
 if (! defined('ABSPATH')) {
@@ -322,7 +322,7 @@ class VAPTSECURE_Build
         $payload_b64 = base64_encode(json_encode($payload));
 
         $config = "<?php\n";
-        $config .= "/**\n * VAPT Secure Configuration for $domain\n * Build Version: $version\n */\n\n";
+        $config .= "/**\n * VAPTSecure Clean Configuration for $domain\n * Build Version: $version\n */\n\n";
         $config .= "if ( ! defined( 'ABSPATH' ) ) { exit; }\n\n";
         $config .= "define( 'VAPTSECURE_CONFIG_B64', '" . $payload_b64 . "' );\n";
         $config .= "if ( ! function_exists( 'vaptsecure_apply_config_payload' ) ) {\n";
@@ -569,8 +569,8 @@ class VAPTSECURE_Build
         // Replaces the conditional superadmin menu with a static one for all admins
         $content = self::safe_preg_replace('/\$is_superadmin_identity = is_vaptsecure_superadmin\(false\);[\s\S]*?remove_submenu_page\(\'vaptsecure\', \'vaptsecure\'\);/s', '// 1. Parent Menu (Visible to all admins)
         add_menu_page(
-            __(\'VAPT Secure\', \'vaptsecure\'),
-            __(\'VAPT Secure\', \'vaptsecure\'),
+            __(\'VAPTSecure Clean\', \'vaptsecure\'),
+            __(\'VAPTSecure Clean\', \'vaptsecure\'),
             \'manage_options\',
             \'vaptsecure\',
             \'vaptsecure_render_client_status_page\',
@@ -606,7 +606,7 @@ class VAPTSECURE_Build
             . "    \$site_url = get_site_url();\n"
             . "    \$admin_url = admin_url('admin.php?page=vaptsecure');\n"
             . "    \$subject = sprintf('[VAPT Alert] Plugin Activated on %s', \$site_name);\n"
-            . "    \$message = \"VAPT Secure has been activated on a new site.\\n\\n\";\n"
+            . "    \$message = \"VAPTSecure Clean has been activated on a new site.\\n\\n\";\n"
             . "    \$message .= \"Site Name: {\$site_name}\\n\";\n"
             . "    \$message .= \"Site URL: {\$site_url}\\n\";\n"
             . "    \$message .= \"Activation Date: \" . current_time('mysql') . \"\\n\";\n"
@@ -638,20 +638,20 @@ class VAPTSECURE_Build
         $guard_code .= "    define('VAPTSECURE_CONFIG_MISSING', true);\n";
         $guard_code .= "    if (function_exists('update_option')) { update_option('vaptsecure_global_protection', 0); }\n";
         $guard_code .= "    \$__vaptsecure_to = (string) get_option('admin_email');\n";
-        $guard_code .= "    if (\$__vaptsecure_to && function_exists('wp_mail')) { wp_mail(\$__vaptsecure_to, '[VAPT Secure] Configuration file missing', 'VAPT Secure is disabled because its configuration file is missing.'); }\n";
+        $guard_code .= "    if (\$__vaptsecure_to && function_exists('wp_mail')) { wp_mail(\$__vaptsecure_to, '[VAPTSecure Clean] Configuration file missing', 'VAPTSecure Clean is disabled because its configuration file is missing.'); }\n";
         $guard_code .= "    add_action('admin_notices', function () {\n";
         $guard_code .= "        if (!current_user_can('manage_options')) { return; }\n";
-        $guard_code .= "        echo '<div class=\"notice notice-error\"><p><strong>VAPT Secure:</strong> Required configuration file is missing. This build is disabled.</p></div>';\n";
+        $guard_code .= "        echo '<div class=\"notice notice-error\"><p><strong>VAPTSecure Clean:</strong> Required configuration file is missing. This build is disabled.</p></div>';\n";
         $guard_code .= "    });\n";
         $guard_code .= "    add_action('init', function () {\n";
         $guard_code .= "        if (!is_admin()) {\n";
         $guard_code .= "            \$is_api = (defined('REST_REQUEST') && REST_REQUEST) || (function_exists('wp_doing_ajax') && wp_doing_ajax()) || (isset(\$_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower(\$_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest');\n";
         $guard_code .= "            if (\$is_api) {\n";
         $guard_code .= "                if (!headers_sent()) { header('Content-Type: application/json; charset=UTF-8'); }\n";
-        $guard_code .= "                echo json_encode(array('success' => false, 'error' => 'config_missing', 'message' => 'VAPT Secure configuration file is missing.'));\n";
+        $guard_code .= "                echo json_encode(array('success' => false, 'error' => 'config_missing', 'message' => 'VAPTSecure Clean configuration file is missing.'));\n";
         $guard_code .= "                exit;\n";
         $guard_code .= "            }\n";
-        $guard_code .= "            wp_die('<h1>VAPT Secure</h1><p>This build is disabled because its configuration file is missing.</p>');\n";
+        $guard_code .= "            wp_die('<h1>VAPTSecure Clean</h1><p>This build is disabled because its configuration file is missing.</p>');\n";
         $guard_code .= "        }\n";
         $guard_code .= "    }, 0);\n";
         $guard_code .= "    return;\n";
@@ -678,7 +678,7 @@ class VAPTSECURE_Build
         $guard_code .= "        if (\$to && function_exists('wp_mail')) {\n";
         $guard_code .= "            \$transient_key = 'vapt_alert_' . md5(\$current_host);\n";
         $guard_code .= "            if (!get_transient(\$transient_key)) {\n";
-        $guard_code .= "                \$subject = '[VAPT Secure] Unauthorized Domain Usage Alert';\n";
+        $guard_code .= "                \$subject = '[VAPTSecure Clean] Unauthorized Domain Usage Alert';\n";
         $guard_code .= "                \$msg = \"Security build license validation failed.\\n\\n\";\n";
         $guard_code .= "                \$msg .= \"Locked to Domain: \" . \$locked_host . \"\\n\";\n";
         $guard_code .= "                \$msg .= \"Detected on Domain: \" . \$current_host . \"\\n\";\n";
@@ -717,7 +717,7 @@ class VAPTSECURE_Build
 
     private static function generate_docs($dir, $domain, $version, $features)
     {
-        $readme = "# VAPT Secure Security Build for $domain\n\n";
+        $readme = "# VAPTSecure Clean Security Build for $domain\n\n";
         $readme .= "Version: $version\n";
         $readme .= "Generated: " . date('Y-m-d') . "\n\n";
         $readme .= "## Active Protection Modules\n";

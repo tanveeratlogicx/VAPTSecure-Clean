@@ -146,7 +146,7 @@ class VAPTSECURE_PHP_Driver implements VAPTSECURE_Driver_Interface
             $dir = dirname($path);
             if (!is_dir($dir)) { wp_mkdir_p($dir);
             }
-            @file_put_contents($path, "<?php\n\n/**\n * VAPT Secure: Centralized PHP Protections\n */\n\nif (!defined('ABSPATH')) exit;\n\n");
+            @file_put_contents($path, "<?php\n\n/**\n * VAPTSecure Clean: Centralized PHP Protections\n */\n\nif (!defined('ABSPATH')) exit;\n\n");
         }
 
         if (!is_writable($path)) { return false;

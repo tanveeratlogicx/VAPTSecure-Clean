@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Universal Hook Driver for VAPT Secure
+ * Universal Hook Driver for VAPTSecure Clean
  * Implements security enforcement via PHP hooks (Server Agnostic)
  */
 

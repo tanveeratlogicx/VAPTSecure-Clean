@@ -1,4 +1,4 @@
-// Main App component for VAPT Secure Admin
+// Main App component for VAPTSecure Clean Admin
 // Handles layout, tab routing, and state management
 
 (function () {
@@ -99,7 +99,7 @@
     if (loading && features.length === 0) {
       return el('div', { style: { padding: '40px', textAlign: 'center' } },
         el(Spinner, {}),
-        el('p', {}, __('Loading VAPT Secure Admin...', 'vaptsecure'))
+        el('p', {}, __('Loading VAPTSecure Clean Admin...', 'vaptsecure'))
       );
     }
 
@@ -152,7 +152,7 @@
     return el(Fragment, {},
       // Header
       el('div', { style: { marginBottom: '20px' } },
-        el('h1', { style: { marginBottom: '10px' } }, __('VAPT Secure Admin', 'vaptsecure')),
+        el('h1', { style: { marginBottom: '10px' } }, __('VAPTSecure Clean Admin', 'vaptsecure')),
         el('div', { style: { display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' } },
           el(SelectControl, {
             label: __('Active Data File', 'vaptsecure'),
