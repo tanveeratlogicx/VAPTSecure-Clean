@@ -16,7 +16,21 @@ class VAPTSECURE_Caddy_Driver implements VAPTSECURE_Driver_Interface
     public static function generate_rules($data, $schema)
     {
         // 🛡️ TWO-WAY DEACTIVATION (v3.6.19)
-        $is_enabled = isset($data['enabled']) ? (bool)$data['enabled'] : true;
+        $is_enabled = true;
+        if (isset($data['feat_enabled'])) {
+            $is_enabled = (bool) filter_var($data['feat_enabled'], FILTER_VALIDATE_BOOLEAN);
+        } elseif (isset($data['enabled'])) {
+            $is_enabled = (bool) filter_var($data['enabled'], FILTER_VALIDATE_BOOLEAN);
+        } elseif (isset($data['prot_enabled'])) {
+            $is_enabled = (bool) filter_var($data['prot_enabled'], FILTER_VALIDATE_BOOLEAN);
+        } else {
+            $risk_key = $schema['risk_id'] ?? $schema['id'] ?? $schema['feature_key'] ?? '';
+            $risk_suffix = str_replace('-', '_', strtolower($risk_key));
+            $auto_key = "vapt_risk_{$risk_suffix}_enabled";
+            if (isset($data[$auto_key])) {
+                $is_enabled = (bool) filter_var($data[$auto_key], FILTER_VALIDATE_BOOLEAN);
+            }
+        }
         if (!$is_enabled) {
             return array();
         }

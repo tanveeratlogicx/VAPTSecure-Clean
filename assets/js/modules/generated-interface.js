@@ -605,52 +605,90 @@ var vaptLog = window.vaptLog || {
       const bodyLower = body.toLowerCase();
       const vaptEnforced = response.headers.get('x-vapt-enforced');
       const enforcedFeature = response.headers.get('x-vapt-feature');
+      const vaptOrigin = response.headers.get('x-vapt-origin');
+      const vaptReason = response.headers.get('x-vapt-reason');
       const isEnabled = isFeatureEnabled(featureData);
+      let auditSummary = [];
+      try {
+        const auditResp = await apiFetch({
+          path: `vaptsecure/v1/features/${encodeURIComponent(featureKey)}/verify`,
+          method: 'POST'
+        });
+        if (Array.isArray(auditResp?.audit_summary)) {
+          auditSummary = auditResp.audit_summary;
+        }
+      } catch (e) {
+        vaptLog.warn('Pingback ownership audit failed:', e);
+      }
+
+      const hasFileOwnership = auditSummary.some(item => String(item?.status || '').toLowerCase() === 'present');
+      const auditLabel = auditSummary.length
+        ? auditSummary.map(item => `${item?.label || item?.target || 'target'}=${item?.status || 'unknown'}`).join(', ')
+        : 'unavailable';
 
       const pingbackExposed = bodyLower.includes('pingback.ping') || bodyLower.includes('pingback.extensions.getpingbacks');
-      const pingbackBlocked = response.status === 401 || response.status === 403 || response.status === 404 || response.status === 405 || vaptEnforced === 'php-pingback' || !pingbackExposed;
+      const hasPluginOwnership = (vaptOrigin || '').toLowerCase() === 'vaptsecure' || vaptEnforced === 'php-pingback';
+      const pingbackBlocked = response.status === 401 || response.status === 403 || response.status === 404 || response.status === 405 || hasPluginOwnership || !pingbackExposed;
 
-      if (vaptEnforced === 'php-pingback') {
+      if (!hasPluginOwnership && hasFileOwnership) {
+        return {
+          success: true,
+          message: `Plugin enforcement confirmed: XML-RPC pingback is disabled in the target file.`,
+          raw: `URL: ${url} | Status: ${response.status} | Toggle: ${isEnabled ? 'ON' : 'OFF'} | File Audit: present\n\n${body.substring(0, 800)}`
+        };
+      }
+
+      if (hasPluginOwnership) {
         if (featureKey && enforcedFeature && enforcedFeature !== featureKey) {
-          return { success: false, message: `Inconclusive: XML-RPC pingback is blocked by another VAPT feature ('${enforcedFeature}').`, raw: `URL: ${url} | Status: ${response.status} | Enforcement: ${vaptEnforced}` };
+          return { inconclusive: true, success: false, message: `Inconclusive: XML-RPC pingback is blocked by another VAPT feature ('${enforcedFeature}').`, raw: `URL: ${url} | Status: ${response.status} | Enforcement: ${vaptEnforced || 'php-pingback'} | Origin: ${vaptOrigin || 'unknown'}\n\n${body.substring(0, 800)}` };
         }
         if (!isEnabled) {
-          return { success: false, message: `Warning: Protection toggle is OFF but XML-RPC pingback is STILL being blocked (${vaptEnforced}).`, raw: `URL: ${url} | Status: ${response.status} | Toggle: OFF | Enforcement: ${vaptEnforced}` };
+          return { success: false, message: `External block detected: pingback enforcement is present but the feature toggle is OFF.`, raw: `URL: ${url} | Status: ${response.status} | Toggle: OFF | Enforcement: ${vaptEnforced || 'php-pingback'} | Origin: ${vaptOrigin || 'unknown'} | Reason: ${vaptReason || 'n/a'}\n\n${body.substring(0, 800)}` };
         }
-        return { success: true, message: `Plugin is actively disabling XML-RPC pingback (${vaptEnforced}).`, raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Enforcement: ${vaptEnforced}` };
+        return { success: true, message: `Plugin enforcement confirmed: XML-RPC pingback is disabled by this plugin.`, raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Enforcement: ${vaptEnforced || 'php-pingback'} | Origin: ${vaptOrigin || 'vaptsecure'} | Reason: ${vaptReason || 'pingback-removed'}\n\n${body.substring(0, 800)}` };
       }
 
       if (!isEnabled) {
         if (pingbackExposed) {
           return {
+            inconclusive: true,
             success: false,
             unprotected: true,
-            message: `Protection correctly disabled. XML-RPC pingback methods are still exposed.`,
+            message: `Inconclusive: protection is OFF and XML-RPC pingback methods are still exposed.`,
             raw: `URL: ${url} | Status: ${response.status} | Toggle: OFF | Enforcement: None\n\n${body.substring(0, 800)}`
           };
         }
         return {
           success: false,
           external_block: true,
-          message: `Warning: Protection toggle is OFF but XML-RPC pingback methods are still blocked (HTTP ${response.status}). External protection detected.`,
+          message: `External block detected: XML-RPC pingback methods are blocked while the feature is OFF.`,
           raw: `URL: ${url} | Status: ${response.status} | Toggle: OFF | External Block\n\n${body.substring(0, 800)}`
         };
       }
 
       if (pingbackBlocked) {
+        if (!hasPluginOwnership && !hasFileOwnership) {
+          return {
+            success: false,
+            external_block: true,
+            message: `Blocked, but not by this feature: XML-RPC returned HTTP ${response.status} and the fresh file audit did not find a plugin-owned ${featureKey} rule.`,
+            raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Enforcement: ${vaptEnforced || 'none'} | Origin: ${vaptOrigin || 'none'} | File Audit: ${auditLabel}\n\n${body.substring(0, 800)}`
+          };
+        }
         return {
           success: true,
-          message: pingbackExposed
-            ? `Pingback methods are still exposed (HTTP ${response.status}).`
-            : `Plugin is actively disabling XML-RPC pingback (${vaptEnforced || 'method removed'}).`,
-          raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Enforcement: ${vaptEnforced || 'method removed'}\n\n${body.substring(0, 800)}`
+          message: `Plugin enforcement confirmed: XML-RPC pingback is disabled by this plugin.`,
+          raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Enforcement: ${vaptEnforced || 'php-pingback'} | Origin: ${vaptOrigin || 'vaptsecure'} | Reason: ${vaptReason || 'pingback-removed'}\n\n${body.substring(0, 800)}`
         };
       }
 
       return {
+        inconclusive: true,
         success: false,
-        message: `SECURITY FAILURE: Protection toggle is ON but XML-RPC pingback methods remain exposed.`,
-        raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Expected: pingback methods removed\n\n${body.substring(0, 800)}`
+        message: hasFileOwnership
+          ? `Target file contains this feature's rule, but XML-RPC still exposes pingback methods.`
+          : `Inconclusive: XML-RPC pingback state could not be attributed to this plugin from the fresh file audit.`,
+        raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Expected: pingback methods removed | File Audit: ${auditLabel}\n\n${body.substring(0, 800)}`
       };
     },
 
@@ -1346,7 +1384,9 @@ var vaptLog = window.vaptLog || {
         const res = await Promise.race([handlerPromise, timeoutPromise]);
 
         if (res && typeof res === 'object') {
-          if (res.unprotected) {
+          if (res.inconclusive) {
+            setStatus('inconclusive');
+          } else if (res.unprotected) {
             setStatus('unprotected');
           } else if (res.external_block) {
             setStatus('external_block');
@@ -1435,27 +1475,27 @@ var vaptLog = window.vaptLog || {
         style: {
           marginTop: '15px',
           padding: '16px',
-          background: status === 'success' ? 'rgba(16, 185, 129, 0.04)' : (status === 'unprotected' ? 'rgba(239, 68, 68, 0.04)' : (status === 'external_block' ? 'rgba(59, 130, 246, 0.04)' : (status === 'skipped' ? 'rgba(245, 158, 11, 0.04)' : 'rgba(239, 68, 68, 0.04)'))),
-          border: `1px solid ${status === 'success' ? 'rgba(16, 185, 129, 0.2)' : (status === 'unprotected' ? 'rgba(239, 68, 68, 0.2)' : (status === 'external_block' ? 'rgba(59, 130, 246, 0.2)' : (status === 'skipped' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(239, 68, 68, 0.2)')))}`,
+          background: status === 'success' ? 'rgba(16, 185, 129, 0.04)' : (status === 'unprotected' ? 'rgba(239, 68, 68, 0.04)' : (status === 'external_block' ? 'rgba(59, 130, 246, 0.04)' : (status === 'inconclusive' ? 'rgba(245, 158, 11, 0.04)' : (status === 'skipped' ? 'rgba(245, 158, 11, 0.04)' : 'rgba(239, 68, 68, 0.04)')))),
+          border: `1px solid ${status === 'success' ? 'rgba(16, 185, 129, 0.2)' : (status === 'unprotected' ? 'rgba(239, 68, 68, 0.2)' : (status === 'external_block' ? 'rgba(59, 130, 246, 0.2)' : (status === 'inconclusive' ? 'rgba(245, 158, 11, 0.2)' : (status === 'skipped' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(239, 68, 68, 0.2)'))))}`,
           borderRadius: '10px',
           transition: 'all 0.3s ease-in-out'
         }
       }, [
         el('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' } }, [
           el(Icon, {
-            icon: status === 'success' ? 'yes' : (status === 'unprotected' ? 'warning' : (status === 'external_block' ? 'shield' : (status === 'skipped' ? 'warning' : 'no'))),
+            icon: status === 'success' ? 'yes' : (status === 'unprotected' ? 'warning' : (status === 'external_block' ? 'shield' : (status === 'inconclusive' ? 'info' : (status === 'skipped' ? 'warning' : 'no')))),
             size: 18,
-            style: { color: status === 'success' ? '#10b981' : (status === 'unprotected' ? '#dc2626' : (status === 'external_block' ? '#2563eb' : (status === 'skipped' ? '#d97706' : '#ef4444'))) }
+            style: { color: status === 'success' ? '#10b981' : (status === 'unprotected' ? '#dc2626' : (status === 'external_block' ? '#2563eb' : (status === 'inconclusive' ? '#d97706' : (status === 'skipped' ? '#d97706' : '#ef4444')))) }
           }),
           el('span', {
             style: {
               fontSize: '12px',
               fontWeight: 800,
-              color: status === 'success' ? '#065f46' : (status === 'unprotected' ? '#991b1b' : (status === 'external_block' ? '#1e3a8a' : (status === 'skipped' ? '#92400e' : '#991b1b'))),
+              color: status === 'success' ? '#065f46' : (status === 'unprotected' ? '#991b1b' : (status === 'external_block' ? '#1e3a8a' : (status === 'inconclusive' ? '#92400e' : (status === 'skipped' ? '#92400e' : '#991b1b')))),
               textTransform: 'uppercase',
               letterSpacing: '0.025em'
             }
-          }, status === 'success' ? __('Verification Success', 'vaptsecure') : (status === 'unprotected' ? __('System Vulnerable (Unprotected)', 'vaptsecure') : (status === 'external_block' ? __('External Protection Detected', 'vaptsecure') : (status === 'skipped' ? __('Protection Disabled', 'vaptsecure') : __('Verification Failure', 'vaptsecure')))))
+          }, status === 'success' ? __('Plugin Enforcement Confirmed', 'vaptsecure') : (status === 'unprotected' ? __('System Vulnerable (Unprotected)', 'vaptsecure') : (status === 'external_block' ? __('External Block Detected', 'vaptsecure') : (status === 'inconclusive' ? __('Inconclusive', 'vaptsecure') : (status === 'skipped' ? __('Protection Disabled', 'vaptsecure') : __('Verification Failure', 'vaptsecure'))))))
         ]),
 
         el('div', { style: { fontSize: '13px', color: '#334155', lineHeight: '1.5', marginBottom: '12px', fontWeight: 500 } }, result.message),
@@ -1629,14 +1669,6 @@ var vaptLog = window.vaptLog || {
 
     useEffect(() => {
       fetchStats();
-      const interval = setInterval(() => {
-        if (consecutiveFailsRef.current >= 3) {
-          vaptLog.warn('Background polling stopped due to consecutive network/REST errors.');
-          clearInterval(interval);
-          return;
-        }
-        fetchStats();
-      }, 10000); // Poll every 10s
 
       // Listen for sync events (v3.6.24)
       const handleSync = (e) => {
@@ -1647,7 +1679,6 @@ var vaptLog = window.vaptLog || {
       window.addEventListener('vapt-refresh-stats', handleSync);
 
       return () => {
-        clearInterval(interval);
         window.removeEventListener('vapt-refresh-stats', handleSync);
       };
     }, [featureKey]);
@@ -1727,7 +1758,6 @@ var vaptLog = window.vaptLog || {
     }, [feature.implementation_data]);
     const [localAlert, setLocalAlert] = useState(null);
     const [statusMap, setStatusMap] = useState({});
-    const timeoutsRef = useRef({});
 
     if (!schema || !schema.controls || !Array.isArray(schema.controls)) {
       return el('div', { style: { padding: '20px', textAlign: 'center', color: '#999', fontStyle: 'italic' } },
@@ -1751,9 +1781,15 @@ var vaptLog = window.vaptLog || {
 
     const handleChange = (key, val) => {
       const newData = { ...currentData, [key]: val };
-      if (typeof onUpdate === 'function') {
-        onUpdate(newData);
+      if (['feat_enabled', 'enabled', 'prot_enabled'].includes(key)) {
+        newData.feat_enabled = val;
+        newData.enabled = val;
+        newData.prot_enabled = val;
       }
+      if (typeof onUpdate === 'function') {
+        return onUpdate(newData);
+      }
+      return Promise.resolve(newData);
     };
 
     const renderControl = (control, index) => {
@@ -1809,13 +1845,15 @@ var vaptLog = window.vaptLog || {
           };
 
           const statusHeader = isEnforced ?
-            el('div', { style: { color: '#22c55e', background: '#f0fdf4', padding: '6px 10px', borderRadius: '4px', fontWeight: '800', marginBottom: '10px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px', border: '1px solid #bbf7d0' } }, [
-              el(Icon, { icon: 'saved', size: 14 }),
-              __('STATUS: ACTIVE & INJECTED', 'vaptsecure')
+            el('div', { style: { color: '#475569', background: '#f8fafc', padding: '6px 10px', borderRadius: '4px', fontWeight: '800', marginBottom: '10px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px', border: '1px solid #cbd5e1', flexDirection: 'column', alignItems: 'flex-start' } }, [
+              el(Icon, { icon: 'info-outline', size: 14 }),
+              el('span', null, __('SNIPPET PREVIEW', 'vaptsecure')),
+              el('span', { style: { fontSize: '10px', fontWeight: '600', color: '#64748b' } }, __('This is the generated code shape. Verification uses a fresh file audit.', 'vaptsecure'))
             ]) :
-            el('div', { style: { color: '#ef4444', background: '#fef2f2', padding: '6px 10px', borderRadius: '4px', fontWeight: '800', marginBottom: '10px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px', border: '1px solid #fecaca' } }, [
-              el(Icon, { icon: 'no-alt', size: 14 }),
-              __('STATUS: INACTIVE / REMOVED', 'vaptsecure')
+            el('div', { style: { color: '#475569', background: '#f8fafc', padding: '6px 10px', borderRadius: '4px', fontWeight: '800', marginBottom: '10px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px', border: '1px solid #cbd5e1', flexDirection: 'column', alignItems: 'flex-start' } }, [
+              el(Icon, { icon: 'info-outline', size: 14 }),
+              el('span', null, __('SNIPPET PREVIEW', 'vaptsecure')),
+              el('span', { style: { fontSize: '10px', fontWeight: '600', color: '#64748b' } }, __('This is not file status. Verification uses a fresh file audit.', 'vaptsecure'))
             ]);
 
           return el('div', { id: control.id, key: uniqueKey, style: { marginBottom: isCompact ? '0' : '0' } }, [
@@ -1843,6 +1881,14 @@ var vaptLog = window.vaptLog || {
                         .map(([name, impl], idx) => {
                           let code = impl.wrapped_code || impl.code || (schema.enforcement?.mappings && schema.enforcement?.mappings[key]);
                           if (!code) return null;
+                          const featureMarker = schema.feature_key || feature.risk_id || feature.RiskID || key || 'unknown';
+                          if (activeDriver === 'htaccess') {
+                            code = String(code).replace(/^\s*#\s*(?:BEGIN|END)\s+VAPT\s+\S+\s*$/gmi, '').trim();
+                            const alreadyWrapped = /X-VAPT-Enforced|BEGIN VAPT SECURITY RULES/im.test(code);
+                            if (!alreadyWrapped) {
+                              code = `# ${featureMarker}\n<IfModule mod_headers.c>\n    Header set X-VAPT-Enforced "htaccess"\n</IfModule>\n\n${code}`;
+                            }
+                          }
 
                           let targetFile = impl.target_file || (activeDriver === 'htaccess' ? '.htaccess' : (activeDriver.includes('config') ? 'wp-config.php' : 'root'));
                           if (activeDriver === 'hook' || activeDriver === 'php_functions') targetFile = 'vapt-functions.php';
@@ -1868,7 +1914,11 @@ var vaptLog = window.vaptLog || {
                         el('div', { style: { fontSize: '10px', color: '#94a3b8', marginBottom: '6px' } }, [
                           el('div', { style: { fontFamily: 'monospace', color: '#38bdf8', fontSize: '11px', wordBreak: 'break-all', fontWeight: '700' } }, (activeDriver === 'htaccess' ? './.htaccess' : (activeDriver.includes('config') ? './wp-config.php' : (activeDriver === 'hook' || activeDriver === 'php_functions' ? 'VAPT-Secure/vapt-functions.php' : './' + activeTarget))))
                         ]),
-                        el('pre', { style: { margin: 0, fontSize: '9px', background: '#0f172a', color: isEnforced ? '#e2e8f0' : '#475569', padding: '10px', borderRadius: '6px', overflowX: 'auto', border: '1px solid #334155', whiteSpace: 'pre-wrap' } }, mapping)
+                        el('pre', { style: { margin: 0, fontSize: '9px', background: '#0f172a', color: isEnforced ? '#e2e8f0' : '#475569', padding: '10px', borderRadius: '6px', overflowX: 'auto', border: '1px solid #334155', whiteSpace: 'pre-wrap' } }, (
+                          activeDriver === 'htaccess' && !/X-VAPT-Enforced|BEGIN VAPT SECURITY RULES/im.test(mapping)
+                            ? `# ${schema.feature_key || feature.risk_id || feature.RiskID || key || 'unknown'}\n<IfModule mod_headers.c>\n    Header set X-VAPT-Enforced "htaccess"\n</IfModule>\n\n${String(mapping).replace(/^\s*#\s*(?:BEGIN|END)\s+VAPT\s+\S+\s*$/gmi, '').trim()}`
+                            : mapping
+                        ))
                       ]) : el('em', { style: { color: '#64748b', fontSize: '11px' } }, __('No technical code mapping defined for this control.', 'vaptsecure')))
                   ])
                 }, el(Icon, { icon: 'info-outline', size: 14, style: { color: '#94a3b8', cursor: 'help' } }))
@@ -1878,29 +1928,45 @@ var vaptLog = window.vaptLog || {
               onChange: (val) => {
                 const isRemoval = toBool(value) && !val;
                 const progressMsg = isRemoval ? __("Removing...", "vaptsecure") : __("Applying...", "vaptsecure");
-                const successMsg = isRemoval ? __("Removed Successfully", "vaptsecure") : __("Code Injected Successfully", "vaptsecure");
+                const successMsg = isRemoval ? __("Protection Disabled", "vaptsecure") : __("Protection Enabled", "vaptsecure");
 
-                if (timeoutsRef.current[key]) {
-                  timeoutsRef.current[key].forEach(clearTimeout);
-                }
-                timeoutsRef.current[key] = [];
+                setStatusMap(prev => ({
+                  ...prev,
+                  [key]: {
+                    ...(prev[key] || {}),
+                    message: progressMsg,
+                    type: "info"
+                  }
+                }));
 
-                setStatusMap(prev => ({ ...prev, [key]: { message: progressMsg, type: "info" } }));
-                handleChange(key, val);
+                Promise.resolve(handleChange(key, val))
+                  .then((response) => {
+                    const auditSummary = Array.isArray(response?.audit_summary)
+                      ? response.audit_summary
+                      : Array.isArray(response?.cleanup_summary)
+                        ? response.cleanup_summary
+                        : [];
 
-                const t1 = setTimeout(() => {
-                  setStatusMap(prev => ({ ...prev, [key]: { message: successMsg, type: "success" } }));
-                  const t2 = setTimeout(() => {
-                    setStatusMap(prev => {
-                      const nu = { ...prev };
-                      delete nu[key];
-                      return nu;
-                    });
-                    delete timeoutsRef.current[key];
-                  }, 2000);
-                  if (timeoutsRef.current[key]) timeoutsRef.current[key].push(t2);
-                }, 600);
-                timeoutsRef.current[key].push(t1);
+                    setStatusMap(prev => ({
+                      ...prev,
+                      [key]: {
+                        message: successMsg,
+                        type: "success",
+                        auditSummary
+                      }
+                    }));
+                  })
+                  .catch((error) => {
+                    const errMsg = error?.message || error?.data?.message || __('Save Failed', 'vaptsecure');
+                    setStatusMap(prev => ({
+                      ...prev,
+                      [key]: {
+                        message: errMsg,
+                        type: "error",
+                        auditSummary: []
+                      }
+                    }));
+                  });
               }
             }),
             // Status Indicator (v3.14.15 Refactored: Cleaner UI)

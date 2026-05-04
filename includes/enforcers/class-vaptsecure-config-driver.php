@@ -30,6 +30,8 @@ class VAPTSECURE_Config_Driver implements VAPTSECURE_Driver_Interface
             $is_enabled = (bool)filter_var($data['feat_enabled'], FILTER_VALIDATE_BOOLEAN);
         } elseif (isset($data['enabled'])) {
             $is_enabled = (bool)filter_var($data['enabled'], FILTER_VALIDATE_BOOLEAN);
+        } elseif (isset($data['prot_enabled'])) {
+            $is_enabled = (bool)filter_var($data['prot_enabled'], FILTER_VALIDATE_BOOLEAN);
         } else {
             $risk_key = $schema['risk_id'] ?? $schema['id'] ?? $schema['feature_key'] ?? '';
             $risk_suffix = str_replace('-', '_', strtolower($risk_key));

@@ -511,6 +511,11 @@ class VAPTSECURE_REST
             'expected_enforcer' => null,
         );
 
+        $audit_summary = array();
+        if (class_exists('VAPTSECURE_Enforcer') && method_exists('VAPTSECURE_Enforcer', 'audit_feature_cleanup')) {
+            $audit_summary = VAPTSECURE_Enforcer::audit_feature_cleanup($key);
+        }
+
         if (strpos($blob, 'cron') !== false) {
             $probe['path'] = '/wp-cron.php';
             $probe['expected_statuses'] = array(403);
@@ -536,6 +541,7 @@ class VAPTSECURE_REST
             'title' => $schema['title'] ?? ($meta['feature_name'] ?? $key),
             'status' => $meta['status'] ?? 'unknown',
             'probe' => $probe,
+            'audit_summary' => $audit_summary,
             'runtime_verified' => $runtime_verified,
             'message' => $runtime_verified
                 ? 'Runtime enforcement is registered for this feature.'
@@ -1328,13 +1334,23 @@ class VAPTSECURE_REST
 
                 // Robust toggle check - check multiple possible toggle keys
                 $v = null;
-                if (isset($implementation_data['enabled'])) $v = $implementation_data['enabled'];
-                elseif (isset($implementation_data['feat_enabled'])) $v = $implementation_data['feat_enabled'];
-                elseif (isset($implementation_data['prot_enabled'])) $v = $implementation_data['prot_enabled'];
+                if (array_key_exists('feat_enabled', $implementation_data)) $v = $implementation_data['feat_enabled'];
+                elseif (array_key_exists('prot_enabled', $implementation_data)) $v = $implementation_data['prot_enabled'];
+                elseif (array_key_exists('enabled', $implementation_data)) $v = $implementation_data['enabled'];
                 elseif (isset($implementation_data[$auto_key])) $v = $implementation_data[$auto_key];
 
                 if ($v !== null) {
                     $is_enabled = filter_var($v, FILTER_VALIDATE_BOOLEAN);
+                    $implementation_data['enabled'] = $is_enabled;
+                    $implementation_data['feat_enabled'] = $is_enabled;
+                    $implementation_data['prot_enabled'] = $is_enabled;
+                    $implementation_data[$auto_key] = $is_enabled;
+                    $val = json_encode($implementation_data);
+                    if ($current_status === 'test') {
+                        $meta_updates['override_implementation_data'] = $val;
+                    } else {
+                        $meta_updates['implementation_data'] = $val;
+                    }
                     // Sync both is_enabled AND is_enforced for consistent enforcement
                     $meta_updates['is_enabled'] = $is_enabled ? 1 : 0;
                     $meta_updates['is_enforced'] = $is_enabled ? 1 : 0;
@@ -1364,7 +1380,19 @@ class VAPTSECURE_REST
             $wpdb->delete($history_table, array('feature_key' => $key), array('%s'));
         }
 
-        return new WP_REST_Response(array('success' => true), 200);
+        $audit_summary = array();
+        if (class_exists('VAPTSECURE_Enforcer') && method_exists('VAPTSECURE_Enforcer', 'audit_feature_cleanup')) {
+            $audit_summary = VAPTSECURE_Enforcer::audit_feature_cleanup($key);
+        }
+
+        return new WP_REST_Response(
+            array(
+            'success' => true,
+            'audit_summary' => $audit_summary,
+            'feature_key' => $key
+            ),
+            200
+        );
     }
 
     // =========================================================================

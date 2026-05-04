@@ -17,6 +17,21 @@ class VAPTSECURE_Hook_Driver implements VAPTSECURE_Driver_Interface
     private static $marker_hook_registered = false;
     private static $catalog_data = null;
 
+    private static function should_trace_runtime()
+    {
+        return (defined("VAPTSECURE_DEBUG") && VAPTSECURE_DEBUG)
+            || (defined("VAPTSECURE_RUNTIME_TRACE") && VAPTSECURE_RUNTIME_TRACE);
+    }
+
+    private static function append_runtime_trace($message)
+    {
+        if (!self::should_trace_runtime()) {
+            return;
+        }
+
+        file_put_contents(VAPTSECURE_PATH . "vapt-debug.txt", $message, FILE_APPEND);
+    }
+
     // Dynamic Map: matches feature keys/tags to methods
     private static $dynamic_map = [
         "xmlrpc" => "block_xmlrpc",
@@ -58,7 +73,6 @@ class VAPTSECURE_Hook_Driver implements VAPTSECURE_Driver_Interface
             return; // Stop enforcement site-wide if global is off
         }
 
-        $log_file = VAPTSECURE_PATH . "vapt-debug.txt";
         $log = "VAPT Enforcement Run at " . current_time("mysql") . "\n";
         $log .= "Feature: $key\n";
 
@@ -93,6 +107,9 @@ class VAPTSECURE_Hook_Driver implements VAPTSECURE_Driver_Interface
         } elseif (isset($resolved_data["enabled"])) {
             $has_toggle_key = true;
             $is_enabled = (bool) filter_var($resolved_data["enabled"], FILTER_VALIDATE_BOOLEAN);
+        } elseif (isset($resolved_data["prot_enabled"])) {
+            $has_toggle_key = true;
+            $is_enabled = (bool) filter_var($resolved_data["prot_enabled"], FILTER_VALIDATE_BOOLEAN);
         } else {
             // Check auto-generated risk-specific toggle keys (v4.0.x)
             $risk_suffix = str_replace('-', '_', strtolower($key));
@@ -106,11 +123,9 @@ class VAPTSECURE_Hook_Driver implements VAPTSECURE_Driver_Interface
         error_log("VAPT HOOK DRIVER apply(): key={$key}, has_toggle={$has_toggle_key}, is_enabled={$is_enabled}, resolved_data_keys=" . json_encode(array_keys($resolved_data)));
 
         if (!$is_enabled) {
-            file_put_contents(
-                $log_file,
+            self::append_runtime_trace(
                 $log .
-                    "Deactivated: Feature is explicitly disabled in UI (feat_enabled/enabled=false).\n",
-                FILE_APPEND,
+                    "Deactivated: Feature is explicitly disabled in UI (feat_enabled/enabled=false).\n"
             );
             error_log("VAPT HOOK DRIVER: Feature {$key} is DISABLED via toggle, skipping enforcement");
             return; // Stop enforcement
@@ -126,13 +141,11 @@ class VAPTSECURE_Hook_Driver implements VAPTSECURE_Driver_Interface
             // ... existing catalog loading logic if needed ...
         }
 
-        file_put_contents(
-            $log_file,
+        self::append_runtime_trace(
             $log .
                 "Applying rules with Data: " .
                 json_encode($resolved_data) .
-                "\n",
-            FILE_APPEND,
+                "\n"
         );
 
         // 4. Determine Enforcement Mappings
@@ -144,7 +157,7 @@ class VAPTSECURE_Hook_Driver implements VAPTSECURE_Driver_Interface
             $specialized_method = self::resolve_feature_specific_method($schema, $key);
             if ($specialized_method) {
                 $toggle_key = null;
-                foreach (['feat_enabled', 'enabled'] as $candidate) {
+                foreach (['feat_enabled', 'enabled', 'prot_enabled'] as $candidate) {
                     if (array_key_exists($candidate, $resolved_data)) {
                         $toggle_key = $candidate;
                         break;
@@ -1199,8 +1212,10 @@ class VAPTSECURE_Hook_Driver implements VAPTSECURE_Driver_Interface
                 if (strpos($_SERVER["REQUEST_URI"], "xmlrpc.php") !== false) {
                     header("X-VAPT-Enforced: php-pingback");
                     header("X-VAPT-Feature: " . $key);
+                    header("X-VAPT-Origin: vaptsecure");
+                    header("X-VAPT-Reason: pingback-removed");
                     header(
-                        "Access-Control-Expose-Headers: X-VAPT-Enforced, X-VAPT-Feature",
+                        "Access-Control-Expose-Headers: X-VAPT-Enforced, X-VAPT-Feature, X-VAPT-Origin, X-VAPT-Reason",
                     );
                 }
             }

@@ -3,7 +3,7 @@
 /**
  * Plugin Name: VAPTSecure Clean
  * Description: Ultimate VAPT and OWASP Security Plugin Builder.
- * Version: 3.5.2
+ * Version: 3.5.3
  * Author: Tanveer Hayat Malik
  * Author URI: https://vapt.copilot.com
  * License: GPL-2.0+
@@ -27,7 +27,7 @@ if (file_exists(dirname(__FILE__) . "/vendor/autoload.php")) {
 if (defined("VAPTSECURE_BUILD_VERSION")) {
     define("VAPTSECURE_VERSION", VAPTSECURE_BUILD_VERSION);
 } else {
-    define("VAPTSECURE_VERSION", "3.5.2"); // v3.5.2 — Patch release bump for the normalized VAPTSecure Clean snapshot
+    define("VAPTSECURE_VERSION", "3.5.3"); // v3.5.3 - Patch release for stable validation rule injection/removal
 }
 if (!defined("VAPTSECURE_DATA_VERSION")) {
     define("VAPTSECURE_DATA_VERSION", "2.5.0");
@@ -85,6 +85,10 @@ function vaptsecure_get_superadmin_identity()
  */
 function is_vaptsecure_superadmin($require_auth = false)
 {
+    if (!function_exists("wp_get_current_user")) {
+        return false;
+    }
+
     $current_user = wp_get_current_user();
     if (!$current_user->exists()) {
         return false;
@@ -221,6 +225,22 @@ function vaptsecure_is_builder_context()
         function_exists("vaptsecure_master_dashboard_page");
 }
 
+function vaptsecure_is_workbench_request()
+{
+    $page = "";
+    if (isset($_GET["page"])) {
+        $page = (string) $_GET["page"];
+    } elseif (isset($_REQUEST["page"])) {
+        $page = (string) $_REQUEST["page"];
+    }
+
+    return in_array(
+        $page,
+        ["vaptsecure-workbench", "vaptsecure-master-dashboard", "vaptsecure-admin"],
+        true,
+    );
+}
+
 function vaptsecure_load_required_config()
 {
     $is_already_loaded =
@@ -240,6 +260,14 @@ function vaptsecure_load_required_config()
 
     $should_bypass_blocking = function () use ($is_local_host) {
         if ($is_local_host) {
+            return true;
+        }
+        if (
+            function_exists("vaptsecure_is_workbench_request") &&
+            vaptsecure_is_workbench_request() &&
+            function_exists("is_vaptsecure_superadmin") &&
+            is_vaptsecure_superadmin(false)
+        ) {
             return true;
         }
         if (
@@ -272,6 +300,10 @@ function vaptsecure_load_required_config()
         if (!defined("VAPTSECURE_CONFIG_LOADED")) {
             define("VAPTSECURE_CONFIG_LOADED", true);
         }
+        if (function_exists("update_option")) {
+            update_option("vaptsecure_global_protection", 1);
+            delete_transient("vaptsecure_active_enforcements");
+        }
         return true;
     }
 
@@ -301,6 +333,21 @@ function vaptsecure_load_required_config()
     );
 
     if (empty($candidates)) {
+        $is_owner_workbench =
+            function_exists("vaptsecure_is_workbench_request") &&
+            vaptsecure_is_workbench_request();
+
+        if ($is_owner_workbench) {
+            if (!defined("VAPTSECURE_CONFIG_LOADED")) {
+                define("VAPTSECURE_CONFIG_LOADED", true);
+            }
+            if (function_exists("update_option")) {
+                update_option("vaptsecure_global_protection", 1);
+                delete_transient("vaptsecure_active_enforcements");
+            }
+            return true;
+        }
+
         if (!defined("VAPTSECURE_CONFIG_MISSING")) {
             define("VAPTSECURE_CONFIG_MISSING", true);
         }

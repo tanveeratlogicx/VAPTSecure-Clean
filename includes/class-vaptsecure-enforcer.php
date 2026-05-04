@@ -12,6 +12,7 @@ if (!defined('ABSPATH')) { exit;
 
 class VAPTSECURE_Enforcer
 {
+    private static $runtime_applied = false;
 
     public static function init()
     {
@@ -27,6 +28,11 @@ class VAPTSECURE_Enforcer
      */
     public static function runtime_enforcement()
     {
+        if (self::$runtime_applied) {
+            return;
+        }
+        self::$runtime_applied = true;
+
         $cache_key = 'vaptsecure_active_enforcements';
         $enforced = get_transient($cache_key);
 
@@ -101,9 +107,9 @@ class VAPTSECURE_Enforcer
                 }
             }
 
-            // Hook driver is universally shared for PHP-based fallback rules
-            // [v2.0.5] Include config/wp-config to ensure enforcement markers (headers) are registered
-            if ($driver === 'hook' || $driver === 'universal' || $driver === 'htaccess' || $driver === 'config' || $driver === 'wp-config' || $driver === 'wp_config') {
+            // Runtime hooks should only run for PHP-backed features. Static file drivers
+            // are handled by their generated config files and should not re-apply on every request.
+            if (self::driver_needs_runtime_hooks($driver, $schema)) {
                 if (class_exists('VAPTSECURE_Hook_Driver')) {
                     VAPTSECURE_Hook_Driver::apply($impl_data, $schema, $meta['feature_key']);
                 }
@@ -125,6 +131,27 @@ class VAPTSECURE_Enforcer
         }
     }
 
+    private static function driver_needs_runtime_hooks($driver, $schema)
+    {
+        $driver = strtolower((string) $driver);
+        if (in_array($driver, array('hook', 'php_functions', 'universal'), true)) {
+            return true;
+        }
+
+        $mappings = isset($schema['enforcement']['mappings']) && is_array($schema['enforcement']['mappings'])
+            ? $schema['enforcement']['mappings']
+            : array();
+
+        foreach ($mappings as $value) {
+            $code = is_string($value) ? $value : json_encode($value);
+            if (is_string($code) && preg_match('/\b(add_action|add_filter|remove_action|remove_filter|function)\b/i', $code)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * Entry point for enforcement after a feature is saved.
      * Always triggers a rebuild so toggling OFF also removes rules from config files.
@@ -133,6 +160,24 @@ class VAPTSECURE_Enforcer
     {
         // Clear runtime cache so changes apply instantly
         delete_transient('vaptsecure_active_enforcements');
+
+        $toggle_off = false;
+        foreach (array('is_enabled', 'is_enforced', 'enabled', 'feat_enabled', 'prot_enabled') as $toggle_key) {
+            if (!array_key_exists($toggle_key, $data)) {
+                continue;
+            }
+            $toggle_value = filter_var($data[$toggle_key], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+            if ($toggle_value === false) {
+                $toggle_off = true;
+                break;
+            }
+        }
+
+        if ($toggle_off) {
+            error_log("VAPT ENFORCER: Toggle OFF detected for {$key}; rebuilding active files to remove plugin-owned changes.");
+            self::rebuild_all();
+            return;
+        }
 
         $meta = VAPTSECURE_DB::get_feature_meta($key);
         if (!$meta) { 
@@ -185,10 +230,34 @@ class VAPTSECURE_Enforcer
             $results = $orchestrator->orchestrate($key, $schema, $profile, $impl_data);
 
             error_log("VAPT: Adaptive Deployment for {$key} results: " . json_encode($results));
-            
-            // [FIX v4.0.x] After adaptive orchestration, also rebuild all targets to ensure consistency
-            // This handles cases where adaptive deployment might miss certain files
-            self::rebuild_all();
+
+            // Keep the post-orchestration rebuild scoped to the selected driver.
+            $driver_name = $schema['enforcement']['driver'] ?? 'htaccess';
+            switch ($driver_name) {
+                case 'nginx':
+                    self::rebuild_nginx();
+                    break;
+                case 'iis':
+                    self::rebuild_iis();
+                    break;
+                case 'caddy':
+                    self::rebuild_caddy();
+                    break;
+                case 'config':
+                case 'wp_config':
+                case 'wp-config':
+                    self::rebuild_config();
+                    break;
+                case 'hook':
+                case 'php_functions':
+                    self::rebuild_php_functions();
+                    break;
+                case 'htaccess':
+                case 'universal':
+                default:
+                    self::rebuild_htaccess();
+                    break;
+            }
             return;
         }
 
@@ -272,7 +341,7 @@ class VAPTSECURE_Enforcer
                     if (strpos($feat['feature_key'], 'xml-rpc') !== false || strpos($feat['feature_key'], 'xmlrpc') !== false || $feat['feature_key'] === 'RISK-016-001') {
                         return true;
                     }
-                    return in_array($feat['feature_key'], $active_keys);
+                    return self::feature_matches_active_keys($feat, $active_keys);
                 }
             );
         }
@@ -314,7 +383,7 @@ class VAPTSECURE_Enforcer
                     if (strpos($feat['feature_key'], 'xml-rpc') !== false || strpos($feat['feature_key'], 'xmlrpc') !== false || $feat['feature_key'] === 'RISK-016-001') {
                         return true;
                     }
-                    return in_array($feat['feature_key'], $active_keys);
+                    return self::feature_matches_active_keys($feat, $active_keys);
                 }
             );
         }
@@ -356,7 +425,7 @@ class VAPTSECURE_Enforcer
                     if (strpos($feat['feature_key'], 'xml-rpc') !== false || strpos($feat['feature_key'], 'xmlrpc') !== false || $feat['feature_key'] === 'RISK-016-001') {
                         return true;
                     }
-                    return in_array($feat['feature_key'], $active_keys);
+                    return self::feature_matches_active_keys($feat, $active_keys);
                 }
             );
         }
@@ -422,8 +491,10 @@ class VAPTSECURE_Enforcer
         $schema = $raw ? json_decode($raw, true) : [];
 
         // [v4.0.0] Adaptive Schema Resolution
-        if (!isset($schema['enforcement']) || (isset($schema['enforcement']['driver']) && $schema['enforcement']['driver'] === 'hook' && empty($schema['enforcement']['mappings']))) {
-            if (isset($schema['client_deployment']['enforcement'])) {
+        // Prefer the catalog enforcement definition whenever the saved schema is missing
+        // or has an incomplete enforcement block (common after older generated payloads).
+        if (!isset($schema['enforcement']) || empty($schema['enforcement']) || empty($schema['enforcement']['mappings'])) {
+            if (isset($schema['client_deployment']['enforcement']) && is_array($schema['client_deployment']['enforcement'])) {
                 $schema['enforcement'] = $schema['client_deployment']['enforcement'];
             }
         }
@@ -433,14 +504,247 @@ class VAPTSECURE_Enforcer
             $schema['feature_key'] = $meta['feature_key'];
         }
 
+        $catalog_schema = self::load_catalog_feature_schema($schema['feature_key'] ?? ($meta['feature_key'] ?? ''));
+        if (is_array($catalog_schema)) {
+            $schema_key = $schema['feature_key'] ?? ($meta['feature_key'] ?? '');
+            if (empty($schema['platform_implementations']) && !empty($catalog_schema['platform_implementations'])) {
+                $schema['platform_implementations'] = $catalog_schema['platform_implementations'];
+            }
+            if (empty($schema['client_deployment']) && !empty($catalog_schema['client_deployment'])) {
+                $schema['client_deployment'] = $catalog_schema['client_deployment'];
+            }
+            if ((empty($schema['enforcement']) || empty($schema['enforcement']['mappings'])) && !empty($catalog_schema['client_deployment']['enforcement'])) {
+                $schema['enforcement'] = $catalog_schema['client_deployment']['enforcement'];
+            }
+            if ((empty($schema['enforcement']) || empty($schema['enforcement']['mappings'])) && !empty($catalog_schema['platform_implementations']) && is_array($catalog_schema['platform_implementations'])) {
+                $platform_code = self::resolve_pattern_code_ref(
+                    $catalog_schema['platform_implementations']['.htaccess']['code_ref'] ?? ($catalog_schema['platform_implementations']['htaccess']['code_ref'] ?? ''),
+                    'htaccess'
+                );
+                $schema['enforcement'] = array(
+                'driver' => 'htaccess',
+                'target' => 'root',
+                'mappings' => self::build_toggle_alias_mappings($schema_key, $platform_code)
+                );
+            }
+        }
+
+        // [v4.0.2] Schema self-heal: derive an enforcement block from platform implementations
+        // when older saved schemas only contain the UI catalog data.
+        if ((empty($schema['enforcement']) || empty($schema['enforcement']['mappings'])) && !empty($schema['platform_implementations']) && is_array($schema['platform_implementations'])) {
+            $risk_key = $schema['risk_id'] ?? $schema['feature_key'] ?? ($meta['feature_key'] ?? '');
+            $risk_suffix = str_replace('-', '_', strtolower((string) $risk_key));
+            $auto_key = "vapt_risk_{$risk_suffix}_enabled";
+
+            $platform_order = array('.htaccess', 'htaccess', 'iis', 'caddy', 'cloudflare');
+            $selected_platform = null;
+            foreach ($platform_order as $candidate) {
+                foreach ($schema['platform_implementations'] as $platform_name => $platform_impl) {
+                    $normalized = strtolower(str_replace(array(' ', '-'), '', (string) $platform_name));
+                    $candidate_norm = strtolower(str_replace(array(' ', '-', '.'), '', (string) $candidate));
+                    if ($normalized === $candidate_norm || strpos($normalized, $candidate_norm) !== false || strpos($candidate_norm, $normalized) !== false) {
+                        $selected_platform = $platform_name;
+                        break 2;
+                    }
+                }
+            }
+
+            if ($selected_platform !== null) {
+                $platform_impl = $schema['platform_implementations'][$selected_platform];
+                $platform_code = '';
+                if (is_array($platform_impl)) {
+                    if (!empty($platform_impl['code'])) {
+                        $platform_code = $platform_impl['code'];
+                    } elseif (!empty($platform_impl['wrapped_code'])) {
+                        $platform_code = $platform_impl['wrapped_code'];
+                    } elseif (!empty($platform_impl['code_ref'])) {
+                        $platform_code = self::resolve_pattern_code_ref($platform_impl['code_ref'], 'htaccess');
+                    }
+                } else {
+                    $platform_code = (string) $platform_impl;
+                }
+
+                if (!empty($platform_code)) {
+                    $schema['enforcement'] = array(
+                    'driver' => (stripos($selected_platform, 'iis') !== false) ? 'iis' : ((stripos($selected_platform, 'caddy') !== false) ? 'caddy' : ((stripos($selected_platform, 'cloudflare') !== false) ? 'cloudflare' : 'htaccess')),
+                    'target' => (stripos($selected_platform, 'uploads') !== false) ? 'uploads' : 'root',
+                    'mappings' => self::build_toggle_alias_mappings($schema['feature_key'] ?? ($meta['feature_key'] ?? ''), $platform_code)
+                    );
+                }
+            }
+        }
+
         return $schema;
+    }
+
+    /**
+     * Load the canonical feature definition from the active catalog bundle.
+     */
+    private static function load_catalog_feature_schema($feature_key)
+    {
+        $feature_key = strtoupper(trim((string) $feature_key));
+        if ($feature_key === '') {
+            return array();
+        }
+
+        $active_file = defined('VAPTSECURE_ACTIVE_DATA_FILE')
+            ? VAPTSECURE_ACTIVE_DATA_FILE
+            : get_option('vaptsecure_active_feature_file', 'interface_schema_v2.0.json');
+
+        $path = VAPTSECURE_PATH . 'data/' . sanitize_file_name((string) $active_file);
+        if (!file_exists($path)) {
+            $fallback = VAPTSECURE_PATH . 'data/interface_schema_v2.0.json';
+            if (file_exists($fallback)) {
+                $path = $fallback;
+            } else {
+                return array();
+            }
+        }
+
+        $data = json_decode(file_get_contents($path), true);
+        if (!is_array($data)) {
+            return array();
+        }
+
+        if (isset($data['risk_interfaces'][$feature_key]) && is_array($data['risk_interfaces'][$feature_key])) {
+            return $data['risk_interfaces'][$feature_key];
+        }
+
+        if (isset($data[$feature_key]) && is_array($data[$feature_key])) {
+            return $data[$feature_key];
+        }
+
+        if (!empty($data['risk_interfaces']) && is_array($data['risk_interfaces'])) {
+            foreach ($data['risk_interfaces'] as $item_key => $item) {
+                if (!is_array($item)) {
+                    continue;
+                }
+                $candidate = strtoupper(trim((string) ($item['risk_id'] ?? $item['id'] ?? $item['key'] ?? $item_key)));
+                if ($candidate === $feature_key) {
+                    return $item;
+                }
+            }
+        }
+
+        return array();
+    }
+
+    /**
+     * Resolve a code_ref into concrete code from the bundled pattern library.
+     */
+    private static function resolve_pattern_code_ref($ref, $platform)
+    {
+        $ref = trim((string) $ref);
+        if ($ref === '') {
+            return '';
+        }
+
+        $pattern_lib_path = VAPTSECURE_PATH . 'data/enforcer_pattern_library_v2.0.json';
+        if (!file_exists($pattern_lib_path)) {
+            return '';
+        }
+
+        static $pattern_lib = null;
+        if ($pattern_lib === null) {
+            $pattern_lib = json_decode(file_get_contents($pattern_lib_path), true);
+            if (!is_array($pattern_lib)) {
+                $pattern_lib = array();
+            }
+        }
+
+        $code_ref_clean = preg_replace('/^.*?\.patterns\./', 'patterns.', $ref);
+        $ref_path = explode('.', $code_ref_clean);
+        $current_node = $pattern_lib;
+
+        foreach ($ref_path as $node) {
+            if (is_array($current_node) && isset($current_node[$node])) {
+                $current_node = $current_node[$node];
+            } else {
+                $current_node = null;
+                break;
+            }
+        }
+
+        if (is_string($current_node)) {
+            return $current_node;
+        }
+
+        if (is_array($current_node)) {
+            if (isset($current_node[$platform])) {
+                $inner = $current_node[$platform];
+                if (is_array($inner)) {
+                    return $inner['code'] ?? $inner['wrapped_code'] ?? '';
+                }
+                return (string) $inner;
+            }
+
+            if (isset($current_node['code'])) {
+                return $current_node['code'];
+            }
+            if (isset($current_node['wrapped_code'])) {
+                return $current_node['wrapped_code'];
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * Build a tolerant toggle mapping set for the synthesized enforcement block.
+     */
+    private static function build_toggle_alias_mappings($feature_key, $platform_code)
+    {
+        $feature_key = (string) $feature_key;
+        $risk_suffix = str_replace('-', '_', strtolower($feature_key));
+        $auto_key = $risk_suffix !== '' ? "vapt_risk_{$risk_suffix}_enabled" : 'feat_enabled';
+
+        return array(
+            'feat_enabled' => $platform_code,
+            'enabled' => $platform_code,
+            'prot_enabled' => $platform_code,
+            $auto_key => $platform_code,
+        );
     }
 
     private static function resolve_impl($meta)
     {
         $status = $meta['status'] ?? 'draft';
         $raw = (in_array($status, ['test', 'release']) && !empty($meta['override_implementation_data'])) ? $meta['override_implementation_data'] : $meta['implementation_data'];
-        return $raw ? json_decode($raw, true) : [];
+        $resolved = $raw ? json_decode($raw, true) : [];
+        if (!is_array($resolved)) {
+            $resolved = array();
+        }
+
+        // Prefer the explicit UI toggle aliases first so OFF can override stale legacy flags.
+        $toggle_state = null;
+        $toggle_priority = array('feat_enabled', 'enabled', 'prot_enabled', 'is_enforced', 'is_enabled');
+        foreach ($toggle_priority as $toggle_key) {
+            if (array_key_exists($toggle_key, $resolved)) {
+                $toggle_state = filter_var($resolved[$toggle_key], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+                break;
+            }
+            if (array_key_exists($toggle_key, $meta)) {
+                $toggle_state = filter_var($meta[$toggle_key], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+                break;
+            }
+        }
+
+        if ($toggle_state === null) {
+            $auto_key = 'vapt_risk_' . str_replace('-', '_', strtolower((string)($meta['feature_key'] ?? $meta['risk_id'] ?? $meta['id'] ?? ''))) . '_enabled';
+            if (array_key_exists($auto_key, $resolved)) {
+                $toggle_state = filter_var($resolved[$auto_key], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+            } elseif (array_key_exists($auto_key, $meta)) {
+                $toggle_state = filter_var($meta[$auto_key], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+            }
+        }
+
+        if ($toggle_state !== null) {
+            $resolved['enabled'] = $toggle_state;
+            $resolved['feat_enabled'] = $toggle_state;
+            $resolved['prot_enabled'] = $toggle_state;
+        }
+
+        return $resolved;
     }
 
     /**
@@ -469,7 +773,7 @@ class VAPTSECURE_Enforcer
                     if (strpos($feat['feature_key'], 'xml-rpc') !== false || strpos($feat['feature_key'], 'xmlrpc') !== false || $feat['feature_key'] === 'RISK-016-001') {
                         return true;
                     }
-                    return in_array($feat['feature_key'], $active_keys);
+                    return self::feature_matches_active_keys($feat, $active_keys);
                 }
             );
         }
@@ -531,7 +835,7 @@ class VAPTSECURE_Enforcer
                     if (strpos($feat['feature_key'], 'xml-rpc') !== false || strpos($feat['feature_key'], 'xmlrpc') !== false || $feat['feature_key'] === 'RISK-016-001') {
                         return true;
                     }
-                    return in_array($feat['feature_key'], $active_keys);
+                    return self::feature_matches_active_keys($feat, $active_keys);
                 }
             );
         }
@@ -590,7 +894,122 @@ class VAPTSECURE_Enforcer
         self::rebuild_php_functions();
         delete_transient('vaptsecure_active_enforcements');
     }
-    
+
+    /**
+     * Build a file-target audit for a feature.
+     * Reports the status of the feature's primary enforcement target only.
+     */
+    public static function audit_feature_cleanup($feature_key)
+    {
+        $feature_key = trim((string) $feature_key);
+        if ($feature_key === '') {
+            return array();
+        }
+
+        $meta = VAPTSECURE_DB::get_feature_meta($feature_key);
+        if (!$meta) {
+            return array();
+        }
+
+        $schema = self::resolve_schema($meta);
+        $driver = strtolower((string) ($schema['enforcement']['driver'] ?? ''));
+        $target = strtolower((string) ($schema['enforcement']['target'] ?? 'root'));
+
+        $audit = array();
+
+        $resolve_wp_config_path = function () {
+            $paths = array();
+            if (defined('ABSPATH')) {
+                $base = rtrim(ABSPATH, DIRECTORY_SEPARATOR);
+                $paths[] = $base . DIRECTORY_SEPARATOR . 'wp-config.php';
+                $paths[] = dirname($base) . DIRECTORY_SEPARATOR . 'wp-config.php';
+                if (function_exists('get_home_path')) {
+                    $home = rtrim(get_home_path(), DIRECTORY_SEPARATOR);
+                    if (!empty($home)) {
+                        $paths[] = $home . DIRECTORY_SEPARATOR . 'wp-config.php';
+                        $paths[] = dirname($home) . DIRECTORY_SEPARATOR . 'wp-config.php';
+                    }
+                }
+            }
+
+            foreach (array_unique($paths) as $path) {
+                if (file_exists($path)) {
+                    return $path;
+                }
+            }
+
+            return isset($paths[0]) ? $paths[0] : (ABSPATH . 'wp-config.php');
+        };
+
+        $path = '';
+        $label = '';
+
+        if ($driver === 'htaccess' || $driver === 'universal' || $driver === '') {
+            $path = ($target === 'uploads') ? (wp_upload_dir()['basedir'] . '/.htaccess') : ((function_exists('get_home_path') ? get_home_path() : ABSPATH) . '.htaccess');
+            $label = ($target === 'uploads') ? 'uploads/.htaccess' : './.htaccess';
+        } elseif (in_array($driver, array('config', 'wp-config', 'wp_config'), true)) {
+            $path = $resolve_wp_config_path();
+            $label = './wp-config.php';
+        } elseif (in_array($driver, array('hook', 'php_functions'), true)) {
+            $path = VAPTSECURE_PATH . 'vapt-functions.php';
+            $label = 'vapt-functions.php';
+        } elseif ($driver === 'iis') {
+            $path = ABSPATH . 'web.config';
+            $label = './web.config';
+        } elseif ($driver === 'nginx') {
+            $path = wp_upload_dir()['basedir'] . '/vapt-nginx-rules.conf';
+            $label = 'vapt-nginx-rules.conf';
+        } elseif ($driver === 'caddy') {
+            $path = wp_upload_dir()['basedir'] . '/vapt-caddy-rules.conf';
+            $label = 'vapt-caddy-rules.conf';
+        } else {
+            $path = ($target === 'uploads') ? (wp_upload_dir()['basedir'] . '/.htaccess') : ((function_exists('get_home_path') ? get_home_path() : ABSPATH) . '.htaccess');
+            $label = ($target === 'uploads') ? 'uploads/.htaccess' : './.htaccess';
+        }
+
+        $exists = file_exists($path);
+        $content = $exists ? @file_get_contents($path) : '';
+        $has_marker = false;
+
+        if ($content !== false && $content !== '') {
+            if ($driver === 'htaccess' || $driver === 'universal' || $driver === '') {
+                $has_marker =
+                    (
+                        strpos($content, '# BEGIN VAPT SECURITY RULES') !== false ||
+                        strpos($content, '# ' . $feature_key) !== false ||
+                        strpos($content, '# BEGIN VAPT ' . $feature_key) !== false
+                    ) &&
+                    (strpos($content, $feature_key) !== false);
+            } elseif (in_array($driver, array('config', 'wp-config', 'wp_config'), true)) {
+                $has_marker =
+                    (strpos($content, 'BEGIN VAPT CONFIG RULES') !== false) ||
+                    (strpos($content, 'BEGIN VAPT SECURITY RULES') !== false) ||
+                    (strpos($content, $feature_key) !== false);
+            } elseif (in_array($driver, array('hook', 'php_functions'), true)) {
+                $has_marker =
+                    (strpos($content, '// BEGIN VAPT ' . $feature_key) !== false) ||
+                    (strpos($content, '# BEGIN VAPT ' . $feature_key) !== false) ||
+                    (strpos($content, $feature_key) !== false);
+            } elseif ($driver === 'iis') {
+                $has_marker = (strpos($content, 'VAPT-Feature: ' . $feature_key) !== false);
+            } elseif ($driver === 'nginx') {
+                $has_marker = (strpos($content, 'X-VAPT-Feature "' . $feature_key . '"') !== false);
+            } elseif ($driver === 'caddy') {
+                $has_marker = (strpos($content, 'VAPT-Feature: ' . $feature_key) !== false);
+            }
+        }
+
+        $audit[] = array(
+            'target' => $driver ?: 'htaccess',
+            'label' => $label,
+            'path' => $path,
+            'exists' => $exists,
+            'status' => $has_marker ? 'present' : 'removed',
+        );
+
+        return $audit;
+    }
+
     /**
      * Clean all configuration files of VAPT rules
      * Used when license expires or when removing protections
@@ -706,7 +1125,7 @@ class VAPTSECURE_Enforcer
                     if (strpos($feat['feature_key'], 'xml-rpc') !== false || strpos($feat['feature_key'], 'xmlrpc') !== false || $feat['feature_key'] === 'RISK-016-001') {
                         return true;
                     }
-                    return in_array($feat['feature_key'], $active_keys);
+                    return self::feature_matches_active_keys($feat, $active_keys);
                 }
             );
         }
@@ -766,6 +1185,64 @@ class VAPTSECURE_Enforcer
             }
         }
         return array_unique(array_filter($keys));
+    }
+
+    /**
+     * Flexible active-file matcher that tolerates risk IDs, slugs, titles and slugified aliases.
+     */
+    private static function feature_matches_active_keys($feat, $active_keys)
+    {
+        $normalize = static function ($value) {
+            $value = strtolower(trim((string) $value));
+            return preg_replace('/[^a-z0-9]+/', '', $value);
+        };
+
+        $candidates = array();
+        foreach (array('feature_key', 'risk_id', 'id', 'slug', 'name', 'title') as $field) {
+            if (!empty($feat[$field])) {
+                $candidates[] = (string) $feat[$field];
+            }
+        }
+
+        foreach (array('generated_schema', 'override_schema') as $schema_key) {
+            if (!empty($feat[$schema_key])) {
+                $decoded = json_decode((string) $feat[$schema_key], true);
+                if (is_array($decoded)) {
+                    foreach (array('feature_key', 'risk_id', 'id', 'slug', 'name', 'title') as $field) {
+                        if (!empty($decoded[$field])) {
+                            $candidates[] = (string) $decoded[$field];
+                        }
+                    }
+                }
+            }
+        }
+
+        $candidate_tokens = array();
+        foreach ($candidates as $candidate) {
+            $token = $normalize($candidate);
+            if ($token !== '') {
+                $candidate_tokens[] = $token;
+            }
+        }
+
+        foreach ($active_keys as $active_key) {
+            $active_token = $normalize($active_key);
+            if ($active_token === '') {
+                continue;
+            }
+
+            foreach ($candidate_tokens as $candidate_token) {
+                if ($candidate_token === $active_token) {
+                    return true;
+                }
+
+                if (strpos($candidate_token, $active_token) !== false || strpos($active_token, $candidate_token) !== false) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**

@@ -117,6 +117,25 @@ var vaptLog = window.vaptLog || {
         });
     };
 
+    const buildImplementationUpdate = (data) => {
+      const payload = { implementation_data: data };
+      let toggleValue = null;
+      if (data && Object.prototype.hasOwnProperty.call(data, 'feat_enabled')) {
+        toggleValue = data.feat_enabled;
+      } else if (data && Object.prototype.hasOwnProperty.call(data, 'prot_enabled')) {
+        toggleValue = data.prot_enabled;
+      } else if (data && Object.prototype.hasOwnProperty.call(data, 'enabled')) {
+        toggleValue = data.enabled;
+      }
+
+      if (toggleValue !== null) {
+        payload.is_enabled = toggleValue ? 1 : 0;
+        payload.is_enforced = toggleValue ? 1 : 0;
+      }
+
+      return payload;
+    };
+
     const availableStatuses = useMemo(() => isSuper ? ['All', 'Develop', 'Release'] : ['All', 'Develop', 'Release'], [isSuper]);
 
     const statusFeatures = useMemo(() => {
@@ -370,7 +389,7 @@ var vaptLog = window.vaptLog || {
                 f.generated_schema && GeneratedInterface
                   ? el(GeneratedInterface, { 
                       feature: { ...f, generated_schema: { ...effectiveSchema, controls: implControls } }, 
-                      onUpdate: (data) => updateFeature(f.key, { implementation_data: data }), 
+                      onUpdate: (data) => updateFeature(f.key, buildImplementationUpdate(data)),
                       hideProtocol: true, // 🛡️ v3.14.14: Explicitly hide protocol from left panel
                       hideImplementationControl: true,
                       hideOpNotes: false, // Keep Business Impact here
@@ -391,7 +410,7 @@ var vaptLog = window.vaptLog || {
                 masterToggleControl ? el('div', { className: 'vapt-inline-master-toggle', style: { transform: 'scale(0.85)', marginRight: '-10px', display: 'flex', alignItems: 'center' } }, [
                   el(GeneratedInterface, {
                     feature: { ...f, generated_schema: { ...effectiveSchema, controls: [masterToggleControl] } },
-                    onUpdate: (data) => updateFeature(f.key, { implementation_data: data }),
+                    onUpdate: (data) => updateFeature(f.key, buildImplementationUpdate(data)),
                     hideOpNotes: true,
                     hideProtocol: true,
                     hideMonitor: true,
@@ -411,7 +430,7 @@ var vaptLog = window.vaptLog || {
               // Render Security Insights / HTML controls
               insightControls.length > 0 && el(GeneratedInterface, {
                   feature: { ...f, generated_schema: { ...effectiveSchema, controls: insightControls } },
-                  onUpdate: (data) => updateFeature(f.key, { implementation_data: data }),
+                  onUpdate: (data) => updateFeature(f.key, buildImplementationUpdate(data)),
                   hideOpNotes: true,
                   hideProtocol: true,
                   hideMonitor: true
@@ -429,7 +448,7 @@ var vaptLog = window.vaptLog || {
                 el(GeneratedInterface, {
                   // 🛡️ v3.14.12: Pass a schema with ZERO controls to ensure NO toggles/inputs leak in
                   feature: { ...f, generated_schema: { ...schema, controls: [] } }, 
-                  onUpdate: (data) => updateFeature(f.key, { implementation_data: data }),
+                  onUpdate: (data) => updateFeature(f.key, buildImplementationUpdate(data)),
                   hideOpNotes: true,             
                   hideMonitor: true,             
                   hideImplementationControl: true, 
@@ -448,7 +467,7 @@ var vaptLog = window.vaptLog || {
               el('div', { style: { flex: 1, minWidth: 0, overflow: 'hidden' } }, [
                 automControls.length > 0 ? el(GeneratedInterface, {
                   feature: { ...f, generated_schema: { ...schema, controls: automControls } },
-                  onUpdate: (data) => updateFeature(f.key, { implementation_data: data }),
+                  onUpdate: (data) => updateFeature(f.key, buildImplementationUpdate(data)),
                   hideMonitor: true,
                   hideOpNotes: true, // Hide Business Impact here
                   hideProtocol: true, // Manual protocol is in its own panel
@@ -468,7 +487,7 @@ var vaptLog = window.vaptLog || {
             ]),
             el(GeneratedInterface, {
               feature: { ...f, generated_schema: { ...schema, controls: noteControls } },
-              onUpdate: (data) => updateFeature(f.key, { implementation_data: data }),
+              onUpdate: (data) => updateFeature(f.key, buildImplementationUpdate(data)),
               hideMonitor: true
             })
           ])
@@ -645,7 +664,7 @@ var vaptLog = window.vaptLog || {
 
             guideItems.length > 0 && el(GeneratedInterface, {
               feature: { ...f, generated_schema: { ...schema, controls: guideItems } },
-              onUpdate: (data) => updateFeature(f.key, { implementation_data: data }),
+              onUpdate: (data) => updateFeature(f.key, buildImplementationUpdate(data)),
               isGuidePanel: true
             })
           ]) : el('div', { style: { padding: '20px', textAlign: 'center', color: '#9ca3af', fontStyle: 'italic' } }, __('No manual verification steps defined.', 'vaptsecure')),
@@ -653,7 +672,7 @@ var vaptLog = window.vaptLog || {
           // Assurance Badges
           support.length > 0 && el('div', { style: { ...boxStyle, background: '#f0fdf4', border: '1px solid #bbf7d0' } }, [
             el('h4', { style: { margin: '0 0 12px 0', fontSize: '12px', fontWeight: 700, color: '#166534', textTransform: 'uppercase', letterSpacing: '0.05em' } }, __('Verification & Assurance')),
-            el(GeneratedInterface, { feature: { ...f, generated_schema: { ...schema, controls: support } }, onUpdate: (data) => updateFeature(f.key, { implementation_data: data }) })
+            el(GeneratedInterface, { feature: { ...f, generated_schema: { ...schema, controls: support } }, onUpdate: (data) => updateFeature(f.key, buildImplementationUpdate(data)) })
           ])
         ]);
       })())

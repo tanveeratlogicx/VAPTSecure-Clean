@@ -16,7 +16,21 @@ class VAPTSECURE_IIS_Driver implements VAPTSECURE_Driver_Interface
     public static function generate_rules($data, $schema)
     {
         // 🛡️ TWO-WAY DEACTIVATION (v3.6.19)
-        $is_enabled = isset($data['enabled']) ? (bool)$data['enabled'] : true;
+        $is_enabled = true;
+        if (isset($data['feat_enabled'])) {
+            $is_enabled = (bool) filter_var($data['feat_enabled'], FILTER_VALIDATE_BOOLEAN);
+        } elseif (isset($data['enabled'])) {
+            $is_enabled = (bool) filter_var($data['enabled'], FILTER_VALIDATE_BOOLEAN);
+        } elseif (isset($data['prot_enabled'])) {
+            $is_enabled = (bool) filter_var($data['prot_enabled'], FILTER_VALIDATE_BOOLEAN);
+        } else {
+            $risk_key = $schema['risk_id'] ?? $schema['id'] ?? $schema['feature_key'] ?? '';
+            $risk_suffix = str_replace('-', '_', strtolower($risk_key));
+            $auto_key = "vapt_risk_{$risk_suffix}_enabled";
+            if (isset($data[$auto_key])) {
+                $is_enabled = (bool) filter_var($data[$auto_key], FILTER_VALIDATE_BOOLEAN);
+            }
+        }
         if (!$is_enabled) {
             return array();
         }
@@ -121,8 +135,58 @@ class VAPTSECURE_IIS_Driver implements VAPTSECURE_Driver_Interface
             return false;
         }
 
-        // TODO: Full XML injection logic.
-        // For now, we return true to simulate success for the structure.
+        $content = file_get_contents($config_path);
+        if ($content === false) {
+            return false;
+        }
+
+        $start_marker = '<!-- BEGIN VAPT SECURITY RULES';
+        $end_marker = '<!-- END VAPT SECURITY RULES -->';
+        $new_content = $content;
+
+        while (($start_pos = strpos($new_content, $start_marker)) !== false &&
+               ($end_pos = strpos($new_content, $end_marker)) !== false &&
+               $end_pos > $start_pos) {
+            $before = substr($new_content, 0, $start_pos);
+            $after = substr($new_content, $end_pos + strlen($end_marker));
+            $new_content = $before . $after;
+        }
+
+        if (!empty($all_rules_array)) {
+            $feature_key = 'unknown';
+            foreach ($all_rules_array as $rule) {
+                if (preg_match('/VAPT\s+([A-Z0-9\-_]+)/i', (string) $rule, $m)) {
+                    $feature_key = $m[1];
+                    break;
+                }
+            }
+
+            $block = array();
+            $block[] = $start_marker . ' -->';
+            foreach ($all_rules_array as $rule) {
+                $block[] = $rule;
+            }
+            $block[] = "<!-- VAPT-Feature: $feature_key -->";
+            $block[] = $end_marker;
+
+            $insert_pos = strripos($new_content, '</system.webServer>');
+            if ($insert_pos !== false) {
+                $new_content = substr($new_content, 0, $insert_pos) . implode("\n", $block) . "\n" . substr($new_content, $insert_pos);
+            } else {
+                $insert_pos = strripos($new_content, '</configuration>');
+                if ($insert_pos !== false) {
+                    $new_content = substr($new_content, 0, $insert_pos) . implode("\n", $block) . "\n" . substr($new_content, $insert_pos);
+                } else {
+                    $new_content = trim($new_content) . "\n" . implode("\n", $block) . "\n";
+                }
+            }
+        }
+
+        $new_content = preg_replace("/\n{3,}/", "\n\n", $new_content);
+        if ($new_content !== $content) {
+            return @file_put_contents($config_path, $new_content) !== false;
+        }
+
         return true;
     }
 
@@ -134,8 +198,21 @@ class VAPTSECURE_IIS_Driver implements VAPTSECURE_Driver_Interface
      */
     public static function clean($target = 'root')
     {
-        // TODO: Implement full web.config cleaning logic
-        // For now, return true to satisfy interface contract
-        return true;
+        $config_path = ABSPATH . 'web.config';
+        if (!file_exists($config_path)) {
+            return true;
+        }
+        if (!is_writable($config_path)) {
+            return false;
+        }
+
+        $content = file_get_contents($config_path);
+        if ($content === false) {
+            return false;
+        }
+
+        $content = preg_replace('/<!-- BEGIN VAPT SECURITY RULES -->.*?<!-- END VAPT SECURITY RULES -->/s', '', $content);
+        $content = preg_replace('/\n{3,}/', "\n\n", $content);
+        return file_put_contents($config_path, trim($content) . "\n") !== false;
     }
 }

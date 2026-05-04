@@ -400,7 +400,29 @@ class VAPTSECURE_DB
      */
     public static function get_global_enforcement()
     {
-        return (bool) get_option('vaptsecure_global_protection', 1);
+        $enabled = (bool) get_option('vaptsecure_global_protection', 1);
+
+        if (!$enabled) {
+            if (
+                function_exists('vaptsecure_is_workbench_request') &&
+                vaptsecure_is_workbench_request() &&
+                function_exists('is_vaptsecure_superadmin') &&
+                is_vaptsecure_superadmin(false)
+            ) {
+                return true;
+            }
+
+            if (
+                function_exists('vaptsecure_is_builder_context') &&
+                vaptsecure_is_builder_context() &&
+                function_exists('is_vaptsecure_superadmin') &&
+                is_vaptsecure_superadmin(false)
+            ) {
+                return true;
+            }
+        }
+
+        return $enabled;
     }
 
     /**

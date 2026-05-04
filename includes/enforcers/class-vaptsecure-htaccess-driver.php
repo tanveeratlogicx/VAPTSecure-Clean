@@ -288,6 +288,8 @@ class VAPTSECURE_Htaccess_Driver implements VAPTSECURE_Driver_Interface
             $new_content = $before . $after;
         }
 
+        // Remove legacy per-feature blocks that were written without batch markers.
+        $new_content = self::strip_legacy_feature_blocks($new_content);
         $new_content = trim($new_content);
 
         // [v3.13.16] Restore WP block if it was lost during stripping (likely due to nested markers)
@@ -586,5 +588,43 @@ class VAPTSECURE_Htaccess_Driver implements VAPTSECURE_Driver_Interface
     {
         // Simply call write_batch with empty array to strip all VAPT rules
         return self::write_batch([], $target);
+    }
+
+    /**
+     * Strip legacy feature blocks that were written as standalone snippets.
+     */
+    private static function strip_legacy_feature_blocks($content)
+    {
+        $lines = preg_split("/\r\n|\n|\r/", (string) $content);
+        if (!is_array($lines)) {
+            return (string) $content;
+        }
+
+        $clean_lines = array();
+        $in_feature_block = false;
+
+        foreach ($lines as $line) {
+            $is_feature_start = (bool) preg_match('/^\s*#\s*(?:BEGIN\s+VAPT\s+)?RISK-\d+\b/i', $line);
+            $is_feature_boundary = (bool) preg_match('/^\s*#\s*(?:BEGIN\s+VAPT\s+)?RISK-\d+\b/i', $line)
+                || (bool) preg_match('/^\s*#\s*BEGIN\s+VAPT\s+SECURITY\s+RULES\b/i', $line)
+                || (bool) preg_match('/^\s*#\s*BEGIN\s+WordPress\b/i', $line);
+
+            if ($is_feature_start) {
+                $in_feature_block = true;
+                continue;
+            }
+
+            if ($in_feature_block) {
+                if ($is_feature_boundary) {
+                    $in_feature_block = false;
+                    $clean_lines[] = $line;
+                }
+                continue;
+            }
+
+            $clean_lines[] = $line;
+        }
+
+        return implode("\n", $clean_lines);
     }
 }
