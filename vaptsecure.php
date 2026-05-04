@@ -236,9 +236,27 @@ function vaptsecure_is_workbench_request()
 
     return in_array(
         $page,
-        ["vaptsecure-workbench", "vaptsecure-master-dashboard", "vaptsecure-admin"],
+        [
+            "vaptsecure",
+            "vaptsecure-workbench",
+            "vaptsecure-master-dashboard",
+            "vaptsecure-admin",
+            "vaptsecure-domain-admin",
+        ],
         true,
     );
+}
+
+function vaptsecure_current_user_can_safe($capability)
+{
+    if (
+        !function_exists("current_user_can") ||
+        !function_exists("wp_get_current_user")
+    ) {
+        return false;
+    }
+
+    return current_user_can($capability);
 }
 
 function vaptsecure_load_required_config()
@@ -252,21 +270,26 @@ function vaptsecure_load_required_config()
         : "";
     $is_local_host =
         in_array($host, ["localhost", "127.0.0.1", "::1"], true) ||
-        preg_match('/\.(local|test)$/', $host);
+        preg_match('/\.(local|test|dev)$/', $host);
     if (function_exists("wp_get_environment_type")) {
         $is_local_host =
             $is_local_host || wp_get_environment_type() === "local";
     }
 
     $should_bypass_blocking = function () use ($is_local_host) {
-        if ($is_local_host) {
+        $is_builder_admin_request =
+            function_exists("vaptsecure_is_workbench_request") &&
+            vaptsecure_is_workbench_request();
+
+        if (
+            $is_local_host ||
+            $is_builder_admin_request
+        ) {
             return true;
         }
         if (
-            function_exists("vaptsecure_is_workbench_request") &&
-            vaptsecure_is_workbench_request() &&
-            function_exists("is_vaptsecure_superadmin") &&
-            is_vaptsecure_superadmin(false)
+            function_exists("vaptsecure_current_user_can_safe") &&
+            vaptsecure_current_user_can_safe("manage_options")
         ) {
             return true;
         }
@@ -335,9 +358,12 @@ function vaptsecure_load_required_config()
     if (empty($candidates)) {
         $is_owner_workbench =
             function_exists("vaptsecure_is_workbench_request") &&
-            vaptsecure_is_workbench_request();
+            vaptsecure_is_workbench_request() &&
+            function_exists("is_vaptsecure_superadmin") &&
+            is_vaptsecure_superadmin(false);
+        $is_owner_context = $should_bypass_blocking();
 
-        if ($is_owner_workbench) {
+        if ($is_owner_workbench || $is_owner_context) {
             if (!defined("VAPTSECURE_CONFIG_LOADED")) {
                 define("VAPTSECURE_CONFIG_LOADED", true);
             }
@@ -345,6 +371,24 @@ function vaptsecure_load_required_config()
                 update_option("vaptsecure_global_protection", 1);
                 delete_transient("vaptsecure_active_enforcements");
             }
+            add_action("admin_notices", function () {
+                if (
+                    !function_exists("vaptsecure_current_user_can_safe") ||
+                    !vaptsecure_current_user_can_safe("manage_options")
+                ) {
+                    return;
+                }
+                echo '<div class="notice notice-warning"><p><strong>VAPTSecure Clean:</strong> Required configuration file is missing. Owner/builder mode is continuing without disabling the plugin.</p></div>';
+            });
+            add_action("network_admin_notices", function () {
+                if (
+                    !function_exists("vaptsecure_current_user_can_safe") ||
+                    !vaptsecure_current_user_can_safe("manage_network_options")
+                ) {
+                    return;
+                }
+                echo '<div class="notice notice-warning"><p><strong>VAPTSecure Clean:</strong> Required configuration file is missing. Owner/builder mode is continuing without disabling the plugin.</p></div>';
+            });
             return true;
         }
 
@@ -358,14 +402,20 @@ function vaptsecure_load_required_config()
         }
 
         add_action("admin_notices", function () {
-            if (!current_user_can("manage_options")) {
+            if (
+                !function_exists("vaptsecure_current_user_can_safe") ||
+                !vaptsecure_current_user_can_safe("manage_options")
+            ) {
                 return;
             }
             echo '<div class="notice notice-error"><p><strong>VAPTSecure Clean:</strong> Required configuration file is missing. The plugin is disabled.</p></div>';
         });
 
         add_action("network_admin_notices", function () {
-            if (!current_user_can("manage_network_options")) {
+            if (
+                !function_exists("vaptsecure_current_user_can_safe") ||
+                !vaptsecure_current_user_can_safe("manage_network_options")
+            ) {
                 return;
             }
             echo '<div class="notice notice-error"><p><strong>VAPTSecure Clean:</strong> Required configuration file is missing. The plugin is disabled.</p></div>';
@@ -612,7 +662,10 @@ function vaptsecure_load_required_config()
                 delete_transient("vaptsecure_active_enforcements");
             }
             add_action("admin_notices", function () {
-                if (!current_user_can("manage_options")) {
+                if (
+                    !function_exists("vaptsecure_current_user_can_safe") ||
+                    !vaptsecure_current_user_can_safe("manage_options")
+                ) {
                     return;
                 }
                 echo '<div class="notice notice-error"><p><strong>VAPTSecure Clean:</strong> Configuration file is invalid. The plugin is disabled.</p></div>';

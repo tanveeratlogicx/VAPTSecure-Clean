@@ -2616,6 +2616,7 @@ var vaptLog = window.vaptLog || {
       unfilteredTotal: safeFeatures.length,
       total: processedFeatures.length,
       draft: processedFeatures.filter(f => f.status === 'Draft').length,
+      nonDraft: processedFeatures.filter(f => !['draft', 'available', 'default', ''].includes(String(f.status || '').toLowerCase())).length,
       develop: processedFeatures.filter(f => f.status === 'Develop').length,
       release: processedFeatures.filter(f => f.status === 'Release').length
     };
@@ -2632,6 +2633,8 @@ var vaptLog = window.vaptLog || {
       processedFeatures = processedFeatures.filter(f => {
         // Handle legacy lowercase filters from localStorage
         const s = filterStatus.toLowerCase();
+        const featureStatus = String(f.status || '').toLowerCase();
+        if (s === 'non_draft') return !['draft', 'available', 'default', ''].includes(featureStatus);
         if (s === 'draft') return f.status === 'Draft';
         if (s === 'develop') return f.status === 'Develop';
         if (s === 'release') return f.status === 'Release';
@@ -3035,6 +3038,7 @@ var vaptLog = window.vaptLog || {
                 : sprintf(__('Filtered: %d of %d', 'vaptsecure'), stats.total, stats.unfilteredTotal)
             ),
             el('span', { style: { opacity: 0.7 } }, sprintf(__('Draft: %d', 'vaptsecure'), stats.draft)),
+            el('span', { style: { color: '#2271b1', fontWeight: '600' } }, sprintf(__('Non-Draft: %d', 'vaptsecure'), stats.nonDraft)),
             el('span', { style: { color: '#d63638', fontWeight: '600' } }, sprintf(__('Develop: %d', 'vaptsecure'), stats.develop)),
             el('span', { style: { color: '#46b450', fontWeight: '700' } }, sprintf(__('Release: %d', 'vaptsecure'), stats.release)),
 
@@ -3152,6 +3156,7 @@ var vaptLog = window.vaptLog || {
             el('div', { style: { display: 'flex', gap: '10px', flexWrap: 'wrap' } },
               [
                 { label: __('All', 'vaptsecure'), value: 'all' },
+                { label: __('Non-Draft', 'vaptsecure'), value: 'non_draft' },
                 { label: __('Draft', 'vaptsecure'), value: 'draft' },
                 { label: __('Develop', 'vaptsecure'), value: 'develop' },
                 { label: __('Release', 'vaptsecure'), value: 'release' },
