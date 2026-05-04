@@ -169,38 +169,42 @@ var vaptLog = window.vaptLog || {
 
     useEffect(() => {
       if (categories.length > 0) {
-        if (!activeCategory || (activeCategory !== 'all' && !categories.includes(activeCategory))) {
+        if (activeCategory && activeCategory !== 'all' && !categories.includes(activeCategory)) {
           setActiveCategory('all');
         }
       } else {
         setActiveCategory(null);
       }
-    }, [categories]);
+    }, [categories, activeCategory]);
 
     const displayFeatures = useMemo(() => {
       if (!activeCategory) return [];
-      let list = [];
-      if (activeCategory === 'all') list = statusFeatures;
-      else list = statusFeatures.filter(f => (f.category || 'Uncategorized') === activeCategory);
+      if (activeCategory === 'all') return statusFeatures;
+      return statusFeatures.filter(f => (f.category || 'Uncategorized') === activeCategory);
+    }, [statusFeatures, activeCategory]);
 
-      // If activeFeatureKey is not in the list, pick the first one
-      if (list.length > 0) {
-        const currentInList = list.find(f => f.key === activeFeatureKey);
+    useEffect(() => {
+      if (activeCategory === null) return;
+
+      if (displayFeatures.length > 0) {
+        const currentInList = displayFeatures.find(f => f.key === activeFeatureKey);
         if (!currentInList) {
-          setActiveFeatureKey(list[0].key);
+          setActiveFeatureKey(displayFeatures[0].key);
         }
       } else {
         setActiveFeatureKey(null);
       }
-
-      return list;
-    }, [statusFeatures, activeCategory, activeFeatureKey]);
+    }, [displayFeatures, activeFeatureKey, activeCategory]);
 
     const selectFeature = (featureKey, category) => {
       if (activeCategory !== category) {
         setActiveCategory(category);
       }
       setActiveFeatureKey(featureKey);
+    };
+
+    const toggleCategory = (category) => {
+      setActiveCategory(prev => prev === category ? null : category);
     };
 
     // Helper to render a single feature card
@@ -584,78 +588,167 @@ var vaptLog = window.vaptLog || {
 
       // Main Content Area
       el('div', { style: { display: 'flex', flexGrow: 1, overflow: 'hidden' } }, [
-        // Pane 1: Categories Sidebar (Left)
-        el('aside', { className: 'vapt-workbench-sidebar', style: { width: '240px', borderRight: '1px solid #e5e7eb', background: '#fff', overflowY: 'auto', padding: '20px 0', flexShrink: 0 } }, [
-          el('div', { style: { padding: '0 20px 10px', fontSize: '11px', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase' } }, __('Feature Categories')),
+        // Pane 1: Collapsible Feature Navigator
+        el('aside', { className: 'vapt-workbench-sidebar', style: { width: '360px', borderRight: '1px solid #e5e7eb', background: '#fff', overflowY: 'auto', padding: '18px 0', flexShrink: 0 } }, [
+          el('div', { style: { padding: '0 20px 14px', borderBottom: '1px solid #eef2f7' } }, [
+            el('div', { style: { fontSize: '11px', fontWeight: 800, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.06em' } }, __('Feature Navigator', 'vaptsecure')),
+            el('div', { style: { marginTop: '4px', fontSize: '12px', color: '#64748b' } }, sprintf(__('%d features across %d categories', 'vaptsecure'), statusFeatures.length, categories.length))
+          ]),
           categories.length > 0 && el(Fragment, null, [
-            el('button', {
-              onClick: () => setActiveCategory('all'),
-              className: 'vapt-sidebar-link' + (activeCategory === 'all' ? ' is-active' : ''),
-              style: {
-                width: '100%', border: 'none', background: activeCategory === 'all' ? '#eff6ff' : 'transparent',
-                color: activeCategory === 'all' ? '#1d4ed8' : '#4b5563',
-                padding: '12px 20px', textAlign: 'left', cursor: 'pointer', display: 'flex', justifyContent: 'space-between',
-                borderRight: activeCategory === 'all' ? '3px solid #1d4ed8' : 'none', fontWeight: activeCategory === 'all' ? 600 : 500,
-                fontSize: '14px'
-              }
-            }, [
-              el('span', null, __('All Categories', 'vaptsecure')),
-              el('span', { style: { fontSize: '11px', background: activeCategory === 'all' ? '#dbeafe' : '#f3f4f6', padding: '2px 6px', borderRadius: '4px' } }, statusFeatures.length)
-            ]),
+            (() => {
+              const isExpanded = activeCategory === 'all';
+              return el('div', {
+                key: 'all',
+                className: 'vapt-nav-accordion' + (isExpanded ? ' is-expanded' : ''),
+                style: { borderBottom: '1px solid #f1f5f9' }
+              }, [
+                el('button', {
+                  onClick: () => toggleCategory('all'),
+                  className: 'vapt-sidebar-link' + (isExpanded ? ' is-active' : ''),
+                  'aria-expanded': isExpanded,
+                  style: {
+                    width: '100%', border: 'none', background: isExpanded ? '#eff6ff' : 'transparent',
+                    color: isExpanded ? '#1d4ed8' : '#334155',
+                    padding: '13px 18px', textAlign: 'left', cursor: 'pointer',
+                    display: 'grid', gridTemplateColumns: '18px 1fr auto', alignItems: 'center', gap: '9px',
+                    borderRight: isExpanded ? '3px solid #1d4ed8' : '3px solid transparent',
+                    fontWeight: isExpanded ? 700 : 600,
+                    fontSize: '13px'
+                  }
+                }, [
+                  el('span', { style: { color: isExpanded ? '#1d4ed8' : '#94a3b8', fontSize: '13px', fontWeight: 800 } }, isExpanded ? '-' : '+'),
+                  el('span', null, __('All Categories', 'vaptsecure')),
+                  el('span', { style: { fontSize: '11px', background: isExpanded ? '#dbeafe' : '#f3f4f6', color: isExpanded ? '#1d4ed8' : '#64748b', padding: '2px 7px', borderRadius: '999px' } }, statusFeatures.length)
+                ]),
+                isExpanded && el('div', {
+                  className: 'vapt-nav-submenu',
+                  style: { padding: '2px 0 4px', background: '#f8fafc' }
+                }, statusFeatures.map((f, index) => {
+                  const isActive = activeFeatureKey === f.key;
+                  const multiFileClass = f.exists_in_multiple_files ? ' vapt-feature-multi-file' : (f.is_from_active_file === false ? ' vapt-feature-inactive-only' : '');
+                  return el('button', {
+                    key: f.key,
+                    title: f.label,
+                    onClick: () => selectFeature(f.key, 'all'),
+                    className: 'vapt-feature-item' + (isActive ? ' is-active' : '') + multiFileClass,
+                    style: {
+                      width: '100%', border: 'none',
+                      background: isActive ? '#e0ecff' : 'transparent',
+                      color: isActive ? '#1d4ed8' : '#475569',
+                      padding: '6px 18px 6px 58px', textAlign: 'left', cursor: 'pointer',
+                      display: 'grid',
+                      gridTemplateColumns: '28px 1fr',
+                      alignItems: 'center',
+                      gap: '8px',
+                      borderRight: isActive ? '3px solid #1d4ed8' : '3px solid transparent',
+                      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
+                      fontWeight: isActive ? 700 : 500,
+                      fontSize: '12px',
+                      lineHeight: 1.25,
+                      letterSpacing: '-0.01em',
+                      transition: 'all 0.15s ease'
+                    }
+                  }, [
+                    el('span', {
+                      style: {
+                        color: isActive ? '#1d4ed8' : '#94a3b8',
+                        fontWeight: 700,
+                        textAlign: 'right',
+                        fontVariantNumeric: 'tabular-nums'
+                      }
+                    }, String(index + 1).padStart(2, '0') + '.'),
+                    el('span', {
+                      style: {
+                        display: 'block',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }
+                    }, f.label)
+                  ]);
+                }))
+              ]);
+            })(),
             categories.map(cat => {
               const catFeatures = statusFeatures.filter(f => (f.category || 'Uncategorized') === cat);
-              const isActive = activeCategory === cat;
-              return el('button', {
+              const isExpanded = activeCategory === cat;
+              return el('div', {
                 key: cat,
-                onClick: () => setActiveCategory(cat),
-                className: 'vapt-sidebar-link' + (isActive ? ' is-active' : ''),
-                style: {
-                  width: '100%', border: 'none', background: isActive ? '#eff6ff' : 'transparent',
-                  color: isActive ? '#1d4ed8' : '#4b5563',
-                  padding: '12px 20px', textAlign: 'left', cursor: 'pointer', display: 'flex', justifyContent: 'space-between',
-                  borderRight: isActive ? '3px solid #1d4ed8' : 'none', fontWeight: isActive ? 600 : 500,
-                  fontSize: '14px'
-                }
+                className: 'vapt-nav-accordion' + (isExpanded ? ' is-expanded' : ''),
+                style: { borderBottom: '1px solid #f1f5f9' }
               }, [
-                el('span', null, cat),
-                el('span', { style: { fontSize: '11px', background: isActive ? '#dbeafe' : '#f3f4f6', padding: '2px 6px', borderRadius: '4px' } }, catFeatures.length)
+                el('button', {
+                  onClick: () => toggleCategory(cat),
+                  className: 'vapt-sidebar-link' + (isExpanded ? ' is-active' : ''),
+                  'aria-expanded': isExpanded,
+                  style: {
+                    width: '100%', border: 'none', background: isExpanded ? '#eff6ff' : 'transparent',
+                    color: isExpanded ? '#1d4ed8' : '#334155',
+                    padding: '13px 18px', textAlign: 'left', cursor: 'pointer',
+                    display: 'grid', gridTemplateColumns: '18px 1fr auto', alignItems: 'center', gap: '9px',
+                    borderRight: isExpanded ? '3px solid #1d4ed8' : '3px solid transparent',
+                    fontWeight: isExpanded ? 700 : 600,
+                    fontSize: '13px'
+                  }
+                }, [
+                  el('span', { style: { color: isExpanded ? '#1d4ed8' : '#94a3b8', fontSize: '13px', fontWeight: 800 } }, isExpanded ? '-' : '+'),
+                  el('span', null, cat),
+                  el('span', { style: { fontSize: '11px', background: isExpanded ? '#dbeafe' : '#f3f4f6', color: isExpanded ? '#1d4ed8' : '#64748b', padding: '2px 7px', borderRadius: '999px' } }, catFeatures.length)
+                ]),
+                isExpanded && el('div', {
+                  className: 'vapt-nav-submenu',
+                  style: { padding: '2px 0 4px', background: '#f8fafc' }
+                }, catFeatures.map((f, index) => {
+                  const isActive = activeFeatureKey === f.key;
+                  const multiFileClass = f.exists_in_multiple_files ? ' vapt-feature-multi-file' : (f.is_from_active_file === false ? ' vapt-feature-inactive-only' : '');
+                  return el('button', {
+                    key: f.key,
+                    title: f.label,
+                    onClick: () => selectFeature(f.key, cat),
+                    className: 'vapt-feature-item' + (isActive ? ' is-active' : '') + multiFileClass,
+                    style: {
+                      width: '100%', border: 'none',
+                      background: isActive ? '#e0ecff' : 'transparent',
+                      color: isActive ? '#1d4ed8' : '#475569',
+                      padding: '6px 18px 6px 58px', textAlign: 'left', cursor: 'pointer',
+                      display: 'grid',
+                      gridTemplateColumns: '28px 1fr',
+                      alignItems: 'center',
+                      gap: '8px',
+                      borderRight: isActive ? '3px solid #1d4ed8' : '3px solid transparent',
+                      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
+                      fontWeight: isActive ? 700 : 500,
+                      fontSize: '12px',
+                      lineHeight: 1.25,
+                      letterSpacing: '-0.01em',
+                      transition: 'all 0.15s ease'
+                    }
+                  }, [
+                    el('span', {
+                      style: {
+                        color: isActive ? '#1d4ed8' : '#94a3b8',
+                        fontWeight: 700,
+                        textAlign: 'right',
+                        fontVariantNumeric: 'tabular-nums'
+                      }
+                    }, String(index + 1).padStart(2, '0') + '.'),
+                    el('span', {
+                      style: {
+                        display: 'block',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }
+                    }, f.label)
+                  ]);
+                }))
               ]);
             })
           ]),
           categories.length === 0 && el('p', { style: { padding: '20px', color: '#9ca3af', fontSize: '13px' } }, __('No active categories', 'vaptsecure'))
         ]),
 
-        // Pane 2: Feature List (Middle)
-        el('div', { className: 'vapt-workbench-list', style: { width: '320px', borderRight: '1px solid #e5e7eb', background: '#fcfcfd', overflowY: 'auto', flexShrink: 0 } }, [
-          el('div', { style: { padding: '20px', fontSize: '11px', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', borderBottom: '1px solid #f3f4f6' } },
-            activeCategory === 'all' ? __('All Features', 'vaptsecure') : sprintf(__('%s Features', 'vaptsecure'), activeCategory)
-          ),
-          displayFeatures.length === 0 ? el('p', { style: { padding: '20px', color: '#9ca3af', fontSize: '13px' } }, __('No features available', 'vaptsecure')) :
-            displayFeatures.map(f => {
-              const isActive = activeFeatureKey === f.key;
-              const multiFileClass = f.exists_in_multiple_files ? ' vapt-feature-multi-file' : (f.is_from_active_file === false ? ' vapt-feature-inactive-only' : '');
-              return el('button', {
-                key: f.key,
-                onClick: () => setActiveFeatureKey(f.key),
-                className: 'vapt-feature-item' + (isActive ? ' is-active' : '') + multiFileClass,
-                style: {
-                  width: '100%', border: 'none', borderBottom: '1px solid #f3f4f6',
-                  background: isActive ? '#eff6ff' : 'transparent',
-                  color: isActive ? '#1d4ed8' : '#4b5563',
-                  padding: '12px 20px', textAlign: 'left', cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  borderRight: isActive ? '3px solid #1d4ed8' : 'none',
-                  fontWeight: isActive ? 600 : 500,
-                  fontSize: '14px',
-                  transition: 'all 0.15s ease'
-                }
-              }, [
-                el('span', null, f.label)
-              ]);
-            })
-        ]),
-
-        // Pane 3: Feature Interface (Right)
+        // Pane 2: Feature Interface (Right)
         el('main', { style: { flexGrow: 1, padding: '30px', overflowY: 'auto', background: '#f9fafb' } }, [
           !activeFeatureKey ? el('div', { style: { textAlign: 'center', padding: '100px', color: '#9ca3af' } }, __('Select a feature from the list to view implementation controls.', 'vaptsecure')) :
             el('div', { style: { maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px', minWidth: 0 } }, [
