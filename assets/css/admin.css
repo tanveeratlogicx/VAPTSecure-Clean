@@ -665,7 +665,27 @@
 
 /* Ensure the sidebar doesn't clip the expanded links entirely */
 .vapt-workbench-root .vapt-workbench-sidebar {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    max-height: calc(100vh - 145px);
+    scrollbar-gutter: stable;
+}
+
+.vapt-workbench-root .vapt-workbench-sidebar:not(.is-offcanvas) {
     overflow-x: visible !important;
+}
+
+@media (max-width: 1099px) {
+    .vapt-workbench-root .vapt-workbench-sidebar.is-offcanvas {
+        max-width: calc(100vw - 48px);
+        max-height: 100%;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+    }
+
+    .vapt-workbench-root .vapt-workbench-main {
+        flex-basis: 100%;
+    }
 }
 
 /* Custom Scrollbars */

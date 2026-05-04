@@ -50,10 +50,32 @@ var vaptLog = window.vaptLog || {
     });
     const [saveStatus, setSaveStatus] = useState(null);
     const [verifFeature, setVerifFeature] = useState(null);
+    const [viewportWidth, setViewportWidth] = useState(() => typeof window !== 'undefined' ? window.innerWidth : 1440);
+    const [isNavigatorOpen, setIsNavigatorOpen] = useState(true);
+    const [hasInitializedCategory, setHasInitializedCategory] = useState(false);
+
+    const isCompactViewport = viewportWidth < 1100;
+    const navigatorWidth = isCompactViewport ? Math.min(340, Math.max(280, viewportWidth - 48)) : 360;
 
     useEffect(() => {
       localStorage.setItem('vaptsecure_workbench_active_status', activeStatus);
     }, [activeStatus]);
+
+    useEffect(() => {
+      if (typeof window === 'undefined') return;
+
+      const onResize = () => {
+        const nextWidth = window.innerWidth;
+        setViewportWidth(nextWidth);
+        if (nextWidth >= 1100) {
+          setIsNavigatorOpen(true);
+        }
+      };
+
+      window.addEventListener('resize', onResize);
+      onResize();
+      return () => window.removeEventListener('resize', onResize);
+    }, []);
 
     useEffect(() => {
       if (activeFeatureKey) {
@@ -169,38 +191,45 @@ var vaptLog = window.vaptLog || {
 
     useEffect(() => {
       if (categories.length > 0) {
-        if (!activeCategory || (activeCategory !== 'all' && !categories.includes(activeCategory))) {
+        if (!hasInitializedCategory) {
+          setActiveCategory('all');
+          setHasInitializedCategory(true);
+        } else if (activeCategory && activeCategory !== 'all' && !categories.includes(activeCategory)) {
           setActiveCategory('all');
         }
       } else {
         setActiveCategory(null);
       }
-    }, [categories]);
+    }, [categories, activeCategory, hasInitializedCategory]);
 
     const displayFeatures = useMemo(() => {
       if (!activeCategory) return [];
-      let list = [];
-      if (activeCategory === 'all') list = statusFeatures;
-      else list = statusFeatures.filter(f => (f.category || 'Uncategorized') === activeCategory);
+      if (activeCategory === 'all') return statusFeatures;
+      return statusFeatures.filter(f => (f.category || 'Uncategorized') === activeCategory);
+    }, [statusFeatures, activeCategory]);
 
-      // If activeFeatureKey is not in the list, pick the first one
-      if (list.length > 0) {
-        const currentInList = list.find(f => f.key === activeFeatureKey);
+    useEffect(() => {
+      if (activeCategory === null) return;
+
+      if (displayFeatures.length > 0) {
+        const currentInList = displayFeatures.find(f => f.key === activeFeatureKey);
         if (!currentInList) {
-          setActiveFeatureKey(list[0].key);
+          setActiveFeatureKey(displayFeatures[0].key);
         }
       } else {
         setActiveFeatureKey(null);
       }
-
-      return list;
-    }, [statusFeatures, activeCategory, activeFeatureKey]);
+    }, [displayFeatures, activeFeatureKey, activeCategory]);
 
     const selectFeature = (featureKey, category) => {
       if (activeCategory !== category) {
         setActiveCategory(category);
       }
       setActiveFeatureKey(featureKey);
+    };
+
+    const toggleCategory = (category) => {
+      setActiveCategory(prev => prev === category ? null : category);
     };
 
     // Helper to render a single feature card
@@ -367,6 +396,41 @@ var vaptLog = window.vaptLog || {
         return val && val.toString().trim().length > 0;
       });
 
+      const automatedVerificationPanel = el('div', { className: 'vapt-automation-panel', style: { padding: '15px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' } }, [
+        el('h4', { style: { margin: '0 0 12px 0', fontSize: '11px', fontWeight: 700, color: '#0f766e', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' } }, [
+          el(Icon, { icon: 'yes-alt', size: 14 }),
+          __('Automated Verification Engine', 'vaptsecure')
+        ]),
+        el('div', { style: { flex: 1, minWidth: 0, overflow: 'hidden' } }, [
+          automControls.length > 0 ? el(GeneratedInterface, {
+            feature: { ...f, generated_schema: { ...schema, controls: automControls } },
+            onUpdate: (data) => updateFeature(f.key, buildImplementationUpdate(data)),
+            hideMonitor: true,
+            hideOpNotes: true, // Hide Business Impact here
+            hideProtocol: true, // Manual protocol is in its own panel
+            showTechnicalTrace: true,
+            showVerificationDetails: false
+          }) : el('p', { style: { fontSize: '12px', color: '#64748b', fontStyle: 'italic', margin: 0 } }, __('No automated tests defined.', 'vaptsecure'))
+        ])
+      ]);
+
+      const manualVerificationPanel = el('div', { className: 'vapt-protocol-panel', style: { padding: '15px', background: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' } }, [
+        el('div', { style: { flex: 1, minWidth: 0, overflow: 'hidden' } }, [
+          // v3.14.11: CLEANEST RENDERING - only show protocol box
+          el(GeneratedInterface, {
+            // 🛡️ v3.14.12: Pass a schema with ZERO controls to ensure NO toggles/inputs leak in
+            feature: { ...f, generated_schema: { ...schema, controls: [] } },
+            onUpdate: (data) => updateFeature(f.key, buildImplementationUpdate(data)),
+            hideOpNotes: true,
+            hideMonitor: true,
+            hideImplementationControl: true,
+            hideThreatPanel: true,
+            hideBadges: true,
+            hideProtocol: false
+          })
+        ])
+      ]);
+
       return el(Card, { key: f.key, id: `feature-${f.key}`, style: { borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: 'none' } }, [
         el(CardHeader, { style: { borderBottom: '1px solid #f3f4f6', padding: '12px 24px' } }, [
           el('div', { style: { display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: '20px', width: '100%' } }, [
@@ -415,109 +479,72 @@ var vaptLog = window.vaptLog || {
             ])
           ])
         ]),
-      el(CardBody, { style: { padding: '24px' } }, [
+      el(CardBody, { style: { padding: isCompactViewport ? '16px' : '24px' } }, [
         el('div', { style: { display: 'flex', flexDirection: 'column', gap: '25px' } }, [
-          // Row 1: Functional Implementation and Implementation Control
-          el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', alignItems: 'stretch' } }, [
-            // Left: Functional Implementation
-            el('div', { className: 'vapt-implementation-panel', style: { padding: '15px', background: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' } }, [
-              el('h4', { style: { margin: '0 0 15px 0', fontSize: '13px', fontWeight: 700, color: '#111827', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9', paddingBottom: '8px', minHeight: '32px' } }, [
-                el('span', { style: { display: 'flex', alignItems: 'center', gap: '8px' } }, [
-                  el(Icon, { icon: 'admin-settings', size: 16 }),
-                  __('Functional Implementation', 'vaptsecure')
+          // Row 1: Functional Implementation + Implementation Control
+          el('div', { style: { display: 'grid', gridTemplateColumns: isCompactViewport ? '1fr' : '1fr 1fr', gap: '15px', alignItems: 'start' } }, [
+            el('div', { style: { display: 'flex', flexDirection: 'column', gap: '15px', minWidth: 0 } }, [
+              el('div', { className: 'vapt-implementation-panel', style: { padding: '15px', background: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' } }, [
+                el('h4', { style: { margin: '0 0 15px 0', fontSize: '13px', fontWeight: 700, color: '#111827', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9', paddingBottom: '8px', minHeight: '32px' } }, [
+                  el('span', { style: { display: 'flex', alignItems: 'center', gap: '8px' } }, [
+                    el(Icon, { icon: 'admin-settings', size: 16 }),
+                    __('Functional Implementation', 'vaptsecure')
+                  ])
+                ]),
+                el('div', { style: { flex: 1, minWidth: 0, overflow: 'hidden' } }, [
+                  f.generated_schema && GeneratedInterface
+                    ? el(GeneratedInterface, {
+                        feature: { ...f, generated_schema: { ...effectiveSchema, controls: implControls } },
+                        onUpdate: (data) => updateFeature(f.key, buildImplementationUpdate(data)),
+                        hideProtocol: true, // 🛡️ v3.14.14: Explicitly hide protocol from left panel
+                        hideImplementationControl: true,
+                        hideOpNotes: false, // Keep Business Impact here
+                        hideThreatPanel: true // Prevent leaking Security Insights/HTML to left panel
+                      })
+                    : el('div', { style: { padding: '30px', background: '#f9fafb', border: '1px dashed #d1d5db', borderRadius: '8px', textAlign: 'center', color: '#9ca3af', fontSize: '13px' } },
+                      __('No configurable controls.', 'vaptsecure'))
                 ])
               ]),
-              el('div', { style: { flex: 1, minWidth: 0, overflow: 'hidden' } }, [
-                f.generated_schema && GeneratedInterface
-                  ? el(GeneratedInterface, { 
-                      feature: { ...f, generated_schema: { ...effectiveSchema, controls: implControls } }, 
+
+              el('div', { className: 'vapt-control-panel', style: { padding: '15px', background: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' } }, [
+                el('h4', { style: { margin: '0 0 15px 0', fontSize: '13px', fontWeight: 700, color: '#111827', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '8px', minHeight: '32px' } }, [
+                  el('span', { style: { display: 'flex', alignItems: 'center', gap: '8px' } }, [
+                    el(Icon, { icon: 'shield', size: 16 }),
+                    __('Implementation Control', 'vaptsecure')
+                  ]),
+                  // 🛡️ Enable Protection Toggle next to title
+                  masterToggleControl ? el('div', { className: 'vapt-inline-master-toggle', style: { transform: 'scale(0.85)', marginRight: '-10px', display: 'flex', alignItems: 'center' } }, [
+                    el(GeneratedInterface, {
+                      feature: { ...f, generated_schema: { ...effectiveSchema, controls: [masterToggleControl] } },
                       onUpdate: (data) => updateFeature(f.key, buildImplementationUpdate(data)),
-                      hideProtocol: true, // 🛡️ v3.14.14: Explicitly hide protocol from left panel
-                      hideImplementationControl: true,
-                      hideOpNotes: false, // Keep Business Impact here
-                      hideThreatPanel: true // Prevent leaking Security Insights/HTML to left panel
+                      hideOpNotes: true,
+                      hideProtocol: true,
+                      hideMonitor: true,
+                      globalProtection: true,
+                      isCompact: false // Restored label
                     })
-                  : el('div', { style: { padding: '30px', background: '#f9fafb', border: '1px dashed #d1d5db', borderRadius: '8px', textAlign: 'center', color: '#9ca3af', fontSize: '13px' } },
-                    __('No configurable controls.', 'vaptsecure'))
-              ])
-            ]),
-            // Right: Implementation Control
-            el('div', { className: 'vapt-control-panel', style: { padding: '15px', background: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' } }, [
-              el('h4', { style: { margin: '0 0 15px 0', fontSize: '13px', fontWeight: 700, color: '#111827', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '8px', minHeight: '32px' } }, [
-                el('span', { style: { display: 'flex', alignItems: 'center', gap: '8px' } }, [
-                  el(Icon, { icon: 'shield', size: 16 }),
-                  __('Implementation Control', 'vaptsecure')
+                  ]) : el('div', { className: 'vapt-inline-master-toggle', style: { transform: 'scale(0.85)', marginRight: '-10px', display: 'flex', alignItems: 'center' } }, [
+                    el(ToggleControl, {
+                      label: __('Enable Protection', 'vaptsecure'),
+                      checked: !!(f.is_enabled || f.is_enforced),
+                      onChange: (val) => updateFeature(f.key, { is_enabled: val ? 1 : 0, is_enforced: val ? 1 : 0 }, __('Saved', 'vaptsecure')),
+                      __nextHasNoMarginBottom: true
+                    })
+                  ])
                 ]),
-                // 🛡️ Enable Protection Toggle next to title
-                masterToggleControl ? el('div', { className: 'vapt-inline-master-toggle', style: { transform: 'scale(0.85)', marginRight: '-10px', display: 'flex', alignItems: 'center' } }, [
+                insightControls.length > 0 && el('div', { style: { padding: '10px 0 0' } }, [
                   el(GeneratedInterface, {
-                    feature: { ...f, generated_schema: { ...effectiveSchema, controls: [masterToggleControl] } },
+                    feature: { ...f, generated_schema: { ...effectiveSchema, controls: insightControls } },
                     onUpdate: (data) => updateFeature(f.key, buildImplementationUpdate(data)),
                     hideOpNotes: true,
                     hideProtocol: true,
-                    hideMonitor: true,
-                    globalProtection: true,
-                    isCompact: false // Restored label
-                  })
-                ]) : el('div', { className: 'vapt-inline-master-toggle', style: { transform: 'scale(0.85)', marginRight: '-10px', display: 'flex', alignItems: 'center' } }, [
-                  el(ToggleControl, {
-                    label: __('Enable Protection', 'vaptsecure'),
-                    checked: !!(f.is_enabled || f.is_enforced),
-                    onChange: (val) => updateFeature(f.key, { is_enabled: val ? 1 : 0, is_enforced: val ? 1 : 0 }, __('Saved', 'vaptsecure')),
-                    __nextHasNoMarginBottom: true
+                    hideMonitor: true
                   })
                 ])
               ]),
-              el('div', { style: { padding: '10px 0' } }, [
-              // Render Security Insights / HTML controls
-              insightControls.length > 0 && el(GeneratedInterface, {
-                  feature: { ...f, generated_schema: { ...effectiveSchema, controls: insightControls } },
-                  onUpdate: (data) => updateFeature(f.key, buildImplementationUpdate(data)),
-                  hideOpNotes: true,
-                  hideProtocol: true,
-                  hideMonitor: true
-                })
-              ])
-            ])
-          ]),
-
-          // Row 2: Manual Verification Protocol and Automated Verification Engine
-          el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' } }, [
-            // Left: Manual Verification Protocol
-            el('div', { className: 'vapt-protocol-panel', style: { padding: '15px', background: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' } }, [
-              el('div', { style: { flex: 1, minWidth: 0, overflow: 'hidden' } }, [
-                // v3.14.11: CLEANEST RENDERING - only show protocol box
-                el(GeneratedInterface, {
-                  // 🛡️ v3.14.12: Pass a schema with ZERO controls to ensure NO toggles/inputs leak in
-                  feature: { ...f, generated_schema: { ...schema, controls: [] } }, 
-                  onUpdate: (data) => updateFeature(f.key, buildImplementationUpdate(data)),
-                  hideOpNotes: true,             
-                  hideMonitor: true,             
-                  hideImplementationControl: true, 
-                  hideThreatPanel: true,          
-                  hideBadges: true,               
-                  hideProtocol: false             
-                })
-              ])
+              manualVerificationPanel
             ]),
-            // Right: Automated Verification Engine
-            el('div', { className: 'vapt-automation-panel', style: { padding: '15px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' } }, [
-              el('h4', { style: { margin: '0 0 12px 0', fontSize: '11px', fontWeight: 700, color: '#0f766e', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' } }, [
-                el(Icon, { icon: 'yes-alt', size: 14 }),
-                __('Automated Verification Engine', 'vaptsecure')
-              ]),
-              el('div', { style: { flex: 1, minWidth: 0, overflow: 'hidden' } }, [
-                automControls.length > 0 ? el(GeneratedInterface, {
-                  feature: { ...f, generated_schema: { ...schema, controls: automControls } },
-                  onUpdate: (data) => updateFeature(f.key, buildImplementationUpdate(data)),
-                  hideMonitor: true,
-                  hideOpNotes: true, // Hide Business Impact here
-                  hideProtocol: true, // Manual protocol is in its own panel
-                  showTechnicalTrace: true,
-                  showVerificationDetails: false
-                }) : el('p', { style: { fontSize: '12px', color: '#64748b', fontStyle: 'italic', margin: 0 } }, __('No automated tests defined.', 'vaptsecure'))
-              ])
-            ])
+            automatedVerificationPanel
           ])
         ]),
 
@@ -583,82 +610,231 @@ var vaptLog = window.vaptLog || {
       ]),
 
       // Main Content Area
-      el('div', { style: { display: 'flex', flexGrow: 1, overflow: 'hidden' } }, [
-        // Pane 1: Categories Sidebar (Left)
-        el('aside', { className: 'vapt-workbench-sidebar', style: { width: '240px', borderRight: '1px solid #e5e7eb', background: '#fff', overflowY: 'auto', padding: '20px 0', flexShrink: 0 } }, [
-          el('div', { style: { padding: '0 20px 10px', fontSize: '11px', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase' } }, __('Feature Categories')),
+      el('div', { className: 'vapt-workbench-shell', style: { display: 'flex', flexGrow: 1, overflow: 'hidden', position: 'relative' } }, [
+        isCompactViewport && el(Button, {
+          className: 'vapt-workbench-nav-toggle',
+          onClick: () => setIsNavigatorOpen(prev => !prev),
+          style: {
+            position: 'absolute',
+            top: '14px',
+            left: '16px',
+            zIndex: 45,
+            background: '#111827',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '999px',
+            padding: '7px 12px',
+            fontSize: '12px',
+            fontWeight: 700,
+            boxShadow: '0 8px 18px rgba(15, 23, 42, 0.18)'
+          }
+        }, isNavigatorOpen ? __('Hide Menu', 'vaptsecure') : __('Menu', 'vaptsecure')),
+        isCompactViewport && isNavigatorOpen && el('button', {
+          className: 'vapt-workbench-nav-backdrop',
+          'aria-label': __('Close feature navigator', 'vaptsecure'),
+          onClick: () => setIsNavigatorOpen(false),
+          style: {
+            position: 'absolute',
+            inset: 0,
+            zIndex: 35,
+            border: 'none',
+            background: 'rgba(15, 23, 42, 0.28)',
+            cursor: 'pointer'
+          }
+        }),
+        // Pane 1: Collapsible Feature Navigator
+        el('aside', {
+          className: 'vapt-workbench-sidebar' + (isCompactViewport ? ' is-offcanvas' : '') + (isNavigatorOpen ? ' is-open' : ''),
+          style: {
+            width: `${navigatorWidth}px`,
+            borderRight: '1px solid #e5e7eb',
+            background: '#fff',
+            overflowY: 'auto',
+            maxHeight: '100%',
+            padding: isCompactViewport ? '58px 0 18px' : '18px 0',
+            flexShrink: 0,
+            position: isCompactViewport ? 'absolute' : 'relative',
+            top: 0,
+            bottom: 0,
+            left: 0,
+            zIndex: isCompactViewport ? 40 : 'auto',
+            transform: isCompactViewport && !isNavigatorOpen ? 'translateX(-105%)' : 'translateX(0)',
+            transition: 'transform 180ms ease, box-shadow 180ms ease',
+            boxShadow: isCompactViewport && isNavigatorOpen ? '18px 0 35px rgba(15, 23, 42, 0.18)' : 'none'
+          }
+        }, [
+          el('div', { style: { padding: '0 20px 14px', borderBottom: '1px solid #eef2f7' } }, [
+            el('div', { style: { fontSize: '11px', fontWeight: 800, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.06em' } }, __('Feature Navigator', 'vaptsecure')),
+            el('div', { style: { marginTop: '4px', fontSize: '12px', color: '#64748b' } }, sprintf(__('%d features across %d categories', 'vaptsecure'), statusFeatures.length, categories.length))
+          ]),
           categories.length > 0 && el(Fragment, null, [
-            el('button', {
-              onClick: () => setActiveCategory('all'),
-              className: 'vapt-sidebar-link' + (activeCategory === 'all' ? ' is-active' : ''),
-              style: {
-                width: '100%', border: 'none', background: activeCategory === 'all' ? '#eff6ff' : 'transparent',
-                color: activeCategory === 'all' ? '#1d4ed8' : '#4b5563',
-                padding: '12px 20px', textAlign: 'left', cursor: 'pointer', display: 'flex', justifyContent: 'space-between',
-                borderRight: activeCategory === 'all' ? '3px solid #1d4ed8' : 'none', fontWeight: activeCategory === 'all' ? 600 : 500,
-                fontSize: '14px'
-              }
-            }, [
-              el('span', null, __('All Categories', 'vaptsecure')),
-              el('span', { style: { fontSize: '11px', background: activeCategory === 'all' ? '#dbeafe' : '#f3f4f6', padding: '2px 6px', borderRadius: '4px' } }, statusFeatures.length)
-            ]),
+            (() => {
+              const isExpanded = activeCategory === 'all';
+              return el('div', {
+                key: 'all',
+                className: 'vapt-nav-accordion' + (isExpanded ? ' is-expanded' : ''),
+                style: { borderBottom: '1px solid #f1f5f9' }
+              }, [
+                el('button', {
+                  onClick: () => toggleCategory('all'),
+                  className: 'vapt-sidebar-link' + (isExpanded ? ' is-active' : ''),
+                  'aria-expanded': isExpanded,
+                  style: {
+                    width: '100%', border: 'none', background: isExpanded ? '#eff6ff' : 'transparent',
+                    color: isExpanded ? '#1d4ed8' : '#334155',
+                    padding: '13px 18px', textAlign: 'left', cursor: 'pointer',
+                    display: 'grid', gridTemplateColumns: '18px 1fr auto', alignItems: 'center', gap: '9px',
+                    borderRight: isExpanded ? '3px solid #1d4ed8' : '3px solid transparent',
+                    fontWeight: isExpanded ? 700 : 600,
+                    fontSize: '13px'
+                  }
+                }, [
+                  el('span', { style: { color: isExpanded ? '#1d4ed8' : '#94a3b8', fontSize: '13px', fontWeight: 800 } }, isExpanded ? '-' : '+'),
+                  el('span', null, __('All Categories', 'vaptsecure')),
+                  el('span', { style: { fontSize: '11px', background: isExpanded ? '#dbeafe' : '#f3f4f6', color: isExpanded ? '#1d4ed8' : '#64748b', padding: '2px 7px', borderRadius: '999px' } }, statusFeatures.length)
+                ]),
+                isExpanded && el('div', {
+                  className: 'vapt-nav-submenu',
+                  style: { padding: '2px 0 4px', background: '#f8fafc' }
+                }, statusFeatures.map((f, index) => {
+                  const isActive = activeFeatureKey === f.key;
+                  const multiFileClass = f.exists_in_multiple_files ? ' vapt-feature-multi-file' : (f.is_from_active_file === false ? ' vapt-feature-inactive-only' : '');
+                  return el('button', {
+                    key: f.key,
+                    title: f.label,
+                    onClick: () => selectFeature(f.key, 'all'),
+                    className: 'vapt-feature-item' + (isActive ? ' is-active' : '') + multiFileClass,
+                    style: {
+                      width: '100%', border: 'none',
+                      background: isActive ? '#e0ecff' : 'transparent',
+                      color: isActive ? '#1d4ed8' : '#475569',
+                      padding: '6px 18px 6px 58px', textAlign: 'left', cursor: 'pointer',
+                      display: 'grid',
+                      gridTemplateColumns: '28px 1fr',
+                      alignItems: 'center',
+                      gap: '8px',
+                      borderRight: isActive ? '3px solid #1d4ed8' : '3px solid transparent',
+                      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
+                      fontWeight: isActive ? 700 : 500,
+                      fontSize: '12px',
+                      lineHeight: 1.25,
+                      letterSpacing: '-0.01em',
+                      transition: 'all 0.15s ease'
+                    }
+                  }, [
+                    el('span', {
+                      style: {
+                        color: isActive ? '#1d4ed8' : '#94a3b8',
+                        fontWeight: 700,
+                        textAlign: 'right',
+                        fontVariantNumeric: 'tabular-nums'
+                      }
+                    }, String(index + 1).padStart(2, '0') + '.'),
+                    el('span', {
+                      style: {
+                        display: 'block',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }
+                    }, f.label)
+                  ]);
+                }))
+              ]);
+            })(),
             categories.map(cat => {
               const catFeatures = statusFeatures.filter(f => (f.category || 'Uncategorized') === cat);
-              const isActive = activeCategory === cat;
-              return el('button', {
+              const isExpanded = activeCategory === cat;
+              return el('div', {
                 key: cat,
-                onClick: () => setActiveCategory(cat),
-                className: 'vapt-sidebar-link' + (isActive ? ' is-active' : ''),
-                style: {
-                  width: '100%', border: 'none', background: isActive ? '#eff6ff' : 'transparent',
-                  color: isActive ? '#1d4ed8' : '#4b5563',
-                  padding: '12px 20px', textAlign: 'left', cursor: 'pointer', display: 'flex', justifyContent: 'space-between',
-                  borderRight: isActive ? '3px solid #1d4ed8' : 'none', fontWeight: isActive ? 600 : 500,
-                  fontSize: '14px'
-                }
+                className: 'vapt-nav-accordion' + (isExpanded ? ' is-expanded' : ''),
+                style: { borderBottom: '1px solid #f1f5f9' }
               }, [
-                el('span', null, cat),
-                el('span', { style: { fontSize: '11px', background: isActive ? '#dbeafe' : '#f3f4f6', padding: '2px 6px', borderRadius: '4px' } }, catFeatures.length)
+                el('button', {
+                  onClick: () => toggleCategory(cat),
+                  className: 'vapt-sidebar-link' + (isExpanded ? ' is-active' : ''),
+                  'aria-expanded': isExpanded,
+                  style: {
+                    width: '100%', border: 'none', background: isExpanded ? '#eff6ff' : 'transparent',
+                    color: isExpanded ? '#1d4ed8' : '#334155',
+                    padding: '13px 18px', textAlign: 'left', cursor: 'pointer',
+                    display: 'grid', gridTemplateColumns: '18px 1fr auto', alignItems: 'center', gap: '9px',
+                    borderRight: isExpanded ? '3px solid #1d4ed8' : '3px solid transparent',
+                    fontWeight: isExpanded ? 700 : 600,
+                    fontSize: '13px'
+                  }
+                }, [
+                  el('span', { style: { color: isExpanded ? '#1d4ed8' : '#94a3b8', fontSize: '13px', fontWeight: 800 } }, isExpanded ? '-' : '+'),
+                  el('span', null, cat),
+                  el('span', { style: { fontSize: '11px', background: isExpanded ? '#dbeafe' : '#f3f4f6', color: isExpanded ? '#1d4ed8' : '#64748b', padding: '2px 7px', borderRadius: '999px' } }, catFeatures.length)
+                ]),
+                isExpanded && el('div', {
+                  className: 'vapt-nav-submenu',
+                  style: { padding: '2px 0 4px', background: '#f8fafc' }
+                }, catFeatures.map((f, index) => {
+                  const isActive = activeFeatureKey === f.key;
+                  const multiFileClass = f.exists_in_multiple_files ? ' vapt-feature-multi-file' : (f.is_from_active_file === false ? ' vapt-feature-inactive-only' : '');
+                  return el('button', {
+                    key: f.key,
+                    title: f.label,
+                    onClick: () => selectFeature(f.key, cat),
+                    className: 'vapt-feature-item' + (isActive ? ' is-active' : '') + multiFileClass,
+                    style: {
+                      width: '100%', border: 'none',
+                      background: isActive ? '#e0ecff' : 'transparent',
+                      color: isActive ? '#1d4ed8' : '#475569',
+                      padding: '6px 18px 6px 58px', textAlign: 'left', cursor: 'pointer',
+                      display: 'grid',
+                      gridTemplateColumns: '28px 1fr',
+                      alignItems: 'center',
+                      gap: '8px',
+                      borderRight: isActive ? '3px solid #1d4ed8' : '3px solid transparent',
+                      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
+                      fontWeight: isActive ? 700 : 500,
+                      fontSize: '12px',
+                      lineHeight: 1.25,
+                      letterSpacing: '-0.01em',
+                      transition: 'all 0.15s ease'
+                    }
+                  }, [
+                    el('span', {
+                      style: {
+                        color: isActive ? '#1d4ed8' : '#94a3b8',
+                        fontWeight: 700,
+                        textAlign: 'right',
+                        fontVariantNumeric: 'tabular-nums'
+                      }
+                    }, String(index + 1).padStart(2, '0') + '.'),
+                    el('span', {
+                      style: {
+                        display: 'block',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }
+                    }, f.label)
+                  ]);
+                }))
               ]);
             })
           ]),
           categories.length === 0 && el('p', { style: { padding: '20px', color: '#9ca3af', fontSize: '13px' } }, __('No active categories', 'vaptsecure'))
         ]),
 
-        // Pane 2: Feature List (Middle)
-        el('div', { className: 'vapt-workbench-list', style: { width: '320px', borderRight: '1px solid #e5e7eb', background: '#fcfcfd', overflowY: 'auto', flexShrink: 0 } }, [
-          el('div', { style: { padding: '20px', fontSize: '11px', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', borderBottom: '1px solid #f3f4f6' } },
-            activeCategory === 'all' ? __('All Features', 'vaptsecure') : sprintf(__('%s Features', 'vaptsecure'), activeCategory)
-          ),
-          displayFeatures.length === 0 ? el('p', { style: { padding: '20px', color: '#9ca3af', fontSize: '13px' } }, __('No features available', 'vaptsecure')) :
-            displayFeatures.map(f => {
-              const isActive = activeFeatureKey === f.key;
-              const multiFileClass = f.exists_in_multiple_files ? ' vapt-feature-multi-file' : (f.is_from_active_file === false ? ' vapt-feature-inactive-only' : '');
-              return el('button', {
-                key: f.key,
-                onClick: () => setActiveFeatureKey(f.key),
-                className: 'vapt-feature-item' + (isActive ? ' is-active' : '') + multiFileClass,
-                style: {
-                  width: '100%', border: 'none', borderBottom: '1px solid #f3f4f6',
-                  background: isActive ? '#eff6ff' : 'transparent',
-                  color: isActive ? '#1d4ed8' : '#4b5563',
-                  padding: '12px 20px', textAlign: 'left', cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  borderRight: isActive ? '3px solid #1d4ed8' : 'none',
-                  fontWeight: isActive ? 600 : 500,
-                  fontSize: '14px',
-                  transition: 'all 0.15s ease'
-                }
-              }, [
-                el('span', null, f.label)
-              ]);
-            })
-        ]),
-
-        // Pane 3: Feature Interface (Right)
-        el('main', { style: { flexGrow: 1, padding: '30px', overflowY: 'auto', background: '#f9fafb' } }, [
+        // Pane 2: Feature Interface (Right)
+        el('main', {
+          className: 'vapt-workbench-main',
+          style: {
+            flexGrow: 1,
+            minWidth: 0,
+            width: isCompactViewport ? '100%' : 'auto',
+            padding: isCompactViewport ? '62px 16px 24px' : '30px',
+            overflowY: 'auto',
+            background: '#f9fafb'
+          }
+        }, [
           !activeFeatureKey ? el('div', { style: { textAlign: 'center', padding: '100px', color: '#9ca3af' } }, __('Select a feature from the list to view implementation controls.', 'vaptsecure')) :
-            el('div', { style: { maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px', minWidth: 0 } }, [
+            el('div', { style: { maxWidth: isCompactViewport ? '100%' : '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px', minWidth: 0 } }, [
               // Breadcrumb Removed (v3.6.19 Request)
               renderFeatureCard(features.find(f => f.key === activeFeatureKey), setVerifFeature)
             ])
