@@ -371,6 +371,41 @@ var vaptLog = window.vaptLog || {
         return val && val.toString().trim().length > 0;
       });
 
+      const automatedVerificationPanel = el('div', { className: 'vapt-automation-panel', style: { padding: '15px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' } }, [
+        el('h4', { style: { margin: '0 0 12px 0', fontSize: '11px', fontWeight: 700, color: '#0f766e', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' } }, [
+          el(Icon, { icon: 'yes-alt', size: 14 }),
+          __('Automated Verification Engine', 'vaptsecure')
+        ]),
+        el('div', { style: { flex: 1, minWidth: 0, overflow: 'hidden' } }, [
+          automControls.length > 0 ? el(GeneratedInterface, {
+            feature: { ...f, generated_schema: { ...schema, controls: automControls } },
+            onUpdate: (data) => updateFeature(f.key, buildImplementationUpdate(data)),
+            hideMonitor: true,
+            hideOpNotes: true, // Hide Business Impact here
+            hideProtocol: true, // Manual protocol is in its own panel
+            showTechnicalTrace: true,
+            showVerificationDetails: false
+          }) : el('p', { style: { fontSize: '12px', color: '#64748b', fontStyle: 'italic', margin: 0 } }, __('No automated tests defined.', 'vaptsecure'))
+        ])
+      ]);
+
+      const manualVerificationPanel = el('div', { className: 'vapt-protocol-panel', style: { padding: '15px', background: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' } }, [
+        el('div', { style: { flex: 1, minWidth: 0, overflow: 'hidden' } }, [
+          // v3.14.11: CLEANEST RENDERING - only show protocol box
+          el(GeneratedInterface, {
+            // 🛡️ v3.14.12: Pass a schema with ZERO controls to ensure NO toggles/inputs leak in
+            feature: { ...f, generated_schema: { ...schema, controls: [] } },
+            onUpdate: (data) => updateFeature(f.key, buildImplementationUpdate(data)),
+            hideOpNotes: true,
+            hideMonitor: true,
+            hideImplementationControl: true,
+            hideThreatPanel: true,
+            hideBadges: true,
+            hideProtocol: false
+          })
+        ])
+      ]);
+
       return el(Card, { key: f.key, id: `feature-${f.key}`, style: { borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: 'none' } }, [
         el(CardHeader, { style: { borderBottom: '1px solid #f3f4f6', padding: '12px 24px' } }, [
           el('div', { style: { display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: '20px', width: '100%' } }, [
@@ -421,107 +456,70 @@ var vaptLog = window.vaptLog || {
         ]),
       el(CardBody, { style: { padding: '24px' } }, [
         el('div', { style: { display: 'flex', flexDirection: 'column', gap: '25px' } }, [
-          // Row 1: Functional Implementation and Implementation Control
-          el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', alignItems: 'stretch' } }, [
-            // Left: Functional Implementation
-            el('div', { className: 'vapt-implementation-panel', style: { padding: '15px', background: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' } }, [
-              el('h4', { style: { margin: '0 0 15px 0', fontSize: '13px', fontWeight: 700, color: '#111827', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9', paddingBottom: '8px', minHeight: '32px' } }, [
-                el('span', { style: { display: 'flex', alignItems: 'center', gap: '8px' } }, [
-                  el(Icon, { icon: 'admin-settings', size: 16 }),
-                  __('Functional Implementation', 'vaptsecure')
+          // Row 1: Functional Implementation + Implementation Control
+          el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', alignItems: 'start' } }, [
+            el('div', { style: { display: 'flex', flexDirection: 'column', gap: '15px', minWidth: 0 } }, [
+              el('div', { className: 'vapt-implementation-panel', style: { padding: '15px', background: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' } }, [
+                el('h4', { style: { margin: '0 0 15px 0', fontSize: '13px', fontWeight: 700, color: '#111827', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9', paddingBottom: '8px', minHeight: '32px' } }, [
+                  el('span', { style: { display: 'flex', alignItems: 'center', gap: '8px' } }, [
+                    el(Icon, { icon: 'admin-settings', size: 16 }),
+                    __('Functional Implementation', 'vaptsecure')
+                  ])
+                ]),
+                el('div', { style: { flex: 1, minWidth: 0, overflow: 'hidden' } }, [
+                  f.generated_schema && GeneratedInterface
+                    ? el(GeneratedInterface, {
+                        feature: { ...f, generated_schema: { ...effectiveSchema, controls: implControls } },
+                        onUpdate: (data) => updateFeature(f.key, buildImplementationUpdate(data)),
+                        hideProtocol: true, // 🛡️ v3.14.14: Explicitly hide protocol from left panel
+                        hideImplementationControl: true,
+                        hideOpNotes: false, // Keep Business Impact here
+                        hideThreatPanel: true // Prevent leaking Security Insights/HTML to left panel
+                      })
+                    : el('div', { style: { padding: '30px', background: '#f9fafb', border: '1px dashed #d1d5db', borderRadius: '8px', textAlign: 'center', color: '#9ca3af', fontSize: '13px' } },
+                      __('No configurable controls.', 'vaptsecure'))
                 ])
               ]),
-              el('div', { style: { flex: 1, minWidth: 0, overflow: 'hidden' } }, [
-                f.generated_schema && GeneratedInterface
-                  ? el(GeneratedInterface, { 
-                      feature: { ...f, generated_schema: { ...effectiveSchema, controls: implControls } }, 
+
+              el('div', { className: 'vapt-control-panel', style: { padding: '15px', background: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' } }, [
+                el('h4', { style: { margin: '0 0 15px 0', fontSize: '13px', fontWeight: 700, color: '#111827', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '8px', minHeight: '32px' } }, [
+                  el('span', { style: { display: 'flex', alignItems: 'center', gap: '8px' } }, [
+                    el(Icon, { icon: 'shield', size: 16 }),
+                    __('Implementation Control', 'vaptsecure')
+                  ]),
+                  // 🛡️ Enable Protection Toggle next to title
+                  masterToggleControl ? el('div', { className: 'vapt-inline-master-toggle', style: { transform: 'scale(0.85)', marginRight: '-10px', display: 'flex', alignItems: 'center' } }, [
+                    el(GeneratedInterface, {
+                      feature: { ...f, generated_schema: { ...effectiveSchema, controls: [masterToggleControl] } },
                       onUpdate: (data) => updateFeature(f.key, buildImplementationUpdate(data)),
-                      hideProtocol: true, // 🛡️ v3.14.14: Explicitly hide protocol from left panel
-                      hideImplementationControl: true,
-                      hideOpNotes: false, // Keep Business Impact here
-                      hideThreatPanel: true // Prevent leaking Security Insights/HTML to left panel
+                      hideOpNotes: true,
+                      hideProtocol: true,
+                      hideMonitor: true,
+                      globalProtection: true,
+                      isCompact: false // Restored label
                     })
-                  : el('div', { style: { padding: '30px', background: '#f9fafb', border: '1px dashed #d1d5db', borderRadius: '8px', textAlign: 'center', color: '#9ca3af', fontSize: '13px' } },
-                    __('No configurable controls.', 'vaptsecure'))
-              ])
-            ]),
-            // Right: Implementation Control
-            el('div', { className: 'vapt-control-panel', style: { padding: '15px', background: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' } }, [
-              el('h4', { style: { margin: '0 0 15px 0', fontSize: '13px', fontWeight: 700, color: '#111827', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '8px', minHeight: '32px' } }, [
-                el('span', { style: { display: 'flex', alignItems: 'center', gap: '8px' } }, [
-                  el(Icon, { icon: 'shield', size: 16 }),
-                  __('Implementation Control', 'vaptsecure')
+                  ]) : el('div', { className: 'vapt-inline-master-toggle', style: { transform: 'scale(0.85)', marginRight: '-10px', display: 'flex', alignItems: 'center' } }, [
+                    el(ToggleControl, {
+                      label: __('Enable Protection', 'vaptsecure'),
+                      checked: !!(f.is_enabled || f.is_enforced),
+                      onChange: (val) => updateFeature(f.key, { is_enabled: val ? 1 : 0, is_enforced: val ? 1 : 0 }, __('Saved', 'vaptsecure')),
+                      __nextHasNoMarginBottom: true
+                    })
+                  ])
                 ]),
-                // 🛡️ Enable Protection Toggle next to title
-                masterToggleControl ? el('div', { className: 'vapt-inline-master-toggle', style: { transform: 'scale(0.85)', marginRight: '-10px', display: 'flex', alignItems: 'center' } }, [
+                insightControls.length > 0 && el('div', { style: { padding: '10px 0 0' } }, [
                   el(GeneratedInterface, {
-                    feature: { ...f, generated_schema: { ...effectiveSchema, controls: [masterToggleControl] } },
+                    feature: { ...f, generated_schema: { ...effectiveSchema, controls: insightControls } },
                     onUpdate: (data) => updateFeature(f.key, buildImplementationUpdate(data)),
                     hideOpNotes: true,
                     hideProtocol: true,
-                    hideMonitor: true,
-                    globalProtection: true,
-                    isCompact: false // Restored label
-                  })
-                ]) : el('div', { className: 'vapt-inline-master-toggle', style: { transform: 'scale(0.85)', marginRight: '-10px', display: 'flex', alignItems: 'center' } }, [
-                  el(ToggleControl, {
-                    label: __('Enable Protection', 'vaptsecure'),
-                    checked: !!(f.is_enabled || f.is_enforced),
-                    onChange: (val) => updateFeature(f.key, { is_enabled: val ? 1 : 0, is_enforced: val ? 1 : 0 }, __('Saved', 'vaptsecure')),
-                    __nextHasNoMarginBottom: true
+                    hideMonitor: true
                   })
                 ])
               ]),
-              el('div', { style: { padding: '10px 0' } }, [
-              // Render Security Insights / HTML controls
-              insightControls.length > 0 && el(GeneratedInterface, {
-                  feature: { ...f, generated_schema: { ...effectiveSchema, controls: insightControls } },
-                  onUpdate: (data) => updateFeature(f.key, buildImplementationUpdate(data)),
-                  hideOpNotes: true,
-                  hideProtocol: true,
-                  hideMonitor: true
-                })
-              ])
-            ])
-          ]),
-
-          // Row 2: Manual Verification Protocol and Automated Verification Engine
-          el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' } }, [
-            // Left: Manual Verification Protocol
-            el('div', { className: 'vapt-protocol-panel', style: { padding: '15px', background: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' } }, [
-              el('div', { style: { flex: 1, minWidth: 0, overflow: 'hidden' } }, [
-                // v3.14.11: CLEANEST RENDERING - only show protocol box
-                el(GeneratedInterface, {
-                  // 🛡️ v3.14.12: Pass a schema with ZERO controls to ensure NO toggles/inputs leak in
-                  feature: { ...f, generated_schema: { ...schema, controls: [] } }, 
-                  onUpdate: (data) => updateFeature(f.key, buildImplementationUpdate(data)),
-                  hideOpNotes: true,             
-                  hideMonitor: true,             
-                  hideImplementationControl: true, 
-                  hideThreatPanel: true,          
-                  hideBadges: true,               
-                  hideProtocol: false             
-                })
-              ])
+              manualVerificationPanel
             ]),
-            // Right: Automated Verification Engine
-            el('div', { className: 'vapt-automation-panel', style: { padding: '15px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' } }, [
-              el('h4', { style: { margin: '0 0 12px 0', fontSize: '11px', fontWeight: 700, color: '#0f766e', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' } }, [
-                el(Icon, { icon: 'yes-alt', size: 14 }),
-                __('Automated Verification Engine', 'vaptsecure')
-              ]),
-              el('div', { style: { flex: 1, minWidth: 0, overflow: 'hidden' } }, [
-                automControls.length > 0 ? el(GeneratedInterface, {
-                  feature: { ...f, generated_schema: { ...schema, controls: automControls } },
-                  onUpdate: (data) => updateFeature(f.key, buildImplementationUpdate(data)),
-                  hideMonitor: true,
-                  hideOpNotes: true, // Hide Business Impact here
-                  hideProtocol: true, // Manual protocol is in its own panel
-                  showTechnicalTrace: true,
-                  showVerificationDetails: false
-                }) : el('p', { style: { fontSize: '12px', color: '#64748b', fontStyle: 'italic', margin: 0 } }, __('No automated tests defined.', 'vaptsecure'))
-              ])
-            ])
+            automatedVerificationPanel
           ])
         ]),
 
