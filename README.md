@@ -1,9 +1,9 @@
-# VAPTSecure Clean v3.5.5
+# VAPTSecure Clean v3.5.7
 
 Production-ready WordPress security plugin with VAPT and OWASP protection.
 
 ## Version
-**3.5.5** - Patch release for Workbench menu UI refinements
+**3.5.7** - Patch release for completed Workbench interface UI tweaking
 
 ## Package Contents
 - vaptsecure.php - Main plugin file
