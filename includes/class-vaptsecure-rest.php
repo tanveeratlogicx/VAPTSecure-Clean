@@ -515,6 +515,13 @@ class VAPTSECURE_REST
         if (class_exists('VAPTSECURE_Enforcer') && method_exists('VAPTSECURE_Enforcer', 'audit_feature_cleanup')) {
             $audit_summary = VAPTSECURE_Enforcer::audit_feature_cleanup($key);
         }
+        $file_verified = false;
+        foreach ($audit_summary as $audit_item) {
+            if (isset($audit_item['status']) && strtolower((string) $audit_item['status']) === 'present') {
+                $file_verified = true;
+                break;
+            }
+        }
 
         if (strpos($blob, 'cron') !== false) {
             $probe['path'] = '/wp-cron.php';
@@ -536,16 +543,19 @@ class VAPTSECURE_REST
         }
 
         return new WP_REST_Response(array(
-            'success' => $runtime_verified,
+            'success' => ($runtime_verified || $file_verified),
             'key' => $key,
             'title' => $schema['title'] ?? ($meta['feature_name'] ?? $key),
             'status' => $meta['status'] ?? 'unknown',
             'probe' => $probe,
             'audit_summary' => $audit_summary,
             'runtime_verified' => $runtime_verified,
-            'message' => $runtime_verified
-                ? 'Runtime enforcement is registered for this feature.'
-                : 'Runtime enforcement is not currently registered for this feature.',
+            'file_verified' => $file_verified,
+            'message' => $file_verified
+                ? 'Static file enforcement is present for this feature.'
+                : ($runtime_verified
+                    ? 'Runtime enforcement is registered for this feature.'
+                    : 'No plugin-owned enforcement marker was found for this feature.'),
         ), 200);
     }
 

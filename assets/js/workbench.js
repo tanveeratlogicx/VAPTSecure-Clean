@@ -275,9 +275,8 @@ var vaptLog = window.vaptLog || {
       }
 
       const effectiveSchema = schema && Array.isArray(schema.controls)
-        ? {
-            ...schema,
-            controls: schema.controls.map((control) => {
+        ? (() => {
+            const controls = schema.controls.map((control) => {
               const controlLabel = String(control.label || '').toLowerCase();
               const controlPath = String(control.test_config?.path || '').toLowerCase();
               const isPingbackControl =
@@ -293,8 +292,51 @@ var vaptLog = window.vaptLog || {
                 label: 'Test: XML-RPC Pingback Block',
                 test_logic: 'disable_xmlrpc_pingback'
               };
-            })
-          }
+            }).filter((control, index, mappedControls) => {
+              if (control.type !== 'test_action' || control.test_logic !== 'disable_xmlrpc_pingback') {
+                return true;
+              }
+
+              return mappedControls.findIndex(candidate =>
+                candidate.type === 'test_action' &&
+                candidate.test_logic === 'disable_xmlrpc_pingback'
+              ) === index;
+            });
+
+            const hasActiveProbe = controls.some(control => control.type === 'test_action' && control.key === 'verify_active_protection');
+            if (!hasActiveProbe && controls.some(control => control.type === 'test_action')) {
+              const activeProbePath = featureBlob.includes('xmlrpc') || featureBlob.includes('xml-rpc') || featureBlob.includes('pingback')
+                ? '/xmlrpc.php'
+                : (featureBlob.includes('cron') || featureBlob.includes('wp-cron')
+                  ? '/wp-cron.php'
+                  : '/');
+
+              controls.push({
+                type: 'test_action',
+                label: 'Active Protection Probe',
+                key: 'verify_active_protection',
+                test_logic: 'universal_probe',
+                test_config: {
+                  path: activeProbePath,
+                  expected_status: activeProbePath === '/' ? [200] : [401, 403, 404, 405]
+                },
+                help: __('Runs a runtime endpoint probe to confirm the protection response.', 'vaptsecure')
+              });
+            }
+
+            const testPriority = (control) => {
+              if (control.type !== 'test_action') return 0;
+
+              const label = String(control.label || '').toLowerCase();
+              if (control.key === 'verify_integrity' || label.includes('site integrity')) return 30;
+              if (control.key === 'verify_active_protection' || label.includes('active protection probe')) return 20;
+              return 10;
+            };
+
+            controls.sort((a, b) => testPriority(a) - testPriority(b));
+
+            return { ...schema, controls };
+          })()
         : schema;
 
       // Filter controls

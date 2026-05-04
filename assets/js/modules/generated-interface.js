@@ -18,6 +18,7 @@ var vaptLog = window.vaptLog || {
   const { createElement: el, useState, useEffect, useRef, useMemo } = wp.element;
   const { Button, TextControl, ToggleControl, SelectControl, TextareaControl, Modal, Icon, Tooltip } = wp.components;
   const { __, sprintf } = wp.i18n;
+  const apiFetch = wp.apiFetch;
 
   /**
    * Universal URL Resolver (v3.13.2)
@@ -609,76 +610,95 @@ var vaptLog = window.vaptLog || {
       const vaptReason = response.headers.get('x-vapt-reason');
       const isEnabled = isFeatureEnabled(featureData);
       let auditSummary = [];
-      try {
-        const auditResp = await apiFetch({
-          path: `vaptsecure/v1/features/${encodeURIComponent(featureKey)}/verify`,
-          method: 'POST'
-        });
-        if (Array.isArray(auditResp?.audit_summary)) {
-          auditSummary = auditResp.audit_summary;
+      if (typeof apiFetch === 'function') {
+        try {
+          const auditResp = await apiFetch({
+            path: `vaptsecure/v1/features/${encodeURIComponent(featureKey)}/verify`,
+            method: 'POST'
+          });
+          if (Array.isArray(auditResp?.audit_summary)) {
+            auditSummary = auditResp.audit_summary;
+          }
+        } catch (e) {
+          vaptLog.warn('Pingback ownership audit failed:', e);
         }
-      } catch (e) {
-        vaptLog.warn('Pingback ownership audit failed:', e);
       }
 
       const hasFileOwnership = auditSummary.some(item => String(item?.status || '').toLowerCase() === 'present');
+      const auditAvailable = auditSummary.length > 0;
       const auditLabel = auditSummary.length
         ? auditSummary.map(item => `${item?.label || item?.target || 'target'}=${item?.status || 'unknown'}`).join(', ')
         : 'unavailable';
 
       const pingbackExposed = bodyLower.includes('pingback.ping') || bodyLower.includes('pingback.extensions.getpingbacks');
       const hasPluginOwnership = (vaptOrigin || '').toLowerCase() === 'vaptsecure' || vaptEnforced === 'php-pingback';
-      const pingbackBlocked = response.status === 401 || response.status === 403 || response.status === 404 || response.status === 405 || hasPluginOwnership || !pingbackExposed;
+      const httpBlocked = response.status === 401 || response.status === 403 || response.status === 404 || response.status === 405;
+      const pingbackBlocked = httpBlocked || hasPluginOwnership || !pingbackExposed;
 
       if (!hasPluginOwnership && hasFileOwnership) {
         return {
           success: true,
-          message: `Plugin enforcement confirmed: XML-RPC pingback is disabled in the target file.`,
-          raw: `URL: ${url} | Status: ${response.status} | Toggle: ${isEnabled ? 'ON' : 'OFF'} | File Audit: present\n\n${body.substring(0, 800)}`
+          message: `Plugin enforcement confirmed: the target file contains this feature's XML-RPC rule.`,
+          raw: `URL: ${url} | Status: ${response.status} | Toggle: ${isEnabled ? 'ON' : 'OFF'} | File Audit: ${auditLabel}`
         };
       }
 
       if (hasPluginOwnership) {
         if (featureKey && enforcedFeature && enforcedFeature !== featureKey) {
-          return { inconclusive: true, success: false, message: `Inconclusive: XML-RPC pingback is blocked by another VAPT feature ('${enforcedFeature}').`, raw: `URL: ${url} | Status: ${response.status} | Enforcement: ${vaptEnforced || 'php-pingback'} | Origin: ${vaptOrigin || 'unknown'}\n\n${body.substring(0, 800)}` };
+          return { inconclusive: true, success: false, message: `Inconclusive: XML-RPC pingback is blocked by another VAPT feature ('${enforcedFeature}').`, raw: `URL: ${url} | Status: ${response.status} | Enforcement: ${vaptEnforced || 'php-pingback'} | Origin: ${vaptOrigin || 'unknown'}` };
         }
         if (!isEnabled) {
-          return { success: false, message: `External block detected: pingback enforcement is present but the feature toggle is OFF.`, raw: `URL: ${url} | Status: ${response.status} | Toggle: OFF | Enforcement: ${vaptEnforced || 'php-pingback'} | Origin: ${vaptOrigin || 'unknown'} | Reason: ${vaptReason || 'n/a'}\n\n${body.substring(0, 800)}` };
+          return { success: false, message: `External block detected: pingback enforcement is present but the feature toggle is OFF.`, raw: `URL: ${url} | Status: ${response.status} | Toggle: OFF | Enforcement: ${vaptEnforced || 'php-pingback'} | Origin: ${vaptOrigin || 'unknown'} | Reason: ${vaptReason || 'n/a'}` };
         }
-        return { success: true, message: `Plugin enforcement confirmed: XML-RPC pingback is disabled by this plugin.`, raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Enforcement: ${vaptEnforced || 'php-pingback'} | Origin: ${vaptOrigin || 'vaptsecure'} | Reason: ${vaptReason || 'pingback-removed'}\n\n${body.substring(0, 800)}` };
+        return { success: true, message: `Plugin enforcement confirmed: XML-RPC pingback is disabled by this plugin.`, raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Enforcement: ${vaptEnforced || 'php-pingback'} | Origin: ${vaptOrigin || 'vaptsecure'} | Reason: ${vaptReason || 'pingback-removed'}` };
       }
 
       if (!isEnabled) {
-        if (pingbackExposed) {
+        if (hasFileOwnership) {
           return {
             inconclusive: true,
             success: false,
-            unprotected: true,
-            message: `Inconclusive: protection is OFF and XML-RPC pingback methods are still exposed.`,
-            raw: `URL: ${url} | Status: ${response.status} | Toggle: OFF | Enforcement: None\n\n${body.substring(0, 800)}`
+            message: `Cleanup required: the feature toggle is OFF, but the target file still contains this feature's XML-RPC rule.`,
+            raw: `URL: ${url} | Status: ${response.status} | Toggle: OFF | File Audit: ${auditLabel}`
+          };
+        }
+        if (httpBlocked || hasPluginOwnership) {
+          return {
+            success: false,
+            external_block: true,
+            message: `External block detected: XML-RPC returned HTTP ${response.status} while this feature is OFF and no plugin-owned rule was found.`,
+            raw: `URL: ${url} | Status: ${response.status} | Toggle: OFF | Enforcement: ${vaptEnforced || 'none'} | File Audit: ${auditLabel}`
           };
         }
         return {
           success: false,
-          external_block: true,
-          message: `External block detected: XML-RPC pingback methods are blocked while the feature is OFF.`,
-          raw: `URL: ${url} | Status: ${response.status} | Toggle: OFF | External Block\n\n${body.substring(0, 800)}`
+          skipped: true,
+          message: `Protection disabled: no plugin-owned XML-RPC enforcement was detected for this feature.`,
+          raw: `URL: ${url} | Status: ${response.status} | Toggle: OFF | Enforcement: ${vaptEnforced || 'none'} | File Audit: ${auditLabel}`
         };
       }
 
       if (pingbackBlocked) {
+        if (!auditAvailable) {
+          return {
+            inconclusive: true,
+            success: false,
+            message: `Verification audit unavailable: XML-RPC returned HTTP ${response.status}, but the verifier could not read the target-file audit for ${featureKey}.`,
+            raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Enforcement: ${vaptEnforced || 'none'} | Origin: ${vaptOrigin || 'none'} | File Audit: unavailable`
+          };
+        }
         if (!hasPluginOwnership && !hasFileOwnership) {
           return {
             success: false,
             external_block: true,
             message: `Blocked, but not by this feature: XML-RPC returned HTTP ${response.status} and the fresh file audit did not find a plugin-owned ${featureKey} rule.`,
-            raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Enforcement: ${vaptEnforced || 'none'} | Origin: ${vaptOrigin || 'none'} | File Audit: ${auditLabel}\n\n${body.substring(0, 800)}`
+            raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Enforcement: ${vaptEnforced || 'none'} | Origin: ${vaptOrigin || 'none'} | File Audit: ${auditLabel}`
           };
         }
         return {
           success: true,
           message: `Plugin enforcement confirmed: XML-RPC pingback is disabled by this plugin.`,
-          raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Enforcement: ${vaptEnforced || 'php-pingback'} | Origin: ${vaptOrigin || 'vaptsecure'} | Reason: ${vaptReason || 'pingback-removed'}\n\n${body.substring(0, 800)}`
+          raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Enforcement: ${vaptEnforced || 'php-pingback'} | Origin: ${vaptOrigin || 'vaptsecure'} | Reason: ${vaptReason || 'pingback-removed'}`
         };
       }
 
@@ -688,7 +708,7 @@ var vaptLog = window.vaptLog || {
         message: hasFileOwnership
           ? `Target file contains this feature's rule, but XML-RPC still exposes pingback methods.`
           : `Inconclusive: XML-RPC pingback state could not be attributed to this plugin from the fresh file audit.`,
-        raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Expected: pingback methods removed | File Audit: ${auditLabel}\n\n${body.substring(0, 800)}`
+        raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Expected: pingback methods removed | File Audit: ${auditLabel}`
       };
     },
 
