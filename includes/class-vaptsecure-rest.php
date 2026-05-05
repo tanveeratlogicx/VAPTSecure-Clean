@@ -248,40 +248,42 @@ class VAPTSECURE_REST
             )
         );
 
-        register_rest_route(
-            'vaptsecure/v1', '/build/generate', array(
-            'methods'  => 'POST',
-            'callback' => array($this, 'generate_build'),
-            'permission_callback' => array($this, 'check_permission'),
-            'args' => array(
-                'installation_limit' => array(
-                    'type' => 'integer',
-                    'default' => 1,
-                    'sanitize_callback' => 'absint',
+        if (! $is_client_build) {
+            register_rest_route(
+                'vaptsecure/v1', '/build/generate', array(
+                'methods'  => 'POST',
+                'callback' => array($this, 'generate_build'),
+                'permission_callback' => array($this, 'check_permission'),
+                'args' => array(
+                    'installation_limit' => array(
+                        'type' => 'integer',
+                        'default' => 1,
+                        'sanitize_callback' => 'absint',
+                    ),
+                    'license_scope' => array(
+                        'type' => 'string',
+                        'default' => 'single',
+                    ),
+                    'include_config' => array(
+                        'type' => 'boolean',
+                        'default' => true,
+                    ),
+                    'include_data' => array(
+                        'type' => 'boolean',
+                        'default' => false,
+                    ),
                 ),
-                'license_scope' => array(
-                    'type' => 'string',
-                    'default' => 'single',
-                ),
-                'include_config' => array(
-                    'type' => 'boolean',
-                    'default' => true,
-                ),
-                'include_data' => array(
-                    'type' => 'boolean',
-                    'default' => false,
-                ),
-            ),
-            )
-        );
+                )
+            );
 
-        register_rest_route(
-            'vaptsecure/v1', '/build/save-config', array(
-            'methods'  => 'POST',
-            'callback' => array($this, 'save_config_to_root'),
-            'permission_callback' => array($this, 'check_permission'),
-            )
-        );
+            register_rest_route(
+                'vaptsecure/v1', '/build/save-config', array(
+                'methods'  => 'POST',
+                'callback' => array($this, 'save_config_to_root'),
+                'permission_callback' => array($this, 'check_permission'),
+                )
+            );
+        }
 
         register_rest_route(
             'vaptsecure/v1', '/settings/enforcement', array(
@@ -323,13 +325,15 @@ class VAPTSECURE_REST
             )
         );
 
-        register_rest_route(
-            'vaptsecure/v1', '/build/sync-config', array(
-            'methods'  => 'POST',
-            'callback' => array($this, 'sync_config_from_file'),
-            'permission_callback' => array($this, 'check_permission'),
-            )
-        );
+        if (! $is_client_build) {
+            register_rest_route(
+                'vaptsecure/v1', '/build/sync-config', array(
+                'methods'  => 'POST',
+                'callback' => array($this, 'sync_config_from_file'),
+                'permission_callback' => array($this, 'check_permission'),
+                )
+            );
+        }
 
 
         if (! $is_client_build) {

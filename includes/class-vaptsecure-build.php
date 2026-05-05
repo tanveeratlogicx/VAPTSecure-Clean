@@ -418,6 +418,47 @@ class VAPTSECURE_Build
             RecursiveIteratorIterator::SELF_FIRST
         );
 
+        $allowed_exact_paths = array(
+            'README.md',
+            'LICENSE',
+            'LICENSE.txt',
+            'LICENSE.md',
+            'vapt-functions.php',
+            'data/interface_schema_v2.0.json',
+            'data/enforcer_pattern_library_v2.0.json',
+            'data/ai_agent_instructions_v2.0.json',
+            'data/vapt_driver_manifest_v2.0.json',
+            'data/VAPT_Driver_Reference_v2.0.php',
+            'includes/debug-utils.php',
+            'includes/class-vaptsecure-auth.php',
+            'includes/interfaces/interface-vaptsecure-driver.php',
+            'includes/class-vaptsecure-schema-validator.php',
+            'includes/class-vaptsecure-rest.php',
+            'includes/class-vaptsecure-db.php',
+            'includes/class-vaptsecure-workflow.php',
+            'includes/class-vaptsecure-ai-config.php',
+            'includes/class-vaptsecure-config-cleaner.php',
+            'includes/class-vaptsecure-enforcer.php',
+            'includes/class-vaptsecure-admin.php',
+            'includes/class-vaptsecure-license-manager.php',
+            'includes/class-vaptsecure-environment-detector.php',
+            'includes/class-vaptsecure-deployment-orchestrator.php',
+            'assets/css/admin.css',
+            'assets/js/admin.js',
+            'assets/js/client.js',
+        );
+
+        $allowed_prefixes = array(
+            'includes/enforcers/',
+            'includes/rest/',
+            'assets/js/admin-modules/',
+            'assets/js/modules/',
+        );
+
+        if (is_string($active_data_file) && trim($active_data_file) !== '') {
+            $allowed_exact_paths[] = 'data/' . ltrim(str_replace('\\', '/', trim($active_data_file)), '/');
+        }
+
         // Determine if config should be included
         $include_config = isset($build_data['include_config']) &&
                           ($build_data['include_config'] === true ||
@@ -454,8 +495,20 @@ class VAPTSECURE_Build
         ];
 
         foreach ($iterator as $item) {
-            $subPath = $iterator->getSubPathName();
+            $subPath = str_replace('\\', '/', (string) $iterator->getSubPathName());
             $filename = basename($subPath);
+            $is_allowed_path = in_array($subPath, $allowed_exact_paths, true);
+            if (!$is_allowed_path) {
+                foreach ($allowed_prefixes as $prefix) {
+                    if (strpos($subPath, $prefix) === 0 || ($item->isDir() && strpos($prefix, $subPath . '/') === 0)) {
+                        $is_allowed_path = true;
+                        break;
+                    }
+                }
+            }
+            if (!$is_allowed_path) {
+                continue;
+            }
 
             // Check Exclusions
             foreach ($exclusions as $exclude) {
@@ -549,16 +602,6 @@ class VAPTSECURE_Build
                 strcasecmp($filename, 'test.ftp') === 0 ||
                 stripos($filename, 'update-graphy') === 0 ||
                 stripos($filename, 'graphy') === 0
-            ) {
-                continue;
-            }
-
-            // Keep the root package surface minimal: only README.md ships from the top level.
-            if (
-                !$item->isDir() &&
-                strpos($subPath, '/') === false &&
-                strpos($subPath, '\\') === false &&
-                strcasecmp($filename, 'README.md') !== 0
             ) {
                 continue;
             }
@@ -671,6 +714,17 @@ class VAPTSECURE_Build
         
         // Also ensure simple define is replaced if if/else was missing (fallback)
         $content = self::safe_preg_replace('/define\(\s*\'VAPTSECURE_VERSION\'\s*,\s*\'[^\']+\'\s*\);/', $version_sync, $content);
+
+        // Remove builder-only and self-check includes from generated client builds.
+        $content = self::safe_preg_replace('/^require_once VAPTSECURE_PATH \. "includes\/class-vaptsecure-build\.php";\s*$/m', '', $content);
+        $content = self::safe_preg_replace('/^require_once VAPTSECURE_PATH \. "includes\/self-check\/class-vapt-check-item\.php";\s*$/m', '', $content);
+        $content = self::safe_preg_replace('/^require_once VAPTSECURE_PATH \. "includes\/self-check\/class-vapt-self-check-result\.php";\s*$/m', '', $content);
+        $content = self::safe_preg_replace('/^require_once VAPTSECURE_PATH \. "includes\/self-check\/class-vapt-audit-log\.php";\s*$/m', '', $content);
+        $content = self::safe_preg_replace('/^require_once VAPTSECURE_PATH \. "includes\/self-check\/class-vapt-auto-correct\.php";\s*$/m', '', $content);
+        $content = self::safe_preg_replace('/^require_once VAPTSECURE_PATH \. "includes\/self-check\/class-vapt-self-check\.php";\s*$/m', '', $content);
+        $content = self::safe_preg_replace('/^require_once VAPTSECURE_PATH \. "includes\/self-check\/class-vapt-cron\.php";\s*$/m', '', $content);
+        $content = self::safe_preg_replace('/^require_once VAPTSECURE_PATH \. "includes\/self-check\/class-vapt-lifecycle\.php";\s*$/m', '', $content);
+        $content = self::safe_preg_replace('/^require_once VAPTSECURE_PATH \. "includes\/admin\/class-vapt-diagnostics-page\.php";\s*$/m', '', $content);
 
         $activation_email_rewrite = "function vaptsecure_send_activation_email() {\n"
             . "    if (!function_exists('wp_mail')) { return; }\n"
