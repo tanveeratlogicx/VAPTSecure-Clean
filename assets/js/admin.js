@@ -566,6 +566,13 @@ var vaptLog = window.vaptLog || {
     el('div', { style: { flex: 1 } }, children)
   ]);
 
+  const bumpSemverPatch = (version) => {
+    const value = String(version || '').trim();
+    const match = value.match(/^(\d+)\.(\d+)\.(\d+)$/);
+    if (!match) return '';
+    return `${match[1]}.${match[2]}.${parseInt(match[3], 10) + 1}`;
+  };
+
   const BuildGenerator = ({ domains, features, activeFile, setAlertState }) => {
     const [buildDomain, setBuildDomain] = useState('');
     const [buildVersion, setBuildVersion] = useState(settings.pluginVersion || '3.1.0');
@@ -615,6 +622,7 @@ var vaptLog = window.vaptLog || {
     const [licenseScope, setLicenseScope] = useState('single');
     const [installationLimit, setInstallationLimit] = useState(1);
     const restrictFeatures = false;
+    const suggestedNextVersion = useMemo(() => bumpSemverPatch(buildVersion), [buildVersion]);
 
     // Calculate enabled release features for selected domain (v3.2.1)
     const enabledReleaseCount = useMemo(() => {
@@ -957,6 +965,17 @@ var vaptLog = window.vaptLog || {
                 el(FieldRow, { label: __('Version', 'vaptsecure') },
                   el(TextControl, { value: buildVersion, onChange: (val) => setBuildVersion(val), style: { marginBottom: 0 } })
                 ),
+                suggestedNextVersion && el('div', { style: { margin: '-2px 0 10px 85px', fontSize: '12px', color: '#64748b' } }, [
+                  el('span', { style: { fontWeight: 600, color: '#0f172a' } }, __('Suggested next patch:', 'vaptsecure')),
+                  ' ',
+                  el('span', { style: { fontFamily: 'monospace', background: '#f1f5f9', padding: '1px 6px', borderRadius: '4px' } }, suggestedNextVersion),
+                  el(Button, {
+                    isSmall: true,
+                    variant: 'link',
+                    style: { marginLeft: '8px', height: 'auto', padding: 0 },
+                    onClick: () => setBuildVersion(suggestedNextVersion)
+                  }, __('Use suggestion', 'vaptsecure'))
+                ]),
                 el(FieldRow, { label: __('Alert Email', 'vaptsecure') },
                   el(TextControl, { value: securityAlertEmail, onChange: (val) => setSecurityAlertEmail(val), style: { marginBottom: 0 } })
                 ),
