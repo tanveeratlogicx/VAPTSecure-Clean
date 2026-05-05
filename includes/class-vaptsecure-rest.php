@@ -2055,9 +2055,9 @@ class VAPTSECURE_REST
             $requested_version = isset($data['version']) ? sanitize_text_field($data['version']) : '';
 
             if ($requested_version === '') {
-                $data['version'] = ($last_version !== '') ? self::bump_semver_patch($last_version) : '1.0.0';
-            } elseif ($last_version !== '' && $requested_version === $last_version) {
-                $data['version'] = self::bump_semver_patch($last_version);
+                $data['version'] = ($last_version !== '') ? $last_version : '1.0.0';
+            } else {
+                $data['version'] = $requested_version;
             }
 
             $download_url = VAPTSECURE_Build::generate($data);

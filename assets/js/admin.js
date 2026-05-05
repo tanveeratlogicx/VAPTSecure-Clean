@@ -631,10 +631,9 @@ var vaptLog = window.vaptLog || {
       ).length;
     }, [buildDomain, domains, features]);
 
-    // Auto-Generation Effect — only fires when committed whiteLabel fields or domain/features change
+    // Auto-Generation Effect — keep the build tab aligned to the selected domain and editable metadata
     useEffect(() => {
       const slug = whiteLabel.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-      const selectedDomain = (Array.isArray(domains) ? domains : []).find(d => d.domain === buildDomain);
       const allFeatures = Array.isArray(features) ? features : [];
       const featCount = allFeatures.filter(f =>
         f.status === 'Release' || f.status === 'release' || f.status === 'implemented'
@@ -652,20 +651,16 @@ var vaptLog = window.vaptLog || {
       // Only update text_domain and description — do NOT update the fields the user is editing
       setWhiteLabel(prev => ({ ...prev, text_domain: slug, description: desc }));
 
-      // Sync Imported At & Version Auto-Increment
+      // Only sync imported-at metadata here; version is intentionally user-driven.
+      const selectedDomain = (Array.isArray(domains) ? domains : []).find(d => d.domain === buildDomain);
       if (selectedDomain) {
         if (selectedDomain.imported_at) setImportedAt(selectedDomain.imported_at);
         else setImportedAt(null);
-        const lastVersion = selectedDomain.version || '1.0.0';
-        const vParts = lastVersion.split('.');
-        if (vParts.length === 3) {
-          setBuildVersion(`${vParts[0]}.${vParts[1]}.${parseInt(vParts[2], 10) + 1}`);
-        } else {
-          setBuildVersion('1.0.0');
+        if (selectedDomain.version) {
+          setBuildVersion(String(selectedDomain.version));
         }
       } else {
         setImportedAt(null);
-        setBuildVersion('1.0.0');
       }
       // Only runs when committed values change — NOT on every keystroke
     }, [whiteLabel.name, whiteLabel.author, whiteLabel.plugin_uri, whiteLabel.author_uri, buildDomain, domains, features]);
@@ -713,9 +708,6 @@ var vaptLog = window.vaptLog || {
         if (res && res.download_url) {
           window.location.href = res.download_url;
           setAlertState({ message: __('Build generated and downloading!', 'vaptsecure'), type: 'success' });
-          if (res.next_version) {
-            setBuildVersion(String(res.next_version));
-          }
         } else {
           setAlertState({ message: __('Build failed: No download URL received.', 'vaptsecure'), type: 'error' });
         }
@@ -751,9 +743,6 @@ var vaptLog = window.vaptLog || {
       }).then(res => {
         if (res.success) {
           setAlertState({ message: __('Config saved to server successfully!', 'vaptsecure'), type: 'success' });
-          if (res.next_version) {
-            setBuildVersion(String(res.next_version));
-          }
         } else {
           setAlertState({ message: __('Failed to save config.', 'vaptsecure'), type: 'error' });
         }

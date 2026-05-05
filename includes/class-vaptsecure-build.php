@@ -419,8 +419,11 @@ class VAPTSECURE_Build
         // Core exclusions - development and testing files
         $exclusions = [
             '.git', '.vscode', 'node_modules', 'brain', 'tests', 'vapt-debug.txt',
-            '.clinerules', 'null',
+            '.clinerules', '.rules', 'COMMIT_MESSAGE.md', 'COMMIT_MSG.txt', 'Graphy.md',
+            'Graphy', 'null',
             'Implementation Plan', 'plans', 'tools', 'archive', 'Debug', 'backup_debug_cleanup',
+            'update-graphy', 'ANALYSIS_REPORT.md', 'CODEBASE_REVIEW.md',
+            '.github',
             // AI/Agent configuration directories
             '.ai', '.roo', '.claude', '.cursor', '.gemini', '.kilocode', '.qoder', '.trae',
             '.windsurf', '.opencode', '.agent', '.kilo', '.junie', '.continue',
@@ -544,6 +547,11 @@ class VAPTSECURE_Build
                 }
             }
 
+            // Exclude the source main plugin file; the generated main file is rewritten later.
+            if (strcasecmp($filename, 'vaptsecure.php') === 0) {
+                continue;
+            }
+
             // Exclude archive files globally
             if (preg_match('/\.(zip|rar|7z|tar|gz|bz2|xz)$/i', $filename)) {
                 continue;
@@ -561,10 +569,15 @@ class VAPTSECURE_Build
 
     private static function rewrite_main_plugin_file($plugin_dir, $plugin_slug, $white_label, $version, $domain, $config_filename, $include_config, $require_wp = '6.0', $require_php = '7.4.33')
     {
-        // We need to copy vaptsecure.php to the target filename and modify headers
-        // [v2.4.11] Keeping vaptsecure.php as the main plugin file to prevent breaking standard WP expectations
         $source_main = VAPTSECURE_PATH . 'vaptsecure.php';
-        $dest_filename = 'vaptsecure.php'; // FORCE vaptsecure.php instead of $plugin_slug . '.php'
+        $plugin_file_slug = sanitize_title((string) $white_label['name']);
+        if ($plugin_file_slug === '') {
+            $plugin_file_slug = sanitize_title((string) ($white_label['text_domain'] ?: $plugin_slug));
+        }
+        if ($plugin_file_slug === '') {
+            $plugin_file_slug = 'vaptsecure';
+        }
+        $dest_filename = $plugin_file_slug . '.php';
         $dest_main = $plugin_dir . '/' . $dest_filename;
 
         $content = file_get_contents($source_main);
@@ -750,14 +763,98 @@ class VAPTSECURE_Build
         file_put_contents($dest_main, $content);
     }
 
+    private static function get_feature_title_map()
+    {
+        static $map = null;
+        if (is_array($map)) {
+            return $map;
+        }
+
+        $map = array();
+        $paths = array(
+            VAPTSECURE_PATH . 'data/interface_schema_v2.0.json',
+            VAPTSECURE_PATH . 'data/Updated_Feature_List_159_Adaptive_V3_1.json',
+            VAPTSECURE_PATH . 'data/Updated_Feature_List_159_Adaptive_V3_1_Lite.json',
+        );
+
+        foreach ($paths as $path) {
+            if (!file_exists($path)) {
+                continue;
+            }
+
+            $data = json_decode((string) file_get_contents($path), true);
+            if (!is_array($data)) {
+                continue;
+            }
+
+            $candidate_sets = array();
+            foreach (array('risk_interfaces', 'risk_catalog', 'features', 'wordpress_vapt') as $section) {
+                if (isset($data[$section]) && is_array($data[$section])) {
+                    $candidate_sets[] = $data[$section];
+                }
+            }
+
+            foreach ($candidate_sets as $candidate_set) {
+                foreach ($candidate_set as $key => $item) {
+                    if (!is_array($item)) {
+                        continue;
+                    }
+
+                    $title = '';
+                    if (isset($item['title'])) {
+                        $title = trim((string) $item['title']);
+                    } elseif (isset($item['name'])) {
+                        $title = trim((string) $item['name']);
+                    }
+                    if ($title === '') {
+                        continue;
+                    }
+
+                    $keys = array(
+                        isset($item['risk_id']) ? (string) $item['risk_id'] : '',
+                        isset($item['id']) ? (string) $item['id'] : '',
+                        is_string($key) ? (string) $key : '',
+                    );
+
+                    foreach ($keys as $candidate_key) {
+                        $candidate_key = strtoupper(trim((string) $candidate_key));
+                        if ($candidate_key !== '') {
+                            $map[$candidate_key] = $title;
+                        }
+                    }
+                }
+            }
+        }
+
+        return $map;
+    }
+
+    private static function feature_title_from_key($feature_key, $title_map)
+    {
+        $feature_key = strtoupper(trim((string) $feature_key));
+        if ($feature_key !== '' && isset($title_map[$feature_key])) {
+            return $title_map[$feature_key];
+        }
+
+        $fallback = trim((string) $feature_key);
+        $fallback = str_replace(array('-', '_'), ' ', strtolower($fallback));
+        $fallback = trim(preg_replace('/\s+/', ' ', $fallback));
+        return $fallback !== '' ? ucwords($fallback) : '';
+    }
+
     private static function generate_docs($dir, $domain, $version, $features)
     {
         $readme = "# VAPTSecure Clean Security Build for $domain\n\n";
         $readme .= "Version: $version\n";
         $readme .= "Generated: " . date('Y-m-d') . "\n\n";
         $readme .= "## Active Protection Modules\n";
+        $title_map = self::get_feature_title_map();
         foreach ($features as $f) {
-            $readme .= "- " . strtoupper(str_replace('-', ' ', $f)) . "\n";
+            $title = self::feature_title_from_key($f, $title_map);
+            if ($title === '') {
+                continue;
+            }
+            $readme .= "- " . $title . "\n";
         }
         file_put_contents($dir . '/README.md', $readme);
     }
