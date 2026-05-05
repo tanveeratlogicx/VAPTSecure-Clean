@@ -257,7 +257,15 @@ class VAPTSECURE_Build
         self::generate_docs($plugin_dir, $domain, $version, $features);
 
         // 7. Create ZIP Archive
-        $zip_filename = "{$plugin_slug}-{$domain_for_files}-{$version}.zip";
+        $master_plugin_name = sanitize_title((string) self::get_master_plugin_name());
+        if ($master_plugin_name === '') {
+            $master_plugin_name = 'vaptsecure-clean';
+        }
+        $white_label_name = sanitize_title((string) ($white_label['name'] ?? ''));
+        if ($white_label_name === '') {
+            $white_label_name = $plugin_slug;
+        }
+        $zip_filename = "{$master_plugin_name}-{$white_label_name}-{$version}.zip";
         $zip_path = $build_dir . '/' . $zip_filename;
 
         if (class_exists('ZipArchive')) {
@@ -530,6 +538,18 @@ class VAPTSECURE_Build
 
             // Exclude test files (files starting with "test-")
             if (strpos($filename, 'test-') === 0) {
+                continue;
+            }
+
+            // Exclude supporting repository files that should never ship in client builds.
+            if (
+                strcasecmp($filename, 'LICENSE') === 0 ||
+                strcasecmp($filename, 'LICENSE.txt') === 0 ||
+                strcasecmp($filename, 'LICENSE.md') === 0 ||
+                strcasecmp($filename, 'test.ftp') === 0 ||
+                stripos($filename, 'update-graphy') === 0 ||
+                stripos($filename, 'graphy') === 0
+            ) {
                 continue;
             }
 
@@ -840,6 +860,22 @@ class VAPTSECURE_Build
         $fallback = str_replace(array('-', '_'), ' ', strtolower($fallback));
         $fallback = trim(preg_replace('/\s+/', ' ', $fallback));
         return $fallback !== '' ? ucwords($fallback) : '';
+    }
+
+    private static function get_master_plugin_name()
+    {
+        $source = VAPTSECURE_PATH . 'vaptsecure.php';
+        if (file_exists($source)) {
+            $headers = @get_file_data($source, array('Name' => 'Plugin Name'), 'plugin');
+            if (is_array($headers) && !empty($headers['Name'])) {
+                $name = trim((string) $headers['Name']);
+                if ($name !== '') {
+                    return $name;
+                }
+            }
+        }
+
+        return 'VAPTSecure Clean';
     }
 
     private static function generate_docs($dir, $domain, $version, $features)
