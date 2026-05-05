@@ -553,6 +553,16 @@ class VAPTSECURE_Build
                 continue;
             }
 
+            // Keep the root package surface minimal: only README.md ships from the top level.
+            if (
+                !$item->isDir() &&
+                strpos($subPath, '/') === false &&
+                strpos($subPath, '\\') === false &&
+                strcasecmp($filename, 'README.md') !== 0
+            ) {
+                continue;
+            }
+
             // Exclude domain-specific configuration files (vapt-*-config-*.php)
             // In config-only builds, allow all config files
             if (preg_match('/^vapt-.*-config-.*\.php$/i', $filename)) {
@@ -885,12 +895,17 @@ class VAPTSECURE_Build
         $readme .= "Generated: " . date('Y-m-d') . "\n\n";
         $readme .= "## Active Protection Modules\n";
         $title_map = self::get_feature_title_map();
+        $lines = array();
         foreach ($features as $f) {
             $title = self::feature_title_from_key($f, $title_map);
             if ($title === '') {
                 continue;
             }
-            $readme .= "- " . $title . "\n";
+            $lines[] = $title;
+        }
+        $lines = array_values(array_unique($lines));
+        foreach ($lines as $index => $title) {
+            $readme .= ($index + 1) . '. ' . $title . "\n";
         }
         file_put_contents($dir . '/README.md', $readme);
     }
