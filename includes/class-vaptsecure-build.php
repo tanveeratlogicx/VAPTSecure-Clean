@@ -274,7 +274,7 @@ class VAPTSECURE_Build
         if (class_exists('ZipArchive')) {
             $zip = new ZipArchive();
             if ($zip->open($zip_path, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
-                $zip->setArchiveComment(self::build_archive_comment($domain, $version, $white_label['name']));
+                $zip->setArchiveComment(self::build_archive_comment($domain, $version, $white_label['name'], $features));
                 self::add_dir_to_zip($plugin_dir, $zip, $plugin_slug);
                 $zip->close();
             } else {
@@ -291,7 +291,7 @@ class VAPTSECURE_Build
                 PCLZIP_OPT_REMOVE_PATH,
                 $temp_dir,
                 PCLZIP_OPT_COMMENT,
-                self::build_archive_comment($domain, $version, $white_label['name'])
+                self::build_archive_comment($domain, $version, $white_label['name'], $features)
             );
             if ($result === 0) {
                 throw new Exception('Failed to create ZIP archive (PclZip): ' . $archive->errorInfo(true));
@@ -998,6 +998,49 @@ class VAPTSECURE_Build
         return $fallback !== '' ? ucwords($fallback) : '';
     }
 
+    private static function feature_titles_from_keys($features, $title_map)
+    {
+        $lines = array();
+        if (!is_array($features)) {
+            return $lines;
+        }
+
+        foreach ($features as $feature_key) {
+            $title = self::feature_title_from_key($feature_key, $title_map);
+            if ($title === '') {
+                continue;
+            }
+            $lines[] = $title;
+        }
+
+        return array_values(array_unique($lines));
+    }
+
+    private static function feature_comment_lines_from_keys($features, $title_map)
+    {
+        $lines = array();
+        if (!is_array($features)) {
+            return $lines;
+        }
+
+        foreach ($features as $feature_key) {
+            $raw_key = trim((string) $feature_key);
+            if ($raw_key === '') {
+                continue;
+            }
+
+            $title = self::feature_title_from_key($raw_key, $title_map);
+            if ($title === '') {
+                $lines[] = $raw_key;
+                continue;
+            }
+
+            $lines[] = strcasecmp($title, $raw_key) === 0 ? $raw_key : ($title . ' [' . $raw_key . ']');
+        }
+
+        return array_values(array_unique($lines));
+    }
+
     private static function get_master_plugin_name()
     {
         $source = VAPTSECURE_PATH . 'vaptsecure.php';
@@ -1057,8 +1100,19 @@ class VAPTSECURE_Build
         return $commit !== '' ? $commit : 'unknown';
     }
 
-    private static function build_archive_comment($domain, $version, $plugin_name)
+    private static function build_archive_comment($domain, $version, $plugin_name, $features)
     {
+        $title_map = self::get_feature_title_map();
+        $feature_lines = self::feature_comment_lines_from_keys($features, $title_map);
+        $enabled_features = array('Enabled Features (' . count($feature_lines) . '):');
+        if (!empty($feature_lines)) {
+            foreach ($feature_lines as $index => $label) {
+                $enabled_features[] = ($index + 1) . '. ' . $label;
+            }
+        } else {
+            $enabled_features[] = 'none';
+        }
+
         return implode("\n", array(
             'VAPTSecure Build Metadata',
             'Build Time: ' . current_time('mysql'),
@@ -1067,6 +1121,8 @@ class VAPTSECURE_Build
             'Generated Build Version: ' . (string) $version,
             'Target Domain: ' . (string) $domain,
             'Plugin Name: ' . (string) $plugin_name,
+            '',
+            implode("\n", $enabled_features),
         ));
     }
 
@@ -1077,15 +1133,7 @@ class VAPTSECURE_Build
         $readme .= "Generated: " . date('Y-m-d') . "\n\n";
         $readme .= "## Active Protection Modules\n";
         $title_map = self::get_feature_title_map();
-        $lines = array();
-        foreach ($features as $f) {
-            $title = self::feature_title_from_key($f, $title_map);
-            if ($title === '') {
-                continue;
-            }
-            $lines[] = $title;
-        }
-        $lines = array_values(array_unique($lines));
+        $lines = self::feature_titles_from_keys($features, $title_map);
         foreach ($lines as $index => $title) {
             $readme .= ($index + 1) . '. ' . $title . "\n";
         }
