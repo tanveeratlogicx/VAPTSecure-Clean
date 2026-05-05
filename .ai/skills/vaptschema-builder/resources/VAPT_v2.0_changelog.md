@@ -1,15 +1,8 @@
-# VAPT Bundle v2.0 Unified 135-Risk SSoT Sync
+# VAPT Bundle v2.0 Risk Consolidation Patch
 
-Patch purpose: align the skill resources bundle with the current top-level `data/` source of truth, preserving the 14-item consolidation history while reflecting the latest 135-risk catalogue.
+Patch purpose: incorporate 14 externally supplied WordPress/VAPT findings into the existing VAPT risk catalogue without creating duplicate RiskIDs or changing the JSON file structure.
 
-## Bundle State
-
-- Source of truth: top-level `data/` bundle
-- Risk count: 135
-- RiskID set: retained, no duplicate identifiers added
-- Manifest reference: `vapt_driver_manifest_v2.0.json`
-
-## Applied Consolidation History
+## Applied Mapping
 
 | Submitted # | Submitted Risk | Existing RiskID | Patch Action |
 |---:|---|---|---|
@@ -28,19 +21,17 @@ Patch purpose: align the skill resources bundle with the current top-level `data
 | 13 | Information Disclosure via readme.html | RISK-011 | Summary cleaned and strengthened; stray “New” text removed. |
 | 14 | No Input Validation | RISK-127 | Existing definition retained; summary strengthened for untrusted input/injection risk. |
 
-## Files Synchronized
+## Files Patched
 
-- `interface_schema_v2.0.json`
-- `enforcer_pattern_library_v2.0.json`
-- `vapt_driver_manifest_v2.0.json`
-- `ai_agent_instructions_v2.0.json`
-- `VAPT_AI_Agent_System_README_v2.0.md`
-- `VAPT_Driver_Reference_v2.0.php`
+- `interface_schema_v2.0.risk_consolidated.json`
+- `enforcer_pattern_library_v2.0.risk_consolidated.json`
+- `vapt_driver_manifest_v2.0.risk_consolidated.json`
+- `ai_agent_instructions_v2.0.risk_consolidated.json`
 
 ## Validation Results
 
-- Top-level bundle hashes match the mirrored skill resources.
-- Risk count retained: 135 in interface schema, pattern library, and driver manifest.
+- JSON parse validation: passed for all patched JSON files.
+- Risk count retained: 127 in interface schema, pattern library, and driver manifest.
 - RiskID set retained: no new RiskIDs, no removed RiskIDs, no duplicate RiskIDs.
 - Internal `risk_id` values match object keys.
 - Cross-file RiskID sets match between interface schema, pattern library, and driver manifest.
@@ -50,4 +41,4 @@ Patch purpose: align the skill resources bundle with the current top-level `data
 
 ## Scope Control
 
-No enforcement code blocks, driver write blocks, rollback markers, target files, or driver behavior were changed. This patch records the current 135-risk SSoT alignment and keeps the skill bundle synchronized with the top-level `data/` source.
+No enforcement code blocks, driver write blocks, rollback markers, target files, or driver behavior were changed. This patch is limited to catalogue wording/title/summary consolidation and AI risk index title alignment.

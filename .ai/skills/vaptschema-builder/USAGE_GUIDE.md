@@ -13,7 +13,7 @@ When you prompt the skill to generate a schema for a specific risk, the Agent wi
 1. **Load Rulebook:** Consult `ai_agent_instructions_v2.0.json`.
 2. **Load Blueprint:** Consult `interface_schema_v2.0.json` for UI structure.
 3. **Load Enforcer Code:** Consult `enforcer_pattern_library_v2.0.json` for the exact code implementation.
-4. **Self-Check:** Grade its output against the 19-point rubric before printing to you.
+4. **Self-Check:** Grade its output against the 19-point rubric and only return output scoring ≥18/19.
 
 ## Reading the Output
 The standard output from the AI should be a raw, valid JSON object following the `schema-template.json` structure:
@@ -26,3 +26,5 @@ The standard output from the AI should be a raw, valid JSON object following the
 ```
 
 If the AI outputs code that violates the **Core Principle** (e.g., it blocks `/wp-admin/` without a whitelist condition), remind the AI to re-read `SKILL.md` to refresh its constraints.
+
+

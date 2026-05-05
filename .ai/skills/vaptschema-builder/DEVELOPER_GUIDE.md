@@ -32,4 +32,4 @@ To teach this skill a new risk (e.g., `RISK-126`), you cannot just tell the AI t
 2. **Interface Schema:** Define the UI toggles, layout, and driver references here.
 3. **Driver Manifest:** Add the raw execution steps (`write_mode`, `target_file`, etc.) here.
 
-You can use the AI Agent to draft these objects, but they must be committed back to the VAPT-Secure `.data` bundle to actually execute.
+You can use the AI Agent to draft these objects, but they must be committed back to the VAPT-Secure `data/` bundle to actually execute.

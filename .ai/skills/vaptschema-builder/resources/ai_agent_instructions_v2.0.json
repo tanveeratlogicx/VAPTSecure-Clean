@@ -11,7 +11,7 @@
     "readme": "VAPT_AI_Agent_System_README_v2.0.md"
   },
   "description": "VAPT AI Agent Instructions v2.0 — Full system prompt, task definitions, htaccess syntax guard, self-check rubric (19 checks), and example workflows. Aligned with bundle v2.0 file references and lib_key naming.",
-  "system_prompt": "You are the VAPT WordPress Protection AI Agent. You generate UI component schemas and platform-specific enforcement code for 127 WordPress security risks. You recognize all 135 risks in the dataset. You are aware of the following license types: 7-day-trial (7 days validity, manual renewal only), 15-day-demo (15 days validity, manual renewal only), standard, pro, and developer. You NEVER write enforcement code from memory — you ALWAYS read it from enforcer_pattern_library_v2.0.json first. You ALWAYS run the htaccess_syntax_guard before emitting any .htaccess code. You score every output against the self_check_rubric and only deliver output scoring ≥16/19. You understand the driver layer — the plugin physically writes rules using vapt_driver_manifest_v2.0.json and VAPT_Driver_Reference_v2.0.php.",
+  "system_prompt": "You are the VAPT WordPress Protection AI Agent. You generate UI component schemas and platform-specific enforcement code for 135 WordPress security risks. You recognize all 135 risks in the dataset. You are aware of the following license types: 7-day-trial (7 days validity, manual renewal only), 15-day-demo (15 days validity, manual renewal only), standard, pro, and developer. You NEVER write enforcement code from memory — you ALWAYS read it from enforcer_pattern_library_v2.0.json first. You ALWAYS run the htaccess_syntax_guard before emitting any .htaccess code. You score every output against the self_check_rubric and only deliver output scoring ≥18/19. You understand the driver layer — the plugin physically writes rules using vapt_driver_manifest_v2.0.json and VAPT_Driver_Reference_v2.0.php.",
   "file_reading_order": {
     "for_ui_generation": [
       "interface_schema_v2.0.json",
@@ -53,7 +53,7 @@
         "1. Read interface_schema_v2.0.risk_interfaces[risk_id]",
         "2. Extract ui_layout, components[], actions[], severity.colors",
         "3. Generate React/JSON component using naming_conventions",
-        "4. Self-check rubric checks 1,3,4,5 → score ≥16 → deliver"
+        "4. Self-check rubric checks 1,3,4,5 → score ≥18 → deliver"
       ]
     },
     "generate_enforcement_code": {
@@ -65,7 +65,7 @@
         "4. If .htaccess: run htaccess_syntax_guard",
         "5. Output wrapped_code with VAPT markers",
         "6. Append verification.command",
-        "7. Self-check rubric → score ≥16 → deliver"
+        "7. Self-check rubric → score ≥18 → deliver"
       ]
     },
     "generate_full_risk_package": {
@@ -75,7 +75,7 @@
         "2. Generate UI component schema",
         "3. For each available_platform: generate enforcement code",
         "4. For each .htaccess rule: run htaccess_syntax_guard",
-        "5. Self-check all outputs → score ≥16 each → deliver package"
+        "5. Self-check all outputs → score ≥18 each → deliver package"
       ]
     },
     "diagnose_driver_failure": {
@@ -328,7 +328,7 @@
         "5. Confirm RewriteBase / present ✓",
         "6. Output wrapped_code with # BEGIN VAPT RISK-003 / # END VAPT RISK-003",
         "7. Note: AllowOverride FileInfo or All required",
-        "8. Self-check: checks 2,6,9,10,11 all pass → score ≥16 → deliver"
+        "8. Self-check: checks 2,6,9,10,11 all pass → score ≥18 → deliver"
       ],
       "correct_output_preview": "# BEGIN VAPT RISK-003\n<IfModule mod_rewrite.c>\n    RewriteEngine On\n    RewriteBase /\n    RewriteRule ^wp-json/wp/v2/users$ - [F,L]\n    RewriteRule ^wp-json/wp/v2/users/ - [F,L]\n</IfModule>\n# END VAPT RISK-003"
     },
@@ -352,7 +352,7 @@
         "4. Cloudflare: output cloudflare.product + cloudflare.name + cloudflare.value",
         "5. IIS: output iis.web_config_snippet",
         "6. Caddy: output caddy.caddyfile_snippet",
-        "7. Self-check all 4 outputs → score ≥16 each → deliver"
+        "7. Self-check all 4 outputs → score ≥18 each → deliver"
       ]
     }
   },
@@ -494,3 +494,5 @@
     "RISK-135": "Public Exposure of Debug Log File"
   }
 }
+
+

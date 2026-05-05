@@ -45,8 +45,8 @@ This document provides an ASCII-based visual flow of the transformation processe
                              |
          +-------------------v-------------------+
          | STEP 4: SELF-CHECK INSTRUCTIONS       |
-         | Grade output against 19-point rubric. |
-         |   [ ] Score >= 18?                    |
+         | Grade output against 19-point rubric (≥18/19). |
+          |   [ ] Score >= 16?                    |
          |   [ ] WP Whitelist intact?            |
          |   [ ] No forbidden Apache directives? |
          +-------------------+-------------------+
@@ -91,3 +91,5 @@ This document provides an ASCII-based visual flow of the transformation processe
 ## Core Principle Interaction
 
 This flow visually emphasizes the **Core Principle**: The AI Agent must rigorously apply the **WP Admin Whitelist Rule** in Step 3, passing it through the **Self-Check** in Step 4. This guarantees that when the **A+ Adaptive Script Interface JSON** is handed over to the **Plugin Driver** in Phase 2, the resulting **Functional Controls** securely lock down the target vulnerability *without* locking administrators out of `/wp-admin/` or breaking fundamental `/wp-json/wp/v2/` operations.
+
+

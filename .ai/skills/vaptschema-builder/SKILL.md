@@ -7,7 +7,7 @@ schema_version: "2.0.0"
 
 # VAPTSchema Builder Expert Skill (v2.0.0)
 
-This skill acts as the precise translation layer for generating an **A+ Adaptive Script Interface JSON** for the VAPTBuilder plugin. This version leverages the v2.0 Unified Bundle (5-file architecture) to completely eliminate AI hallucinations and ensure rock-solid compatibility with WordPress.
+This skill acts as the precise translation layer for generating an **A+ Adaptive Script Interface JSON** for the VAPTBuilder plugin. This version leverages the v2.0 Unified Bundle (5-file architecture) and the 135-risk catalog to completely eliminate AI hallucinations and ensure rock-solid compatibility with WordPress.
 
 ## 🎯 Core Principle
 
@@ -67,3 +67,5 @@ Score your generated JSON output against the 19-point rubric from Step 1.
 1. **The Rewrite Rule "Dead Zone"**: Placing rewrite rules at the bottom of `.htaccess` (after `# END WordPress`) creates a silent failure. Ensure `insertion_point: "before_wordpress_rewrite"`.
 2. **Key Matching**: If a component's toggle has `key: "UI-RISK-003-001"`, then the `enforcement.mappings` object MUST use exactly `"UI-RISK-003-001"`.
 3. **No Forbidden Apache Directives**: Never use `TraceEnable`, `<Directory>`, or `ServerSignature` in `.htaccess`. Use safe equivalents (e.g., `mod_headers`).
+
+

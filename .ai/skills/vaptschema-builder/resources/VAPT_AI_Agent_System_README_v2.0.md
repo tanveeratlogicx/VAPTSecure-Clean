@@ -192,7 +192,7 @@ Before emitting **any** `.htaccess` code, check every directive against these ru
 | `Options` | `AllowOverride Options` or `All` in server config |
 | `<Files>` / `<FilesMatch>` | `AllowOverride Limit` or `All` |
 
-### Step 5 — Self-Check Rubric (≥16 / 19 required)
+### Step 5 — Self-Check Rubric (≥18 / 19 required)
 
 | # | Check | Weight |
 |---|-------|--------|
@@ -408,7 +408,7 @@ Every block written to disk is wrapped with markers so the driver can locate, ve
 ```
 
 4. Verification: `apachectl -t && curl -sI 'https://yoursite.com/wp-json/wp/v2/users' | grep HTTP`
-5. Self-check: checks 2, 6, 9, 10, 11 all pass → score ≥16 → deliver
+5. Self-check: checks 2, 6, 9, 10, 11 all pass → score ≥18 → deliver
 
 ---
 
@@ -437,7 +437,7 @@ Every block written to disk is wrapped with markers so the driver can locate, ve
 4. Output `Cloudflare`: Transform Rule → Set `Content-Security-Policy` header
 5. Output `IIS`: `<customHeaders><add name="Content-Security-Policy" value="..." />`
 6. Output `Caddy`: `header { Content-Security-Policy "..." defer }`
-7. Self-check all four → score ≥16 each → deliver package
+7. Self-check all four → score ≥18 each → deliver package
 
 ---
 
@@ -450,7 +450,7 @@ Every block written to disk is wrapped with markers so the driver can locate, ve
 2. Derive `cloudflare`, `iis`, `caddy` from the htaccess entry
 3. Generate `interface_schema_v2.0.risk_interfaces.RISK-126` — `code_ref` must use `lib_key=htaccess`, `driver_ref` must point to `vapt_driver_manifest_v2.0`
 4. Generate `vapt_driver_manifest_v2.0.risks.RISK-126.steps` — include all required driver fields
-5. Self-check: rubric checks 17, 18, 19 all pass → score ≥16 → deliver three JSON fragments
+5. Self-check: rubric checks 17, 18, 19 all pass → score ≥18 → deliver three JSON fragments
 
 ---
 
@@ -474,7 +474,7 @@ All five files generated together from source in a single build pass. Prior vers
 | Forbidden directives (`TraceEnable`, `ServerSignature`, `<Directory>`) in `.htaccess` | All corrected with safe alternatives |
 | RISK-005 regex matched only single-digit author IDs | Fixed to `(^|&)author=\d+` |
 | 19 wp-config risks missing `target_constants[]` | All 21 wp-config risks enriched |
-| Self-check rubric was 8-point then 15-point then 17-point | Unified 19-point rubric, threshold ≥16 |
+| Self-check rubric was 8-point then 15-point then 17-point | Unified 19-point rubric, threshold ≥18 |
 
 ---
 
@@ -515,3 +515,4 @@ This addendum avoids duplicating client-reported titles that already exist exact
 | RISK-133 | Unauthenticated Exposure of WordPress REST API Endpoints | RISK-006 |
 | RISK-134 | Clickjacking | RISK-014 |
 | RISK-135 | Public Exposure of Debug Log File | RISK-034 |
+

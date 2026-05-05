@@ -2,12 +2,12 @@
 
 ## Project: VAPTSecure-Clean
 
-Generated: 2026-05-04 18:51:54
+Generated: 2026-05-05 04:34:07
 
 ### File Structure Summary
-- Total Files: 1535
+- Total Files: 1517
 - Total Directories: 258
-- File Extensions: .rules: 5, .agrules: 4, .md: 51, .json: 71, .rar: 3, .php: 43, .ps1: 2, .zip: 10, .yml: 2, .js: 211, .cjs: 194, .cts: 194, .ts: 706, .css: 2, .jsx: 5, .clinerules: 1, .roorules: 1, .windsurfrules: 1, .txt: 2, .ftp: 1, .png: 1
+- File Extensions: .rules: 5, .agrules: 4, .md: 47, .json: 59, .rar: 2, .php: 42, .ps1: 2, .zip: 10, .yml: 2, .js: 211, .cjs: 194, .cts: 194, .ts: 706, .css: 2, .jsx: 5, .clinerules: 1, .roorules: 1, .windsurfrules: 1, .txt: 2, .ftp: 1, .png: 1
 
 ### Directory Tree
 ├── .ai
@@ -1697,20 +1697,9 @@ Generated: 2026-05-04 18:51:54
       ├── workbench.js
 ├── data
    ├── Addendum
-      ├── Addendum.rar
-      ├── ai_agent_instructions_v2.0.json
-      ├── enforcer_pattern_library_v2.0.json
-      ├── interface_schema_v2.0.json
       ├── VAPT_AI_Agent_System_README_v2.0.md
-      ├── vapt_driver_manifest_v2.0.json
       ├── VAPT_Driver_Reference_v2.0.php
-      ├── VAPT_v2.0_selective_client_risks_addendum_changelog.md
    ├── Consolidated
-      ├── ai_agent_instructions_v2.0.json
-      ├── enforcer_pattern_library_v2.0.json
-      ├── interface_schema_v2.0.json
-      ├── vapt_driver_manifest_v2.0.json
-      ├── VAPT_v2.0_changelog.md
       ├── VAPT_v2.0_risk_consolidation_patch.zip
    ├── Enforcers
       ├── apache-template.json
@@ -1723,17 +1712,10 @@ Generated: 2026-05-04 18:51:54
       ├── wordpress-template.json
       ├── wp-config-template.json
    ├── Updated
-      ├── ai_agent_instructions_v2.0.json
-      ├── enforcer_pattern_library_v2.0.json
-      ├── interface_schema_v2.0.json
-      ├── VAPT_AI_Agent_System_README_v2.0.md
       ├── VAPT_AI_Agent_System_v2.0_metadata_fixed_bundle.zip
-      ├── vapt_clean_sources_v2.0_no_source_file.zip
-      ├── vapt_driver_manifest_v2.0.json
-      ├── VAPT_Driver_Reference_v2.0.php
-      ├── VAPT_v2.0_metadata_patch_changelog.md
    ├── ai_agent_instructions_v2.0.json
    ├── Babar12-Data.zip
+   ├── Backup-Work_Folders.zip
    ├── enforcer_pattern_library_v2.0.json
    ├── interface_schema_v2.0.json
    ├── VAPT_AI_Agent_System_README_v2.0.md
@@ -1856,7 +1838,7 @@ Generated: 2026-05-04 18:51:54
 - G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/vapt_driver_manifest_v2.0.json
 - G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/scripts/Query-Risk.ps1
 
-... and 1485 more files
+... and 1467 more files
 
 ### Maintenance
 This file is auto-generated. To update it:
