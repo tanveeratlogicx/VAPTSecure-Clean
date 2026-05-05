@@ -17,6 +17,7 @@ if (!defined("ABSPATH")) {
 class VAPTSECURE_License_Manager
 {
     const CACHE_PREFIX = "vaptsecure_license_cache_";
+    const EXPIRY_WARNING_DAYS = 14;
     const GRACE_PERIOD = 1296000; // 15 days in seconds (15 * 24 * 60 * 60)
     const CACHE_DURATION = 30 * DAY_IN_SECONDS; // 30 days
 
@@ -496,6 +497,47 @@ class VAPTSECURE_License_Manager
             echo "</div>";
         }
 
+        $row = self::get_domain_row($domain);
+        if (
+            $row &&
+            !empty($row->manual_expiry_date) &&
+            $row->manual_expiry_date !== "0000-00-00 00:00:00"
+        ) {
+            $expiry_context = self::get_expiry_context($row);
+            if (
+                !empty($expiry_context["expires_soon"]) &&
+                empty($expiry_context["expired"])
+            ) {
+                $days_remaining = isset($expiry_context["days_remaining"])
+                    ? (int) $expiry_context["days_remaining"]
+                    : 0;
+                $display_days = max(0, $days_remaining);
+                $renew_url = admin_url("admin.php?page=vaptsecure-domain-admin");
+                $due_text = $display_days === 0
+                    ? "today"
+                    : sprintf(
+                        _n(
+                            "%d day",
+                            "%d days",
+                            $display_days,
+                            "vaptsecure",
+                        ),
+                        $display_days,
+                    );
+
+                echo '<div class="notice notice-warning is-dismissible">';
+                echo "<p><strong>VAPTSecure Clean License Notice:</strong></p>";
+                echo "<p>Your license will expire in " .
+                    esc_html($due_text) .
+                    ". Renew now to keep protection for your domain.</p>";
+                echo "<p>When the license expires, protection will be removed until it is renewed.</p>";
+                echo '<p><a class="button button-primary" href="' .
+                    esc_url($renew_url) .
+                    '">Review License</a></p>';
+                echo "</div>";
+            }
+        }
+
         // Check for cached settings available for manual restore
         $cached = get_transient(self::CACHE_PREFIX . $domain . "_settings");
         if ($cached && !empty($cached["saved_at"])) {
@@ -528,6 +570,71 @@ class VAPTSECURE_License_Manager
             </script>';
             echo "</div>";
         }
+    }
+
+    /**
+     * Get the domain row for the current site.
+     *
+     * @param string $domain Domain name
+     * @return object|null
+     */
+    private static function get_domain_row($domain)
+    {
+        global $wpdb;
+
+        return $wpdb->get_row(
+            $wpdb->prepare(
+                "SELECT * FROM {$wpdb->prefix}vaptsecure_domains WHERE domain = %s",
+                $domain,
+            ),
+        );
+    }
+
+    /**
+     * Build expiry warning context for a license row.
+     *
+     * @param object $row Domain database row
+     * @return array{expiry_ts:int,days_remaining:int,expires_soon:bool,expired:bool}
+     */
+    private static function get_expiry_context($row)
+    {
+        $expiry_date = isset($row->manual_expiry_date)
+            ? (string) $row->manual_expiry_date
+            : "";
+        if (
+            $expiry_date === "" ||
+            $expiry_date === "0000-00-00 00:00:00"
+        ) {
+            return [
+                "expiry_ts" => 0,
+                "days_remaining" => PHP_INT_MAX,
+                "expires_soon" => false,
+                "expired" => false,
+            ];
+        }
+
+        $expiry_ts = strtotime($expiry_date);
+        if (!$expiry_ts) {
+            return [
+                "expiry_ts" => 0,
+                "days_remaining" => 0,
+                "expires_soon" => false,
+                "expired" => false,
+            ];
+        }
+
+        $today_ts = strtotime(date("Y-m-d 00:00:00"));
+        $days_remaining = (int) floor(($expiry_ts - $today_ts) / DAY_IN_SECONDS);
+        $expired = $expiry_ts < $today_ts;
+        $expires_soon =
+            !$expired && $days_remaining <= self::EXPIRY_WARNING_DAYS;
+
+        return [
+            "expiry_ts" => $expiry_ts,
+            "days_remaining" => $days_remaining,
+            "expires_soon" => $expires_soon,
+            "expired" => $expired,
+        ];
     }
 
     /**
@@ -591,6 +698,7 @@ class VAPTSECURE_License_Manager
         $has_cache = (bool) get_transient(
             self::CACHE_PREFIX . $domain . "_settings",
         );
+        $expiry_context = self::get_expiry_context($row);
 
         return [
             "status" => $status,
@@ -598,6 +706,8 @@ class VAPTSECURE_License_Manager
             "license_id" => $row->license_id,
             "license_type" => $row->license_type,
             "expiry_date" => $row->manual_expiry_date,
+            "days_remaining" => $expiry_context["days_remaining"],
+            "expires_soon" => $expiry_context["expires_soon"],
             "is_enabled" => (bool) $row->is_enabled,
             "auto_renew" => (bool) $row->auto_renew,
             "renewals_count" => $row->renewals_count,
