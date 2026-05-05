@@ -274,6 +274,7 @@ class VAPTSECURE_Build
         if (class_exists('ZipArchive')) {
             $zip = new ZipArchive();
             if ($zip->open($zip_path, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
+                $zip->setArchiveComment(self::build_archive_comment($domain, $version, $white_label['name']));
                 self::add_dir_to_zip($plugin_dir, $zip, $plugin_slug);
                 $zip->close();
             } else {
@@ -288,7 +289,9 @@ class VAPTSECURE_Build
             $result = $archive->create(
                 $plugin_dir,
                 PCLZIP_OPT_REMOVE_PATH,
-                $temp_dir
+                $temp_dir,
+                PCLZIP_OPT_COMMENT,
+                self::build_archive_comment($domain, $version, $white_label['name'])
             );
             if ($result === 0) {
                 throw new Exception('Failed to create ZIP archive (PclZip): ' . $archive->errorInfo(true));
@@ -1009,6 +1012,62 @@ class VAPTSECURE_Build
         }
 
         return 'VAPTSecure Clean';
+    }
+
+    private static function get_builder_version()
+    {
+        if (defined('VAPTSECURE_VERSION') && is_string(VAPTSECURE_VERSION) && VAPTSECURE_VERSION !== '') {
+            return (string) VAPTSECURE_VERSION;
+        }
+
+        $source = VAPTSECURE_PATH . 'vaptsecure.php';
+        if (file_exists($source)) {
+            $contents = file_get_contents($source);
+            if ($contents !== false && preg_match('/^\s*\*\s*Version:\s*(.+)$/mi', $contents, $matches)) {
+                $version = trim((string) $matches[1]);
+                if ($version !== '') {
+                    return $version;
+                }
+            }
+
+            if (function_exists('get_file_data')) {
+                $headers = @get_file_data($source, array('Version' => 'Version'), 'plugin');
+                if (is_array($headers) && !empty($headers['Version'])) {
+                    $version = trim((string) $headers['Version']);
+                    if ($version !== '') {
+                        return $version;
+                    }
+                }
+            }
+        }
+
+        return 'unknown';
+    }
+
+    private static function get_builder_commit_id()
+    {
+        $repo_root = rtrim(str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, VAPTSECURE_PATH), DIRECTORY_SEPARATOR);
+        $git_dir = $repo_root . DIRECTORY_SEPARATOR . '.git';
+        if (!is_dir($git_dir) || !function_exists('shell_exec')) {
+            return 'unknown';
+        }
+
+        $command = 'git -C ' . escapeshellarg($repo_root) . ' rev-parse --short HEAD 2>NUL';
+        $commit = trim((string) shell_exec($command));
+        return $commit !== '' ? $commit : 'unknown';
+    }
+
+    private static function build_archive_comment($domain, $version, $plugin_name)
+    {
+        return implode("\n", array(
+            'VAPTSecure Build Metadata',
+            'Build Time: ' . current_time('mysql'),
+            'Builder Version: ' . self::get_builder_version(),
+            'Builder Commit: ' . self::get_builder_commit_id(),
+            'Generated Build Version: ' . (string) $version,
+            'Target Domain: ' . (string) $domain,
+            'Plugin Name: ' . (string) $plugin_name,
+        ));
     }
 
     private static function generate_docs($dir, $domain, $version, $features)
