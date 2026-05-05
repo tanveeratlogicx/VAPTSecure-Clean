@@ -68,7 +68,12 @@ class VAPTSECURE_License_Manager
         }
 
         // Normal license check
-        return self::check_domain_license($domain);
+        $status = self::check_domain_license($domain);
+        if ($status === "expired") {
+            self::handle_expired_license($domain);
+        }
+
+        return $status;
     }
 
     /**

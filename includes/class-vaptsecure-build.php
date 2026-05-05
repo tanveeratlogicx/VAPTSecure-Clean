@@ -253,10 +253,13 @@ class VAPTSECURE_Build
         // 5. Rewrite Main Plugin File Headers & Logic
         self::rewrite_main_plugin_file($plugin_dir, $plugin_slug, $white_label, $version, $domain, $config_filename, $include_config, $require_wp, $require_php);
 
-        // 6. Generate Documentation
+        // 6. Generate uninstall cleanup entry for WordPress deletion flow.
+        self::generate_uninstall_php($plugin_dir);
+
+        // 7. Generate Documentation
         self::generate_docs($plugin_dir, $domain, $version, $features);
 
-        // 7. Create ZIP Archive
+        // 8. Create ZIP Archive
         $master_plugin_name = sanitize_title((string) self::get_master_plugin_name());
         if ($master_plugin_name === '') {
             $master_plugin_name = 'vaptsecure-clean';
@@ -413,6 +416,8 @@ class VAPTSECURE_Build
 
     private static function copy_plugin_files($source, $dest, $active_data_file = null, $generate_type = 'full_build', $build_data = [])
     {
+        $source = rtrim(str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, (string) $source), DIRECTORY_SEPARATOR);
+        $dest = rtrim(str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, (string) $dest), DIRECTORY_SEPARATOR);
         $iterator = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($source, RecursiveDirectoryIterator::SKIP_DOTS),
             RecursiveIteratorIterator::SELF_FIRST
@@ -423,6 +428,7 @@ class VAPTSECURE_Build
             'LICENSE',
             'LICENSE.txt',
             'LICENSE.md',
+            'uninstall.php',
             'vapt-functions.php',
             'data/interface_schema_v2.0.json',
             'data/enforcer_pattern_library_v2.0.json',
@@ -450,7 +456,9 @@ class VAPTSECURE_Build
 
         $allowed_prefixes = array(
             'includes/enforcers/',
+            'includes/interfaces/',
             'includes/rest/',
+            'assets/css/',
             'assets/js/admin-modules/',
             'assets/js/modules/',
         );
@@ -497,6 +505,7 @@ class VAPTSECURE_Build
         foreach ($iterator as $item) {
             $subPath = str_replace('\\', '/', (string) $iterator->getSubPathName());
             $filename = basename($subPath);
+            $nativeSubPath = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $subPath);
             $is_allowed_path = in_array($subPath, $allowed_exact_paths, true);
             if (!$is_allowed_path) {
                 foreach ($allowed_prefixes as $prefix) {
@@ -562,7 +571,7 @@ class VAPTSECURE_Build
                     // If this is the active data file, write a filtered version containing only the build's Release features
                     if (!$item->isDir() && (strcasecmp($filename, $active_data_file) === 0)) {
                         $allowed_feature_keys = isset($build_data['features']) && is_array($build_data['features']) ? $build_data['features'] : array();
-                        $dest_path = $dest . DIRECTORY_SEPARATOR . $subPath;
+                        $dest_path = $dest . DIRECTORY_SEPARATOR . $nativeSubPath;
                         $dest_dir = dirname($dest_path);
                         if (!file_exists($dest_dir)) {
                             mkdir($dest_dir, 0755, true);
@@ -596,7 +605,6 @@ class VAPTSECURE_Build
 
             // Exclude supporting repository files that should never ship in client builds.
             if (
-                strcasecmp($filename, 'LICENSE') === 0 ||
                 strcasecmp($filename, 'LICENSE.txt') === 0 ||
                 strcasecmp($filename, 'LICENSE.md') === 0 ||
                 strcasecmp($filename, 'test.ftp') === 0 ||
@@ -631,11 +639,12 @@ class VAPTSECURE_Build
             }
 
             if ($item->isDir()) {
-                if (!file_exists($dest . DIRECTORY_SEPARATOR . $subPath)) {
-                    mkdir($dest . DIRECTORY_SEPARATOR . $subPath, 0755, true);
+                $dest_dir_path = $dest . DIRECTORY_SEPARATOR . $nativeSubPath;
+                if (!file_exists($dest_dir_path)) {
+                    mkdir($dest_dir_path, 0755, true);
                 }
             } else {
-                copy($item, $dest . DIRECTORY_SEPARATOR . $subPath);
+                copy($item, $dest . DIRECTORY_SEPARATOR . $nativeSubPath);
             }
         }
     }
@@ -725,6 +734,66 @@ class VAPTSECURE_Build
         $content = self::safe_preg_replace('/^require_once VAPTSECURE_PATH \. "includes\/self-check\/class-vapt-cron\.php";\s*$/m', '', $content);
         $content = self::safe_preg_replace('/^require_once VAPTSECURE_PATH \. "includes\/self-check\/class-vapt-lifecycle\.php";\s*$/m', '', $content);
         $content = self::safe_preg_replace('/^require_once VAPTSECURE_PATH \. "includes\/admin\/class-vapt-diagnostics-page\.php";\s*$/m', '', $content);
+        $content = self::safe_preg_replace('/add_action\("vapt_license_expired", function \(\) \{\s*if \(class_exists\("VAPT_Self_Check"\)\) \{\s*VAPT_Self_Check::run\("license_expire"\);\s*\}\s*\}\);\s*/s', '', $content);
+
+        $cleanup_block = "if (!function_exists('vaptsecure_client_clear_transient_state')) {\n"
+            . "    function vaptsecure_client_clear_transient_state() {\n"
+            . "        global \$wpdb;\n"
+            . "        \$option_patterns = array(\n"
+            . "            '_transient_vaptsecure_%',\n"
+            . "            '_transient_vapt_%',\n"
+            . "            '_transient_timeout_vaptsecure_%',\n"
+            . "            '_transient_timeout_vapt_%',\n"
+            . "        );\n"
+            . "        foreach (\$option_patterns as \$pattern) {\n"
+            . "            \$options = \$wpdb->get_col(\$wpdb->prepare(\"SELECT option_name FROM {\$wpdb->options} WHERE option_name LIKE %s\", \$pattern));\n"
+            . "            if (!is_array(\$options)) {\n"
+            . "                continue;\n"
+            . "            }\n"
+            . "            foreach (\$options as \$option) {\n"
+            . "                delete_option(\$option);\n"
+            . "            }\n"
+            . "        }\n"
+            . "        if (is_multisite() && !empty(\$wpdb->sitemeta)) {\n"
+            . "            \$site_patterns = array(\n"
+            . "                '_site_transient_vaptsecure_%',\n"
+            . "                '_site_transient_vapt_%',\n"
+            . "                '_site_transient_timeout_vaptsecure_%',\n"
+            . "                '_site_transient_timeout_vapt_%',\n"
+            . "            );\n"
+            . "            foreach (\$site_patterns as \$pattern) {\n"
+            . "                \$site_options = \$wpdb->get_col(\$wpdb->prepare(\"SELECT meta_key FROM {\$wpdb->sitemeta} WHERE meta_key LIKE %s\", \$pattern));\n"
+            . "                if (!is_array(\$site_options)) {\n"
+            . "                    continue;\n"
+            . "                }\n"
+            . "                foreach (\$site_options as \$site_option) {\n"
+            . "                    delete_site_option(\$site_option);\n"
+            . "                }\n"
+            . "            }\n"
+            . "        }\n"
+            . "    }\n"
+            . "}\n"
+            . "if (!function_exists('vaptsecure_client_deactivate')) {\n"
+            . "    function vaptsecure_client_deactivate() {\n"
+            . "        if (function_exists('vaptsecure_client_clear_transient_state')) {\n"
+            . "            vaptsecure_client_clear_transient_state();\n"
+            . "        }\n"
+            . "        if (class_exists('VAPTSECURE_Config_Cleaner')) {\n"
+            . "            VAPTSECURE_Config_Cleaner::clean_all();\n"
+            . "        } elseif (class_exists('VAPTSECURE_Enforcer')) {\n"
+            . "            VAPTSECURE_Enforcer::clean_all_config_files();\n"
+            . "        }\n"
+            . "        delete_transient('vaptsecure_active_enforcements');\n"
+            . "        update_option('vaptsecure_global_protection', 0);\n"
+            . "        update_option('vapt_plugin_status', 'deactivated');\n"
+            . "        update_option('vapt_active_features', array());\n"
+            . "    }\n"
+            . "}\n";
+        $content = self::safe_preg_replace(
+            '/register_deactivation_hook\(__FILE__, \["VAPT_Lifecycle", "on_deactivate"\]\);\s*register_uninstall_hook\(__FILE__, \["VAPT_Lifecycle", "on_uninstall"\]\);/s',
+            $cleanup_block . "register_deactivation_hook(__FILE__, 'vaptsecure_client_deactivate');\n",
+            $content
+        );
 
         $activation_email_rewrite = "function vaptsecure_send_activation_email() {\n"
             . "    if (!function_exists('wp_mail')) { return; }\n"
@@ -962,6 +1031,102 @@ class VAPTSECURE_Build
             $readme .= ($index + 1) . '. ' . $title . "\n";
         }
         file_put_contents($dir . '/README.md', $readme);
+    }
+
+    private static function generate_uninstall_php($dir)
+    {
+        $uninstall = <<<'PHP'
+<?php
+if (!defined('WP_UNINSTALL_PLUGIN')) {
+    exit;
+}
+
+global $wpdb;
+
+$plugin_root = dirname(__FILE__);
+
+$cleanup_paths = array(
+    $plugin_root . '/vapt-functions.php',
+    $plugin_root . '/data/generated',
+);
+
+foreach ($cleanup_paths as $path) {
+    if (is_dir($path)) {
+        $items = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($path, RecursiveDirectoryIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::CHILD_FIRST
+        );
+        foreach ($items as $item) {
+            $target = $item->getPathname();
+            if ($item->isDir()) {
+                @rmdir($target);
+            } else {
+                @unlink($target);
+            }
+        }
+        @rmdir($path);
+    } elseif (file_exists($path)) {
+        @unlink($path);
+    }
+}
+
+foreach (glob($plugin_root . '/vapt-*-config-*.php') ?: array() as $config_file) {
+    @unlink($config_file);
+}
+
+$table_patterns = array(
+    $wpdb->prefix . 'vaptsecure_%',
+    $wpdb->prefix . 'vapt_%',
+);
+
+foreach ($table_patterns as $pattern) {
+    $tables = $wpdb->get_results($wpdb->prepare('SHOW TABLES LIKE %s', $pattern), ARRAY_N);
+    if (!is_array($tables)) {
+        continue;
+    }
+    foreach ($tables as $row) {
+        if (!empty($row[0])) {
+            $wpdb->query('DROP TABLE IF EXISTS `' . esc_sql($row[0]) . '`');
+        }
+    }
+}
+
+$options = $wpdb->get_col("SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE 'vaptsecure_%' OR option_name LIKE 'vapt_%'");
+if (is_array($options)) {
+    foreach ($options as $option) {
+        delete_option($option);
+    }
+}
+
+$transient_options = $wpdb->get_col("SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE '_transient_vaptsecure_%' OR option_name LIKE '_transient_vapt_%' OR option_name LIKE '_transient_timeout_vaptsecure_%' OR option_name LIKE '_transient_timeout_vapt_%'");
+if (is_array($transient_options)) {
+    foreach ($transient_options as $transient_option) {
+        delete_option($transient_option);
+    }
+}
+
+if (is_multisite() && !empty($wpdb->sitemeta)) {
+    $site_transient_options = $wpdb->get_col("SELECT meta_key FROM {$wpdb->sitemeta} WHERE meta_key LIKE '_site_transient_vaptsecure_%' OR meta_key LIKE '_site_transient_vapt_%' OR meta_key LIKE '_site_transient_timeout_vaptsecure_%' OR meta_key LIKE '_site_transient_timeout_vapt_%'");
+    if (is_array($site_transient_options)) {
+        foreach ($site_transient_options as $site_transient_option) {
+            delete_site_option($site_transient_option);
+        }
+    }
+}
+
+delete_option('vaptsecure_global_protection');
+delete_option('vapt_plugin_status');
+delete_option('vapt_active_features');
+delete_option('vaptsecure_config_current_b64');
+delete_option('vaptsecure_config_current_extended_b64');
+delete_option('vaptsecure_config_original_b64');
+delete_option('vaptsecure_config_original_hash');
+delete_option('vaptsecure_config_original_path');
+
+?>
+PHP;
+
+        file_put_contents($dir . '/uninstall.php', $uninstall);
     }
 
     private static function add_dir_to_zip($dir, $zip, $zip_path)
