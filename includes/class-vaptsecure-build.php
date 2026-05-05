@@ -274,7 +274,7 @@ class VAPTSECURE_Build
         if (class_exists('ZipArchive')) {
             $zip = new ZipArchive();
             if ($zip->open($zip_path, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
-                $zip->setArchiveComment(self::build_archive_comment($domain, $version, $white_label['name']));
+                $zip->setArchiveComment(self::build_archive_comment($domain, $version, $white_label['name'], $features));
                 self::add_dir_to_zip($plugin_dir, $zip, $plugin_slug);
                 $zip->close();
             } else {
@@ -291,7 +291,7 @@ class VAPTSECURE_Build
                 PCLZIP_OPT_REMOVE_PATH,
                 $temp_dir,
                 PCLZIP_OPT_COMMENT,
-                self::build_archive_comment($domain, $version, $white_label['name'])
+                self::build_archive_comment($domain, $version, $white_label['name'], $features)
             );
             if ($result === 0) {
                 throw new Exception('Failed to create ZIP archive (PclZip): ' . $archive->errorInfo(true));
@@ -1085,17 +1085,34 @@ class VAPTSECURE_Build
         return $commit !== '' ? $commit : 'unknown';
     }
 
-    private static function build_archive_comment($domain, $version, $plugin_name)
+    private static function build_archive_comment($domain, $version, $plugin_name, $features)
     {
-        return implode("\n", array(
-            self::get_master_plugin_name() . ' Build Metadata',
+        $title_map = self::get_feature_title_map();
+        $feature_lines = self::feature_titles_from_keys($features, $title_map);
+        $feature_block = array();
+        if (!empty($feature_lines)) {
+            foreach ($feature_lines as $index => $title) {
+                $feature_block[] = ($index + 1) . '. ' . $title;
+            }
+        }
+
+        $comment_lines = array(
+            self::get_master_plugin_name(),
             'Build Time: ' . current_time('mysql'),
             'Builder Version: ' . self::get_builder_version(),
             'Builder Commit: ' . self::get_builder_commit_id(),
+            '',
             'Generated Build Version: ' . (string) $version,
             'Target Domain: ' . (string) $domain,
             'Plugin Name: ' . (string) $plugin_name,
-        ));
+            '',
+        );
+
+        if (!empty($feature_block)) {
+            $comment_lines = array_merge($comment_lines, $feature_block);
+        }
+
+        return implode("\n", $comment_lines);
     }
 
     private static function generate_docs($dir, $domain, $version, $features)
