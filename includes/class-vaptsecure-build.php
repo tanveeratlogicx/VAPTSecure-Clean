@@ -544,8 +544,8 @@ class VAPTSECURE_Build
                 }
             }
 
-            // Exclude ZIP files globally
-            if (preg_match('/\.zip$/i', $filename)) {
+            // Exclude archive files globally
+            if (preg_match('/\.(zip|rar|7z|tar|gz|bz2|xz)$/i', $filename)) {
                 continue;
             }
 
@@ -587,9 +587,9 @@ class VAPTSECURE_Build
 
         // Remove ALL superadmin functionality from generated builds using more precise patterns
         
-        // 1. Stub vaptsecure_get_superadmin_identity()
-        // [v2.4.11] Robust stubbing: replace function body with empty identity
-        $content = self::safe_preg_replace('/function vaptsecure_get_superadmin_identity\s*\(\)\s*\{[^{}]*\{(?:[^{}]*\{[^{}]*\}[^{}]*|[^{}]*)*\}[\s\S]*?\n\}/s', 'function vaptsecure_get_superadmin_identity() { return array("user" => "none", "email" => "none"); }', $content);
+        // 1. Remove vaptsecure_get_superadmin_identity()
+        // Generated builds should not expose any hidden-user identity surface.
+        $content = self::safe_preg_replace('/function vaptsecure_get_superadmin_identity\s*\(\)\s*\{[\s\S]*?\n\}/s', '', $content);
 
         // 2. Remove VAPTSECURE_SUPERADMIN_USER and VAPTSECURE_SUPERADMIN_EMAIL constants definition
         // Match the entire block that sets identity and defines constants
@@ -768,6 +768,9 @@ class VAPTSECURE_Build
         foreach ($files as $name => $file) {
             if (! $file->isDir()) {
                 $file_path = $file->getRealPath();
+                if (preg_match('/\.(zip|rar|7z|tar|gz|bz2|xz)$/i', $file_path)) {
+                    continue;
+                }
                 $relative_path = $zip_path . '/' . substr($file_path, strlen($dir) + 1);
                 $zip->addFile($file_path, $relative_path);
             }
