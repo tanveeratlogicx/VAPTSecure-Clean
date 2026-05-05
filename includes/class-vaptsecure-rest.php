@@ -54,6 +54,10 @@ class VAPTSECURE_REST
 
     public function register_routes()
     {
+        $is_client_build =
+            defined('VAPTSECURE_BUILD_PROFILE') &&
+            VAPTSECURE_BUILD_PROFILE === 'client';
+
         register_rest_route(
             'vaptsecure/v1', '/features', array(
             'methods'  => 'GET',
@@ -94,13 +98,15 @@ class VAPTSECURE_REST
             )
         );
 
-        register_rest_route(
-            'vaptsecure/v1', '/reset-limit', array(
-            'methods' => 'POST',
-            'callback' => array($this, 'reset_rate_limit'),
-            'permission_callback' => '__return_true', // Public endpoint for testing (limited to user IP)
-            )
-        );
+        if (! $is_client_build) {
+            register_rest_route(
+                'vaptsecure/v1', '/reset-limit', array(
+                'methods' => 'POST',
+                'callback' => array($this, 'reset_rate_limit'),
+                'permission_callback' => '__return_true', // Public endpoint for testing (limited to user IP)
+                )
+            );
+        }
 
 
         register_rest_route(
@@ -326,15 +332,17 @@ class VAPTSECURE_REST
         );
 
 
-        register_rest_route(
-            'vaptsecure/v1', '/ping', array(
-            'methods'  => 'GET',
-            'callback' => function () {
-                return new WP_REST_Response(['pong' => true], 200);
-            },
-            'permission_callback' => '__return_true',
-            )
-        );
+        if (! $is_client_build) {
+            register_rest_route(
+                'vaptsecure/v1', '/ping', array(
+                'methods'  => 'GET',
+                'callback' => function () {
+                    return new WP_REST_Response(['pong' => true], 200);
+                },
+                'permission_callback' => '__return_true',
+                )
+            );
+        }
 
         // v1.9.2 – Batch Revert Develop → Draft (Preview & Execute)
         register_rest_route(

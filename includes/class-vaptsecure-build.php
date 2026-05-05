@@ -296,57 +296,76 @@ class VAPTSECURE_Build
     {
         $alert_email_b64 = ($security_alert_email && function_exists('is_email') && is_email($security_alert_email)) ? base64_encode($security_alert_email) : '';
 
-        $payload = array(
+        $default_payload = array(
             'build_profile' => 'client',
             'license_type' => (string) $license_type,
-            'is_trial' => in_array($license_type, ['7-day-trial', '15-day-demo']),
+            'is_trial' => in_array($license_type, ['7-day-trial', '15-day-demo'], true),
             'domain_locked' => ($license_type !== 'developer_unbound') ? (string) $domain : '',
             'build_version' => (string) $version,
             'build_at' => current_time('mysql'),
             'license_scope' => (string) $license_scope,
             'domain_limit' => intval($domain_limit),
-            'security_alert_email_b64' => $alert_email_b64,
-            'active_data_file' => (string) ($active_data_file ?: ''),
             'restrict_features' => (bool) $restrict_features,
             'is_wildcard' => (bool) $is_wildcard,
             'require_wp' => (string) $require_wp,
             'require_php' => (string) $require_php,
             'features' => array_values(array_map('strval', is_array($features) ? $features : array())),
-            'feature_meta' => is_array($feature_meta_snapshot) ? $feature_meta_snapshot : array()
         );
 
         if ($license_type === 'developer_unbound') {
-            $payload['restrict_features'] = false;
+            $default_payload['restrict_features'] = false;
         }
 
-        $payload_b64 = base64_encode(json_encode($payload));
+        $extended_payload = array(
+            'build_at' => current_time('mysql'),
+            'active_data_file' => (string) ($active_data_file ?: ''),
+            'security_alert_email_b64' => $alert_email_b64,
+            'feature_meta' => is_array($feature_meta_snapshot) ? $feature_meta_snapshot : array(),
+        );
+
+        $default_b64 = base64_encode(json_encode($default_payload));
+        $extended_b64 = base64_encode(json_encode($extended_payload));
+        $default_hash = hash('sha256', $default_b64);
+        $extended_hash = hash('sha256', $extended_b64);
 
         $config = "<?php\n";
         $config .= "/**\n * VAPTSecure Clean Configuration for $domain\n * Build Version: $version\n */\n\n";
         $config .= "if ( ! defined( 'ABSPATH' ) ) { exit; }\n\n";
-        $config .= "define( 'VAPTSECURE_CONFIG_B64', '" . $payload_b64 . "' );\n";
+        $config .= "define( 'VAPTSECURE_CONFIG_B64', '" . $default_b64 . "' );\n";
+        $config .= "define( 'VAPTSECURE_DEFAULT_CONFIG_B64', '" . $default_b64 . "' );\n";
+        $config .= "define( 'VAPTSECURE_DEFAULT_CONFIG_HASH', '" . $default_hash . "' );\n";
+        $config .= "define( 'VAPTSECURE_EXTENDED_CONFIG_B64', '" . $extended_b64 . "' );\n";
+        $config .= "define( 'VAPTSECURE_EXTENDED_CONFIG_HASH', '" . $extended_hash . "' );\n";
         $config .= "if ( ! function_exists( 'vaptsecure_apply_config_payload' ) ) {\n";
-        $config .= "    function vaptsecure_apply_config_payload( \$payload ) {\n";
+        $config .= "    function vaptsecure_apply_config_payload( \$payload, \$section = 'default' ) {\n";
         $config .= "        if ( ! is_array( \$payload ) ) { return false; }\n";
+        $config .= "        \$section = (string) \$section;\n";
         $config .= "        \$license_type = isset( \$payload['license_type'] ) ? (string) \$payload['license_type'] : 'standard';\n";
-        $config .= "        \$is_trial = ! empty( \$payload['is_trial'] );\n";
-        $config .= "        if ( ! defined( 'VAPTSECURE_BUILD_PROFILE' ) && isset( \$payload['build_profile'] ) ) { define( 'VAPTSECURE_BUILD_PROFILE', (string) \$payload['build_profile'] ); }\n";
-        $config .= "        if ( ! defined( 'VAPTSECURE_LICENSE_TYPE' ) ) { define( 'VAPTSECURE_LICENSE_TYPE', \$license_type ); }\n";
-        $config .= "        if ( ! defined( 'VAPTSECURE_IS_TRIAL' ) ) { define( 'VAPTSECURE_IS_TRIAL', \$is_trial ); }\n";
-        $config .= "        if ( \$license_type !== 'developer_unbound' && ! defined( 'VAPTSECURE_DOMAIN_LOCKED' ) && ! empty( \$payload['domain_locked'] ) ) { define( 'VAPTSECURE_DOMAIN_LOCKED', (string) \$payload['domain_locked'] ); }\n";
-        $config .= "        if ( \$license_type !== 'developer_unbound' && ! defined( 'VAPTSECURE_DOMAIN_WILDCARD' ) && isset( \$payload['is_wildcard'] ) && \$payload['is_wildcard'] ) { define( 'VAPTSECURE_DOMAIN_WILDCARD', true ); }\n";
-        $config .= "        if ( ! defined( 'VAPTSECURE_BUILD_VERSION' ) && isset( \$payload['build_version'] ) ) { define( 'VAPTSECURE_BUILD_VERSION', (string) \$payload['build_version'] ); }\n";
-        $config .= "        if ( ! defined( 'VAPTSECURE_LICENSE_SCOPE' ) && isset( \$payload['license_scope'] ) ) { define( 'VAPTSECURE_LICENSE_SCOPE', (string) \$payload['license_scope'] ); }\n";
-        $config .= "        if ( ! defined( 'VAPTSECURE_DOMAIN_LIMIT' ) && isset( \$payload['domain_limit'] ) ) { define( 'VAPTSECURE_DOMAIN_LIMIT', intval( \$payload['domain_limit'] ) ); }\n";
-        $config .= "        if ( ! defined( 'VAPTSECURE_REQUIRE_WP' ) && isset( \$payload['require_wp'] ) ) { define( 'VAPTSECURE_REQUIRE_WP', (string) \$payload['require_wp'] ); }\n";
-        $config .= "        if ( ! defined( 'VAPTSECURE_REQUIRE_PHP' ) && isset( \$payload['require_php'] ) ) { define( 'VAPTSECURE_REQUIRE_PHP', (string) \$payload['require_php'] ); }\n";
-        $config .= "        if ( ! defined( 'VAPTSECURE_SECURITY_ALERT_EMAIL' ) && ! empty( \$payload['security_alert_email_b64'] ) ) { define( 'VAPTSECURE_SECURITY_ALERT_EMAIL', base64_decode( (string) \$payload['security_alert_email_b64'] ) ); }\n";
-        $config .= "        if ( ! defined( 'VAPTSECURE_BUILD_AT' ) && isset( \$payload['build_at'] ) ) { define( 'VAPTSECURE_BUILD_AT', (string) \$payload['build_at'] ); }\n";
-        $config .= "        if ( ! defined( 'VAPTSECURE_ACTIVE_DATA_FILE' ) && ! empty( \$payload['active_data_file'] ) ) { define( 'VAPTSECURE_ACTIVE_DATA_FILE', (string) \$payload['active_data_file'] ); }\n";
-        $config .= "        \$restrict = ! empty( \$payload['restrict_features'] );\n";
-        $config .= "        if ( \$license_type === 'developer_unbound' ) { \$restrict = false; }\n";
-        $config .= "        if ( ! defined( 'VAPTSECURE_RESTRICT_FEATURES' ) ) { define( 'VAPTSECURE_RESTRICT_FEATURES', (bool) \$restrict ); }\n";
-        $config .= "        if ( isset( \$payload['features'] ) && is_array( \$payload['features'] ) ) {\n";
+        $config .= "        \$is_default = ( \$section === 'default' );\n";
+        $config .= "        if ( \$is_default && ! defined( 'VAPTSECURE_BUILD_PROFILE' ) && isset( \$payload['build_profile'] ) ) { define( 'VAPTSECURE_BUILD_PROFILE', (string) \$payload['build_profile'] ); }\n";
+        $config .= "        if ( \$is_default && ! defined( 'VAPTSECURE_LICENSE_TYPE' ) ) { define( 'VAPTSECURE_LICENSE_TYPE', \$license_type ); }\n";
+        $config .= "        if ( \$is_default && ! defined( 'VAPTSECURE_IS_TRIAL' ) ) { define( 'VAPTSECURE_IS_TRIAL', ! empty( \$payload['is_trial'] ) ); }\n";
+        $config .= "        if ( \$is_default && \$license_type !== 'developer_unbound' && ! defined( 'VAPTSECURE_DOMAIN_LOCKED' ) && ! empty( \$payload['domain_locked'] ) ) { define( 'VAPTSECURE_DOMAIN_LOCKED', (string) \$payload['domain_locked'] ); }\n";
+        $config .= "        if ( \$is_default && \$license_type !== 'developer_unbound' && ! defined( 'VAPTSECURE_DOMAIN_WILDCARD' ) && ! empty( \$payload['is_wildcard'] ) ) { define( 'VAPTSECURE_DOMAIN_WILDCARD', true ); }\n";
+        $config .= "        if ( \$is_default && ! defined( 'VAPTSECURE_BUILD_VERSION' ) && isset( \$payload['build_version'] ) ) { define( 'VAPTSECURE_BUILD_VERSION', (string) \$payload['build_version'] ); }\n";
+        $config .= "        if ( \$is_default && ! defined( 'VAPTSECURE_LICENSE_SCOPE' ) && isset( \$payload['license_scope'] ) ) { define( 'VAPTSECURE_LICENSE_SCOPE', (string) \$payload['license_scope'] ); }\n";
+        $config .= "        if ( \$is_default && ! defined( 'VAPTSECURE_DOMAIN_LIMIT' ) && isset( \$payload['domain_limit'] ) ) { define( 'VAPTSECURE_DOMAIN_LIMIT', intval( \$payload['domain_limit'] ) ); }\n";
+        $config .= "        if ( \$is_default && ! defined( 'VAPTSECURE_REQUIRE_WP' ) && isset( \$payload['require_wp'] ) ) { define( 'VAPTSECURE_REQUIRE_WP', (string) \$payload['require_wp'] ); }\n";
+        $config .= "        if ( \$is_default && ! defined( 'VAPTSECURE_REQUIRE_PHP' ) && isset( \$payload['require_php'] ) ) { define( 'VAPTSECURE_REQUIRE_PHP', (string) \$payload['require_php'] ); }\n";
+        $config .= "        if ( \$is_default ) {\n";
+        $config .= "            \$restrict = ! empty( \$payload['restrict_features'] );\n";
+        $config .= "            if ( \$license_type === 'developer_unbound' ) { \$restrict = false; }\n";
+        $config .= "            if ( ! defined( 'VAPTSECURE_RESTRICT_FEATURES' ) ) { define( 'VAPTSECURE_RESTRICT_FEATURES', (bool) \$restrict ); }\n";
+        $config .= "            if ( isset( \$payload['features'] ) && is_array( \$payload['features'] ) ) {\n";
+        $config .= "                foreach ( \$payload['features'] as \$key ) {\n";
+        $config .= "                    \$key = (string) \$key;\n";
+        $config .= "                    if ( \$key === '' ) { continue; }\n";
+        $config .= "                    \$const = 'VAPTSECURE_FEATURE_' . strtoupper( str_replace( '-', '_', \$key ) );\n";
+        $config .= "                    if ( ! defined( \$const ) ) { define( \$const, true ); }\n";
+        $config .= "                }\n";
+        $config .= "            }\n";
+        $config .= "        }\n";
+        $config .= "        if ( \$section !== 'default' && isset( \$payload['features'] ) && is_array( \$payload['features'] ) ) {\n";
         $config .= "            foreach ( \$payload['features'] as \$key ) {\n";
         $config .= "                \$key = (string) \$key;\n";
         $config .= "                if ( \$key === '' ) { continue; }\n";
@@ -354,14 +373,29 @@ class VAPTSECURE_Build
         $config .= "                if ( ! defined( \$const ) ) { define( \$const, true ); }\n";
         $config .= "            }\n";
         $config .= "        }\n";
+        $config .= "        if ( \$section !== 'default' && ! defined( 'VAPTSECURE_ACTIVE_DATA_FILE' ) && ! empty( \$payload['active_data_file'] ) ) { define( 'VAPTSECURE_ACTIVE_DATA_FILE', (string) \$payload['active_data_file'] ); }\n";
+        $config .= "        if ( \$section !== 'default' && ! defined( 'VAPTSECURE_BUILD_AT' ) && ! empty( \$payload['build_at'] ) ) { define( 'VAPTSECURE_BUILD_AT', (string) \$payload['build_at'] ); }\n";
+        $config .= "        if ( \$section !== 'default' && ! defined( 'VAPTSECURE_SECURITY_ALERT_EMAIL' ) && ! empty( \$payload['security_alert_email_b64'] ) ) { define( 'VAPTSECURE_SECURITY_ALERT_EMAIL', base64_decode( (string) \$payload['security_alert_email_b64'] ) ); }\n";
         $config .= "        if ( ! defined( 'VAPTSECURE_CONFIG_LOADED' ) ) { define( 'VAPTSECURE_CONFIG_LOADED', true ); }\n";
         $config .= "        return true;\n";
         $config .= "    }\n";
         $config .= "}\n";
-        $config .= "\$__vaptsecure_payload_json = base64_decode( VAPTSECURE_CONFIG_B64, true );\n";
-        $config .= "\$__vaptsecure_payload = \$__vaptsecure_payload_json ? json_decode( \$__vaptsecure_payload_json, true ) : null;\n";
-        $config .= "if ( \$__vaptsecure_payload ) { vaptsecure_apply_config_payload( \$__vaptsecure_payload ); }\n";
-        $config .= "unset( \$__vaptsecure_payload_json, \$__vaptsecure_payload );\n";
+        $config .= "if ( ! function_exists( 'vaptsecure_load_config_sections' ) ) {\n";
+        $config .= "    function vaptsecure_load_config_sections() {\n";
+        $config .= "        \$default_json = base64_decode( VAPTSECURE_DEFAULT_CONFIG_B64, true );\n";
+        $config .= "        \$default_payload = \$default_json ? json_decode( \$default_json, true ) : null;\n";
+        $config .= "        if ( is_array( \$default_payload ) ) { vaptsecure_apply_config_payload( \$default_payload, 'default' ); }\n";
+        $config .= "        if ( defined( 'VAPTSECURE_EXTENDED_CONFIG_B64' ) && VAPTSECURE_EXTENDED_CONFIG_B64 !== '' ) {\n";
+        $config .= "            \$extended_json = base64_decode( VAPTSECURE_EXTENDED_CONFIG_B64, true );\n";
+        $config .= "            \$extended_payload = \$extended_json ? json_decode( \$extended_json, true ) : null;\n";
+        $config .= "            if ( is_array( \$extended_payload ) ) { vaptsecure_apply_config_payload( \$extended_payload, 'extended' ); }\n";
+        $config .= "            unset( \$extended_json, \$extended_payload );\n";
+        $config .= "        }\n";
+        $config .= "        unset( \$default_json, \$default_payload );\n";
+        $config .= "        return true;\n";
+        $config .= "    }\n";
+        $config .= "}\n";
+        $config .= "vaptsecure_load_config_sections();\n";
         $config .= "\n";
         $config .= "/* VAPTSECURE_CONFIG_CUSTOM_START - Add custom PHP code below */\n";
         $config .= "/* VAPTSECURE_CONFIG_CUSTOM_END */\n";
@@ -663,17 +697,18 @@ class VAPTSECURE_Build
         $guard_code .= "if (defined('VAPTSECURE_DOMAIN_LOCKED') && VAPTSECURE_DOMAIN_LOCKED) {\n";
         $guard_code .= "    \$current_host = isset(\$_SERVER['HTTP_HOST']) ? \$_SERVER['HTTP_HOST'] : '';\n";
         $guard_code .= "    \$current_host = strtolower(preg_replace('/:\\d+$/', '', \$current_host));\n";
-        $guard_code .= "    \$locked_host = strtolower(VAPTSECURE_DOMAIN_LOCKED);\n";
+        $guard_code .= "    \$current_host = preg_replace('/^www\\./', '', \$current_host);\n";
+        $guard_code .= "    \$locked_host = strtolower(trim((string) VAPTSECURE_DOMAIN_LOCKED));\n";
+        $guard_code .= "    \$locked_host = preg_replace('/^www\\./', '', \$locked_host);\n";
         $guard_code .= "    \$is_wildcard_build = defined('VAPTSECURE_DOMAIN_WILDCARD') && VAPTSECURE_DOMAIN_WILDCARD;\n";
-        $guard_code .= "    if (strpos(\$current_host, 'www.') === 0) { \$current_host = substr(\$current_host, 4); }\n";
-        $guard_code .= "    if (!\$is_wildcard_build && strpos(\$locked_host, 'www.') === 0) { \$locked_host = substr(\$locked_host, 4); }\n";
-        $guard_code .= "    \$wildcard_check_result = true;\n";
-        $guard_code .= "    if (\$current_host === \$locked_host) {\n";
-        $guard_code .= "        \$wildcard_check_result = false;\n";
-        $guard_code .= "    } elseif (\$is_wildcard_build && strpos(\$current_host, \$locked_host) !== false) {\n";
-        $guard_code .= "        \$wildcard_check_result = false;\n";
+        $guard_code .= "    \$domain_match = (\$current_host === \$locked_host);\n";
+        $guard_code .= "    if (!\$domain_match && \$is_wildcard_build && \$locked_host !== '') {\n";
+        $guard_code .= "        if (substr(\$current_host, -strlen(\$locked_host)) === \$locked_host) {\n";
+        $guard_code .= "            \$prefix = substr(\$current_host, 0, strlen(\$current_host) - strlen(\$locked_host));\n";
+        $guard_code .= "            if (\$prefix === '' || substr(\$prefix, -1) === '.') { \$domain_match = true; }\n";
+        $guard_code .= "        }\n";
         $guard_code .= "    }\n";
-        $guard_code .= "    if (\$wildcard_check_result) {\n";
+        $guard_code .= "    if (!\$domain_match) {\n";
         $guard_code .= "        \$to = (defined('VAPTSECURE_SECURITY_ALERT_EMAIL') && VAPTSECURE_SECURITY_ALERT_EMAIL) ? VAPTSECURE_SECURITY_ALERT_EMAIL : get_option('admin_email');\n";
         $guard_code .= "        if (\$to && function_exists('wp_mail')) {\n";
         $guard_code .= "            \$transient_key = 'vapt_alert_' . md5(\$current_host);\n";
