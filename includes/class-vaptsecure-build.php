@@ -274,7 +274,7 @@ class VAPTSECURE_Build
         if (class_exists('ZipArchive')) {
             $zip = new ZipArchive();
             if ($zip->open($zip_path, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
-                $zip->setArchiveComment(self::build_archive_comment($domain, $version, $white_label['name'], $features));
+                $zip->setArchiveComment(self::build_archive_comment($domain, $version, $white_label['name']));
                 self::add_dir_to_zip($plugin_dir, $zip, $plugin_slug);
                 $zip->close();
             } else {
@@ -291,7 +291,7 @@ class VAPTSECURE_Build
                 PCLZIP_OPT_REMOVE_PATH,
                 $temp_dir,
                 PCLZIP_OPT_COMMENT,
-                self::build_archive_comment($domain, $version, $white_label['name'], $features)
+                self::build_archive_comment($domain, $version, $white_label['name'])
             );
             if ($result === 0) {
                 throw new Exception('Failed to create ZIP archive (PclZip): ' . $archive->errorInfo(true));
@@ -1016,40 +1016,25 @@ class VAPTSECURE_Build
         return array_values(array_unique($lines));
     }
 
-    private static function feature_comment_lines_from_keys($features, $title_map)
-    {
-        $lines = array();
-        if (!is_array($features)) {
-            return $lines;
-        }
-
-        foreach ($features as $feature_key) {
-            $raw_key = trim((string) $feature_key);
-            if ($raw_key === '') {
-                continue;
-            }
-
-            $title = self::feature_title_from_key($raw_key, $title_map);
-            if ($title === '') {
-                $lines[] = $raw_key;
-                continue;
-            }
-
-            $lines[] = strcasecmp($title, $raw_key) === 0 ? $raw_key : ($title . ' [' . $raw_key . ']');
-        }
-
-        return array_values(array_unique($lines));
-    }
-
     private static function get_master_plugin_name()
     {
         $source = VAPTSECURE_PATH . 'vaptsecure.php';
         if (file_exists($source)) {
-            $headers = @get_file_data($source, array('Name' => 'Plugin Name'), 'plugin');
-            if (is_array($headers) && !empty($headers['Name'])) {
-                $name = trim((string) $headers['Name']);
+            $contents = file_get_contents($source);
+            if ($contents !== false && preg_match('/^\s*\*\s*Plugin Name:\s*(.+)$/mi', $contents, $matches)) {
+                $name = trim((string) $matches[1]);
                 if ($name !== '') {
                     return $name;
+                }
+            }
+
+            if (function_exists('get_file_data')) {
+                $headers = @get_file_data($source, array('Name' => 'Plugin Name'), 'plugin');
+                if (is_array($headers) && !empty($headers['Name'])) {
+                    $name = trim((string) $headers['Name']);
+                    if ($name !== '') {
+                        return $name;
+                    }
                 }
             }
         }
@@ -1100,29 +1085,16 @@ class VAPTSECURE_Build
         return $commit !== '' ? $commit : 'unknown';
     }
 
-    private static function build_archive_comment($domain, $version, $plugin_name, $features)
+    private static function build_archive_comment($domain, $version, $plugin_name)
     {
-        $title_map = self::get_feature_title_map();
-        $feature_lines = self::feature_comment_lines_from_keys($features, $title_map);
-        $enabled_features = array('Enabled Features (' . count($feature_lines) . '):');
-        if (!empty($feature_lines)) {
-            foreach ($feature_lines as $index => $label) {
-                $enabled_features[] = ($index + 1) . '. ' . $label;
-            }
-        } else {
-            $enabled_features[] = 'none';
-        }
-
         return implode("\n", array(
-            'VAPTSecure Build Metadata',
+            self::get_master_plugin_name() . ' Build Metadata',
             'Build Time: ' . current_time('mysql'),
             'Builder Version: ' . self::get_builder_version(),
             'Builder Commit: ' . self::get_builder_commit_id(),
             'Generated Build Version: ' . (string) $version,
             'Target Domain: ' . (string) $domain,
             'Plugin Name: ' . (string) $plugin_name,
-            '',
-            implode("\n", $enabled_features),
         ));
     }
 
