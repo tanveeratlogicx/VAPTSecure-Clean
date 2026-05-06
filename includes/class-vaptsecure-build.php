@@ -760,7 +760,12 @@ class VAPTSECURE_Build
                     mkdir($dest_dir_path, 0755, true);
                 }
             } else {
-                copy($item, $dest . DIRECTORY_SEPARATOR . $nativeSubPath);
+                $dest_file_path = $dest . DIRECTORY_SEPARATOR . $nativeSubPath;
+                $dest_file_dir = dirname($dest_file_path);
+                if (!file_exists($dest_file_dir)) {
+                    mkdir($dest_file_dir, 0755, true);
+                }
+                copy($item, $dest_file_path);
             }
         }
     }
