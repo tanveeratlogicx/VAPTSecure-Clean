@@ -34,8 +34,8 @@ class VAPTSECURE_Build
             }
         }
 
-        if (empty($allowed) || !file_exists($source_path)) {
-            return copy($source_path, $dest_path);
+        if (!file_exists($source_path)) {
+            return false;
         }
 
         // Fetch Release status map from DB
