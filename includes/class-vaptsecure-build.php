@@ -67,6 +67,18 @@ class VAPTSECURE_Build
                 }
             }
             $data['risk_interfaces'] = $filtered;
+        } elseif (isset($data['risks']) && is_array($data['risks'])) {
+            $filtered = array();
+            foreach ($data['risks'] as $risk_key => $item) {
+                if (!is_array($item)) {
+                    continue;
+                }
+                $candidate = strtoupper(trim((string) ($item['risk_id'] ?? $item['id'] ?? $item['key'] ?? $risk_key)));
+                if ($candidate !== '' && $is_released_and_allowed($candidate)) {
+                    $filtered[$risk_key] = $item;
+                }
+            }
+            $data['risks'] = $filtered;
         } elseif (isset($data['risk_catalog']) && is_array($data['risk_catalog'])) {
             $data['risk_catalog'] = array_values(array_filter($data['risk_catalog'], function ($item) use ($is_released_and_allowed) {
                 if (!is_array($item)) {
@@ -572,7 +584,13 @@ class VAPTSECURE_Build
                     }
 
                     // If this is the active data file, write a filtered version containing only the build's Release features
-                    if (!$item->isDir() && (strcasecmp($filename, $active_data_file) === 0)) {
+                    if (
+                        !$item->isDir() &&
+                        (
+                            strcasecmp($filename, $active_data_file) === 0 ||
+                            strcasecmp($filename, 'vapt_driver_manifest_v2.0.json') === 0
+                        )
+                    ) {
                         $allowed_feature_keys = isset($build_data['features']) && is_array($build_data['features']) ? $build_data['features'] : array();
                         $dest_path = $dest . DIRECTORY_SEPARATOR . $nativeSubPath;
                         $dest_dir = dirname($dest_path);
@@ -944,7 +962,7 @@ class VAPTSECURE_Build
             }
 
             $candidate_sets = array();
-            foreach (array('risk_interfaces', 'risk_catalog', 'features', 'wordpress_vapt') as $section) {
+            foreach (array('risk_interfaces', 'risks', 'risk_catalog', 'features', 'wordpress_vapt') as $section) {
                 if (isset($data[$section]) && is_array($data[$section])) {
                     $candidate_sets[] = $data[$section];
                 }
