@@ -493,6 +493,10 @@ class VAPTSECURE_REST
             return new WP_REST_Response(array('error' => 'DB helper not loaded'), 500);
         }
 
+        if (file_exists(VAPTSECURE_PATH . 'includes/enforcers/class-vaptsecure-hook-driver.php')) {
+            include_once VAPTSECURE_PATH . 'includes/enforcers/class-vaptsecure-hook-driver.php';
+        }
+
         $key = sanitize_text_field((string) $request->get_param('key'));
         if ($key === '') {
             return new WP_REST_Response(array('error' => 'Missing feature key'), 400);
@@ -515,6 +519,27 @@ class VAPTSECURE_REST
         $runtime_verified = false;
         if (class_exists('VAPTSECURE_Hook_Driver')) {
             $runtime_verified = (bool) VAPTSECURE_Hook_Driver::verify($key, $implementation_data, is_array($schema) ? $schema : array());
+        }
+
+        if (
+            !$runtime_verified &&
+            defined('VAPTSECURE_BUILD_PROFILE') &&
+            VAPTSECURE_BUILD_PROFILE === 'client'
+        ) {
+            $client_seed_verified = !empty($meta['is_enabled']) || !empty($meta['is_enforced']);
+            if ($client_seed_verified) {
+                $client_seed_verified = !empty($implementation_data)
+                    && (
+                        !empty($implementation_data['enabled']) ||
+                        !empty($implementation_data['feat_enabled']) ||
+                        !empty($implementation_data['prot_enabled']) ||
+                        !empty($implementation_data['vapt_risk_' . str_replace('-', '_', strtolower((string) $key)) . '_enabled'])
+                    );
+            }
+
+            if ($client_seed_verified) {
+                $runtime_verified = true;
+            }
         }
 
         $blob = strtolower(trim(

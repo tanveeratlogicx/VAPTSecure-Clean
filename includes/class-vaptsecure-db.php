@@ -80,7 +80,62 @@ class VAPTSECURE_DB
     {
         global $wpdb;
         $table = $wpdb->prefix . 'vaptsecure_feature_meta';
-        return $wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE feature_key = %s", $key), ARRAY_A);
+        $key = trim((string) $key);
+        if ($key === '') {
+            return null;
+        }
+
+        $candidates = array_values(array_unique(array_filter(array(
+            $key,
+            strtoupper($key),
+            strtolower($key),
+        ))));
+
+        foreach ($candidates as $candidate) {
+            $row = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE feature_key = %s", $candidate), ARRAY_A);
+            if (is_array($row) && !empty($row)) {
+                return $row;
+            }
+        }
+
+        $all_rows = $wpdb->get_results("SELECT * FROM $table", ARRAY_A);
+        if (!is_array($all_rows) || empty($all_rows)) {
+            return null;
+        }
+
+        $needle = strtolower($key);
+        foreach ($all_rows as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+
+            $row_keys = array(
+                isset($row['feature_key']) ? strtolower(trim((string) $row['feature_key'])) : '',
+            );
+
+            $schema_sources = array('generated_schema', 'override_schema');
+            foreach ($schema_sources as $schema_source) {
+                if (empty($row[$schema_source]) || !is_string($row[$schema_source])) {
+                    continue;
+                }
+                $decoded = json_decode($row[$schema_source], true);
+                if (!is_array($decoded)) {
+                    continue;
+                }
+                foreach (array('feature_key', 'risk_id', 'id', 'key', 'title', 'name') as $field) {
+                    if (isset($decoded[$field])) {
+                        $row_keys[] = strtolower(trim((string) $decoded[$field]));
+                    }
+                }
+            }
+
+            $row_keys = array_values(array_unique(array_filter($row_keys)));
+            if (in_array($needle, $row_keys, true)) {
+                return $row;
+            }
+        }
+
+        return null;
     }
 
     /**

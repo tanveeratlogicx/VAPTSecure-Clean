@@ -178,6 +178,161 @@ class VAPTSECURE_Build
         return self::get_feature_meta_snapshot($feature_keys);
     }
 
+    private static function load_catalog_data()
+    {
+        static $catalog = null;
+        if (is_array($catalog)) {
+            return $catalog;
+        }
+
+        $catalog = array();
+        $paths = array(
+            VAPTSECURE_PATH . 'data/interface_schema_v2.0.json',
+            VAPTSECURE_PATH . 'data/Updated_Feature_List_159_Adaptive_V3_1.json',
+            VAPTSECURE_PATH . 'data/Updated_Feature_List_159_Adaptive_V3_1_Lite.json',
+        );
+
+        foreach ($paths as $path) {
+            if (!file_exists($path)) {
+                continue;
+            }
+
+            $data = json_decode((string) file_get_contents($path), true);
+            if (is_array($data) && !empty($data)) {
+                $catalog = $data;
+                break;
+            }
+        }
+
+        return $catalog;
+    }
+
+    private static function find_catalog_feature_item($feature_key)
+    {
+        $feature_key = strtoupper(trim((string) $feature_key));
+        if ($feature_key === '') {
+            return array();
+        }
+
+        $catalog = self::load_catalog_data();
+        if (!is_array($catalog) || empty($catalog)) {
+            return array();
+        }
+
+        foreach (array('risk_interfaces', 'risks', 'risk_catalog', 'features', 'wordpress_vapt') as $section) {
+            if (empty($catalog[$section]) || !is_array($catalog[$section])) {
+                continue;
+            }
+
+            foreach ($catalog[$section] as $item_key => $item) {
+                if (!is_array($item)) {
+                    continue;
+                }
+
+                $candidate = strtoupper(trim((string) ($item['risk_id'] ?? $item['id'] ?? $item['key'] ?? $item_key)));
+                if ($candidate === $feature_key) {
+                    if (!isset($item['feature_key'])) {
+                        $item['feature_key'] = $feature_key;
+                    }
+                    return $item;
+                }
+            }
+        }
+
+        if (isset($catalog[$feature_key]) && is_array($catalog[$feature_key])) {
+            $item = $catalog[$feature_key];
+            if (!isset($item['feature_key'])) {
+                $item['feature_key'] = $feature_key;
+            }
+            return $item;
+        }
+
+        return array();
+    }
+
+    private static function detect_catalog_primary_enforcer(array $item)
+    {
+        if (empty($item['platform_implementations']) || !is_array($item['platform_implementations'])) {
+            return '';
+        }
+
+        $preferred = array(
+            '.htaccess' => 'htaccess',
+            'htaccess' => 'htaccess',
+            'wp-config.php' => 'wp-config',
+            'wp-config' => 'wp-config',
+            'wp_config' => 'wp-config',
+            'hook' => 'hook',
+            'php_functions' => 'hook',
+            'iis' => 'iis',
+            'caddy' => 'caddy',
+            'cloudflare' => 'cloudflare',
+            'nginx' => 'nginx',
+        );
+
+        foreach ($preferred as $needle => $driver) {
+            foreach ($item['platform_implementations'] as $platform_name => $platform_impl) {
+                $normalized = strtolower(str_replace(array(' ', '-', '.'), '', (string) $platform_name));
+                $needle_norm = strtolower(str_replace(array(' ', '-', '.'), '', (string) $needle));
+                if ($normalized === $needle_norm || strpos($normalized, $needle_norm) !== false || strpos($needle_norm, $normalized) !== false) {
+                    return $driver;
+                }
+            }
+        }
+
+        return '';
+    }
+
+    private static function synthesize_feature_meta_from_catalog($feature_key)
+    {
+        $feature_key = strtoupper(trim((string) $feature_key));
+        if ($feature_key === '') {
+            return array();
+        }
+
+        $catalog_item = self::find_catalog_feature_item($feature_key);
+        if (empty($catalog_item)) {
+            return array();
+        }
+
+        $catalog_item['feature_key'] = $feature_key;
+        if (!isset($catalog_item['risk_id']) || trim((string) $catalog_item['risk_id']) === '') {
+            $catalog_item['risk_id'] = $feature_key;
+        }
+
+        $risk_suffix = str_replace('-', '_', strtolower($feature_key));
+        $implementation_data = array(
+            'enabled' => 1,
+            'feat_enabled' => 1,
+            'prot_enabled' => 1,
+        );
+        if ($risk_suffix !== '') {
+            $implementation_data['vapt_risk_' . $risk_suffix . '_enabled'] = 1;
+        }
+
+        $generated_schema_json = json_encode($catalog_item, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $implementation_data_json = json_encode($implementation_data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+        return array(
+            'generated_schema_b64' => is_string($generated_schema_json) ? base64_encode($generated_schema_json) : '',
+            'implementation_data_b64' => is_string($implementation_data_json) ? base64_encode($implementation_data_json) : '',
+            'override_schema_b64' => '',
+            'override_implementation_data_b64' => '',
+            'include_test_method' => !empty($catalog_item['detection']) ? 1 : 0,
+            'include_verification' => 1,
+            'include_verification_engine' => !empty($catalog_item['platform_implementations']) ? 1 : 0,
+            'include_verification_guidance' => 1,
+            'include_manual_protocol' => 1,
+            'include_operational_notes' => 1,
+            'wireframe_url' => '',
+            'dev_instruct' => '',
+            'is_adaptive_deployment' => !empty($catalog_item['platform_implementations']) ? 1 : 0,
+            'active_enforcer' => self::detect_catalog_primary_enforcer($catalog_item),
+            'is_enabled' => 1,
+            'is_enforced' => 1,
+        );
+    }
+
     private static function get_feature_meta_snapshot($feature_keys = [])
     {
         if (!function_exists('sanitize_text_field')) {
@@ -205,7 +360,7 @@ class VAPTSECURE_Build
         $placeholders = implode(',', array_fill(0, count($normalized), '%s'));
         $rows = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$table} WHERE feature_key IN ({$placeholders})", $normalized), ARRAY_A);
         if (!is_array($rows) || empty($rows)) {
-            return array();
+            $rows = array();
         }
 
         $out = array();
@@ -238,6 +393,16 @@ class VAPTSECURE_Build
             );
         }
 
+        foreach ($normalized as $feature_key) {
+            $existing = isset($out[$feature_key]) ? $out[$feature_key] : array();
+            if (empty($existing) || empty($existing['generated_schema_b64']) || empty($existing['implementation_data_b64'])) {
+                $synth = self::synthesize_feature_meta_from_catalog($feature_key);
+                if (!empty($synth)) {
+                    $out[$feature_key] = $synth;
+                }
+            }
+        }
+
         return $out;
     }
 
@@ -250,6 +415,16 @@ class VAPTSECURE_Build
         $features = isset($data['features']) ? $data['features'] : [];
         $version = sanitize_text_field($data['version']);
         $white_label = $data['white_label'];
+        $master_plugin_name = self::get_master_plugin_name();
+        $client_plugin_name = trim((string) ($white_label['name'] ?? ''));
+        if ($client_plugin_name === '' || (trim((string) $master_plugin_name) !== '' && strcasecmp($client_plugin_name, $master_plugin_name) === 0)) {
+            $client_plugin_name = 'VAPTSecure';
+        }
+        $white_label['name'] = $client_plugin_name;
+        $white_label['text_domain'] = trim((string) ($white_label['text_domain'] ?? ''));
+        if ($white_label['text_domain'] === '' || strcasecmp(sanitize_title($white_label['text_domain']), sanitize_title((string) $master_plugin_name)) === 0) {
+            $white_label['text_domain'] = sanitize_title($client_plugin_name) . '-client';
+        }
         $generate_type = isset($data['generate_type']) ? $data['generate_type'] : 'full_build';
         $license_type = isset($data['license_type']) ? sanitize_text_field($data['license_type']) : 'standard';
         $security_alert_email = isset($data['security_alert_email']) ? sanitize_email((string) $data['security_alert_email']) : '';
@@ -311,7 +486,7 @@ class VAPTSECURE_Build
             $license_type, $license_scope, $domain_limit, 
             $restrict_features, $security_alert_email, 
             $feature_meta_snapshot, $is_wildcard_flag,
-            $require_wp, $require_php
+            $require_wp, $require_php, (string) ($white_label['name'] ?? '')
         );  // If Config Only -> Save and ZIP just that
         if ($generate_type === 'config_only') {
             $config_filename = "vapt-{$domain_for_files}-config-{$version}.php";
@@ -383,9 +558,14 @@ class VAPTSECURE_Build
         return $base_storage_url . '/' . $domain_for_files . '/' . $version . '/' . $zip_filename;
     }
 
-    public static function generate_config_content($domain, $version, $features, $active_data_file = null, $license_type = 'standard', $license_scope = 'single', $domain_limit = 1, $restrict_features = false, $security_alert_email = '', $feature_meta_snapshot = array(), $is_wildcard = false, $require_wp = '6.0', $require_php = '7.4.33')
+    public static function generate_config_content($domain, $version, $features, $active_data_file = null, $license_type = 'standard', $license_scope = 'single', $domain_limit = 1, $restrict_features = false, $security_alert_email = '', $feature_meta_snapshot = array(), $is_wildcard = false, $require_wp = '6.0', $require_php = '7.4.33', $plugin_name = '')
     {
         $alert_email_b64 = ($security_alert_email && function_exists('is_email') && is_email($security_alert_email)) ? base64_encode($security_alert_email) : '';
+        $plugin_name = trim((string) $plugin_name);
+        $menu_slug = sanitize_title($plugin_name);
+        if ($menu_slug !== '') {
+            $menu_slug .= '-client';
+        }
 
         $default_payload = array(
             'build_profile' => 'client',
@@ -401,6 +581,8 @@ class VAPTSECURE_Build
             'require_wp' => (string) $require_wp,
             'require_php' => (string) $require_php,
             'features' => array_values(array_map('strval', is_array($features) ? $features : array())),
+            'plugin_name' => $plugin_name,
+            'menu_slug' => $menu_slug,
         );
 
         if ($license_type === 'developer_unbound') {
@@ -443,6 +625,8 @@ class VAPTSECURE_Build
         $config .= "        if ( \$is_default && ! defined( 'VAPTSECURE_DOMAIN_LIMIT' ) && isset( \$payload['domain_limit'] ) ) { define( 'VAPTSECURE_DOMAIN_LIMIT', intval( \$payload['domain_limit'] ) ); }\n";
         $config .= "        if ( \$is_default && ! defined( 'VAPTSECURE_REQUIRE_WP' ) && isset( \$payload['require_wp'] ) ) { define( 'VAPTSECURE_REQUIRE_WP', (string) \$payload['require_wp'] ); }\n";
         $config .= "        if ( \$is_default && ! defined( 'VAPTSECURE_REQUIRE_PHP' ) && isset( \$payload['require_php'] ) ) { define( 'VAPTSECURE_REQUIRE_PHP', (string) \$payload['require_php'] ); }\n";
+        $config .= "        if ( \$is_default && ! defined( 'VAPTSECURE_PLUGIN_NAME' ) && isset( \$payload['plugin_name'] ) && \$payload['plugin_name'] !== '' ) { define( 'VAPTSECURE_PLUGIN_NAME', (string) \$payload['plugin_name'] ); }\n";
+        $config .= "        if ( \$is_default && ! defined( 'VAPTSECURE_MENU_SLUG' ) && isset( \$payload['menu_slug'] ) && \$payload['menu_slug'] !== '' ) { define( 'VAPTSECURE_MENU_SLUG', sanitize_title( (string) \$payload['menu_slug'] ) ); }\n";
         $config .= "        if ( \$is_default ) {\n";
         $config .= "            \$restrict = ! empty( \$payload['restrict_features'] );\n";
         $config .= "            if ( \$license_type === 'developer_unbound' ) { \$restrict = false; }\n";
@@ -817,17 +1001,39 @@ class VAPTSECURE_Build
         
         // 4. Remove superadmin menu logic
         // Replaces the conditional superadmin menu with a static one for all admins
-        $content = self::safe_preg_replace('/\$is_superadmin_identity = is_vaptsecure_superadmin\(false\);[\s\S]*?remove_submenu_page\(\'vaptsecure\', \'vaptsecure\'\);/s', '// 1. Parent Menu (Visible to all admins)
+        $menu_label = trim((string) ($white_label['name'] ?? ''));
+        if ($menu_label === '') {
+            $menu_label = self::get_master_plugin_name();
+        }
+        if ($menu_label === '') {
+            $menu_label = 'VAPTSecure Clean';
+        }
+        $menu_label_escaped = addslashes($menu_label);
+
+        $menu_slug = trim((string) $plugin_slug);
+        if ($menu_slug === '') {
+            $menu_slug = sanitize_title((string) ($white_label['text_domain'] ?: $menu_label));
+        }
+        if ($menu_slug === '') {
+            $menu_slug = 'vaptsecure';
+        }
+        $menu_slug = sanitize_title($menu_slug);
+        if ($menu_slug !== '' && !preg_match('/-client$/', $menu_slug)) {
+            $menu_slug .= '-client';
+        }
+        $menu_slug_escaped = addslashes($menu_slug);
+
+        $content = self::safe_preg_replace('/\$is_superadmin_identity = is_vaptsecure_superadmin\(false\);[\s\S]*?remove_submenu_page\(\s*["\']vaptsecure["\']\s*,\s*["\']vaptsecure["\']\s*\);\s*/s', '// 1. Parent Menu (Visible to all admins)
         add_menu_page(
-            __(\'VAPTSecure Clean\', \'vaptsecure\'),
-            __(\'VAPTSecure Clean\', \'vaptsecure\'),
+            __(\'' . $menu_label_escaped . '\', \'vaptsecure\'),
+            __(\'' . $menu_label_escaped . '\', \'vaptsecure\'),
             \'manage_options\',
-            \'vaptsecure\',
+            \'' . $menu_slug_escaped . '\',
             \'vaptsecure_render_client_status_page\',
             \'dashicons-shield\',
             80
         );
-        remove_submenu_page(\'vaptsecure\', \'vaptsecure\');', $content);
+        remove_submenu_page(\'' . $menu_slug_escaped . '\', \'' . $menu_slug_escaped . '\');', $content);
         
         // 5. Remove superadmin page rendering functions
         // Ensure entire function bodies are removed
@@ -847,13 +1053,7 @@ class VAPTSECURE_Build
 
         // Remove builder-only and self-check includes from generated client builds.
         $content = self::safe_preg_replace('/^require_once VAPTSECURE_PATH \. "includes\/class-vaptsecure-build\.php";\s*$/m', '', $content);
-        $content = self::safe_preg_replace('/^require_once VAPTSECURE_PATH \. "includes\/self-check\/class-vapt-check-item\.php";\s*$/m', '', $content);
-        $content = self::safe_preg_replace('/^require_once VAPTSECURE_PATH \. "includes\/self-check\/class-vapt-self-check-result\.php";\s*$/m', '', $content);
-        $content = self::safe_preg_replace('/^require_once VAPTSECURE_PATH \. "includes\/self-check\/class-vapt-audit-log\.php";\s*$/m', '', $content);
-        $content = self::safe_preg_replace('/^require_once VAPTSECURE_PATH \. "includes\/self-check\/class-vapt-auto-correct\.php";\s*$/m', '', $content);
-        $content = self::safe_preg_replace('/^require_once VAPTSECURE_PATH \. "includes\/self-check\/class-vapt-self-check\.php";\s*$/m', '', $content);
-        $content = self::safe_preg_replace('/^require_once VAPTSECURE_PATH \. "includes\/self-check\/class-vapt-cron\.php";\s*$/m', '', $content);
-        $content = self::safe_preg_replace('/^require_once VAPTSECURE_PATH \. "includes\/self-check\/class-vapt-lifecycle\.php";\s*$/m', '', $content);
+        $content = self::safe_preg_replace('/^\s*require_once\s+VAPTSECURE_PATH\s*\.\s*"includes\/self-check\/[^"]+";\s*$/m', '', $content);
         $content = self::safe_preg_replace('/^require_once VAPTSECURE_PATH \. "includes\/admin\/class-vapt-diagnostics-page\.php";\s*$/m', '', $content);
         $content = self::safe_preg_replace('/add_action\("vapt_license_expired", function \(\) \{\s*if \(class_exists\("VAPT_Self_Check"\)\) \{\s*VAPT_Self_Check::run\("license_expire"\);\s*\}\s*\}\);\s*/s', '', $content);
 
@@ -1025,7 +1225,7 @@ class VAPTSECURE_Build
         $guard_code .= "}\n";
 
         // Insert after first defined('ABSPATH') check block
-        $content = self::safe_preg_replace('/if\s*\(\s*!\s*defined\s*\(\s*\'ABSPATH\'\s*\)\s*\)\s*\{[\s\S]*?\}/i', "$0\n" . $guard_code, $content, 1);
+        $content = self::safe_preg_replace('/^\s*if\s*\(\s*!\s*defined\s*\(\s*\'ABSPATH\'\s*\)\s*\)\s*\{\s*exit;\s*\}\s*$/m', "$0\n" . $guard_code, $content, 1);
 
         // Remove the original file from the copy if it was copied by the recursive copier
         // [FIX v2.4.11] We are now using vaptsecure.php as the main filename, so no unlinking needed

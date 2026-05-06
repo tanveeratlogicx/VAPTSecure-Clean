@@ -440,6 +440,11 @@ var vaptLog = window.vaptLog || {
         };
 
         const isEnabled = isFeatureEnabled(featureData);
+        const platformHints = Array.isArray(featureData?.available_platforms)
+          ? featureData.available_platforms.map(p => String(p || '').toLowerCase())
+          : [];
+        const isExternalBlocking = (control?.test_config?.enforcement_mode || '').toLowerCase() === 'external'
+          || platformHints.includes('fail2ban');
 
         // [FIX v2.5.2] State-Aware Success Logic for Rate Limiting
         // +-------------------+------------------+-------------------------------------------------------------+---------+
@@ -451,7 +456,7 @@ var vaptLog = window.vaptLog || {
         // | OFF               | Not Detected     | "Protection correctly disabled. No rate limiting."          | SUCCESS |
         // +-------------------+------------------+-------------------------------------------------------------+---------+
 
-        if (blocked > 0 && hasVaptHeader) {
+        if (blocked > 0 && (hasVaptHeader || isExternalBlocking)) {
           window.dispatchEvent(new CustomEvent('vapt-refresh-stats', { detail: { featureKey } }));
           if (!isEnabled) {
             // FAILURE: Toggle OFF but rate limiter still active
@@ -465,7 +470,9 @@ var vaptLog = window.vaptLog || {
           // SUCCESS: Toggle ON and rate limiter active
           return {
             success: true,
-            message: `Rate limiter is ACTIVE. Security measures are working correctly (${blocked} requests blocked).`,
+            message: isExternalBlocking
+              ? `Login protection is ACTIVE. External rate limiting blocked ${blocked} request(s).`
+              : `Rate limiter is ACTIVE. Security measures are working correctly (${blocked} requests blocked).`,
             meta: resultMeta,
             raw: `URL: ${resolveUrl('/', control.config?.url)} | Status: 429 | Toggle: ON | Blocked: ${blocked}`
           };
@@ -508,7 +515,9 @@ var vaptLog = window.vaptLog || {
         // Toggle is ON but rate limiter not active
         return {
           success: false,
-          message: `Protection toggle is ON but rate limiter is NOT active. All requests were accepted.`,
+          message: isExternalBlocking
+            ? `Protection toggle is ON but external login rate limiting is NOT active. All requests were accepted.`
+            : `Protection toggle is ON but rate limiter is NOT active. All requests were accepted.`,
           meta: resultMeta,
           raw: `URL: ${resolveUrl('/', control.config?.url)} | Status: 200 | Toggle: ON | Rate Limiting: Inactive`
         };

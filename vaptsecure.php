@@ -3,7 +3,7 @@
 /**
  * Plugin Name: VAPTSecure Clean
  * Description: Ultimate VAPT and OWASP Security Plugin Builder.
- * Version: 3.7.3
+ * Version: 3.7.5
  * Author: Tanveer Hayat Malik
  * Author URI: https://vapt.copilot.com
  * License: GPL-2.0+
@@ -27,7 +27,7 @@ if (file_exists(dirname(__FILE__) . "/vendor/autoload.php")) {
 if (defined("VAPTSECURE_BUILD_VERSION")) {
     define("VAPTSECURE_VERSION", VAPTSECURE_BUILD_VERSION);
 } else {
-    define("VAPTSECURE_VERSION", "3.7.3"); // v3.7.3 - Patch release for runtime data packaging fix
+    define("VAPTSECURE_VERSION", "3.7.5"); // v3.7.5 - Cache-refresh bump for client verification
 }
 if (!defined("VAPTSECURE_DATA_VERSION")) {
     define("VAPTSECURE_DATA_VERSION", "2.5.0");
@@ -258,6 +258,38 @@ function vaptsecure_is_workbench_request()
         ],
         true,
     );
+}
+
+if (!function_exists("vaptsecure_get_admin_menu_slug")) {
+    function vaptsecure_get_admin_menu_slug()
+    {
+        if (
+            defined("VAPTSECURE_MENU_SLUG") &&
+            is_string(VAPTSECURE_MENU_SLUG) &&
+            trim(VAPTSECURE_MENU_SLUG) !== ""
+        ) {
+            return sanitize_title((string) VAPTSECURE_MENU_SLUG);
+        }
+
+        return "vaptsecure";
+    }
+}
+
+if (!function_exists("vaptsecure_is_client_dashboard_screen")) {
+    function vaptsecure_is_client_dashboard_screen($screen_id = "")
+    {
+        $screen_id = (string) $screen_id;
+        $slug = vaptsecure_get_admin_menu_slug();
+
+        $candidates = array(
+            "toplevel_page_" . $slug,
+            "vaptsecure_page_" . $slug,
+            $slug,
+        );
+
+        return in_array($screen_id, $candidates, true) ||
+            strpos($screen_id, $slug) !== false;
+    }
 }
 
 function vaptsecure_current_user_can_safe($capability)
@@ -1368,6 +1400,10 @@ function vaptsecure_seed_client_release_features()
                 ),
             );
         }
+    }
+
+    if (class_exists("VAPTSECURE_Enforcer")) {
+        VAPTSECURE_Enforcer::rebuild_all();
     }
 
     update_option($seed_key, current_time("mysql"));
@@ -2626,7 +2662,7 @@ function vaptsecure_enqueue_admin_assets($hook)
     }
     // 2. Shared: Generated Interface UI Component
     if (
-        $screen->id === "toplevel_page_vaptsecure" ||
+        vaptsecure_is_client_dashboard_screen($screen->id) ||
         strpos($screen->id, "vaptsecure-workbench") !== false
     ) {
         wp_enqueue_script(
@@ -2640,7 +2676,7 @@ function vaptsecure_enqueue_admin_assets($hook)
     }
 
     // 2a. Client Dashboard (client.js) - WordPress Admin view - "VAPTSecure Clean" page (Release features only)
-    if ($screen->id === "toplevel_page_vaptsecure") {
+    if (vaptsecure_is_client_dashboard_screen($screen->id)) {
         wp_enqueue_script(
             "vapt-client-js",
             plugin_dir_url(__FILE__) . "assets/js/client.js",

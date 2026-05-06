@@ -582,7 +582,7 @@ var vaptLog = window.vaptLog || {
     const [includeData, setIncludeData] = useState(true);
     const [securityAlertEmail, setSecurityAlertEmail] = useState(settings.adminEmail || '');
     const [whiteLabel, setWhiteLabel] = useState({
-      name: 'VAPTSecure Clean',
+      name: 'VAPTSecure',
       description: '',
       author: 'Tanveer Malik',
       plugin_uri: 'https://vaptsecure.net',
@@ -592,7 +592,7 @@ var vaptLog = window.vaptLog || {
     // Local draft state: captures typed values without triggering effects on every keystroke.
     // Fields bind to draftLabel for display/onChange, and commit to whiteLabel on onBlur.
     const [draftLabel, setDraftLabel] = useState({
-      name: 'VAPTSecure Clean',
+      name: 'VAPTSecure',
       author: 'Tanveer Malik',
       plugin_uri: 'https://vaptsecure.net',
       author_uri: '#'

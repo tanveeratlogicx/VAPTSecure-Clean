@@ -386,23 +386,46 @@
       const inferredPath = inferProbePath(feature, featureKey);
       const headerProbePath = `${inferredPath}?vapt_header_check=1`;
       const activeProbePath = inferredPath === '/' ? '/index.php' : inferredPath;
+      const availablePlatforms = Array.isArray(feature.available_platforms)
+        ? feature.available_platforms.map(p => String(p || '').toLowerCase()).filter(Boolean)
+        : [];
+      const usesFail2ban = availablePlatforms.includes('fail2ban');
 
-      // 1. A+ Header Check - Verify VAPT enforcement headers
-      // [FIX v2.4.25] Only check x-vapt-enforced - no enforcer emits x-vapt-risk-id
-      tests.push({
-        type: 'test_action',
-        id: `vapt-test-headers-${riskId}`,
-        label: 'A+ Header Verification',
-        key: 'verify_aplus_headers',
-        test_logic: 'check_headers',
-        test_config: {
-          path: headerProbePath,
-          expected_headers: {
-            'x-vapt-enforced': 'htaccess|nginx|php-headers|php-cron'
-          }
-        },
-        help: `Verifies that A+ Adaptive headers (x-vapt-enforced) are correctly injected by the active enforcer for ${inferredPath}.`
-      });
+      // 1. Verification Probe Selection
+      // Fail2ban-backed risks do not emit response headers, so the generic A+ header
+      // probe would always fail even when protection is active.
+      if (usesFail2ban) {
+        tests.push({
+          type: 'test_action',
+          id: `vapt-test-rate-${riskId}`,
+          label: 'Brute Force Resistance Check',
+          key: 'verify_rate_resilience',
+          test_logic: 'spam_requests',
+          numTests: 5,
+          test_config: {
+            enforcement_mode: 'external',
+            path: '/wp-login.php'
+          },
+          help: `Verifies that the login endpoint is rate limited or blocked by the active fail2ban policy for ${inferredPath}.`
+        });
+      } else {
+        // A+ Header Check - Verify VAPT enforcement headers
+        // [FIX v2.4.25] Only check x-vapt-enforced - no enforcer emits x-vapt-risk-id
+        tests.push({
+          type: 'test_action',
+          id: `vapt-test-headers-${riskId}`,
+          label: 'A+ Header Verification',
+          key: 'verify_aplus_headers',
+          test_logic: 'check_headers',
+          test_config: {
+            path: headerProbePath,
+            expected_headers: {
+              'x-vapt-enforced': 'htaccess|nginx|php-headers|php-cron'
+            }
+          },
+          help: `Verifies that A+ Adaptive headers (x-vapt-enforced) are correctly injected by the active enforcer for ${inferredPath}.`
+        });
+      }
 
       // 2. Specific Functional Probes
       const title = (feature.label || feature.title || feature.name || '').toLowerCase();
@@ -451,7 +474,7 @@
           test_logic: 'disable_directory_browsing',
           help: 'Attempts to list the /wp-content/uploads/ directory.'
         });
-      } else {
+      } else if (!usesFail2ban) {
         // Generic active probe
         tests.push({
           type: 'test_action',
@@ -465,6 +488,20 @@
             expected_headers: { 'x-vapt-enforced': 'htaccess|nginx|php-headers|php-cron' }
           },
           help: 'Runs a generic probe to verify server-level enforcement.'
+        });
+      } else {
+        tests.push({
+          type: 'test_action',
+          id: `vapt-test-active-${riskId}`,
+          label: 'Active Protection Probe',
+          key: 'verify_active_protection',
+          test_logic: 'spam_requests',
+          numTests: 5,
+          test_config: {
+            enforcement_mode: 'external',
+            path: '/wp-login.php'
+          },
+          help: 'Runs a brute-force probe to verify the fail2ban-backed login protection.'
         });
       }
 
