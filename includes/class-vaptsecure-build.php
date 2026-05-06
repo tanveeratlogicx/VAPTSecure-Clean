@@ -341,11 +341,11 @@ class VAPTSECURE_Build
         if ($master_plugin_name === '') {
             $master_plugin_name = 'vaptsecure-clean';
         }
-        $white_label_name = sanitize_title((string) ($white_label['name'] ?? ''));
-        if ($white_label_name === '') {
-            $white_label_name = $plugin_slug;
+        $zip_domain = sanitize_title((string) $domain_for_files);
+        if ($zip_domain === '') {
+            $zip_domain = $plugin_slug;
         }
-        $zip_filename = "{$master_plugin_name}-{$white_label_name}-{$version}.zip";
+        $zip_filename = "{$master_plugin_name}-{$zip_domain}_v{$version}.zip";
         $zip_path = $build_dir . '/' . $zip_filename;
 
         if (class_exists('ZipArchive')) {
