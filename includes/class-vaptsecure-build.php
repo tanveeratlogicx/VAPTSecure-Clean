@@ -447,9 +447,6 @@ class VAPTSECURE_Build
             'vapt-functions.php',
             'data/interface_schema_v2.0.json',
             'data/enforcer_pattern_library_v2.0.json',
-            'data/ai_agent_instructions_v2.0.json',
-            'data/vapt_driver_manifest_v2.0.json',
-            'data/VAPT_Driver_Reference_v2.0.php',
             'includes/debug-utils.php',
             'includes/class-vaptsecure-auth.php',
             'includes/interfaces/interface-vaptsecure-driver.php',
@@ -546,10 +543,7 @@ class VAPTSECURE_Build
                 if ($active_data_file) {
                     $allowed_data_files = array(
                         $active_data_file,
-                        'enforcer_pattern_library_v2.0.json',
-                        'ai_agent_instructions_v2.0.json',
-                        'vapt_driver_manifest_v2.0.json',
-                        'VAPT_Driver_Reference_v2.0.php'
+                        'enforcer_pattern_library_v2.0.json'
                     );
 
                     // Allow the data directory itself
@@ -586,10 +580,7 @@ class VAPTSECURE_Build
                     // If this is the active data file, write a filtered version containing only the build's Release features
                     if (
                         !$item->isDir() &&
-                        (
-                            strcasecmp($filename, $active_data_file) === 0 ||
-                            strcasecmp($filename, 'vapt_driver_manifest_v2.0.json') === 0
-                        )
+                        strcasecmp($filename, $active_data_file) === 0
                     ) {
                         $allowed_feature_keys = isset($build_data['features']) && is_array($build_data['features']) ? $build_data['features'] : array();
                         $dest_path = $dest . DIRECTORY_SEPARATOR . $nativeSubPath;
