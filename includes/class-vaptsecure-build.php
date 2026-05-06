@@ -10,6 +10,9 @@ if (! defined('ABSPATH')) {
 
 class VAPTSECURE_Build
 {
+    private const PACKAGE_POLICY_MINIMUM_RUNTIME = 'minimum_runtime';
+    private const PACKAGE_POLICY_AI_SUPPORT = 'ai_support';
+
     private static function safe_preg_replace($pattern, $replacement, $subject, $limit = -1)
     {
         $result = preg_replace($pattern, $replacement, $subject, $limit);
@@ -194,6 +197,7 @@ class VAPTSECURE_Build
         $security_alert_email = isset($data['security_alert_email']) ? sanitize_email((string) $data['security_alert_email']) : '';
         $is_universal_domain = ($domain === '*') || (is_string($domain) && strpos($domain, '__universal__:') === 0);
         $domain_for_files = $is_universal_domain ? 'universal' : $domain;
+        $package_policy = self::normalize_package_policy($data);
         
         // [FIX v3.2.3] Get the is_wildcard flag from the build request data
         $is_wildcard_flag = isset($data['is_wildcard']) && ($data['is_wildcard'] === true || $data['is_wildcard'] === 'true' || $data['is_wildcard'] === 1 || $data['is_wildcard'] === '1');
@@ -223,11 +227,14 @@ class VAPTSECURE_Build
         wp_mkdir_p($plugin_dir);
 
         $include_config = !isset($data['include_config']) || filter_var($data['include_config'], FILTER_VALIDATE_BOOLEAN);
-        $include_data = isset($data['include_data']) && filter_var($data['include_data'], FILTER_VALIDATE_BOOLEAN);
+        $include_data = $generate_type !== 'config_only';
 
         // 2. Output Config Content (Generated)
         // [FIX v2.4.11] Always identify the active data file so the UI works in generated builds
         $active_data_file_name = $include_data ? get_option('vaptsecure_active_feature_file', 'interface_schema_v2.0.json') : null;
+        if ($include_data && !$active_data_file_name) {
+            $active_data_file_name = 'interface_schema_v2.0.json';
+        }
         
         $license_scope = isset($data['license_scope']) ? $data['license_scope'] : 'single';
         $domain_limit = isset($data['installation_limit']) ? intval($data['installation_limit']) : 1;
@@ -255,7 +262,7 @@ class VAPTSECURE_Build
         }
 
         // 3. Full Build: Copy Plugin Files Recursively
-        self::copy_plugin_files(VAPTSECURE_PATH, $plugin_dir, $active_data_file_name, $generate_type, $data);
+        self::copy_plugin_files(VAPTSECURE_PATH, $plugin_dir, $active_data_file_name, $generate_type, $data, $package_policy);
 
         $config_filename = "vapt-{$domain_for_files}-config-{$version}.php";
         if ($include_config) {
@@ -429,7 +436,44 @@ class VAPTSECURE_Build
         return $config;
     }
 
-    private static function copy_plugin_files($source, $dest, $active_data_file = null, $generate_type = 'full_build', $build_data = [])
+    private static function normalize_package_policy($build_data = array())
+    {
+        if (!is_array($build_data)) {
+            return self::PACKAGE_POLICY_MINIMUM_RUNTIME;
+        }
+
+        $policy = isset($build_data['package_policy']) ? strtolower(trim((string) $build_data['package_policy'])) : '';
+        if ($policy === self::PACKAGE_POLICY_AI_SUPPORT) {
+            return self::PACKAGE_POLICY_AI_SUPPORT;
+        }
+
+        if (!empty($build_data['include_ai_support']) || !empty($build_data['include_ai_instructions'])) {
+            return self::PACKAGE_POLICY_AI_SUPPORT;
+        }
+
+        return self::PACKAGE_POLICY_MINIMUM_RUNTIME;
+    }
+
+    private static function get_package_policy_data_files($package_policy, $active_data_file = null)
+    {
+        $data_files = array(
+            'enforcer_pattern_library_v2.0.json',
+        );
+
+        if (is_string($active_data_file) && trim($active_data_file) !== '') {
+            $data_files[] = ltrim(str_replace('\\', '/', trim($active_data_file)), '/');
+        } else {
+            $data_files[] = 'interface_schema_v2.0.json';
+        }
+
+        if ($package_policy === self::PACKAGE_POLICY_AI_SUPPORT) {
+            $data_files[] = 'ai_agent_instructions_v2.0.json';
+        }
+
+        return array_values(array_unique($data_files));
+    }
+
+    private static function copy_plugin_files($source, $dest, $active_data_file = null, $generate_type = 'full_build', $build_data = [], $package_policy = self::PACKAGE_POLICY_MINIMUM_RUNTIME)
     {
         $source = rtrim(str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, (string) $source), DIRECTORY_SEPARATOR);
         $dest = rtrim(str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, (string) $dest), DIRECTORY_SEPARATOR);
@@ -437,6 +481,8 @@ class VAPTSECURE_Build
             new RecursiveDirectoryIterator($source, RecursiveDirectoryIterator::SKIP_DOTS),
             RecursiveIteratorIterator::SELF_FIRST
         );
+        $package_policy = self::normalize_package_policy($build_data) ?: $package_policy;
+        $data_policy_files = self::get_package_policy_data_files($package_policy, $active_data_file);
 
         $allowed_exact_paths = array(
             'README.md',
@@ -445,8 +491,6 @@ class VAPTSECURE_Build
             'LICENSE.md',
             'uninstall.php',
             'vapt-functions.php',
-            'data/interface_schema_v2.0.json',
-            'data/enforcer_pattern_library_v2.0.json',
             'includes/debug-utils.php',
             'includes/class-vaptsecure-auth.php',
             'includes/interfaces/interface-vaptsecure-driver.php',
@@ -478,6 +522,11 @@ class VAPTSECURE_Build
         if (is_string($active_data_file) && trim($active_data_file) !== '') {
             $allowed_exact_paths[] = 'data/' . ltrim(str_replace('\\', '/', trim($active_data_file)), '/');
         }
+
+        foreach ($data_policy_files as $data_file) {
+            $allowed_exact_paths[] = 'data/' . ltrim(str_replace('\\', '/', (string) $data_file), '/');
+        }
+        $allowed_exact_paths = array_values(array_unique($allowed_exact_paths));
 
         // Determine if config should be included
         $include_config = isset($build_data['include_config']) &&
@@ -541,10 +590,7 @@ class VAPTSECURE_Build
             if (strpos($subPath, 'data') === 0) {
                 // When active data file is specified (Include Active Data enabled)
                 if ($active_data_file) {
-                    $allowed_data_files = array(
-                        $active_data_file,
-                        'enforcer_pattern_library_v2.0.json'
-                    );
+                    $allowed_data_files = $data_policy_files;
 
                     // Allow the data directory itself
                     if ($item->isDir() && (strcasecmp($subPath, 'data') === 0 || strcasecmp($subPath, 'data/') === 0 || strcasecmp($subPath, 'data\\') === 0)) {

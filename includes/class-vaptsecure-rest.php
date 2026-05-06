@@ -272,6 +272,14 @@ class VAPTSECURE_REST
                         'type' => 'boolean',
                         'default' => false,
                     ),
+                    'package_policy' => array(
+                        'type' => 'string',
+                        'default' => 'minimum_runtime',
+                    ),
+                    'include_ai_support' => array(
+                        'type' => 'boolean',
+                        'default' => false,
+                    ),
                 ),
                 )
             );
@@ -2049,6 +2057,8 @@ class VAPTSECURE_REST
         $data['is_wildcard'] = $request->get_param('is_wildcard');
         $data['require_wp'] = $request->get_param('require_wp');
         $data['require_php'] = $request->get_param('require_php');
+        $data['package_policy'] = $request->get_param('package_policy');
+        $data['include_ai_support'] = $request->get_param('include_ai_support');
 
         // Delegate to Build Class
         include_once VAPTSECURE_PATH . 'includes/class-vaptsecure-build.php';

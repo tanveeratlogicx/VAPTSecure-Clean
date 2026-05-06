@@ -697,6 +697,8 @@ var vaptLog = window.vaptLog || {
           generate_type: type,
           include_config: includeConfig,
           include_data: includeData,
+          package_policy: 'minimum_runtime',
+          include_ai_support: false,
           security_alert_email: securityAlertEmail,
           license_type: buildLicenseType,
           license_scope: licenseScope,
