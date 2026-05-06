@@ -22,7 +22,7 @@ class VAPTSECURE_Build
         return $result;
     }
 
-    private static function filter_data_file_for_release($source_path, $dest_path, $allowed_feature_keys = [])
+    private static function filter_data_file_for_release($source_path, $dest_path, $allowed_feature_keys = [], $package_policy = self::PACKAGE_POLICY_MINIMUM_RUNTIME)
     {
         $allowed = array();
         if (is_array($allowed_feature_keys)) {
@@ -108,11 +108,69 @@ class VAPTSECURE_Build
             }));
         }
 
+        self::apply_custom_bundle_header($data, $source_path, $package_policy);
+
         $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
         if (!is_string($json) || $json === '') {
             return copy($source_path, $dest_path);
         }
         return file_put_contents($dest_path, $json) !== false;
+    }
+
+    private static function count_filtered_features($data)
+    {
+        foreach (array('risk_interfaces', 'risks', 'risk_catalog', 'features', 'wordpress_vapt') as $section) {
+            if (isset($data[$section]) && is_array($data[$section])) {
+                return count($data[$section]);
+            }
+        }
+
+        return 0;
+    }
+
+    private static function apply_custom_bundle_header(array &$data, $source_path, $package_policy = self::PACKAGE_POLICY_MINIMUM_RUNTIME)
+    {
+        $filename = basename((string) $source_path);
+        if (!in_array($filename, array('interface_schema_v2.0.json', 'vapt_driver_manifest_v2.0.json'), true)) {
+            return;
+        }
+
+        $feature_count = self::count_filtered_features($data);
+        $package_policy = in_array($package_policy, array(self::PACKAGE_POLICY_MINIMUM_RUNTIME, self::PACKAGE_POLICY_AI_SUPPORT), true)
+            ? $package_policy
+            : self::PACKAGE_POLICY_MINIMUM_RUNTIME;
+
+        $bundle_files = array(
+            'pattern_library' => 'enforcer_pattern_library_v2.0.json',
+            'interface_schema' => 'interface_schema_v2.0.json',
+        );
+
+        if ($package_policy === self::PACKAGE_POLICY_AI_SUPPORT) {
+            $bundle_files['ai_agent_instructions'] = 'ai_agent_instructions_v2.0.json';
+        }
+
+        if ($filename === 'vapt_driver_manifest_v2.0.json') {
+            $bundle_files['driver_manifest'] = 'vapt_driver_manifest_v2.0.json';
+        }
+
+        $data['schema_version'] = isset($data['schema_version']) ? (string) $data['schema_version'] : '2.0.0';
+        $data['bundle_date'] = current_time('mysql');
+        $data['file_role'] = $filename === 'vapt_driver_manifest_v2.0.json' ? 'client_driver_manifest' : 'client_interface_schema';
+        $data['bundle_policy'] = $package_policy;
+        $data['feature_count'] = $feature_count;
+        $data['bundle_files'] = $bundle_files;
+
+        if ($filename === 'interface_schema_v2.0.json') {
+            $data['description'] = sprintf(
+                'VAPT client interface schema bundle for %d enabled risk(s). platform_implementations.code_ref points to enforcer_pattern_library_v2.0 using consistent lib_key names.',
+                $feature_count
+            );
+        } else {
+            $data['description'] = sprintf(
+                'VAPT client driver manifest bundle for %d enabled risk(s). Every field is directly usable for client delivery.',
+                $feature_count
+            );
+        }
     }
 
     public static function get_feature_meta_snapshot_public($feature_keys = [])
@@ -634,7 +692,7 @@ class VAPTSECURE_Build
                         if (!file_exists($dest_dir)) {
                             mkdir($dest_dir, 0755, true);
                         }
-                        self::filter_data_file_for_release((string) $item, $dest_path, $allowed_feature_keys);
+                        self::filter_data_file_for_release((string) $item, $dest_path, $allowed_feature_keys, $package_policy);
                         continue;
                     }
                 }
