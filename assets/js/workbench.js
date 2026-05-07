@@ -282,13 +282,37 @@ var vaptLog = window.vaptLog || {
           }
           // 1c. REST user enumeration / XML-RPC / pingback / username enumeration
           else if (featureBlob.includes('xmlrpc') || featureBlob.includes('pingback') || featureBlob.includes('rest api') || featureBlob.includes('username enumeration') || featureBlob.includes('user enumeration') || featureBlob.includes('author enumeration')) {
-            schema.controls.push({
-              type: 'test_action',
-              label: featureBlob.includes('pingback') ? 'Test: XML-RPC Pingback Block' : (featureBlob.includes('xmlrpc') ? 'Test: XML-RPC Block' : 'Test: REST User Enumeration Block'),
-              key: 'auto_verify_access_control',
-              test_logic: featureBlob.includes('pingback') ? 'disable_xmlrpc_pingback' : (featureBlob.includes('xmlrpc') ? 'block_xmlrpc' : 'block_author_enumeration'),
-              help: __('Auto-injected verification test.', 'vaptsecure')
-            });
+            if (featureBlob.includes('wp-login.php') || featureBlob.includes('login_errors') || featureBlob.includes('invalid credentials')) {
+              schema.controls.push({
+                type: 'test_action',
+                label: 'Test: Login Error Consistency',
+                key: 'auto_verify_login_error',
+                test_logic: 'universal_probe',
+                test_config: {
+                  method: 'POST',
+                  path: '/wp-login.php',
+                  params: {
+                    log: 'vaptsecure_nonexistent_user',
+                    pwd: 'invalid-password',
+                    'wp-submit': 'Log In',
+                    redirect_to: window.location.origin + '/wp-admin/',
+                    testcookie: '1'
+                  },
+                  expected_status: [200],
+                  expected_text: 'Invalid credentials. Please try again.'
+                },
+                help: __('Auto-injected verification test.', 'vaptsecure')
+              });
+            }
+            else {
+              schema.controls.push({
+                type: 'test_action',
+                label: featureBlob.includes('pingback') ? 'Test: XML-RPC Pingback Block' : (featureBlob.includes('xmlrpc') ? 'Test: XML-RPC Block' : 'Test: REST User Enumeration Block'),
+                key: 'auto_verify_access_control',
+                test_logic: featureBlob.includes('pingback') ? 'disable_xmlrpc_pingback' : (featureBlob.includes('xmlrpc') ? 'block_xmlrpc' : 'block_author_enumeration'),
+                help: __('Auto-injected verification test.', 'vaptsecure')
+              });
+            }
           }
           // 2. Generic Fallback
           else if (f.include_verification_engine || (f.generated_schema && f.generated_schema.include_verification_engine)) {
@@ -305,9 +329,43 @@ var vaptLog = window.vaptLog || {
 
       const effectiveSchema = schema && Array.isArray(schema.controls)
         ? (() => {
+            const isWpLoginLoginErrorFeature = /login_errors|wp-login\.php|invalid credentials/.test(featureBlob);
             const controls = schema.controls.map((control) => {
               const controlLabel = String(control.label || '').toLowerCase();
               const controlPath = String(control.test_config?.path || '').toLowerCase();
+              if (isWpLoginLoginErrorFeature && control.type === 'test_action' && (
+                controlLabel.includes('a+ header verification') ||
+                controlLabel.includes('rest api protection check') ||
+                controlLabel.includes('author enumeration check') ||
+                controlLabel.includes('rest user enumeration') ||
+                controlLabel.includes('username enumeration') ||
+                control.test_logic === 'check_headers' ||
+                control.test_logic === 'block_author_enumeration' ||
+                control.test_logic === 'verify_rest_lockdown' ||
+                controlPath.includes('/wp-json/wp/v2/users') ||
+                controlPath.includes('/?author=1')
+              )) {
+                return {
+                  ...control,
+                  label: 'Test: Login Error Consistency',
+                  key: 'auto_verify_login_error',
+                  test_logic: 'universal_probe',
+                  test_config: {
+                    method: 'POST',
+                    path: '/wp-login.php',
+                    params: {
+                      log: 'vaptsecure_nonexistent_user',
+                      pwd: 'invalid-password',
+                      'wp-submit': 'Log In',
+                      redirect_to: window.location.origin + '/wp-admin/',
+                      testcookie: '1'
+                    },
+                    expected_status: [200],
+                    expected_text: 'Invalid credentials. Please try again.'
+                  },
+                  help: __('Auto-injected verification test.', 'vaptsecure')
+                };
+              }
               const isPingbackControl =
                 featureBlob.includes('pingback') &&
                 control.type === 'test_action' &&

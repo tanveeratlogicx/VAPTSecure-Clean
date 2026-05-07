@@ -38,6 +38,7 @@ var vaptLog = window.vaptLog || {
     const [verifFeature, setVerifFeature] = useState(null);
     const [globalProtection, setGlobalProtection] = useState(true);
     const [globalSaving, setGlobalSaving] = useState(false);
+    const saveStatusTimerRef = useRef(null);
 
     const [securityStats, setSecurityStats] = useState({
       total_blocks: 0,
@@ -132,6 +133,26 @@ var vaptLog = window.vaptLog || {
 
       return () => clearInterval(interval);
     }, []);
+
+    useEffect(() => {
+      if (saveStatusTimerRef.current) {
+        clearTimeout(saveStatusTimerRef.current);
+        saveStatusTimerRef.current = null;
+      }
+      if (!saveStatus) {
+        return undefined;
+      }
+      saveStatusTimerRef.current = setTimeout(() => {
+        setSaveStatus(null);
+        saveStatusTimerRef.current = null;
+      }, 3000);
+      return () => {
+        if (saveStatusTimerRef.current) {
+          clearTimeout(saveStatusTimerRef.current);
+          saveStatusTimerRef.current = null;
+        }
+      };
+    }, [saveStatus]);
 
     const updateFeature = (key, data, successMsg, silent = false) => {
       setFeatures(prev => prev.map(f => f.key === key ? { ...f, ...data } : f));
@@ -510,8 +531,10 @@ var vaptLog = window.vaptLog || {
     ]);
   };
 
-  const renderFeatureCard = (f, updateFeature, setVerifFeature, globalProtection) => {
+    const renderFeatureCard = (f, updateFeature, setVerifFeature, globalProtection) => {
     const schema = typeof f.generated_schema === 'string' ? JSON.parse(f.generated_schema) : (f.generated_schema || { controls: [] });
+    const schemaBlob = JSON.stringify(schema || {}).toLowerCase();
+    const isWpLoginLoginErrorFeature = /login_errors|wp-login\.php|invalid credentials/.test(schemaBlob);
 
     // v3.14.0: Enforcement Logic
     const isEnforced = globalProtection
@@ -539,8 +562,40 @@ var vaptLog = window.vaptLog || {
     const masterToggleControl = schema.controls ? schema.controls.find(c => c.type === 'toggle' && (c.key === 'feat_enabled' || c.label?.toLowerCase().includes('enable protection') || c.label?.toLowerCase().includes('enable feature'))) : null;
 
     const automControls = schema.controls ? schema.controls.filter(c =>
-      c.type === 'test_action' && c.label !== 'Site Integrity Check'
-    ) : [];
+      c.type === 'test_action' &&
+      c.label !== 'Site Integrity Check'
+    ).map(c => {
+      const controlLabel = String(c.label || '').toLowerCase();
+      if (isWpLoginLoginErrorFeature && (
+        controlLabel.includes('a+ header verification') ||
+        controlLabel.includes('rest api protection check') ||
+        controlLabel.includes('author enumeration check') ||
+        String(c.test_logic || '').toLowerCase() === 'check_headers' ||
+        String(c.test_logic || '').toLowerCase() === 'block_author_enumeration'
+      )) {
+        return {
+          ...c,
+          label: 'Login Error Consistency Check',
+          key: 'verify_login_error_disclosure',
+          test_logic: 'universal_probe',
+          test_config: {
+            method: 'POST',
+            path: '/wp-login.php',
+            params: {
+              log: 'vaptsecure_nonexistent_user',
+              pwd: 'invalid-password',
+              'wp-submit': 'Log In',
+              redirect_to: `${window.location.origin}/wp-admin/`,
+              testcookie: '1'
+            },
+            expected_status: [200],
+            expected_text: 'Invalid credentials. Please try again.'
+          },
+          help: __('Verifies wp-login.php returns a generic login error message.', 'vaptsecure')
+        };
+      }
+      return c;
+    }) : [];
 
     return el(Card, {
       key: f.key,
@@ -619,10 +674,7 @@ var vaptLog = window.vaptLog || {
                   disabled: !globalProtection,
                   onChange: (val) => updateFeature(f.key, { is_enabled: val ? 1 : 0, is_enforced: val ? 1 : 0 }, __('Saved', 'vaptsecure'))
                 }),
-                el(Tooltip, { text: __('Activating this control applies the security logic defined in the Functional Implementation.', 'vaptsecure') },
-                  el(Icon, { icon: 'info-outline', size: 16, style: { color: '#94a3b8', cursor: 'help' } })
-                )
-              ]),
+              ]), 
               
               // Render Security Insights / HTML controls
               insightControls.length > 0 && el(GeneratedInterface, {
@@ -666,6 +718,7 @@ var vaptLog = window.vaptLog || {
                 hideOpNotes: true,
                 hideProtocol: true,
                 hideImplementationControl: true,
+                showTechnicalTrace: true,
                 showVerificationDetails: false,
                 onUpdate: (data) => updateFeature(f.key, { implementation_data: data })
               }) : el('p', { style: { fontSize: '12px', color: '#94a3b8', fontStyle: 'italic' } }, __('Automated monitoring active.', 'vaptsecure'))

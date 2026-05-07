@@ -140,7 +140,8 @@
                 if (n === 'htaccess' || n === 'apachehtaccess' || n === 'apache') return 'htaccess';
                 if (n === 'nginx' || n === 'nginxconfig') return 'nginx';
                 if (n === 'wpconfig' || n === 'wpconfigphp' || n === 'config') return 'wp_config';
-                if (n === 'phpfunctions' || n === 'phpheaders' || n === 'hook' || n === 'wordpress') return 'php_functions';
+                if (n === 'phpfunctions' || n === 'phpheaders' || n === 'hook' || n === 'wordpress' || n === 'wordpresscore' || n === 'wordpress-core') return 'php_functions';
+                if (n === 'servercron' || n === 'server-cron' || n === 'phpcron' || n === 'php-cron') return 'php_cron';
                 if (n === 'iis' || n === 'webconfig') return 'iis';
                 if (n === 'cloudflare') return 'cloudflare';
                 return n;
@@ -365,36 +366,134 @@
             if (impl.target_file) parts.push(impl.target_file);
             if (impl.path) parts.push(impl.path);
             if (impl.request_path) parts.push(impl.request_path);
+            if (impl.operation) parts.push(impl.operation);
+            if (impl.implementation_type) parts.push(impl.implementation_type);
           });
         }
 
         const text = parts.filter(Boolean).join(' ').toLowerCase();
         const has = (...terms) => terms.some(term => text.includes(term));
 
-        if (has('cron')) return '/wp-cron.php';
+if (has('cron')) return '/wp-cron.php';
         if (has('xmlrpc', 'xml-rpc')) return '/xmlrpc.php';
         if (has('login', 'brute', 'password reset', 'lost password', 'auth')) return '/wp-login.php';
         if (has('author', 'user enumeration', 'username enumeration')) return '/?author=1';
         if (has('directory', 'indexing', 'uploads')) return '/wp-content/uploads/';
         if (has('rest api', 'endpoint disclosure', 'rest')) return '/wp-json/wp/v2/users';
+        if (has('wp-admin', 'admin')) return '/wp-admin/';
 
         return '/';
       };
 
-      const tests = [];
+      const normalizePlatformName = (value) => {
+        let normalized = String(value || '')
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '');
+
+        if (normalized === 'apache' || normalized === 'apache-htaccess' || normalized === 'htaccess') return 'htaccess';
+        if (normalized === 'wp-config' || normalized === 'wp-config-php' || normalized === 'wpconfig' || normalized === 'config') return 'wp-config';
+        if (normalized === 'php-functions' || normalized === 'hook' || normalized === 'wordpress' || normalized === 'wordpresscore' || normalized === 'wordpress-core') return 'php-functions';
+        if (normalized === 'server-cron' || normalized === 'servercron' || normalized === 'php-cron' || normalized === 'phpcron') return 'php-cron';
+        if (normalized === 'web-config' || normalized === 'webconfig') return 'iis';
+        return normalized;
+      };
+
+      const collectPlatformHints = (featureData = {}) => {
+        const hints = new Set();
+        const add = (value) => {
+          const normalized = normalizePlatformName(value);
+          if (normalized) hints.add(normalized);
+        };
+
+        if (Array.isArray(featureData.available_platforms)) {
+          featureData.available_platforms.forEach(add);
+        }
+
+        if (featureData.platform_implementations && typeof featureData.platform_implementations === 'object') {
+          Object.entries(featureData.platform_implementations).forEach(([platformName, impl]) => {
+            add(platformName);
+            if (impl && typeof impl === 'object') {
+              add(impl.lib_key);
+              add(impl.target_file);
+              add(impl.request_path);
+              add(impl.implementation_type);
+              add(impl.operation);
+            }
+          });
+        }
+
+        return hints;
+      };
+
+      const resolvePrimaryPlatform = (featureData = {}) => {
+        const hints = collectPlatformHints(featureData);
+        const priority = ['htaccess', 'apache', 'nginx', 'caddy', 'iis', 'cloudflare', 'php-headers', 'php-functions', 'php-cron', 'wp-config', 'wpconfig', 'server-cron', 'fail2ban'];
+        for (const candidate of priority) {
+          if (hints.has(normalizePlatformName(candidate))) {
+            return candidate;
+          }
+        }
+        return '';
+      };
+
+      const resolveExpectedEnforcer = (primaryPlatform, operation = '') => {
+        const platform = normalizePlatformName(primaryPlatform);
+        const op = normalizePlatformName(operation);
+
+        if (platform === 'htaccess' || platform === 'apache') return 'htaccess';
+        if (platform === 'nginx') return 'nginx';
+        if (platform === 'caddy') return 'caddy';
+        if (platform === 'iis') return 'iis';
+        if (platform === 'cloudflare') return 'cloudflare';
+        if (platform === 'fail2ban' || op.includes('jail')) return 'fail2ban';
+        if (platform === 'wp-config' || platform === 'wpconfig' || op.includes('constant') || op.includes('config')) return 'wp-config';
+        if (platform === 'php-functions' || platform === 'php-headers' || op.includes('hook') || op.includes('wordpress')) return 'php-headers';
+        if (platform === 'php-cron' || platform === 'server-cron' || op.includes('cron')) return 'php-cron';
+        return platform || 'php-headers';
+      };
+
+      const resolvePrimaryImplementation = (featureData = {}, primaryPlatform = '') => {
+        if (!featureData.platform_implementations || typeof featureData.platform_implementations !== 'object') {
+          return null;
+        }
+
+        const normalizedTarget = normalizePlatformName(primaryPlatform);
+        const entries = Object.entries(featureData.platform_implementations);
+        for (const [platformName, impl] of entries) {
+          const candidates = [platformName];
+          if (impl && typeof impl === 'object') {
+            candidates.push(impl.lib_key, impl.target_file, impl.request_path, impl.implementation_type, impl.operation);
+          }
+          if (candidates.some(candidate => normalizePlatformName(candidate) === normalizedTarget)) {
+            return impl || null;
+          }
+        }
+
+        return entries.length ? entries[0][1] : null;
+      };
+
       const featureKey = feature.key || feature.id || '';
       const inferredPath = inferProbePath(feature, featureKey);
       const headerProbePath = `${inferredPath}?vapt_header_check=1`;
       const activeProbePath = inferredPath === '/' ? '/index.php' : inferredPath;
-      const availablePlatforms = Array.isArray(feature.available_platforms)
-        ? feature.available_platforms.map(p => String(p || '').toLowerCase()).filter(Boolean)
-        : [];
-      const usesFail2ban = availablePlatforms.includes('fail2ban');
+      const primaryPlatform = resolvePrimaryPlatform(feature);
+      const primaryImplementation = resolvePrimaryImplementation(feature, primaryPlatform);
+      const primaryOperation = String(
+        primaryImplementation?.operation ||
+        primaryImplementation?.implementation_type ||
+        primaryImplementation?.target_file ||
+        primaryPlatform ||
+        ''
+      ).toLowerCase();
+      const expectedEnforcer = resolveExpectedEnforcer(primaryPlatform, primaryOperation);
+      const isRateLimitFlow = primaryPlatform === 'fail2ban' || primaryOperation.includes('jail') || /rate limit|brute|login/i.test(featureKey + ' ' + (feature.label || feature.title || feature.name || '') + ' ' + (feature.summary || feature.description || ''));
+      const isHeaderFlow = /header/.test(primaryOperation) || (['htaccess', 'apache', 'nginx', 'caddy', 'iis', 'cloudflare'].includes(normalizePlatformName(primaryPlatform)) && !/rewrite|block|respond|transform/.test(primaryOperation));
+      const isConfigFlow = primaryPlatform === 'wp-config' || primaryPlatform === 'wpconfig' || /constant|config/.test(primaryOperation);
+      const isRewriteFlow = /rewrite|block|respond|transform|url_rewrite|web_config|webconfig/.test(primaryOperation);
+      const tests = [];
 
-      // 1. Verification Probe Selection
-      // Fail2ban-backed risks do not emit response headers, so the generic A+ header
-      // probe would always fail even when protection is active.
-      if (usesFail2ban) {
+      if (isRateLimitFlow) {
         tests.push({
           type: 'test_action',
           id: `vapt-test-rate-${riskId}`,
@@ -402,47 +501,117 @@
           key: 'verify_rate_resilience',
           test_logic: 'spam_requests',
           numTests: 5,
-          test_config: {
-            enforcement_mode: 'external',
-            path: '/wp-login.php'
-          },
-          help: `Verifies that the login endpoint is rate limited or blocked by the active fail2ban policy for ${inferredPath}.`
+test_config: {
+             enforcement_mode: 'external',
+             path: inferredPath,
+             expected_enforcer: expectedEnforcer
+           },
+          help: `Verifies that the login endpoint is rate limited or blocked by the active ${expectedEnforcer || 'platform'} policy for ${inferredPath}.`
         });
-      } else {
-        // A+ Header Check - Verify VAPT enforcement headers
-        // [FIX v2.4.25] Only check x-vapt-enforced - no enforcer emits x-vapt-risk-id
+      } else if (isConfigFlow) {
+        tests.push({
+          type: 'test_action',
+          id: `vapt-test-implementation-${riskId}`,
+          label: 'Implementation Verification',
+          key: 'verify_implementation',
+          test_logic: 'verify_implementation',
+          test_config: {
+            expected_enforcer: expectedEnforcer
+          },
+          help: `Verifies that the released implementation is present for ${inferredPath} using the client verification endpoint.`
+        });
+      } else if (isHeaderFlow) {
         tests.push({
           type: 'test_action',
           id: `vapt-test-headers-${riskId}`,
-          label: 'A+ Header Verification',
+          label: 'Platform Header Verification',
           key: 'verify_aplus_headers',
           test_logic: 'check_headers',
           test_config: {
             path: headerProbePath,
+            expected_enforcer: expectedEnforcer,
             expected_headers: {
-              'x-vapt-enforced': 'htaccess|nginx|php-headers|php-cron'
+              'x-vapt-enforced': expectedEnforcer
             }
           },
-          help: `Verifies that A+ Adaptive headers (x-vapt-enforced) are correctly injected by the active enforcer for ${inferredPath}.`
+          help: `Verifies that the platform-specific enforcement headers are correctly injected for ${inferredPath}.`
+        });
+      } else if (isRewriteFlow) {
+        tests.push({
+          type: 'test_action',
+          id: `vapt-test-active-${riskId}`,
+          label: 'Platform Protection Probe',
+          key: 'verify_active_protection',
+          test_logic: 'universal_probe',
+          test_config: {
+            path: activeProbePath,
+            params: { vapt_test: 'active' },
+            expected_status: [403, 404, 400, 401, 405, 429],
+            expected_enforcer: expectedEnforcer
+          },
+          help: `Runs a platform-specific request probe to verify the released protection for ${inferredPath}.`
+        });
+      } else {
+        tests.push({
+          type: 'test_action',
+          id: `vapt-test-implementation-${riskId}`,
+          label: 'Implementation Verification',
+          key: 'verify_implementation',
+          test_logic: 'verify_implementation',
+          test_config: {
+            expected_enforcer: expectedEnforcer
+          },
+          help: `Verifies that the released implementation is present for ${inferredPath} using the client verification endpoint.`
         });
       }
 
       // 2. Specific Functional Probes
       const title = (feature.label || feature.title || feature.name || '').toLowerCase();
+      const platformHintsForFunctional = collectPlatformHints(feature);
+      const hasRestSurface = /rest api|endpoint disclosure|wp-json/.test(`${featureKey} ${title} ${(feature.summary || feature.description || '')}`) ||
+        platformHintsForFunctional.has('rest') ||
+        platformHintsForFunctional.has('api');
+      const hasWpLoginLoginErrorSurface = /wp-login\.php|login_errors|invalid credentials/.test(`${featureKey} ${title} ${(feature.summary || feature.description || '')} ${JSON.stringify(feature.platform_implementations || {})}`.toLowerCase());
 
       if (featureKey.includes('user-enumeration') || featureKey.includes('users') || title.includes('user enumeration') || title.includes('users') || title.includes('username enumeration')) {
-        tests.push({
-          type: 'test_action',
-          id: `vapt-test-rest-${riskId}`,
-          label: 'REST API Protection Check',
-          key: 'verify_rest_lockdown',
-          test_logic: 'universal_probe',
-          test_config: {
-            path: '/wp-json/wp/v2/users',
-            expected_status: [401, 403, 404]
-          },
-          help: 'Verifies that the WordPress Users REST endpoint is protected.'
-        });
+        if (hasWpLoginLoginErrorSurface) {
+          tests.push({
+            type: 'test_action',
+            id: `vapt-test-login-error-${riskId}`,
+            label: 'Login Error Consistency Check',
+            key: 'verify_login_error_disclosure',
+            test_logic: 'universal_probe',
+            test_config: {
+              method: 'POST',
+              path: '/wp-login.php',
+              params: {
+                log: 'vaptsecure_nonexistent_user',
+                pwd: 'invalid-password',
+                'wp-submit': 'Log In',
+                redirect_to: `${window.location.origin}/wp-admin/`,
+                testcookie: '1'
+              },
+              expected_status: [200],
+              expected_text: 'Invalid credentials. Please try again.',
+              expected_enforcer: expectedEnforcer
+            },
+            help: 'Verifies wp-login.php returns a generic login error message.'
+          });
+        } else if (hasRestSurface) {
+          tests.push({
+            type: 'test_action',
+            id: `vapt-test-rest-${riskId}`,
+            label: 'REST API Protection Check',
+            key: 'verify_rest_lockdown',
+            test_logic: 'universal_probe',
+            test_config: {
+              path: '/wp-json/wp/v2/users',
+              expected_status: [401, 403, 404],
+              expected_enforcer: expectedEnforcer
+            },
+            help: 'Verifies that the WordPress Users REST endpoint is protected.'
+          });
+        }
 
         tests.push({
           type: 'test_action',
@@ -452,7 +621,8 @@
           test_logic: 'universal_probe',
           test_config: {
             path: '/?author=1',
-            expected_status: [403, 404]
+            expected_status: [403, 404],
+            expected_enforcer: expectedEnforcer
           },
           help: 'Verifies that author enumeration via query string is blocked.'
         });
@@ -463,6 +633,9 @@
           label: 'XML-RPC Lockdown Check',
           key: 'verify_xmlrpc_block',
           test_logic: 'block_xmlrpc',
+          test_config: {
+            expected_enforcer: expectedEnforcer
+          },
           help: 'Triggers a POST request to xmlrpc.php to verify the block.'
         });
       } else if (featureKey.includes('directory') || featureKey.includes('indexing') || title.includes('directory') || title.includes('indexing')) {
@@ -472,37 +645,55 @@
           label: 'Directory Indexing Check',
           key: 'verify_dir_block',
           test_logic: 'disable_directory_browsing',
+          test_config: {
+            expected_enforcer: expectedEnforcer
+          },
           help: 'Attempts to list the /wp-content/uploads/ directory.'
         });
-      } else if (!usesFail2ban) {
-        // Generic active probe
-        tests.push({
-          type: 'test_action',
-          id: `vapt-test-active-${riskId}`,
-          label: 'Active Protection Probe',
-          key: 'verify_active_protection',
-          test_logic: 'universal_probe',
-          test_config: {
-            path: activeProbePath,
-            params: { vapt_test: 'active' },
-            expected_headers: { 'x-vapt-enforced': 'htaccess|nginx|php-headers|php-cron' }
-          },
-          help: 'Runs a generic probe to verify server-level enforcement.'
-        });
       } else {
-        tests.push({
-          type: 'test_action',
-          id: `vapt-test-active-${riskId}`,
-          label: 'Active Protection Probe',
-          key: 'verify_active_protection',
-          test_logic: 'spam_requests',
-          numTests: 5,
-          test_config: {
-            enforcement_mode: 'external',
-            path: '/wp-login.php'
-          },
-          help: 'Runs a brute-force probe to verify the fail2ban-backed login protection.'
-        });
+        if (primaryPlatform === 'fail2ban') {
+          tests.push({
+            type: 'test_action',
+            id: `vapt-test-active-${riskId}`,
+            label: 'Active Protection Probe',
+            key: 'verify_active_protection',
+            test_logic: 'spam_requests',
+            numTests: 5,
+            test_config: {
+              enforcement_mode: 'external',
+              path: '/wp-login.php',
+              expected_enforcer: expectedEnforcer
+            },
+            help: 'Runs a brute-force probe to verify the fail2ban-backed login protection.'
+          });
+        } else if (isHeaderFlow) {
+          tests.push({
+            type: 'test_action',
+            id: `vapt-test-active-${riskId}`,
+            label: 'Active Protection Probe',
+            key: 'verify_active_protection',
+            test_logic: 'universal_probe',
+            test_config: {
+              path: activeProbePath,
+              params: { vapt_test: 'active' },
+              expected_headers: { 'x-vapt-enforced': expectedEnforcer },
+              expected_enforcer: expectedEnforcer
+            },
+            help: 'Runs a platform-specific probe to verify the active header enforcement.'
+          });
+        } else {
+          tests.push({
+            type: 'test_action',
+            id: `vapt-test-active-${riskId}`,
+            label: 'Implementation Verification',
+            key: 'verify_implementation',
+            test_logic: 'verify_implementation',
+            test_config: {
+              expected_enforcer: expectedEnforcer
+            },
+            help: 'Runs the client verification endpoint to confirm the released implementation.'
+          });
+        }
       }
 
       // 3. Site Integrity Check

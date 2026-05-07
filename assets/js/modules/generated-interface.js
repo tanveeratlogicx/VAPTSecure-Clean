@@ -133,12 +133,167 @@ var vaptLog = window.vaptLog || {
     return '/';
   };
 
+  const collectPlatformHints = (featureData = {}) => {
+    const hints = new Set();
+
+    if (Array.isArray(featureData.available_platforms)) {
+      featureData.available_platforms.forEach(platform => {
+        const normalized = normalizeEnforcerValue(platform);
+        if (normalized) hints.add(normalized);
+      });
+    }
+
+    if (featureData.platform_implementations && typeof featureData.platform_implementations === 'object') {
+      Object.entries(featureData.platform_implementations).forEach(([platformName, impl]) => {
+        const candidates = [platformName];
+        if (impl && typeof impl === 'object') {
+          if (impl.lib_key) candidates.push(impl.lib_key);
+          if (impl.target_file) candidates.push(impl.target_file);
+          if (impl.request_path) candidates.push(impl.request_path);
+          if (impl.implementation_type) candidates.push(impl.implementation_type);
+          if (impl.operation) candidates.push(impl.operation);
+        }
+
+        candidates.forEach(candidate => {
+          const normalized = normalizeEnforcerValue(candidate);
+          if (normalized) hints.add(normalized);
+        });
+      });
+    }
+
+    return hints;
+  };
+
+  const resolvePrimaryPlatform = (featureData = {}) => {
+    const hints = collectPlatformHints(featureData);
+    const priority = [
+      'htaccess',
+      'apache',
+      'nginx',
+      'caddy',
+      'iis',
+      'cloudflare',
+      'php-headers',
+      'php-functions',
+      'php-cron',
+      'wp-config',
+      'wpconfig',
+      'wordpress_core',
+      'server_cron',
+      'fail2ban'
+    ];
+
+    for (const candidate of priority) {
+      if (hints.has(normalizeEnforcerValue(candidate))) {
+        return candidate;
+      }
+    }
+
+    return '';
+  };
+
+  const resolveExpectedEnforcer = (primaryPlatform, operation = '') => {
+    const platform = normalizeEnforcerValue(primaryPlatform);
+    const op = normalizeEnforcerValue(operation);
+
+    if (platform === 'htaccess' || platform === 'apache') return 'htaccess';
+    if (platform === 'nginx') return 'nginx';
+    if (platform === 'caddy') return 'caddy';
+    if (platform === 'iis') return 'iis';
+    if (platform === 'cloudflare') return 'cloudflare';
+    if (platform === 'fail2ban' || op.includes('jail')) return 'fail2ban';
+    if (platform === 'wp-config' || platform === 'wpconfig' || op.includes('constant') || op.includes('config')) return 'wp-config';
+    if (platform === 'php-functions' || platform === 'php-headers' || op.includes('hook') || op.includes('wordpress')) return 'php-headers';
+    if (platform === 'php-cron' || platform === 'server-cron' || op.includes('cron')) return 'php-cron';
+    return platform || 'php-headers';
+  };
+
+  const isWpLoginLoginErrorFeature = (featureData = {}, featureKey = '', control = {}) => {
+    const blob = [
+      featureKey,
+      featureData && (featureData.label || featureData.title || featureData.name || ''),
+      featureData && (featureData.summary || featureData.description || featureData.remediation || ''),
+      featureData && featureData.generated_schema ? JSON.stringify(featureData.generated_schema) : '',
+      featureData && featureData.implementation_data ? JSON.stringify(featureData.implementation_data) : '',
+      control && control.label ? control.label : '',
+      control && control.help ? control.help : '',
+      control && control.test_config ? JSON.stringify(control.test_config) : ''
+    ].filter(Boolean).join(' ').toLowerCase();
+
+    return blob.includes('wp-login.php') ||
+      blob.includes('login_errors') ||
+      blob.includes('login error') ||
+      blob.includes('invalid credentials') ||
+      (blob.includes('username enumeration') && blob.includes('login'));
+  };
+
   /**
    * Helper: Consistent Boolean Type Casting (v3.14.2)
    */
   const toBool = (val) => {
     if (val === true || val === 1 || val === '1' || val === 'true' || val === 'on') return true;
     return false;
+  };
+
+  const normalizeEnforcerValue = (value) => {
+    let normalized = String(value || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+    if (normalized === 'apache' || normalized === 'apache-htaccess' || normalized === 'htaccess') {
+      return 'htaccess';
+    }
+    if (normalized === 'wp-config' || normalized === 'wp-config-php' || normalized === 'wpconfig' || normalized === 'config') {
+      return 'wp-config';
+    }
+    if (normalized === 'php-functions' || normalized === 'php-functions-php' || normalized === 'hook' || normalized === 'wordpress' || normalized === 'wordpress-core' || normalized === 'wordpress_core') {
+      return 'php-functions';
+    }
+    if (normalized === 'php-cron' || normalized === 'server-cron' || normalized === 'server_cron') {
+      return 'php-cron';
+    }
+    if (normalized === 'web-config' || normalized === 'webconfig') {
+      return 'iis';
+    }
+    return normalized;
+  };
+
+  const expectedEnforcerAliases = (expected) => {
+    const normalized = normalizeEnforcerValue(expected);
+    const aliasMap = {
+      'htaccess': ['htaccess', 'apache', '.htaccess', 'apache-htaccess'],
+      'apache': ['htaccess', 'apache', '.htaccess', 'apache-htaccess'],
+      'nginx': ['nginx', 'nginx-config'],
+      'caddy': ['caddy'],
+      'iis': ['iis', 'web-config', 'webconfig', 'web.config'],
+      'cloudflare': ['cloudflare'],
+      'wp-config': ['wp-config', 'wp_config', 'config'],
+      'wpconfig': ['wp-config', 'wp_config', 'config'],
+      'php-functions': ['php-headers', 'php-functions', 'hook', 'wordpress', 'wordpress-core'],
+      'php_functions': ['php-headers', 'php-functions', 'hook', 'wordpress', 'wordpress-core'],
+      'php-headers': ['php-headers', 'hook', 'wordpress', 'wordpress-core'],
+      'wordpress-core': ['php-headers', 'php-functions', 'hook', 'wordpress', 'wordpress-core'],
+      'wordpress_core': ['php-headers', 'php-functions', 'hook', 'wordpress', 'wordpress-core'],
+      'php-rate-limit': ['php-rate-limit'],
+      'php-xmlrpc': ['php-xmlrpc'],
+      'php-author-enum': ['php-author-enum'],
+      'php-dir': ['php-dir'],
+      'php-null-byte': ['php-null-byte'],
+      'php-cron': ['php-cron'],
+      'server-cron': ['php-cron', 'server-cron'],
+      'server_cron': ['php-cron', 'server-cron'],
+      'fail2ban': ['fail2ban'],
+      'hook': ['php-headers', 'hook', 'wordpress', 'wordpress-core']
+    };
+
+    return aliasMap[normalized] || [normalized];
+  };
+
+  const matchesExpectedEnforcer = (actual, expected) => {
+    if (!actual || !expected) return false;
+    const actualNormalized = normalizeEnforcerValue(actual);
+    return expectedEnforcerAliases(expected).some(alias => actualNormalized.includes(normalizeEnforcerValue(alias)));
   };
 
   /**
@@ -216,8 +371,14 @@ var vaptLog = window.vaptLog || {
 
       if (hasExpectedHeaders) {
         // The reliable marker is x-vapt-enforced being present with a valid enforcer value.
-        const validEnforcers = ['htaccess', 'nginx', 'php-headers', 'php-rate-limit', 'php-xmlrpc', 'php-pingback', 'php-author-enum', 'php-dir', 'php-null-byte', 'php-cron'];
-        const isValidEnforcer = vaptEnforced && validEnforcers.some(e => vaptEnforced.toLowerCase().includes(e));
+        const expectedEnforcer = control.test_config?.expected_enforcer || '';
+        const expectedEnforcers = Array.isArray(control.test_config?.expected_enforcers)
+          ? control.test_config.expected_enforcers.filter(Boolean)
+          : (expectedEnforcer ? [expectedEnforcer] : []);
+        const validEnforcers = expectedEnforcers.length > 0
+          ? expectedEnforcers
+          : ['htaccess', 'nginx', 'caddy', 'iis', 'cloudflare', 'wp-config', 'php-headers', 'php-rate-limit', 'php-xmlrpc', 'php-pingback', 'php-author-enum', 'php-dir', 'php-null-byte', 'php-cron', 'fail2ban'];
+        const isValidEnforcer = vaptEnforced && validEnforcers.some(e => matchesExpectedEnforcer(vaptEnforced, e));
         const isProtectionEnabled = isFeatureEnabled(featureData);
         const isPingbackFeature = (featureKey && (featureKey.toLowerCase().includes('xmlrpc') || featureKey.toLowerCase().includes('pingback')))
           || (control.label && control.label.toLowerCase().includes('pingback'))
@@ -301,7 +462,9 @@ var vaptLog = window.vaptLog || {
           // FAILURE: Toggle is ON but headers missing - protection not active!
           return {
             success: false,
-            message: `Protection toggle is ON but VAPT enforcement headers not found. Expected x-vapt-enforced. Got: ${vaptEnforced || 'none'}.`,
+            message: expectedEnforcer
+              ? `Protection toggle is ON but the expected VAPT enforcement header was not found. Expected ${expectedEnforcer}. Got: ${vaptEnforced || 'none'}.`
+              : `Protection toggle is ON but VAPT enforcement headers not found. Expected x-vapt-enforced. Got: ${vaptEnforced || 'none'}.`,
             raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Expected: A+ Headers\n\n${headerStr.trim()}`
           };
         }
@@ -723,22 +886,85 @@ var vaptLog = window.vaptLog || {
 
     // 3b. Username Enumeration Probe: verifies REST users endpoint is blocked
     block_author_enumeration: async (siteUrl, control, featureData, featureKey) => {
-      const url = resolveUrl('/wp-json/wp/v2/users', control.config?.url, featureKey);
+      const configPath = String(control?.config?.path || '').trim();
+      const featureText = `${featureKey} ${(featureData?.label || featureData?.title || featureData?.name || '')} ${(featureData?.summary || featureData?.description || '')}`.toLowerCase();
+      const isLoginErrorSurface = isWpLoginLoginErrorFeature(featureData, featureKey, control) || configPath.includes('/wp-login.php') || /login_errors|invalid credentials/.test(featureText);
+      if (isLoginErrorSurface) {
+        const loginUrl = resolveUrl('/wp-login.php', control.config?.url, featureKey);
+        const payload = new URLSearchParams({
+          log: 'vaptsecure_nonexistent_user',
+          pwd: 'invalid-password',
+          'wp-submit': 'Log In',
+          redirect_to: `${siteUrl}/wp-admin/`,
+          testcookie: '1'
+        });
+        vaptLog.log(`Login Error Consistency Probe: Fetching ${loginUrl}`);
+        const response = await fetch(loginUrl, {
+          method: 'POST',
+          cache: 'no-store',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: payload
+        });
+        const body = await response.clone().text();
+        const bodyLower = body.toLowerCase();
+        const vaptEnforced = response.headers.get('x-vapt-enforced');
+        const enforcedFeature = response.headers.get('x-vapt-feature');
+        const isEnabled = isFeatureEnabled(featureData);
+        const genericMessage = bodyLower.includes('invalid credentials') || bodyLower.includes('please try again');
+        const leaksUsername = bodyLower.includes('is not registered') || bodyLower.includes('incorrect password') || bodyLower.includes('invalid username');
+
+        if (vaptEnforced === 'php-headers' || vaptEnforced === 'php-functions') {
+          if (featureKey && enforcedFeature && enforcedFeature !== featureKey) {
+            return { success: false, message: `Inconclusive: login error protection is attributed to another VAPT feature ('${enforcedFeature}').`, raw: `URL: ${loginUrl} | Status: ${response.status} | Enforcement: ${vaptEnforced}` };
+          }
+          return { success: true, message: 'Plugin is actively normalizing wp-login.php error messages.', raw: `URL: ${loginUrl} | Status: ${response.status} | Toggle: ${isEnabled ? 'ON' : 'OFF'} | Enforcement: ${vaptEnforced}` };
+        }
+
+        if (!isEnabled) {
+          return {
+            success: !leaksUsername,
+            unprotected: !leaksUsername,
+            message: leaksUsername
+              ? 'Protection correctly disabled. wp-login.php still reveals enumeration hints.'
+              : 'Protection correctly disabled. wp-login.php no longer reveals enumeration hints.',
+            raw: `URL: ${loginUrl} | Status: ${response.status} | Toggle: OFF | Result: ${genericMessage ? 'generic-login-error' : 'enumeration-leak'}`
+          };
+        }
+
+        if (genericMessage && !leaksUsername) {
+          return {
+            success: true,
+            message: 'Plugin is actively blocking login-error based enumeration.',
+            raw: `URL: ${loginUrl} | Status: ${response.status} | Toggle: ON | Result: generic-login-error`
+          };
+        }
+
+        return {
+          success: false,
+          message: 'SECURITY FAILURE: Protection toggle is ON but wp-login.php still reveals username-specific error text.',
+          raw: `URL: ${loginUrl} | Status: ${response.status} | Toggle: ON | Expected: generic login error`
+        };
+      }
+
+      const isRestSurface = configPath.includes('/wp-json/') || /rest api|endpoint disclosure|wp-json/.test(featureText);
+      const probePath = configPath || (isRestSurface ? '/wp-json/wp/v2/users' : '/?author=1');
+      const url = resolveUrl(probePath, control.config?.url, featureKey);
       vaptLog.log(`REST User Enumeration Probe: Fetching ${url}`);
       const response = await fetch(url, { method: 'GET', cache: 'no-store' });
       const vaptEnforced = response.headers.get('x-vapt-enforced');
       const enforcedFeature = response.headers.get('x-vapt-feature');
       const isEnabled = isFeatureEnabled(featureData);
       const isBlocked = response.status === 401 || response.status === 403 || response.status === 404 || response.status === 405 || vaptEnforced === 'php-author-enum';
+      const modeLabel = isRestSurface ? 'REST user enumeration' : 'author enumeration';
 
       if (vaptEnforced === 'php-author-enum') {
         if (featureKey && enforcedFeature && enforcedFeature !== featureKey) {
-          return { success: false, message: `Inconclusive: REST user enumeration blocked by another VAPT feature ('${enforcedFeature}').`, raw: `URL: ${url} | Status: ${response.status} | Enforcement: ${vaptEnforced}` };
+          return { success: false, message: `Inconclusive: ${modeLabel} blocked by another VAPT feature ('${enforcedFeature}').`, raw: `URL: ${url} | Status: ${response.status} | Enforcement: ${vaptEnforced}` };
         }
         if (!isEnabled) {
-          return { success: false, message: `Warning: Protection toggle is OFF but REST user enumeration is STILL being blocked (${vaptEnforced}).`, raw: `URL: ${url} | Status: ${response.status} | Toggle: OFF | Enforcement: ${vaptEnforced}` };
+          return { success: false, message: `Warning: Protection toggle is OFF but ${modeLabel} is STILL being blocked (${vaptEnforced}).`, raw: `URL: ${url} | Status: ${response.status} | Toggle: OFF | Enforcement: ${vaptEnforced}` };
         }
-        return { success: true, message: `Plugin is actively blocking REST user enumeration (${vaptEnforced}).`, raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Enforcement: ${vaptEnforced}` };
+        return { success: true, message: `Plugin is actively blocking ${modeLabel} (${vaptEnforced}).`, raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Enforcement: ${vaptEnforced}` };
       }
 
       if (!isEnabled) {
@@ -746,14 +972,14 @@ var vaptLog = window.vaptLog || {
           return {
             success: false,
             unprotected: true,
-            message: `Protection correctly disabled. REST user enumeration is accessible (HTTP 200).`,
+            message: `Protection correctly disabled. ${modeLabel} is accessible (HTTP 200).`,
             raw: `URL: ${url} | Status: ${response.status} | Toggle: OFF | Enforcement: None`
           };
         }
         return {
           success: false,
           external_block: true,
-          message: `Warning: Protection toggle is OFF but REST user enumeration is still blocked (HTTP ${response.status}). External protection detected.`,
+          message: `Warning: Protection toggle is OFF but ${modeLabel} is still blocked (HTTP ${response.status}). External protection detected.`,
           raw: `URL: ${url} | Status: ${response.status} | Toggle: OFF | External Block`
         };
       }
@@ -762,15 +988,15 @@ var vaptLog = window.vaptLog || {
         return {
           success: true,
           message: response.status === 200
-            ? `REST user enumeration is still exposed (HTTP 200).`
-            : `Plugin is actively blocking REST user enumeration (HTTP ${response.status}).`,
+            ? `${modeLabel} is still exposed (HTTP 200).`
+            : `Plugin is actively blocking ${modeLabel} (HTTP ${response.status}).`,
           raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Enforcement: ${vaptEnforced || 'HTTP ' + response.status}`
         };
       }
 
       return {
         success: false,
-        message: `SECURITY FAILURE: Protection toggle is ON but REST user enumeration remains accessible (HTTP 200).`,
+        message: `SECURITY FAILURE: Protection toggle is ON but ${modeLabel} remains accessible (HTTP 200).`,
         raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Expected: 403/404`
       };
     },
@@ -1007,6 +1233,10 @@ var vaptLog = window.vaptLog || {
       const isEnabled = isFeatureEnabled(featureData);
       const vaptEnforced = resp.headers.get('x-vapt-enforced');
       const enforcedFeature = resp.headers.get('x-vapt-feature');
+      const expectedEnforcer = config.expected_enforcer || control.test_config?.expected_enforcer || '';
+      if (!headerMatches && expectedEnforcer) {
+        headerMatches = matchesExpectedEnforcer(vaptEnforced, expectedEnforcer);
+      }
 
       const expectsBlock = expectedStatusArray.length > 0 && expectedStatusArray.every(s => s >= 400);
       const expectsAllow = expectedStatusArray.includes(200);
@@ -1166,6 +1396,36 @@ var vaptLog = window.vaptLog || {
         message: message,
         raw: `URL: ${url} | Status: ${code} | Expected: ${expectedStatus || 'N/A'} | Toggle: ${isEnabled ? 'ON' : 'OFF'}`
       };
+    },
+
+    verify_implementation: async (siteUrl, control, featureData, featureKey) => {
+      try {
+        const endpoint = resolveUrl('/wp-json/vaptsecure/v1/verify-implementation', control.config?.url, featureKey);
+        const url = endpoint + (endpoint.includes('?') ? '&' : '?') + 'key=' + encodeURIComponent(featureKey || '');
+        const response = await fetch(url, { method: 'GET', cache: 'no-store', headers: { Accept: 'application/json' } });
+        const payload = await response.json();
+
+        if (payload && typeof payload === 'object') {
+          return {
+            success: !!payload.success,
+            message: payload.message || (payload.success ? 'Implementation verified.' : 'Implementation verification failed.'),
+            meta: payload,
+            raw: JSON.stringify(payload)
+          };
+        }
+
+        return {
+          success: false,
+          message: 'Implementation verification returned an empty response.',
+          raw: `URL: ${url} | Status: ${response.status}`
+        };
+      } catch (err) {
+        return {
+          success: false,
+          message: `Implementation verification failed: ${err.message}`,
+          raw: { error: err.message, stack: err.stack }
+        };
+      }
     },
 
     // 8. Default Generic Probe
@@ -1393,6 +1653,8 @@ var vaptLog = window.vaptLog || {
     const [result, setResult] = useState(null);
     const [progress, setProgress] = useState(null);
     const [numTests, setNumTests] = useState(''); // Custom test count (v3.6.26)
+    const targetPath = String(control?.config?.path || '/').trim() || '/';
+    const targetUrl = resolveUrl(targetPath, control?.config?.url, featureKey);
 
     const runTest = async () => {
       setStatus('running');
@@ -1434,7 +1696,7 @@ var vaptLog = window.vaptLog || {
         setResult({
           success: false,
           message: `Error: ${err.message}`,
-          raw: `URL: ${resolveUrl('/', control.config?.url, featureKey)} | Error: ${err.message}`
+          raw: `URL: ${targetUrl} | Error: ${err.message}`
         });
       }
     };
@@ -1462,6 +1724,16 @@ var vaptLog = window.vaptLog || {
           el('strong', { style: { fontSize: '12px', color: '#334155' } }, displayLabel)
         ]),
         el(Button, { isSecondary: true, isSmall: true, isBusy: status === 'running', onClick: handleClick, disabled: status === 'running' }, 'Run Verify')
+      ]),
+      el('div', { style: { marginBottom: '8px', fontSize: '10px', color: '#64748b', wordBreak: 'break-all' } }, [
+        el('strong', { style: { color: '#475569' } }, __('Target URL:', 'vaptsecure')),
+        ' ',
+        el('a', {
+          href: targetUrl,
+          target: '_blank',
+          rel: 'noopener noreferrer',
+          style: { color: '#2563eb', textDecoration: 'underline' }
+        }, targetUrl)
       ]),
       !globalProtection && el('div', { style: { marginBottom: '10px', padding: '8px 12px', background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '8px' } }, [
         el(Icon, { icon: 'warning', size: 16, style: { color: '#ea580c' } }),
@@ -1785,8 +2057,123 @@ var vaptLog = window.vaptLog || {
         return {};
       }
     }, [feature.implementation_data]);
+    const verificationFeatureData = useMemo(() => ({
+      ...feature,
+      ...currentData,
+      available_platforms: Array.isArray(feature.available_platforms)
+        ? feature.available_platforms
+        : (Array.isArray(currentData.available_platforms) ? currentData.available_platforms : []),
+      platform_implementations: feature.platform_implementations && typeof feature.platform_implementations === 'object'
+        ? feature.platform_implementations
+        : (currentData.platform_implementations && typeof currentData.platform_implementations === 'object' ? currentData.platform_implementations : {})
+    }), [feature, currentData]);
+
+    const normalizedControls = useMemo(() => {
+      if (!schema || !Array.isArray(schema.controls)) {
+        return [];
+      }
+
+      const featureBlob = [
+        feature?.key,
+        feature?.label,
+        feature?.title,
+        feature?.name,
+        feature?.description,
+        feature?.summary,
+        feature?.remediation,
+        JSON.stringify(verificationFeatureData?.platform_implementations || {}),
+        JSON.stringify(verificationFeatureData?.available_platforms || [])
+      ].filter(Boolean).join(' ').toLowerCase();
+      const isLoginErrorSurface = /wp-login\.php|login_errors|invalid credentials/.test(featureBlob);
+      const isPingbackSurface = /pingback|xmlrpc|xml-rpc/.test(featureBlob);
+
+      const loginErrorControl = (control) => ({
+        ...control,
+        label: 'Login Error Consistency Check',
+        key: 'verify_login_error_disclosure',
+        test_logic: 'universal_probe',
+        test_config: {
+          method: 'POST',
+          path: '/wp-login.php',
+          params: {
+            log: 'vaptsecure_nonexistent_user',
+            pwd: 'invalid-password',
+            'wp-submit': 'Log In',
+            redirect_to: `${window.location.origin}/wp-admin/`,
+            testcookie: '1'
+          },
+          expected_status: [200],
+          expected_text: 'Invalid credentials. Please try again.',
+          expected_enforcer: control.test_config?.expected_enforcer || control.test_config?.expected_enforcers || ''
+        },
+        help: 'Verifies wp-login.php returns a generic login error message.'
+      });
+
+      const xmlRpcControl = (control) => ({
+        ...control,
+        label: 'Test: XML-RPC Pingback Block',
+        test_logic: 'disable_xmlrpc_pingback'
+      });
+
+      const seen = new Set();
+      return schema.controls.reduce((acc, control) => {
+        if (!control || typeof control !== 'object') {
+          return acc;
+        }
+
+        const label = String(control.label || '').toLowerCase();
+        const controlPath = String(control.test_config?.path || '').toLowerCase();
+        let nextControl = control;
+
+        if (isLoginErrorSurface && control.type === 'test_action') {
+          const shouldNormalizeLogin = (
+            label.includes('a+ header verification') ||
+            label.includes('rest api protection check') ||
+            label.includes('author enumeration check') ||
+            label.includes('rest user enumeration') ||
+            label.includes('username enumeration') ||
+            control.test_logic === 'check_headers' ||
+            control.test_logic === 'block_author_enumeration' ||
+            control.test_logic === 'verify_rest_lockdown' ||
+            controlPath.includes('/wp-json/wp/v2/users') ||
+            controlPath.includes('/?author=1')
+          );
+
+          if (shouldNormalizeLogin) {
+            nextControl = loginErrorControl(control);
+          }
+        } else if (
+          isPingbackSurface &&
+          control.type === 'test_action' &&
+          (control.test_logic === 'check_headers' || control.test_logic === 'block_xmlrpc' || label.includes('xml-rpc')) &&
+          (controlPath.includes('xmlrpc.php') || label.includes('header verification') || label.includes('xml-rpc'))
+        ) {
+          nextControl = xmlRpcControl(control);
+        }
+
+        const dedupeKey = `${nextControl.type || ''}:${nextControl.key || ''}:${nextControl.label || ''}:${nextControl.test_logic || ''}`.toLowerCase();
+        if (nextControl.type === 'test_action' && seen.has(dedupeKey)) {
+          return acc;
+        }
+        if (nextControl.type === 'test_action') {
+          seen.add(dedupeKey);
+        }
+        acc.push(nextControl);
+        return acc;
+      }, []);
+    }, [schema, feature, verificationFeatureData]);
     const [localAlert, setLocalAlert] = useState(null);
     const [statusMap, setStatusMap] = useState({});
+    const statusTimersRef = useRef({});
+
+    useEffect(() => () => {
+      Object.values(statusTimersRef.current || {}).forEach(timer => {
+        if (timer) {
+          clearTimeout(timer);
+        }
+      });
+      statusTimersRef.current = {};
+    }, []);
 
     if (!schema || !schema.controls || !Array.isArray(schema.controls)) {
       return el('div', { style: { padding: '20px', textAlign: 'center', color: '#999', fontStyle: 'italic' } },
@@ -1832,7 +2219,7 @@ var vaptLog = window.vaptLog || {
 
       switch (type) {
         case 'test_action':
-          return el(TestRunnerControl, { key: uniqueKey, control, featureData: currentData, featureKey: feature.key || feature.id, globalProtection: globalProtection, showTechnicalTrace: showTechnicalTrace, showVerificationDetails: showVerificationDetails });
+          return el(TestRunnerControl, { key: uniqueKey, control, featureData: verificationFeatureData, featureKey: feature.key || feature.id, globalProtection: globalProtection, showTechnicalTrace: showTechnicalTrace, showVerificationDetails: showVerificationDetails });
 
         case 'button':
           return el('div', { key: uniqueKey, style: { marginBottom: '15px' } }, [
@@ -1874,13 +2261,11 @@ var vaptLog = window.vaptLog || {
           };
 
           const statusHeader = isEnforced ?
-            el('div', { style: { color: '#475569', background: '#f8fafc', padding: '6px 10px', borderRadius: '4px', fontWeight: '800', marginBottom: '10px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px', border: '1px solid #cbd5e1', flexDirection: 'column', alignItems: 'flex-start' } }, [
-              el(Icon, { icon: 'info-outline', size: 14 }),
+            el('div', { style: { color: '#475569', background: '#f8fafc', padding: '6px 10px', borderRadius: '4px', fontWeight: '800', marginBottom: '10px', fontSize: '11px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', border: '1px solid #cbd5e1' } }, [
               el('span', null, __('SNIPPET PREVIEW', 'vaptsecure')),
               el('span', { style: { fontSize: '10px', fontWeight: '600', color: '#64748b' } }, __('This is the generated code shape. Verification uses a fresh file audit.', 'vaptsecure'))
             ]) :
-            el('div', { style: { color: '#475569', background: '#f8fafc', padding: '6px 10px', borderRadius: '4px', fontWeight: '800', marginBottom: '10px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px', border: '1px solid #cbd5e1', flexDirection: 'column', alignItems: 'flex-start' } }, [
-              el(Icon, { icon: 'info-outline', size: 14 }),
+            el('div', { style: { color: '#475569', background: '#f8fafc', padding: '6px 10px', borderRadius: '4px', fontWeight: '800', marginBottom: '10px', fontSize: '11px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', border: '1px solid #cbd5e1' } }, [
               el('span', null, __('SNIPPET PREVIEW', 'vaptsecure')),
               el('span', { style: { fontSize: '10px', fontWeight: '600', color: '#64748b' } }, __('This is not file status. Verification uses a fresh file audit.', 'vaptsecure'))
             ]);
@@ -1889,68 +2274,7 @@ var vaptLog = window.vaptLog || {
             el(ToggleControl, {
               disabled: globalProtection === false,
               label: isCompact ? '' : el('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } }, [
-                el('strong', { style: { fontSize: '12px', color: '#334155' } }, safeRender(label)),
-                el(Tooltip, {
-                  text: el('div', { style: { padding: '12px', maxWidth: '450px', maxHeight: '500px', overflowY: 'auto', background: '#1e293b', borderRadius: '8px' } }, [
-                    el('div', { style: { fontWeight: '700', marginBottom: '12px', fontSize: '11px', textTransform: 'uppercase', color: '#94a3b8', borderBottom: '1px solid #334155', paddingBottom: '6px', letterSpacing: '0.05em' } }, __('Technical Trace & Enforcement', 'vaptsecure')),
-                    statusHeader,
-                    feature.platform_implementations && Object.keys(feature.platform_implementations).length > 0 ?
-                      Object.entries(feature.platform_implementations)
-                        .filter(([name, impl]) => {
-                          const n = name.toLowerCase();
-                          const d = activeDriver.toLowerCase();
-                          if (d === 'htaccess') return n.includes('htaccess') || n.includes('apache');
-                          if (d === 'config' || d === 'wp_config' || d === 'wp-config') return n.includes('config');
-                          if (d === 'nginx') return n.includes('nginx');
-                          if (d === 'cloudflare') return n.includes('cloudflare');
-                          if (d === 'iis') return n.includes('iis');
-                          if (d === 'hook' || d === 'php_functions' || d === 'wordpress') return n.includes('hook') || n.includes('functions') || n.includes('wordpress');
-                          return true;
-                        })
-                        .map(([name, impl], idx) => {
-                          let code = impl.wrapped_code || impl.code || (schema.enforcement?.mappings && schema.enforcement?.mappings[key]);
-                          if (!code) return null;
-                          const featureMarker = schema.feature_key || feature.risk_id || feature.RiskID || key || 'unknown';
-                          if (activeDriver === 'htaccess') {
-                            code = String(code).replace(/^\s*#\s*(?:BEGIN|END)\s+VAPT\s+\S+\s*$/gmi, '').trim();
-                            const alreadyWrapped = /X-VAPT-Enforced|BEGIN VAPT SECURITY RULES/im.test(code);
-                            if (!alreadyWrapped) {
-                              code = `# ${featureMarker}\n<IfModule mod_headers.c>\n    Header set X-VAPT-Enforced "htaccess"\n</IfModule>\n\n${code}`;
-                            }
-                          }
-
-                          let targetFile = impl.target_file || (activeDriver === 'htaccess' ? '.htaccess' : (activeDriver.includes('config') ? 'wp-config.php' : 'root'));
-                          if (activeDriver === 'hook' || activeDriver === 'php_functions') targetFile = 'vapt-functions.php';
-
-                          let fullPath = '';
-                          if (targetFile === 'wp-config.php') fullPath = (vSettings.abspath || '') + 'wp-config.php';
-                          else if (targetFile === '.htaccess') fullPath = (vSettings.abspath || '') + '.htaccess';
-                          else if (targetFile === 'vapt-functions.php') fullPath = (vSettings.pluginPath || '') + 'vapt-functions.php';
-                          else if (targetFile === 'web.config') fullPath = (vSettings.abspath || '') + 'web.config';
-                          else if (targetFile.includes('vapt-nginx-rules')) fullPath = (vSettings.uploadPath || '') + '/vapt-nginx-rules.conf';
-
-                          const displayPath = fullPath ? getShortPath(fullPath) : targetFile;
-                          let displayName = name;
-
-                          return el('div', { key: idx, style: { marginBottom: '15px' } }, [
-                            el('div', { style: { fontSize: '10px', color: '#94a3b8', marginBottom: '6px', display: 'flex', flexDirection: 'column', gap: '2px' } }, [
-                              el('div', { style: { fontFamily: 'monospace', color: '#38bdf8', fontSize: '11px', wordBreak: 'break-all', fontWeight: '700' } }, displayPath)
-                            ]),
-                            el('pre', { style: { margin: 0, fontSize: '9px', background: '#0f172a', color: isEnforced ? '#e2e8f0' : '#475569', padding: '12px', borderRadius: '6px', overflowX: 'auto', border: '1px solid #334155', whiteSpace: 'pre-wrap', borderLeft: isEnforced ? '3px solid #22c55e' : '3px solid #ef4444' } }, code)
-                          ]);
-                        }) :
-                      (mapping ? el('div', [
-                        el('div', { style: { fontSize: '10px', color: '#94a3b8', marginBottom: '6px' } }, [
-                          el('div', { style: { fontFamily: 'monospace', color: '#38bdf8', fontSize: '11px', wordBreak: 'break-all', fontWeight: '700' } }, (activeDriver === 'htaccess' ? './.htaccess' : (activeDriver.includes('config') ? './wp-config.php' : (activeDriver === 'hook' || activeDriver === 'php_functions' ? 'VAPT-Secure/vapt-functions.php' : './' + activeTarget))))
-                        ]),
-                        el('pre', { style: { margin: 0, fontSize: '9px', background: '#0f172a', color: isEnforced ? '#e2e8f0' : '#475569', padding: '10px', borderRadius: '6px', overflowX: 'auto', border: '1px solid #334155', whiteSpace: 'pre-wrap' } }, (
-                          activeDriver === 'htaccess' && !/X-VAPT-Enforced|BEGIN VAPT SECURITY RULES/im.test(mapping)
-                            ? `# ${schema.feature_key || feature.risk_id || feature.RiskID || key || 'unknown'}\n<IfModule mod_headers.c>\n    Header set X-VAPT-Enforced "htaccess"\n</IfModule>\n\n${String(mapping).replace(/^\s*#\s*(?:BEGIN|END)\s+VAPT\s+\S+\s*$/gmi, '').trim()}`
-                            : mapping
-                        ))
-                      ]) : el('em', { style: { color: '#64748b', fontSize: '11px' } }, __('No technical code mapping defined for this control.', 'vaptsecure')))
-                  ])
-                }, el(Icon, { icon: 'info-outline', size: 14, style: { color: '#94a3b8', cursor: 'help' } }))
+                el('strong', { style: { fontSize: '12px', color: '#334155' } }, safeRender(label))
               ]),
               help: safeRender(control.description || help),
               checked: toBool(value),
@@ -1958,6 +2282,10 @@ var vaptLog = window.vaptLog || {
                 const isRemoval = toBool(value) && !val;
                 const progressMsg = isRemoval ? __("Removing...", "vaptsecure") : __("Applying...", "vaptsecure");
                 const successMsg = isRemoval ? __("Protection Disabled", "vaptsecure") : __("Protection Enabled", "vaptsecure");
+                if (statusTimersRef.current[key]) {
+                  clearTimeout(statusTimersRef.current[key]);
+                  delete statusTimersRef.current[key];
+                }
 
                 setStatusMap(prev => ({
                   ...prev,
@@ -1984,6 +2312,14 @@ var vaptLog = window.vaptLog || {
                         auditSummary
                       }
                     }));
+                    statusTimersRef.current[key] = setTimeout(() => {
+                      setStatusMap(prev => {
+                        const next = { ...prev };
+                        delete next[key];
+                        return next;
+                      });
+                      delete statusTimersRef.current[key];
+                    }, 3000);
                   })
                   .catch((error) => {
                     const errMsg = error?.message || error?.data?.message || __('Save Failed', 'vaptsecure');
@@ -1995,6 +2331,14 @@ var vaptLog = window.vaptLog || {
                         auditSummary: []
                       }
                     }));
+                    statusTimersRef.current[key] = setTimeout(() => {
+                      setStatusMap(prev => {
+                        const next = { ...prev };
+                        delete next[key];
+                        return next;
+                      });
+                      delete statusTimersRef.current[key];
+                    }, 3000);
                   });
               }
             }),
@@ -2166,7 +2510,7 @@ var vaptLog = window.vaptLog || {
     const verificationTypes = ['verification_action', 'automated_test', 'test_action', 'risk_indicators', 'assurance_badges'];
     const guideTypes = ['test_checklist', 'evidence_list', 'remediation_steps', 'evidence_uploader'];
 
-    const mainControlsRaw = schema.controls.filter(c => {
+    const mainControlsRaw = normalizedControls.filter(c => {
       const isVerification = verificationTypes.includes(c.type);
       const isGuide = guideTypes.includes(c.type);
 
@@ -2227,9 +2571,9 @@ var vaptLog = window.vaptLog || {
       return true;
     });
 
-    const riskControls = schema.controls.filter(c => c.type === 'risk_indicators');
-    const badgeControls = schema.controls.filter(c => c.type === 'assurance_badges');
-    const otherVerificationControls = schema.controls.filter(c => {
+    const riskControls = normalizedControls.filter(c => c.type === 'risk_indicators');
+    const badgeControls = normalizedControls.filter(c => c.type === 'assurance_badges');
+    const otherVerificationControls = normalizedControls.filter(c => {
       const isVerification = verificationTypes.includes(c.type);
       if (!isVerification) return false;
       

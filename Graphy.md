@@ -2,12 +2,12 @@
 
 ## Project: VAPTSecure-Clean
 
-Generated: 2026-05-06 15:10:21
+Generated: 2026-05-07 08:49:28
 
 ### File Structure Summary
-- Total Files: 1520
+- Total Files: 1521
 - Total Directories: 259
-- File Extensions: .rules: 5, .agrules: 4, .md: 50, .json: 59, .rar: 2, .php: 42, .ps1: 2, .zip: 10, .yml: 2, .js: 211, .cjs: 194, .cts: 194, .ts: 706, .css: 2, .jsx: 5, .clinerules: 1, .roorules: 1, .windsurfrules: 1, .txt: 2, .ftp: 1, .png: 1
+- File Extensions: .rules: 5, .agrules: 4, .md: 51, .json: 59, .rar: 2, .php: 42, .ps1: 2, .zip: 10, .yml: 2, .js: 211, .cjs: 194, .cts: 194, .ts: 706, .css: 2, .jsx: 5, .clinerules: 1, .roorules: 1, .windsurfrules: 1, .txt: 2, .ftp: 1, .png: 1
 
 ### Directory Tree
 ├── .ai
@@ -1773,6 +1773,7 @@ Generated: 2026-05-06 15:10:21
    ├── BuildGenerator-Issues-and-Fixes.md
    ├── BuildGenerator-Plan.md
    ├── BuildGenerator.md
+   ├── ClientBuild-SSoT-Discrepancy-Map.md
 ├── .clinerules
 ├── .roorules
 ├── .rules
@@ -1842,7 +1843,7 @@ Generated: 2026-05-06 15:10:21
 - G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/vapt_driver_manifest_v2.0.json
 - G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/scripts/Query-Risk.ps1
 
-... and 1470 more files
+... and 1471 more files
 
 ### Maintenance
 This file is auto-generated. To update it:

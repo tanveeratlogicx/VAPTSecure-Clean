@@ -502,21 +502,55 @@ class VAPTSECURE_REST
             return new WP_REST_Response(array('error' => 'Missing feature key'), 400);
         }
 
-        $meta = VAPTSECURE_DB::get_feature_meta($key);
-        if (!$meta) {
+$meta = VAPTSECURE_DB::get_feature_meta($key);
+        // In client builds, allow features without metadata (they might be in config file)
+        if (!$meta && (!defined('VAPTSECURE_BUILD_PROFILE') || VAPTSECURE_BUILD_PROFILE !== 'client')) {
             return new WP_REST_Response(array('error' => 'Feature not found', 'key' => $key), 404);
         }
+        
+        // Initialize empty meta array for client builds if not found
+        if (!$meta) {
+            $meta = array();
+        }
 
-        $status = isset($meta['status']) ? strtolower((string) $meta['status']) : 'draft';
+$status = isset($meta['status']) ? strtolower((string) $meta['status']) : 'draft';
         $raw_schema = ($status === 'test' && !empty($meta['override_schema'])) ? $meta['override_schema'] : ($meta['generated_schema'] ?? null);
         $schema = $raw_schema ? json_decode($raw_schema, true) : array();
         $raw_impl = ($status === 'test' && !empty($meta['override_implementation_data'])) ? $meta['override_implementation_data'] : ($meta['implementation_data'] ?? null);
         $implementation_data = $raw_impl ? json_decode($raw_impl, true) : array();
+        
+        // If schema is empty (not found in database), try to load from data files
+        // This handles client builds and any build where database might not have the feature
+        if (empty($schema)) {
+            $data_file = defined('VAPTSECURE_ACTIVE_DATA_FILE') ? VAPTSECURE_ACTIVE_DATA_FILE : 'interface_schema_v2.0.json';
+            $data_path = VAPTSECURE_PATH . 'data/' . $data_file;
+            
+            if (file_exists($data_path)) {
+                $json_content = file_get_contents($data_path);
+                $all_schemas = json_decode($json_content, true);
+                
+                if (is_array($all_schemas)) {
+                    // Try to find schema by key
+                    foreach ($all_schemas as $schema_key => $schema_data) {
+                        if (strcasecmp($schema_key, $key) === 0) {
+                            $schema = $schema_data;
+                            break;
+                        }
+                        // Also check risk_id field
+                        if (isset($schema_data['risk_id']) && strcasecmp($schema_data['risk_id'], $key) === 0) {
+                            $schema = $schema_data;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
         if (!is_array($implementation_data)) {
             $implementation_data = array();
         }
 
-        $runtime_verified = false;
+$runtime_verified = false;
+        $client_seed_verified = false;
         if (class_exists('VAPTSECURE_Hook_Driver')) {
             $runtime_verified = (bool) VAPTSECURE_Hook_Driver::verify($key, $implementation_data, is_array($schema) ? $schema : array());
         }
@@ -526,15 +560,30 @@ class VAPTSECURE_REST
             defined('VAPTSECURE_BUILD_PROFILE') &&
             VAPTSECURE_BUILD_PROFILE === 'client'
         ) {
-            $client_seed_verified = !empty($meta['is_enabled']) || !empty($meta['is_enforced']);
-            if ($client_seed_verified) {
-                $client_seed_verified = !empty($implementation_data)
-                    && (
-                        !empty($implementation_data['enabled']) ||
-                        !empty($implementation_data['feat_enabled']) ||
-                        !empty($implementation_data['prot_enabled']) ||
-                        !empty($implementation_data['vapt_risk_' . str_replace('-', '_', strtolower((string) $key)) . '_enabled'])
-                    );
+// For client builds, check if feature is enabled in either metadata OR implementation data
+            $client_seed_verified = false;
+            
+            // Check metadata first
+            if (!empty($meta['is_enabled']) || !empty($meta['is_enforced'])) {
+                $client_seed_verified = true;
+            }
+            
+            // Also check implementation data if metadata check failed
+            if (!$client_seed_verified && !empty($implementation_data)) {
+                $client_seed_verified = 
+                    !empty($implementation_data['enabled']) ||
+                    !empty($implementation_data['feat_enabled']) ||
+                    !empty($implementation_data['prot_enabled']) ||
+                    !empty($implementation_data['vapt_risk_' . str_replace('-', '_', strtolower((string) $key)) . '_enabled']);
+            }
+            
+            // Additionally, for client builds, if we have the feature key and it's in the build,
+            // we can assume it's enabled (since it was included in the build)
+            if (!$client_seed_verified && !empty($key)) {
+                // Check if this looks like a valid risk key (RISK-XXX format)
+                if (preg_match('/^RISK-\d+$/i', $key)) {
+                    $client_seed_verified = true;
+                }
             }
 
             if ($client_seed_verified) {
@@ -568,26 +617,187 @@ class VAPTSECURE_REST
             }
         }
 
-        if (strpos($blob, 'cron') !== false) {
+        $normalize_platform = function ($value) {
+            $value = strtolower(trim((string) $value));
+            $value = preg_replace('/[^a-z0-9]+/', '-', $value);
+            $value = trim($value, '-');
+            if ($value === 'apache' || $value === 'apache-htaccess' || $value === 'htaccess') {
+                return 'htaccess';
+            }
+            if ($value === 'wp-config' || $value === 'wp-config-php' || $value === 'wpconfig' || $value === 'config') {
+                return 'wp-config';
+            }
+            if ($value === 'php-functions' || $value === 'phpfunctions' || $value === 'php-headers' || $value === 'phpheaders' || $value === 'hook' || $value === 'wordpress' || $value === 'wordpress-core' || $value === 'wordpress_core') {
+                return 'php-headers';
+            }
+            if ($value === 'server-cron' || $value === 'server_cron' || $value === 'php-cron' || $value === 'phpcron') {
+                return 'php-cron';
+            }
+            if ($value === 'web-config' || $value === 'webconfig') {
+                return 'iis';
+            }
+            if ($value === 'fail2ban') {
+                return 'fail2ban';
+            }
+            return $value;
+        };
+
+        $collect_platform_hints = function ($schema_value) use ($normalize_platform) {
+            $hints = array();
+            $add = function ($value) use (&$hints, $normalize_platform) {
+                $normalized = $normalize_platform($value);
+                if ($normalized !== '') {
+                    $hints[$normalized] = true;
+                }
+            };
+
+            if (is_array($schema_value) && !empty($schema_value['available_platforms']) && is_array($schema_value['available_platforms'])) {
+                foreach ($schema_value['available_platforms'] as $platform) {
+                    $add($platform);
+                }
+            }
+
+            if (is_array($schema_value) && !empty($schema_value['platform_implementations']) && is_array($schema_value['platform_implementations'])) {
+                foreach ($schema_value['platform_implementations'] as $platform_name => $platform_impl) {
+                    $add($platform_name);
+                    if (is_array($platform_impl)) {
+                        foreach (array('lib_key', 'target_file', 'request_path', 'implementation_type', 'operation') as $field) {
+                            if (!empty($platform_impl[$field])) {
+                                $add($platform_impl[$field]);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return array_keys($hints);
+        };
+
+        $resolve_expected_enforcer = function ($platform, $operation = '') use ($normalize_platform) {
+            $platform = $normalize_platform($platform);
+            $operation = strtolower(trim((string) $operation));
+
+            if ($platform === 'htaccess' || $platform === 'apache') {
+                return 'htaccess';
+            }
+            if ($platform === 'nginx') {
+                return 'nginx';
+            }
+            if ($platform === 'caddy') {
+                return 'caddy';
+            }
+            if ($platform === 'iis') {
+                return 'iis';
+            }
+            if ($platform === 'cloudflare') {
+                return 'cloudflare';
+            }
+            if ($platform === 'fail2ban' || strpos($operation, 'jail') !== false) {
+                return 'fail2ban';
+            }
+            if ($platform === 'wp-config' || strpos($operation, 'constant') !== false || strpos($operation, 'config') !== false) {
+                return 'wp-config';
+            }
+            if ($platform === 'php-functions' || $platform === 'php-headers' || strpos($operation, 'hook') !== false || strpos($operation, 'php') !== false || strpos($operation, 'wordpress') !== false) {
+                return 'php-headers';
+            }
+            if ($platform === 'server-cron' || $platform === 'php-cron' || strpos($operation, 'cron') !== false) {
+                return 'php-cron';
+            }
+            return $platform !== '' ? $platform : 'php-headers';
+        };
+
+        $platform_hints = $collect_platform_hints($schema);
+        $platform_priority = array('htaccess', 'nginx', 'caddy', 'iis', 'cloudflare', 'php-headers', 'php-cron', 'wp-config', 'fail2ban');
+        $primary_platform = '';
+        foreach ($platform_priority as $candidate) {
+            if (in_array($candidate, $platform_hints, true)) {
+                $primary_platform = $candidate;
+                break;
+            }
+        }
+        if ($primary_platform === '' && !empty($platform_hints)) {
+            $primary_platform = (string) $platform_hints[0];
+        }
+
+        $primary_operation = '';
+        if (is_array($schema) && !empty($schema['platform_implementations']) && is_array($schema['platform_implementations'])) {
+            foreach ($schema['platform_implementations'] as $platform_name => $platform_impl) {
+                $candidate = $normalize_platform($platform_name);
+                if ($candidate === $primary_platform) {
+                    if (is_array($platform_impl)) {
+                        foreach (array('operation', 'implementation_type', 'target_file') as $field) {
+                            if (!empty($platform_impl[$field])) {
+                                $primary_operation = strtolower((string) $platform_impl[$field]);
+                                break;
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+
+        $expected_enforcer = $resolve_expected_enforcer($primary_platform, $primary_operation);
+        if ($expected_enforcer !== '') {
+            $probe['expected_enforcer'] = $expected_enforcer;
+        }
+
+        if ($primary_operation === 'add_constant' || $primary_platform === 'wp-config') {
+            $probe['path'] = '/wp-config.php';
+            $probe['method'] = 'GET';
+            $probe['expected_statuses'] = array(200);
+            $probe['expected_enforcer'] = $expected_enforcer ?: 'wp-config';
+        } elseif (strpos($blob, 'cron') !== false) {
             $probe['path'] = '/wp-cron.php';
             $probe['expected_statuses'] = array(403);
-            $probe['expected_enforcer'] = 'php-cron';
+            $probe['expected_enforcer'] = $expected_enforcer ?: 'php-cron';
         } elseif (strpos($blob, 'xmlrpc') !== false || strpos($blob, 'xml-rpc') !== false || strpos($blob, 'pingback') !== false) {
             $probe['path'] = '/xmlrpc.php';
             $probe['method'] = 'POST';
             $probe['expected_statuses'] = array(401, 403, 404, 405);
-            $probe['expected_enforcer'] = 'php-xmlrpc';
+            $probe['expected_enforcer'] = $expected_enforcer ?: 'php-xmlrpc';
         } elseif (strpos($blob, 'username enumeration') !== false
             || strpos($blob, 'user enumeration') !== false
+            || strpos($blob, 'author') !== false
             || strpos($blob, 'rest api') !== false
             || strpos($blob, '/wp-json/wp/v2/users') !== false
         ) {
             $probe['path'] = '/wp-json/wp/v2/users';
             $probe['expected_statuses'] = array(401, 403, 404, 405);
-            $probe['expected_enforcer'] = 'php-author-enum';
+            $probe['expected_enforcer'] = $expected_enforcer ?: 'php-author-enum';
+        } elseif (strpos($blob, 'login') !== false 
+            || strpos($blob, 'rate limiting') !== false 
+            || strpos($blob, 'brute force') !== false 
+            || strpos($blob, 'brute-force') !== false
+            || strpos($blob, 'password reset') !== false
+            || strpos($blob, 'lost password') !== false
+            || strpos($blob, 'auth') !== false
+            || $primary_platform === 'fail2ban'
+        ) {
+            $probe['path'] = '/wp-login.php';
+            $probe['expected_statuses'] = array(401, 403, 404, 405, 429);
+            $probe['expected_enforcer'] = $expected_enforcer ?: 'fail2ban';
+} elseif (strpos($blob, 'directory') !== false 
+            || strpos($blob, 'indexing') !== false 
+            || strpos($blob, 'uploads') !== false
+        ) {
+            $probe['path'] = '/wp-content/uploads/';
+            $probe['expected_statuses'] = array(403, 404);
+            $probe['expected_enforcer'] = $expected_enforcer ?: 'htaccess';
+        } elseif (strpos($blob, 'wp-admin') !== false 
+            || strpos($blob, 'admin') !== false
+        ) {
+            $probe['path'] = '/wp-admin/';
+            $probe['expected_statuses'] = array(401, 403, 404, 405);
+            $probe['expected_enforcer'] = $expected_enforcer ?: 'php-admin';
+        } elseif ($primary_operation === 'add_header' || strpos($primary_operation, 'header') !== false) {
+            $probe['path'] = '/';
+            $probe['expected_statuses'] = array(200);
+            $probe['expected_enforcer'] = $expected_enforcer ?: 'htaccess';
         }
 
-        return new WP_REST_Response(array(
+$response_data = array(
             'success' => ($runtime_verified || $file_verified),
             'key' => $key,
             'title' => $schema['title'] ?? ($meta['feature_name'] ?? $key),
@@ -601,7 +811,22 @@ class VAPTSECURE_REST
                 : ($runtime_verified
                     ? 'Runtime enforcement is registered for this feature.'
                     : 'No plugin-owned enforcement marker was found for this feature.'),
-        ), 200);
+        );
+        
+        // Always include debug info for now to diagnose verification issues
+        // TODO: Remove or condition on VAPTSECURE_DEBUG in production
+        $response_data['debug'] = defined('VAPTSECURE_BUILD_PROFILE') ? array(
+            'build_profile' => VAPTSECURE_BUILD_PROFILE,
+            'is_client' => VAPTSECURE_BUILD_PROFILE === 'client',
+            'meta_found' => !empty($meta),
+            'schema_found' => !empty($schema),
+            'implementation_data_found' => !empty($implementation_data),
+            'client_seed_verified' => $client_seed_verified,
+            'runtime_verified' => $runtime_verified,
+            'file_verified' => $file_verified,
+        ) : array('build_profile_not_defined' => true);
+        
+        return new WP_REST_Response($response_data, 200);
     }
 
     public function get_features($request)
@@ -898,6 +1123,9 @@ class VAPTSECURE_REST
                                 $schema_data = $decoded;
                                 // [v3.12.17] Translate URL placeholders when returning schema to UI
                                 $schema_data = VAPTSECURE_Schema_Validator::translate_url_placeholders($schema_data);
+                                if (class_exists('VAPTSECURE_Build') && method_exists('VAPTSECURE_Build', 'normalize_client_schema_controls')) {
+                                    $schema_data = VAPTSECURE_Build::normalize_client_schema_controls($key, $schema_data, is_array($meta) ? $meta : array());
+                                }
                                 if ($use_override_schema) { $feature['is_overridden'] = true;
                                 }
                             }

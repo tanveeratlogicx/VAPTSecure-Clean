@@ -66,6 +66,7 @@ class VAPTSECURE_Build
             foreach ($data['risk_interfaces'] as $risk_key => $item) {
                 $candidate = strtoupper(trim((string) ($item['risk_id'] ?? $risk_key)));
                 if ($candidate !== '' && $is_released_and_allowed($candidate)) {
+                    self::hydrate_platform_implementations($item);
                     $filtered[$risk_key] = $item;
                 }
             }
@@ -78,6 +79,7 @@ class VAPTSECURE_Build
                 }
                 $candidate = strtoupper(trim((string) ($item['risk_id'] ?? $item['id'] ?? $item['key'] ?? $risk_key)));
                 if ($candidate !== '' && $is_released_and_allowed($candidate)) {
+                    self::hydrate_platform_implementations($item);
                     $filtered[$risk_key] = $item;
                 }
             }
@@ -207,6 +209,68 @@ class VAPTSECURE_Build
         return $catalog;
     }
 
+    private static function load_pattern_library_data()
+    {
+        static $pattern_library = null;
+        if (is_array($pattern_library)) {
+            return $pattern_library;
+        }
+
+        $pattern_library = array();
+        $path = VAPTSECURE_PATH . 'data/enforcer_pattern_library_v2.0.json';
+        if (!file_exists($path)) {
+            return $pattern_library;
+        }
+
+        $data = json_decode((string) file_get_contents($path), true);
+        if (is_array($data) && !empty($data)) {
+            $pattern_library = $data;
+        }
+
+        return $pattern_library;
+    }
+
+    private static function hydrate_platform_implementations(array &$item)
+    {
+        if (empty($item['platform_implementations']) || !is_array($item['platform_implementations'])) {
+            return;
+        }
+
+        $pattern_lib = self::load_pattern_library_data();
+        if (empty($pattern_lib)) {
+            return;
+        }
+
+        foreach ($item['platform_implementations'] as $plat_key => &$plat_data) {
+            if (!is_array($plat_data) || empty($plat_data['code_ref'])) {
+                continue;
+            }
+
+            $code_ref_clean = preg_replace('/^.*?\.patterns\./', 'patterns.', (string) $plat_data['code_ref']);
+            $ref_path = explode('.', $code_ref_clean);
+            $current_node = $pattern_lib;
+
+            foreach ($ref_path as $node) {
+                if (is_array($current_node) && isset($current_node[$node])) {
+                    $current_node = $current_node[$node];
+                } else {
+                    $current_node = null;
+                    break;
+                }
+            }
+
+            if (is_string($current_node)) {
+                $plat_data['code'] = $current_node;
+            } elseif (is_array($current_node) && isset($current_node['code'])) {
+                $plat_data['code'] = $current_node['code'];
+                if (isset($current_node['wrapped_code'])) {
+                    $plat_data['wrapped_code'] = $current_node['wrapped_code'];
+                }
+            }
+        }
+        unset($plat_data);
+    }
+
     private static function find_catalog_feature_item($feature_key)
     {
         $feature_key = strtoupper(trim((string) $feature_key));
@@ -250,37 +314,185 @@ class VAPTSECURE_Build
         return array();
     }
 
+    private static function normalize_catalog_enforcer_label($value)
+    {
+        $value = strtolower(trim((string) $value));
+        if ($value === '') {
+            return '';
+        }
+
+        $value = preg_replace('/[^a-z0-9]+/', '_', $value);
+        $value = trim((string) $value, '_');
+
+        $aliases = array(
+            'apache' => 'htaccess',
+            'apache_htaccess' => 'htaccess',
+            'apache2' => 'htaccess',
+            'apache2_htaccess' => 'htaccess',
+            'htaccess' => 'htaccess',
+            'dot_htaccess' => 'htaccess',
+            'wp_config' => 'wp-config',
+            'wpconfig' => 'wp-config',
+            'wp_config_php' => 'wp-config',
+            'wpconfigphp' => 'wp-config',
+            'config' => 'wp-config',
+            'nginx' => 'nginx',
+            'caddy' => 'caddy',
+            'cloudflare' => 'cloudflare',
+            'iis' => 'iis',
+            'web_config' => 'iis',
+            'webconfig' => 'iis',
+            'fail2ban' => 'fail2ban',
+            'php_functions' => 'php-headers',
+            'phpfunctions' => 'php-headers',
+            'php_headers' => 'php-headers',
+            'phpheaders' => 'php-headers',
+            'hook' => 'php-headers',
+            'wordpress' => 'php-headers',
+            'wordpress_core' => 'php-headers',
+            'wordpresscore' => 'php-headers',
+            'server_cron' => 'php-cron',
+            'servercron' => 'php-cron',
+            'php_cron' => 'php-cron',
+            'phpcron' => 'php-cron',
+            'cron' => 'php-cron',
+        );
+
+        return isset($aliases[$value]) ? $aliases[$value] : str_replace('_', '-', $value);
+    }
+
     private static function detect_catalog_primary_enforcer(array $item)
     {
         if (empty($item['platform_implementations']) || !is_array($item['platform_implementations'])) {
             return '';
         }
 
-        $preferred = array(
-            '.htaccess' => 'htaccess',
-            'htaccess' => 'htaccess',
-            'wp-config.php' => 'wp-config',
-            'wp-config' => 'wp-config',
-            'wp_config' => 'wp-config',
-            'hook' => 'hook',
-            'php_functions' => 'hook',
-            'iis' => 'iis',
-            'caddy' => 'caddy',
-            'cloudflare' => 'cloudflare',
-            'nginx' => 'nginx',
-        );
+        foreach ($item['platform_implementations'] as $platform_name => $platform_impl) {
+            $candidates = array();
+            if (is_array($platform_impl)) {
+                foreach (array('lib_key', 'enforcer', 'driver', 'implementation_type', 'operation', 'target_file') as $field) {
+                    if (!empty($platform_impl[$field])) {
+                        $candidates[] = $platform_impl[$field];
+                    }
+                }
+            } elseif (!empty($platform_impl)) {
+                $candidates[] = $platform_impl;
+            }
 
-        foreach ($preferred as $needle => $driver) {
-            foreach ($item['platform_implementations'] as $platform_name => $platform_impl) {
-                $normalized = strtolower(str_replace(array(' ', '-', '.'), '', (string) $platform_name));
-                $needle_norm = strtolower(str_replace(array(' ', '-', '.'), '', (string) $needle));
-                if ($normalized === $needle_norm || strpos($normalized, $needle_norm) !== false || strpos($needle_norm, $normalized) !== false) {
-                    return $driver;
+            $candidates[] = $platform_name;
+
+            foreach ($candidates as $candidate) {
+                $normalized = self::normalize_catalog_enforcer_label($candidate);
+                if ($normalized !== '') {
+                    return $normalized;
                 }
             }
         }
 
         return '';
+    }
+
+    public static function normalize_client_schema_controls($feature_key, array $schema = array(), array $feature_meta = array())
+    {
+        if (empty($schema) || !is_array($schema) || empty($schema['controls']) || !is_array($schema['controls'])) {
+            return $schema;
+        }
+
+        $blob_parts = array(
+            $feature_key,
+            isset($schema['title']) ? $schema['title'] : '',
+            isset($schema['label']) ? $schema['label'] : '',
+            isset($schema['name']) ? $schema['name'] : '',
+            isset($schema['summary']) ? $schema['summary'] : '',
+            isset($schema['description']) ? $schema['description'] : '',
+            isset($schema['remediation']) ? $schema['remediation'] : '',
+            !empty($schema['platform_implementations']) ? wp_json_encode($schema['platform_implementations']) : '',
+            !empty($schema['available_platforms']) ? wp_json_encode($schema['available_platforms']) : '',
+            !empty($feature_meta) ? wp_json_encode($feature_meta) : '',
+        );
+        $feature_blob = strtolower(implode(' ', array_filter(array_map('strval', $blob_parts))));
+        $is_login_error_surface = (bool) preg_match('/wp-login\.php|login_errors|invalid credentials|username enumeration.*login|login.*username enumeration/i', $feature_blob);
+        $is_pingback_surface = (bool) preg_match('/pingback|xmlrpc|xml-rpc/i', $feature_blob);
+
+        $normalize_login_control = function (array $control) use ($feature_key) {
+            $control['label'] = 'Login Error Consistency Check';
+            $control['key'] = 'verify_login_error_disclosure';
+            $control['test_logic'] = 'universal_probe';
+            $control['test_config'] = array(
+                'method' => 'POST',
+                'path' => '/wp-login.php',
+                'params' => array(
+                    'log' => 'vaptsecure_nonexistent_user',
+                    'pwd' => 'invalid-password',
+                    'wp-submit' => 'Log In',
+                    'redirect_to' => home_url('/wp-admin/'),
+                    'testcookie' => '1',
+                ),
+                'expected_status' => array(200),
+                'expected_text' => 'Invalid credentials. Please try again.',
+                'expected_enforcer' => !empty($control['test_config']['expected_enforcer'])
+                    ? $control['test_config']['expected_enforcer']
+                    : 'php-headers',
+            );
+            $control['help'] = 'Verifies wp-login.php returns a generic login error message.';
+            return $control;
+        };
+
+        $normalize_pingback_control = function (array $control) {
+            $control['label'] = 'Test: XML-RPC Pingback Block';
+            $control['test_logic'] = 'disable_xmlrpc_pingback';
+            return $control;
+        };
+
+        $normalized_controls = array();
+        foreach ($schema['controls'] as $control) {
+            if (!is_array($control)) {
+                continue;
+            }
+
+            $label = strtolower((string) ($control['label'] ?? ''));
+            $test_logic = strtolower((string) ($control['test_logic'] ?? ''));
+            $test_path = strtolower((string) ($control['test_config']['path'] ?? ''));
+            $is_test = isset($control['type']) && $control['type'] === 'test_action';
+            $is_login_candidate = $is_login_error_surface && $is_test && (
+                strpos($label, 'a+ header verification') !== false ||
+                strpos($label, 'rest api protection check') !== false ||
+                strpos($label, 'author enumeration check') !== false ||
+                strpos($label, 'rest user enumeration') !== false ||
+                strpos($label, 'username enumeration') !== false ||
+                $test_logic === 'check_headers' ||
+                $test_logic === 'block_author_enumeration' ||
+                $test_logic === 'verify_rest_lockdown' ||
+                strpos($test_path, '/wp-json/wp/v2/users') !== false ||
+                strpos($test_path, '/?author=1') !== false
+            );
+            $is_pingback_candidate = $is_pingback_surface && $is_test && (
+                $test_logic === 'check_headers' ||
+                $test_logic === 'block_xmlrpc' ||
+                strpos($label, 'xml-rpc') !== false ||
+                strpos($test_path, 'xmlrpc.php') !== false
+            );
+
+            if ($is_login_candidate) {
+                $control = $normalize_login_control($control);
+            } elseif ($is_pingback_candidate) {
+                $control = $normalize_pingback_control($control);
+            }
+
+            $dedupe_key = strtolower(
+                (string) ($control['type'] ?? '') . ':' .
+                (string) ($control['key'] ?? '') . ':' .
+                (string) ($control['label'] ?? '') . ':' .
+                (string) ($control['test_logic'] ?? '')
+            );
+            if (isset($normalized_controls[$dedupe_key])) {
+                continue;
+            }
+            $normalized_controls[$dedupe_key] = $control;
+        }
+
+        $schema['controls'] = array_values($normalized_controls);
+        return $schema;
     }
 
     private static function synthesize_feature_meta_from_catalog($feature_key)
@@ -299,6 +511,8 @@ class VAPTSECURE_Build
         if (!isset($catalog_item['risk_id']) || trim((string) $catalog_item['risk_id']) === '') {
             $catalog_item['risk_id'] = $feature_key;
         }
+        self::hydrate_platform_implementations($catalog_item);
+        $catalog_item = self::normalize_client_schema_controls($feature_key, $catalog_item, array());
 
         $risk_suffix = str_replace('-', '_', strtolower($feature_key));
         $implementation_data = array(
@@ -373,8 +587,18 @@ class VAPTSECURE_Build
                 continue;
             }
 
+            $generated_schema = array();
+            if (isset($row['generated_schema']) && is_string($row['generated_schema']) && trim($row['generated_schema']) !== '') {
+                $decoded_schema = json_decode($row['generated_schema'], true);
+                if (is_array($decoded_schema)) {
+                    self::hydrate_platform_implementations($decoded_schema);
+                    $decoded_schema = self::normalize_client_schema_controls($key, $decoded_schema, array());
+                    $generated_schema = $decoded_schema;
+                }
+            }
+
             $out[$key] = array(
-                'generated_schema_b64' => isset($row['generated_schema']) && is_string($row['generated_schema']) ? base64_encode($row['generated_schema']) : '',
+                'generated_schema_b64' => !empty($generated_schema) ? base64_encode(json_encode($generated_schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)) : (isset($row['generated_schema']) && is_string($row['generated_schema']) ? base64_encode($row['generated_schema']) : ''),
                 'implementation_data_b64' => isset($row['implementation_data']) && is_string($row['implementation_data']) ? base64_encode($row['implementation_data']) : '',
                 'override_schema_b64' => isset($row['override_schema']) && is_string($row['override_schema']) ? base64_encode($row['override_schema']) : '',
                 'override_implementation_data_b64' => isset($row['override_implementation_data']) && is_string($row['override_implementation_data']) ? base64_encode($row['override_implementation_data']) : '',
