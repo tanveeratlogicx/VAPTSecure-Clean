@@ -374,12 +374,12 @@
         const text = parts.filter(Boolean).join(' ').toLowerCase();
         const has = (...terms) => terms.some(term => text.includes(term));
 
-if (has('cron')) return '/wp-cron.php';
-        if (has('xmlrpc', 'xml-rpc')) return '/xmlrpc.php';
+        if (text.includes('/wp-json/wp/v2/users') || has('rest api', 'endpoint disclosure', 'rest')) return '/wp-json/wp/v2/users';
+        if (text.includes('/?author=1') || has('author query', 'author archives', 'author enumeration')) return '/?author=1';
         if (has('login', 'brute', 'password reset', 'lost password', 'auth')) return '/wp-login.php';
-        if (has('author', 'user enumeration', 'username enumeration')) return '/?author=1';
+        if (has('cron')) return '/wp-cron.php';
+        if (has('xmlrpc', 'xml-rpc')) return '/xmlrpc.php';
         if (has('directory', 'indexing', 'uploads')) return '/wp-content/uploads/';
-        if (has('rest api', 'endpoint disclosure', 'rest')) return '/wp-json/wp/v2/users';
         if (has('wp-admin', 'admin')) return '/wp-admin/';
 
         return '/';
@@ -397,6 +397,24 @@ if (has('cron')) return '/wp-cron.php';
         if (normalized === 'server-cron' || normalized === 'servercron' || normalized === 'php-cron' || normalized === 'phpcron') return 'php-cron';
         if (normalized === 'web-config' || normalized === 'webconfig') return 'iis';
         return normalized;
+      };
+
+      const detectSurfaceFamily = (feature = {}, featureKey = '') => {
+        const blob = [
+          featureKey,
+          feature?.risk_id || '',
+          feature?.label || feature?.title || feature?.name || '',
+          feature?.summary || feature?.description || feature?.remediation || '',
+          feature?.platform_implementations ? JSON.stringify(feature.platform_implementations) : '',
+          feature?.available_platforms ? JSON.stringify(feature.available_platforms) : ''
+        ].filter(Boolean).join(' ').toLowerCase();
+
+        if (blob.includes('/wp-json/wp/v2/users') || blob.includes('wordpress rest api') || blob.includes('rest api')) return 'rest_users';
+        if (blob.includes('/?author=1') || blob.includes('author query') || blob.includes('author archives') || blob.includes('author enumeration')) return 'author_query';
+        if (blob.includes('/wp-login.php') || blob.includes('login_errors') || blob.includes('invalid credentials')) return 'login_error';
+        if (blob.includes('pingback') || blob.includes('xmlrpc') || blob.includes('xml-rpc')) return 'xmlrpc';
+        if (blob.includes('cron') || blob.includes('wp-cron')) return 'cron';
+        return '';
       };
 
       const collectPlatformHints = (featureData = {}) => {
@@ -491,6 +509,15 @@ if (has('cron')) return '/wp-cron.php';
       const isHeaderFlow = /header/.test(primaryOperation) || (['htaccess', 'apache', 'nginx', 'caddy', 'iis', 'cloudflare'].includes(normalizePlatformName(primaryPlatform)) && !/rewrite|block|respond|transform/.test(primaryOperation));
       const isConfigFlow = primaryPlatform === 'wp-config' || primaryPlatform === 'wpconfig' || /constant|config/.test(primaryOperation);
       const isRewriteFlow = /rewrite|block|respond|transform|url_rewrite|web_config|webconfig/.test(primaryOperation);
+      const surfaceFamily = (() => {
+        const blob = `${featureKey} ${(feature.label || feature.title || feature.name || '')} ${(feature.summary || feature.description || feature.remediation || '')} ${JSON.stringify(feature.platform_implementations || {})}`.toLowerCase();
+        if (blob.includes('/wp-json/wp/v2/users') || blob.includes('rest api') || blob.includes('wordpress rest api')) return 'rest_users';
+        if (blob.includes('/?author=1') || blob.includes('author query') || blob.includes('author archives') || blob.includes('author enumeration')) return 'author_query';
+        if (blob.includes('/wp-login.php') || blob.includes('login_errors') || blob.includes('invalid credentials')) return 'login_error';
+        if (blob.includes('pingback') || blob.includes('xmlrpc') || blob.includes('xml-rpc')) return 'xmlrpc';
+        if (blob.includes('cron') || blob.includes('wp-cron')) return 'cron';
+        return '';
+      })();
       const tests = [];
 
       if (isRateLimitFlow) {
@@ -568,51 +595,44 @@ test_config: {
       // 2. Specific Functional Probes
       const title = (feature.label || feature.title || feature.name || '').toLowerCase();
       const platformHintsForFunctional = collectPlatformHints(feature);
-      const hasRestSurface = /rest api|endpoint disclosure|wp-json/.test(`${featureKey} ${title} ${(feature.summary || feature.description || '')}`) ||
-        platformHintsForFunctional.has('rest') ||
-        platformHintsForFunctional.has('api');
-      const hasWpLoginLoginErrorSurface = /wp-login\.php|login_errors|invalid credentials/.test(`${featureKey} ${title} ${(feature.summary || feature.description || '')} ${JSON.stringify(feature.platform_implementations || {})}`.toLowerCase());
-
-      if (featureKey.includes('user-enumeration') || featureKey.includes('users') || title.includes('user enumeration') || title.includes('users') || title.includes('username enumeration')) {
-        if (hasWpLoginLoginErrorSurface) {
-          tests.push({
-            type: 'test_action',
-            id: `vapt-test-login-error-${riskId}`,
-            label: 'Login Error Consistency Check',
-            key: 'verify_login_error_disclosure',
-            test_logic: 'universal_probe',
-            test_config: {
-              method: 'POST',
-              path: '/wp-login.php',
-              params: {
-                log: 'vaptsecure_nonexistent_user',
-                pwd: 'invalid-password',
-                'wp-submit': 'Log In',
-                redirect_to: `${window.location.origin}/wp-admin/`,
-                testcookie: '1'
-              },
-              expected_status: [200],
-              expected_text: 'Invalid credentials. Please try again.',
-              expected_enforcer: expectedEnforcer
+      if (surfaceFamily === 'login_error') {
+        tests.push({
+          type: 'test_action',
+          id: `vapt-test-login-error-${riskId}`,
+          label: 'Login Error Consistency Check',
+          key: 'verify_login_error_disclosure',
+          test_logic: 'universal_probe',
+          test_config: {
+            method: 'POST',
+            path: '/wp-login.php',
+            params: {
+              log: 'vaptsecure_nonexistent_user',
+              pwd: 'invalid-password',
+              'wp-submit': 'Log In',
+              redirect_to: `${window.location.origin}/wp-admin/`,
+              testcookie: '1'
             },
-            help: 'Verifies wp-login.php returns a generic login error message.'
-          });
-        } else if (hasRestSurface) {
-          tests.push({
-            type: 'test_action',
-            id: `vapt-test-rest-${riskId}`,
-            label: 'REST API Protection Check',
-            key: 'verify_rest_lockdown',
-            test_logic: 'universal_probe',
-            test_config: {
-              path: '/wp-json/wp/v2/users',
-              expected_status: [401, 403, 404],
-              expected_enforcer: expectedEnforcer
-            },
-            help: 'Verifies that the WordPress Users REST endpoint is protected.'
-          });
-        }
-
+            expected_status: [200],
+            expected_text: 'Invalid credentials. Please try again.',
+            expected_enforcer: expectedEnforcer
+          },
+          help: 'Verifies wp-login.php returns a generic login error message.'
+        });
+      } else if (surfaceFamily === 'rest_users') {
+        tests.push({
+          type: 'test_action',
+          id: `vapt-test-rest-${riskId}`,
+          label: 'REST API Protection Check',
+          key: 'verify_rest_lockdown',
+          test_logic: 'universal_probe',
+          test_config: {
+            path: '/wp-json/wp/v2/users',
+            expected_status: [401, 403, 404],
+            expected_enforcer: expectedEnforcer
+          },
+          help: 'Verifies that the WordPress Users REST endpoint is protected.'
+        });
+      } else if (surfaceFamily === 'author_query') {
         tests.push({
           type: 'test_action',
           id: `vapt-test-author-${riskId}`,
@@ -674,7 +694,11 @@ test_config: {
             key: 'verify_active_protection',
             test_logic: 'universal_probe',
             test_config: {
-              path: activeProbePath,
+              path: surfaceFamily === 'rest_users'
+                ? '/wp-json/wp/v2/users'
+                : (surfaceFamily === 'author_query'
+                  ? '/?author=1'
+                  : activeProbePath),
               params: { vapt_test: 'active' },
               expected_headers: { 'x-vapt-enforced': expectedEnforcer },
               expected_enforcer: expectedEnforcer

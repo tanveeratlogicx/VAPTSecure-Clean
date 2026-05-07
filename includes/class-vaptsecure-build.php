@@ -392,14 +392,60 @@ class VAPTSECURE_Build
         return '';
     }
 
+    private static function detect_catalog_surface_family(array $item, array $feature_meta = array())
+    {
+        $parts = array(
+            isset($item['risk_id']) ? $item['risk_id'] : '',
+            isset($item['title']) ? $item['title'] : '',
+            isset($item['label']) ? $item['label'] : '',
+            isset($item['name']) ? $item['name'] : '',
+            isset($item['summary']) ? $item['summary'] : '',
+            isset($item['description']) ? $item['description'] : '',
+            isset($item['remediation']) ? $item['remediation'] : '',
+            !empty($item['platform_implementations']) ? wp_json_encode($item['platform_implementations']) : '',
+            !empty($item['available_platforms']) ? wp_json_encode($item['available_platforms']) : '',
+            !empty($feature_meta) ? wp_json_encode($feature_meta) : '',
+        );
+        $blob = strtolower(implode(' ', array_filter(array_map('strval', $parts))));
+
+        if (strpos($blob, '/wp-json/wp/v2/users') !== false || strpos($blob, 'rest api') !== false || strpos($blob, 'wordpress rest api') !== false) {
+            return 'rest_users';
+        }
+
+        if (strpos($blob, '/?author=1') !== false || strpos($blob, 'author query') !== false || strpos($blob, 'author archives') !== false || strpos($blob, 'author enumeration') !== false) {
+            return 'author_query';
+        }
+
+        if (strpos($blob, '/wp-login.php') !== false || strpos($blob, 'login_errors') !== false || strpos($blob, 'invalid credentials') !== false) {
+            return 'login_error';
+        }
+
+        if (strpos($blob, 'xmlrpc') !== false || strpos($blob, 'xml-rpc') !== false || strpos($blob, 'pingback') !== false) {
+            return 'xmlrpc';
+        }
+
+        if (strpos($blob, 'cron') !== false || strpos($blob, 'wp-cron') !== false) {
+            return 'cron';
+        }
+
+        return '';
+    }
+
     public static function normalize_client_schema_controls($feature_key, array $schema = array(), array $feature_meta = array())
     {
         if (empty($schema) || !is_array($schema) || empty($schema['controls']) || !is_array($schema['controls'])) {
             return $schema;
         }
 
+        $risk_id = strtoupper(trim((string) ($schema['risk_id'] ?? $feature_key)));
+        $surface_family = self::detect_catalog_surface_family($schema, $feature_meta);
+        $is_rest_users_risk = ($surface_family === 'rest_users');
+        $is_author_query_risk = ($surface_family === 'author_query');
+        $is_login_error_risk = ($surface_family === 'login_error');
+
         $blob_parts = array(
             $feature_key,
+            $risk_id,
             isset($schema['title']) ? $schema['title'] : '',
             isset($schema['label']) ? $schema['label'] : '',
             isset($schema['name']) ? $schema['name'] : '',
@@ -411,7 +457,9 @@ class VAPTSECURE_Build
             !empty($feature_meta) ? wp_json_encode($feature_meta) : '',
         );
         $feature_blob = strtolower(implode(' ', array_filter(array_map('strval', $blob_parts))));
-        $is_login_error_surface = (bool) preg_match('/wp-login\.php|login_errors|invalid credentials|username enumeration.*login|login.*username enumeration/i', $feature_blob);
+        $is_rest_users_surface = $is_rest_users_risk || (bool) preg_match('/rest api|wp-json\/wp\/v2\/users|wordpress rest api/i', $feature_blob);
+        $is_author_query_surface = $is_author_query_risk || (bool) preg_match('/author query|author archives|author enumeration|\?author=1/i', $feature_blob);
+        $is_login_error_surface = $is_login_error_risk || (bool) preg_match('/wp-login\.php|login_errors|invalid credentials/i', $feature_blob);
         $is_pingback_surface = (bool) preg_match('/pingback|xmlrpc|xml-rpc/i', $feature_blob);
 
         $normalize_login_control = function (array $control) use ($feature_key) {
@@ -438,6 +486,34 @@ class VAPTSECURE_Build
             return $control;
         };
 
+        $normalize_rest_users_control = function (array $control) {
+            $control['label'] = 'REST API Protection Check';
+            $control['key'] = 'verify_rest_lockdown';
+            $control['test_logic'] = 'universal_probe';
+            $control['test_config'] = array(
+                'method' => 'GET',
+                'path' => '/wp-json/wp/v2/users',
+                'expected_status' => array(401, 403, 404, 405),
+                'expected_enforcer' => 'php-author-enum',
+            );
+            $control['help'] = 'Verifies the WordPress Users REST endpoint is protected.';
+            return $control;
+        };
+
+        $normalize_author_query_control = function (array $control) {
+            $control['label'] = 'Author Enumeration Check';
+            $control['key'] = 'verify_author_protection';
+            $control['test_logic'] = 'universal_probe';
+            $control['test_config'] = array(
+                'method' => 'GET',
+                'path' => '/?author=1',
+                'expected_status' => array(403, 404),
+                'expected_enforcer' => 'php-author-enum',
+            );
+            $control['help'] = 'Verifies author enumeration via query string is blocked.';
+            return $control;
+        };
+
         $normalize_pingback_control = function (array $control) {
             $control['label'] = 'Test: XML-RPC Pingback Block';
             $control['test_logic'] = 'disable_xmlrpc_pingback';
@@ -459,12 +535,31 @@ class VAPTSECURE_Build
                 strpos($label, 'rest api protection check') !== false ||
                 strpos($label, 'author enumeration check') !== false ||
                 strpos($label, 'rest user enumeration') !== false ||
-                strpos($label, 'username enumeration') !== false ||
                 $test_logic === 'check_headers' ||
                 $test_logic === 'block_author_enumeration' ||
                 $test_logic === 'verify_rest_lockdown' ||
                 strpos($test_path, '/wp-json/wp/v2/users') !== false ||
                 strpos($test_path, '/?author=1') !== false
+            );
+            $is_rest_candidate = $is_rest_users_surface && $is_test && (
+                strpos($label, 'a+ header verification') !== false ||
+                strpos($label, 'author enumeration check') !== false ||
+                strpos($label, 'rest api protection check') !== false ||
+                strpos($label, 'rest user enumeration') !== false ||
+                $test_logic === 'check_headers' ||
+                $test_logic === 'block_author_enumeration' ||
+                $test_logic === 'verify_rest_lockdown' ||
+                strpos($test_path, '/wp-login.php') !== false ||
+                strpos($test_path, '/?author=1') !== false
+            );
+            $is_author_candidate = $is_author_query_surface && $is_test && (
+                strpos($label, 'a+ header verification') !== false ||
+                strpos($label, 'rest api protection check') !== false ||
+                strpos($label, 'author enumeration check') !== false ||
+                $test_logic === 'check_headers' ||
+                $test_logic === 'block_author_enumeration' ||
+                strpos($test_path, '/wp-json/wp/v2/users') !== false ||
+                strpos($test_path, '/wp-login.php') !== false
             );
             $is_pingback_candidate = $is_pingback_surface && $is_test && (
                 $test_logic === 'check_headers' ||
@@ -475,6 +570,10 @@ class VAPTSECURE_Build
 
             if ($is_login_candidate) {
                 $control = $normalize_login_control($control);
+            } elseif ($is_rest_candidate) {
+                $control = $normalize_rest_users_control($control);
+            } elseif ($is_author_candidate) {
+                $control = $normalize_author_query_control($control);
             } elseif ($is_pingback_candidate) {
                 $control = $normalize_pingback_control($control);
             }

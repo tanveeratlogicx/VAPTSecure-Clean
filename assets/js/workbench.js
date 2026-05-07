@@ -329,7 +329,9 @@ var vaptLog = window.vaptLog || {
 
       const effectiveSchema = schema && Array.isArray(schema.controls)
         ? (() => {
-            const isWpLoginLoginErrorFeature = /login_errors|wp-login\.php|invalid credentials/.test(featureBlob);
+            const isWpLoginLoginErrorFeature = /\/wp-login\.php|login_errors|invalid credentials/.test(featureBlob);
+            const isRestUsersFeature = /\/wp-json\/wp\/v2\/users|rest api|wordpress rest api/.test(featureBlob);
+            const isAuthorQueryFeature = /\?author=1|author query|author archives|author enumeration/.test(featureBlob);
             const controls = schema.controls.map((control) => {
               const controlLabel = String(control.label || '').toLowerCase();
               const controlPath = String(control.test_config?.path || '').toLowerCase();
@@ -338,7 +340,6 @@ var vaptLog = window.vaptLog || {
                 controlLabel.includes('rest api protection check') ||
                 controlLabel.includes('author enumeration check') ||
                 controlLabel.includes('rest user enumeration') ||
-                controlLabel.includes('username enumeration') ||
                 control.test_logic === 'check_headers' ||
                 control.test_logic === 'block_author_enumeration' ||
                 control.test_logic === 'verify_rest_lockdown' ||
@@ -363,6 +364,45 @@ var vaptLog = window.vaptLog || {
                     expected_status: [200],
                     expected_text: 'Invalid credentials. Please try again.'
                   },
+                  help: __('Auto-injected verification test.', 'vaptsecure')
+                };
+              }
+              if (isRestUsersFeature && control.type === 'test_action' && (
+                controlLabel.includes('a+ header verification') ||
+                controlLabel.includes('rest api protection check') ||
+                controlLabel.includes('author enumeration check') ||
+                controlLabel.includes('rest user enumeration') ||
+                controlLabel.includes('username enumeration') ||
+                control.test_logic === 'check_headers' ||
+                control.test_logic === 'block_author_enumeration' ||
+                control.test_logic === 'verify_rest_lockdown' ||
+                controlPath.includes('/wp-login.php') ||
+                controlPath.includes('/?author=1')
+              )) {
+                return {
+                  ...control,
+                  label: 'Test: REST User Enumeration Block',
+                  key: 'auto_verify_access_control',
+                  test_logic: 'block_author_enumeration',
+                  help: __('Auto-injected verification test.', 'vaptsecure')
+                };
+              }
+              if (isAuthorQueryFeature && control.type === 'test_action' && (
+                controlLabel.includes('a+ header verification') ||
+                controlLabel.includes('rest api protection check') ||
+                controlLabel.includes('author enumeration check') ||
+                controlLabel.includes('rest user enumeration') ||
+                control.test_logic === 'check_headers' ||
+                control.test_logic === 'block_author_enumeration' ||
+                control.test_logic === 'verify_rest_lockdown' ||
+                controlPath.includes('/wp-login.php') ||
+                controlPath.includes('/wp-json/wp/v2/users')
+              )) {
+                return {
+                  ...control,
+                  label: 'Test: Author Enumeration Block',
+                  key: 'auto_verify_author',
+                  test_logic: 'block_author_enumeration',
                   help: __('Auto-injected verification test.', 'vaptsecure')
                 };
               }
@@ -391,12 +431,27 @@ var vaptLog = window.vaptLog || {
             });
 
             const hasActiveProbe = controls.some(control => control.type === 'test_action' && control.key === 'verify_active_protection');
-            if (!hasActiveProbe && controls.some(control => control.type === 'test_action')) {
-              const activeProbePath = featureBlob.includes('xmlrpc') || featureBlob.includes('xml-rpc') || featureBlob.includes('pingback')
-                ? '/xmlrpc.php'
-                : (featureBlob.includes('cron') || featureBlob.includes('wp-cron')
-                  ? '/wp-cron.php'
-                  : '/');
+            const hasCanonicalEnumerationProbe = controls.some(control => {
+              if (control.type !== 'test_action') return false;
+              const label = String(control.label || '').toLowerCase();
+              const path = String(control.test_config?.path || '').toLowerCase();
+              return label.includes('rest api protection check') ||
+                label.includes('author enumeration check') ||
+                label.includes('login error consistency') ||
+                path.includes('/wp-json/wp/v2/users') ||
+                path.includes('/?author=1') ||
+                path.includes('/wp-login.php');
+            });
+            if (!hasActiveProbe && controls.some(control => control.type === 'test_action') && !hasCanonicalEnumerationProbe) {
+              const activeProbePath = featureBlob.includes('/wp-json/wp/v2/users') || featureBlob.includes('rest api') || featureBlob.includes('wordpress rest api')
+                ? '/wp-json/wp/v2/users'
+                : (featureBlob.includes('/?author=1') || featureBlob.includes('author query') || featureBlob.includes('author archives') || featureBlob.includes('author enumeration')
+                  ? '/?author=1'
+                  : (featureBlob.includes('xmlrpc') || featureBlob.includes('xml-rpc') || featureBlob.includes('pingback')
+                    ? '/xmlrpc.php'
+                    : (featureBlob.includes('cron') || featureBlob.includes('wp-cron')
+                      ? '/wp-cron.php'
+                      : '/')));
 
               controls.push({
                 type: 'test_action',

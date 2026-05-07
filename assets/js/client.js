@@ -531,10 +531,12 @@ var vaptLog = window.vaptLog || {
     ]);
   };
 
-    const renderFeatureCard = (f, updateFeature, setVerifFeature, globalProtection) => {
+  const renderFeatureCard = (f, updateFeature, setVerifFeature, globalProtection) => {
     const schema = typeof f.generated_schema === 'string' ? JSON.parse(f.generated_schema) : (f.generated_schema || { controls: [] });
     const schemaBlob = JSON.stringify(schema || {}).toLowerCase();
-    const isWpLoginLoginErrorFeature = /login_errors|wp-login\.php|invalid credentials/.test(schemaBlob);
+    const isWpLoginLoginErrorFeature = /\/wp-login\.php|login_errors|invalid credentials/.test(schemaBlob);
+    const isRestUsersFeature = /\/wp-json\/wp\/v2\/users|rest api|wordpress rest api/.test(schemaBlob);
+    const isAuthorQueryFeature = /\?author=1|author query|author archives|author enumeration/.test(schemaBlob);
 
     // v3.14.0: Enforcement Logic
     const isEnforced = globalProtection
@@ -592,6 +594,46 @@ var vaptLog = window.vaptLog || {
             expected_text: 'Invalid credentials. Please try again.'
           },
           help: __('Verifies wp-login.php returns a generic login error message.', 'vaptsecure')
+        };
+      }
+      if (isRestUsersFeature && (
+        controlLabel.includes('a+ header verification') ||
+        controlLabel.includes('rest api protection check') ||
+        controlLabel.includes('author enumeration check') ||
+        String(c.test_logic || '').toLowerCase() === 'check_headers' ||
+        String(c.test_logic || '').toLowerCase() === 'block_author_enumeration'
+      )) {
+        return {
+          ...c,
+          label: 'REST API Protection Check',
+          key: 'verify_rest_lockdown',
+          test_logic: 'universal_probe',
+          test_config: {
+            method: 'GET',
+            path: '/wp-json/wp/v2/users',
+            expected_status: [401, 403, 404, 405]
+          },
+          help: __('Verifies the WordPress Users REST endpoint is protected.', 'vaptsecure')
+        };
+      }
+      if (isAuthorQueryFeature && (
+        controlLabel.includes('a+ header verification') ||
+        controlLabel.includes('rest api protection check') ||
+        controlLabel.includes('author enumeration check') ||
+        String(c.test_logic || '').toLowerCase() === 'check_headers' ||
+        String(c.test_logic || '').toLowerCase() === 'block_author_enumeration'
+      )) {
+        return {
+          ...c,
+          label: 'Author Enumeration Check',
+          key: 'verify_author_protection',
+          test_logic: 'universal_probe',
+          test_config: {
+            method: 'GET',
+            path: '/?author=1',
+            expected_status: [403, 404]
+          },
+          help: __('Verifies that author enumeration via query string is blocked.', 'vaptsecure')
         };
       }
       return c;

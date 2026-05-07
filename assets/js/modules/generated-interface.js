@@ -123,14 +123,47 @@ var vaptLog = window.vaptLog || {
     const text = parts.join(' ').toLowerCase();
     const has = (...terms) => terms.some(term => text.includes(term));
 
+    if (text.includes('/wp-json/wp/v2/users') || has('rest api', 'endpoint disclosure', 'rest')) return '/wp-json/wp/v2/users';
+    if (text.includes('/?author=1') || has('author query', 'author archives', 'author enumeration')) return '/?author=1';
+    if (has('login', 'brute', 'password reset', 'lost password', 'auth')) return '/wp-login.php';
     if (has('cron')) return '/wp-cron.php';
     if (has('xmlrpc', 'xml-rpc')) return '/xmlrpc.php';
-    if (has('login', 'brute', 'password reset', 'lost password', 'auth')) return '/wp-login.php';
-    if (has('author', 'user enumeration', 'username enumeration')) return '/?author=1';
     if (has('directory', 'indexing', 'uploads')) return '/wp-content/uploads/';
-    if (has('rest api', 'endpoint disclosure', 'rest')) return '/wp-json/wp/v2/users';
 
     return '/';
+  };
+
+  const detectSurfaceFamily = (featureData = {}, featureKey = '', control = {}) => {
+    const blob = [
+      featureKey,
+      featureData && (featureData.risk_id || ''),
+      featureData && (featureData.label || featureData.title || featureData.name || ''),
+      featureData && (featureData.summary || featureData.description || featureData.remediation || ''),
+      featureData && (featureData.generated_schema ? JSON.stringify(featureData.generated_schema) : ''),
+      featureData && (featureData.implementation_data ? JSON.stringify(featureData.implementation_data) : ''),
+      featureData && (featureData.platform_implementations ? JSON.stringify(featureData.platform_implementations) : ''),
+      featureData && (featureData.available_platforms ? JSON.stringify(featureData.available_platforms) : ''),
+      control && control.label ? control.label : '',
+      control && control.help ? control.help : '',
+      control && control.test_config ? JSON.stringify(control.test_config) : ''
+    ].filter(Boolean).join(' ').toLowerCase();
+
+    if (blob.includes('/wp-json/wp/v2/users') || blob.includes('wordpress rest api') || blob.includes('rest api')) {
+      return 'rest_users';
+    }
+    if (blob.includes('/?author=1') || blob.includes('author query') || blob.includes('author archives') || blob.includes('author enumeration')) {
+      return 'author_query';
+    }
+    if (blob.includes('/wp-login.php') || blob.includes('login_errors') || blob.includes('invalid credentials')) {
+      return 'login_error';
+    }
+    if (blob.includes('pingback') || blob.includes('xmlrpc') || blob.includes('xml-rpc')) {
+      return 'xmlrpc';
+    }
+    if (blob.includes('cron') || blob.includes('wp-cron')) {
+      return 'cron';
+    }
+    return '';
   };
 
   const collectPlatformHints = (featureData = {}) => {
@@ -209,22 +242,7 @@ var vaptLog = window.vaptLog || {
   };
 
   const isWpLoginLoginErrorFeature = (featureData = {}, featureKey = '', control = {}) => {
-    const blob = [
-      featureKey,
-      featureData && (featureData.label || featureData.title || featureData.name || ''),
-      featureData && (featureData.summary || featureData.description || featureData.remediation || ''),
-      featureData && featureData.generated_schema ? JSON.stringify(featureData.generated_schema) : '',
-      featureData && featureData.implementation_data ? JSON.stringify(featureData.implementation_data) : '',
-      control && control.label ? control.label : '',
-      control && control.help ? control.help : '',
-      control && control.test_config ? JSON.stringify(control.test_config) : ''
-    ].filter(Boolean).join(' ').toLowerCase();
-
-    return blob.includes('wp-login.php') ||
-      blob.includes('login_errors') ||
-      blob.includes('login error') ||
-      blob.includes('invalid credentials') ||
-      (blob.includes('username enumeration') && blob.includes('login'));
+    return detectSurfaceFamily(featureData, featureKey, control) === 'login_error';
   };
 
   /**
@@ -888,7 +906,10 @@ var vaptLog = window.vaptLog || {
     block_author_enumeration: async (siteUrl, control, featureData, featureKey) => {
       const configPath = String(control?.config?.path || '').trim();
       const featureText = `${featureKey} ${(featureData?.label || featureData?.title || featureData?.name || '')} ${(featureData?.summary || featureData?.description || '')}`.toLowerCase();
-      const isLoginErrorSurface = isWpLoginLoginErrorFeature(featureData, featureKey, control) || configPath.includes('/wp-login.php') || /login_errors|invalid credentials/.test(featureText);
+      const surfaceFamily = detectSurfaceFamily(featureData, featureKey, control);
+      const isLoginErrorSurface = surfaceFamily === 'login_error' || configPath.includes('/wp-login.php') || /login_errors|invalid credentials/.test(featureText);
+      const isRestUsersSurface = surfaceFamily === 'rest_users' || configPath.includes('/wp-json/wp/v2/users') || /rest api|wp-json/.test(featureText);
+      const isAuthorSurface = surfaceFamily === 'author_query' || configPath.includes('/?author=1') || /author query|author archives|author enumeration/.test(featureText);
       if (isLoginErrorSurface) {
         const loginUrl = resolveUrl('/wp-login.php', control.config?.url, featureKey);
         const payload = new URLSearchParams({
@@ -946,8 +967,7 @@ var vaptLog = window.vaptLog || {
         };
       }
 
-      const isRestSurface = configPath.includes('/wp-json/') || /rest api|endpoint disclosure|wp-json/.test(featureText);
-      const probePath = configPath || (isRestSurface ? '/wp-json/wp/v2/users' : '/?author=1');
+      const probePath = configPath || (isRestUsersSurface ? '/wp-json/wp/v2/users' : (isAuthorSurface ? '/?author=1' : '/?author=1'));
       const url = resolveUrl(probePath, control.config?.url, featureKey);
       vaptLog.log(`REST User Enumeration Probe: Fetching ${url}`);
       const response = await fetch(url, { method: 'GET', cache: 'no-store' });
@@ -955,7 +975,7 @@ var vaptLog = window.vaptLog || {
       const enforcedFeature = response.headers.get('x-vapt-feature');
       const isEnabled = isFeatureEnabled(featureData);
       const isBlocked = response.status === 401 || response.status === 403 || response.status === 404 || response.status === 405 || vaptEnforced === 'php-author-enum';
-      const modeLabel = isRestSurface ? 'REST user enumeration' : 'author enumeration';
+      const modeLabel = isRestUsersSurface ? 'REST user enumeration' : 'author enumeration';
 
       if (vaptEnforced === 'php-author-enum') {
         if (featureKey && enforcedFeature && enforcedFeature !== featureKey) {
@@ -2084,7 +2104,10 @@ var vaptLog = window.vaptLog || {
         JSON.stringify(verificationFeatureData?.platform_implementations || {}),
         JSON.stringify(verificationFeatureData?.available_platforms || [])
       ].filter(Boolean).join(' ').toLowerCase();
-      const isLoginErrorSurface = /wp-login\.php|login_errors|invalid credentials/.test(featureBlob);
+      const surfaceFamily = detectSurfaceFamily(verificationFeatureData, feature?.key || '', {});
+      const isLoginErrorSurface = surfaceFamily === 'login_error' || /wp-login\.php|login_errors|invalid credentials/.test(featureBlob);
+      const isRestUsersSurface = surfaceFamily === 'rest_users' || /wp-json\/wp\/v2\/users|rest api|wordpress rest api/.test(featureBlob);
+      const isAuthorQuerySurface = surfaceFamily === 'author_query' || /\?author=1|author query|author archives|author enumeration/.test(featureBlob);
       const isPingbackSurface = /pingback|xmlrpc|xml-rpc/.test(featureBlob);
 
       const loginErrorControl = (control) => ({
@@ -2131,7 +2154,6 @@ var vaptLog = window.vaptLog || {
             label.includes('rest api protection check') ||
             label.includes('author enumeration check') ||
             label.includes('rest user enumeration') ||
-            label.includes('username enumeration') ||
             control.test_logic === 'check_headers' ||
             control.test_logic === 'block_author_enumeration' ||
             control.test_logic === 'verify_rest_lockdown' ||
@@ -2141,6 +2163,63 @@ var vaptLog = window.vaptLog || {
 
           if (shouldNormalizeLogin) {
             nextControl = loginErrorControl(control);
+          }
+        } else if (isRestUsersSurface && control.type === 'test_action') {
+          const shouldNormalizeRest = (
+            label.includes('a+ header verification') ||
+            label.includes('author enumeration check') ||
+            label.includes('rest api protection check') ||
+            label.includes('rest user enumeration') ||
+            label.includes('username enumeration') ||
+            control.test_logic === 'check_headers' ||
+            control.test_logic === 'block_author_enumeration' ||
+            control.test_logic === 'verify_rest_lockdown' ||
+            controlPath.includes('/wp-login.php') ||
+            controlPath.includes('/?author=1')
+          );
+
+          if (shouldNormalizeRest) {
+            nextControl = {
+              ...control,
+              label: 'REST API Protection Check',
+              key: 'verify_rest_lockdown',
+              test_logic: 'universal_probe',
+              test_config: {
+                method: 'GET',
+                path: '/wp-json/wp/v2/users',
+                expected_status: [401, 403, 404, 405],
+                expected_enforcer: control.test_config?.expected_enforcer || control.test_config?.expected_enforcers || ''
+              },
+              help: 'Verifies the WordPress Users REST endpoint is protected.'
+            };
+          }
+        } else if (isAuthorQuerySurface && control.type === 'test_action') {
+          const shouldNormalizeAuthor = (
+            label.includes('a+ header verification') ||
+            label.includes('rest api protection check') ||
+            label.includes('author enumeration check') ||
+            label.includes('rest user enumeration') ||
+            control.test_logic === 'check_headers' ||
+            control.test_logic === 'block_author_enumeration' ||
+            control.test_logic === 'verify_rest_lockdown' ||
+            controlPath.includes('/wp-login.php') ||
+            controlPath.includes('/wp-json/wp/v2/users')
+          );
+
+          if (shouldNormalizeAuthor) {
+            nextControl = {
+              ...control,
+              label: 'Author Enumeration Check',
+              key: 'verify_author_protection',
+              test_logic: 'universal_probe',
+              test_config: {
+                method: 'GET',
+                path: '/?author=1',
+                expected_status: [403, 404],
+                expected_enforcer: control.test_config?.expected_enforcer || control.test_config?.expected_enforcers || ''
+              },
+              help: 'Verifies that author enumeration via query string is blocked.'
+            };
           }
         } else if (
           isPingbackSurface &&
