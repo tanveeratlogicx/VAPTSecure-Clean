@@ -6,6 +6,18 @@
       "key": "{component_id}",
       "default": true,
       "help": "Turns on {Descriptive Label}. This helps secure the site against {Risk Topic}."
+    },
+    {
+      "type": "test_action",
+      "label": "{Test Label}",
+      "key": "{test_component_id}",
+      "test_logic": "{check_headers|spam_requests|universal_probe}",
+      "test_config": {
+        "path": "/{target_path}?vapt_test=1",
+        "expected_status": [200, 403],
+        "expected_enforcer": "{lib_key}"
+      },
+      "help": "Verifies that the {Descriptive Label} is active and working."
     }
   ],
   "enforcement": {

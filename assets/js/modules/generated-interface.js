@@ -59,7 +59,7 @@ var vaptLog = window.vaptLog || {
 
     // If path is root default but feature implies a specific target, nudge it (v3.13.8)
     if ((!path || path === '/') && !configUrl && featureKey) {
-      if (featureKey.includes('cron') || featureKey === 'RISK-001') sub = 'wp-cron.php';
+      if (featureKey.includes('cron') || featureKey === 'RISK-001') sub = 'wp-cron.php?doing_wp_cron=1';
       else if (featureKey.includes('xmlrpc')) sub = 'xmlrpc.php';
       else if (featureKey.includes('login')) sub = 'wp-login.php';
     }
@@ -126,7 +126,7 @@ var vaptLog = window.vaptLog || {
     if (text.includes('/wp-json/wp/v2/users') || has('rest api', 'endpoint disclosure', 'rest')) return '/wp-json/wp/v2/users';
     if (text.includes('/?author=1') || has('author query', 'author archives', 'author enumeration')) return '/?author=1';
     if (has('login', 'brute', 'password reset', 'lost password', 'auth')) return '/wp-login.php';
-    if (has('cron')) return '/wp-cron.php';
+    if (has('cron')) return '/wp-cron.php?doing_wp_cron=1';
     if (has('xmlrpc', 'xml-rpc')) return '/xmlrpc.php';
     if (has('directory', 'indexing', 'uploads')) return '/wp-content/uploads/';
 
@@ -2323,6 +2323,30 @@ var vaptLog = window.vaptLog || {
           const isEnforced = toBool(value);
           const vSettings = window.vaptSecureSettings || {};
 
+          const getTooltipContent = () => {
+            const impls = verificationFeatureData.platform_implementations || {};
+            let addedCode = '';
+            let targetFile = '';
+
+            for (const [plat, details] of Object.entries(impls)) {
+              if (details.code || details.wrapped_code) {
+                addedCode = details.wrapped_code || details.code;
+                targetFile = details.target_file || plat;
+                break;
+              }
+            }
+
+            if (!addedCode) return null;
+
+            return el('div', { style: { padding: '8px', maxWidth: '300px' } }, [
+              el('div', { style: { marginBottom: '5px', fontWeight: 'bold', color: '#10b981' } },
+                __('Script to be added to: ', 'vaptsecure') + targetFile),
+              el('pre', { style: { fontSize: '10px', background: '#f1f5f9', padding: '5px', borderRadius: '3px', overflowX: 'auto', whiteSpace: 'pre-wrap', color: '#334155', border: '1px solid #e2e8f0' } }, addedCode),
+              el('div', { style: { marginTop: '8px', fontWeight: 'bold', color: '#ef4444' } },
+                __('When protection is disabled, this rule is removed from the file.', 'vaptsecure'))
+            ]);
+          };
+
           const getShortPath = (fullPath) => {
             if (!fullPath) return '';
             let pathStr = fullPath.replace(/\\/g, '/');
@@ -2353,7 +2377,8 @@ var vaptLog = window.vaptLog || {
             el(ToggleControl, {
               disabled: globalProtection === false,
               label: isCompact ? '' : el('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } }, [
-                el('strong', { style: { fontSize: '12px', color: '#334155' } }, safeRender(label))
+                el('strong', { style: { fontSize: '12px', color: '#334155' } }, safeRender(label)),
+                getTooltipContent() && el(Tooltip, { text: getTooltipContent() }, el(Icon, { icon: 'info-outline', size: 14, style: { color: '#94a3b8', cursor: 'help' } }))
               ]),
               help: safeRender(control.description || help),
               checked: toBool(value),

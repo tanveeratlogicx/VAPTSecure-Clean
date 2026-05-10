@@ -377,7 +377,7 @@
         if (text.includes('/wp-json/wp/v2/users') || has('rest api', 'endpoint disclosure', 'rest')) return '/wp-json/wp/v2/users';
         if (text.includes('/?author=1') || has('author query', 'author archives', 'author enumeration')) return '/?author=1';
         if (has('login', 'brute', 'password reset', 'lost password', 'auth')) return '/wp-login.php';
-        if (has('cron')) return '/wp-cron.php';
+        if (has('cron')) return '/wp-cron.php?doing_wp_cron=1';
         if (has('xmlrpc', 'xml-rpc')) return '/xmlrpc.php';
         if (has('directory', 'indexing', 'uploads')) return '/wp-content/uploads/';
         if (has('wp-admin', 'admin')) return '/wp-admin/';

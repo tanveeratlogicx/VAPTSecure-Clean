@@ -29,8 +29,11 @@ The v2.0 system uses a unified bundle. As an AI Agent, you will primarily intera
 1. `ai_agent_instructions_v2.0.json`: The rulebook (conventions, guardrails, rubric).
 2. `interface_schema_v2.0.json`: The blueprint (layout, components, platforms).
 3. `enforcer_pattern_library_v2.0.json`: The exact enforcement code.
+4. `vapt_driver_manifest_v2.0.json`: The Driver Layer (write blocks, anchors, rollback).
+5. `VAPT_AI_Agent_System_README_v2.0.md`: The System Specification.
+    
+*(Note: The plugin executes using the Driver Layer and `VAPT_Driver_Reference_v2.0.php`).*
 
-*(Note: The plugin executes using the **Driver Layer**: `vapt_driver_manifest_v2.0.json` and `VAPT_Driver_Reference_v2.0.php`).*
 
 ---
 
@@ -54,6 +57,7 @@ Map the `lib_key` to `enforcer_pattern_library_v2.0.json`.
 - Extract the actual enforcement code.
 - **Never write enforcement code from memory.** Always use the code provided in the library.
 - Apply the **Core Principle** whitelisting (ensure `/wp-admin/`, `/wp-json/wp/v2/`, and `/wp-json/vaptsecure/v1/` are excluded from blocks if applicable to the enforcer type).
+- **Special Case: Cron Protection**: For any cron-related risk (e.g., RISK-001, RISK-128), automated verification MUST target `wp-cron.php?doing_wp_cron=1` to ensure accurate state detection.
 
 ### Step 4 → Self-Check & Deliver
 Score your generated JSON output against the 19-point rubric from Step 1.
@@ -67,5 +71,4 @@ Score your generated JSON output against the 19-point rubric from Step 1.
 1. **The Rewrite Rule "Dead Zone"**: Placing rewrite rules at the bottom of `.htaccess` (after `# END WordPress`) creates a silent failure. Ensure `insertion_point: "before_wordpress_rewrite"`.
 2. **Key Matching**: If a component's toggle has `key: "UI-RISK-003-001"`, then the `enforcement.mappings` object MUST use exactly `"UI-RISK-003-001"`.
 3. **No Forbidden Apache Directives**: Never use `TraceEnable`, `<Directory>`, or `ServerSignature` in `.htaccess`. Use safe equivalents (e.g., `mod_headers`).
-
-
+4. **A+ Verification Path Accuracy**: Always use the most accurate probe path. For Cron, use `wp-cron.php?doing_wp_cron=1`. For XML-RPC, use `xmlrpc.php`. For Login, use `wp-login.php`.

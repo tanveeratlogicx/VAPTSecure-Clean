@@ -461,6 +461,7 @@ class VAPTSECURE_Build
         $is_author_query_surface = $is_author_query_risk || (bool) preg_match('/author query|author archives|author enumeration|\?author=1/i', $feature_blob);
         $is_login_error_surface = $is_login_error_risk || (bool) preg_match('/wp-login\.php|login_errors|invalid credentials/i', $feature_blob);
         $is_pingback_surface = (bool) preg_match('/pingback|xmlrpc|xml-rpc/i', $feature_blob);
+        $is_cron_surface = (bool) preg_match('/cron|wp-cron/i', $feature_blob);
 
         $normalize_login_control = function (array $control) use ($feature_key) {
             $control['label'] = 'Login Error Consistency Check';
@@ -520,6 +521,19 @@ class VAPTSECURE_Build
             return $control;
         };
 
+        $normalize_cron_control = function (array $control) {
+            $control['label'] = 'Verify Cron Protection';
+            $control['test_logic'] = 'spam_requests';
+            $control['test_config'] = array(
+                'method' => 'GET',
+                'path' => '/wp-cron.php?doing_wp_cron=1',
+                'expected_status' => array(403, 429),
+                'expected_enforcer' => 'php-cron',
+            );
+            $control['help'] = 'Verifies that wp-cron.php abuse is blocked.';
+            return $control;
+        };
+
         $normalized_controls = array();
         foreach ($schema['controls'] as $control) {
             if (!is_array($control)) {
@@ -567,6 +581,12 @@ class VAPTSECURE_Build
                 strpos($label, 'xml-rpc') !== false ||
                 strpos($test_path, 'xmlrpc.php') !== false
             );
+            $is_cron_candidate = $is_cron_surface && $is_test && (
+                $test_logic === 'check_headers' ||
+                $test_logic === 'spam_requests' ||
+                strpos($label, 'cron') !== false ||
+                strpos($test_path, 'wp-cron.php') !== false
+            );
 
             if ($is_login_candidate) {
                 $control = $normalize_login_control($control);
@@ -576,6 +596,8 @@ class VAPTSECURE_Build
                 $control = $normalize_author_query_control($control);
             } elseif ($is_pingback_candidate) {
                 $control = $normalize_pingback_control($control);
+            } elseif ($is_cron_candidate) {
+                $control = $normalize_cron_control($control);
             }
 
             $dedupe_key = strtolower(

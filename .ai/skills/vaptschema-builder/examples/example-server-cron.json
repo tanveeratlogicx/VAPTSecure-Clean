@@ -2,16 +2,29 @@
   "controls": [
     {
       "type": "toggle",
-      "label": "Enable Server Cron to scan for backdoors",
-      "key": "UI-RISK-050-001",
+      "label": "Enable protection for wp-cron.php Enabled Leads to DoS Attack",
+      "key": "UI-RISK-001-001",
       "default": false,
-      "help": "Turns on Server Cron to scan for backdoors."
+      "help": "Turns on protection for wp-cron.php Enabled Leads to DoS Attack. This helps secure the site against Configuration attacks."
+    },
+    {
+      "type": "test_action",
+      "label": "Verify Cron Protection",
+      "key": "UI-RISK-001-002",
+      "test_logic": "spam_requests",
+      "test_config": {
+        "method": "GET",
+        "path": "/wp-cron.php?doing_wp_cron=1",
+        "expected_status": [403, 429],
+        "expected_enforcer": "php-cron"
+      },
+      "help": "Verifies that wp-cron.php abuse is blocked by sending a burst of requests."
     }
   ],
   "enforcement": {
-    "driver": "server_cron",
+    "driver": "wp_config",
     "mappings": {
-      "UI-RISK-050-001": "# BEGIN VAPT RISK-050\n0 0 * * * /usr/bin/php /var/www/html/wp-content/plugins/vapt-secure/scan.php\n# END VAPT RISK-050"
+      "UI-RISK-001-001": "/* BEGIN VAPT RISK-001 */\ndefine( 'DISABLE_WP_CRON', true );\n/* END VAPT RISK-001 */"
     }
   }
 }
