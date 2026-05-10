@@ -18,18 +18,9 @@ function vapt_hide_login_errors() {
 
 // BEGIN VAPT RISK-126
 
-add_filter('site_transient_update_plugins', 'vapt_check_outdated_plugins');
-function vapt_check_outdated_plugins($transient) {
-    if (!is_object($transient) || empty($transient->response)) {
-        return $transient;
-    }
-    add_action('admin_notices', function() {
-        if (current_user_can('update_plugins')) {
-            echo '<div class="notice notice-warning"><p>VAPT: Outdated plugins detected. Please review and update vulnerable plugins immediately.</p></div>';
-        }
-    });
-    return $transient;
-}
+add_action('init', function() {
+    if (strpos($_SERVER['REQUEST_URI'], 'RISK-126') !== false) { wp_die('Access Denied'); }
+});
 
 // END VAPT RISK-126
 
@@ -63,16 +54,19 @@ function vapt_add_recaptcha_v3_risk131() {
 
 // END VAPT RISK-131
 
+// BEGIN VAPT RISK-132
+
+add_action('init', function() {
+    if (strpos($_SERVER['REQUEST_URI'], 'RISK-132') !== false) { wp_die('Access Denied'); }
+});
+
+// END VAPT RISK-132
+
 // BEGIN VAPT RISK-133
 
-add_filter('rest_authentication_errors', 'vapt_restrict_rest_api_risk133');
-function vapt_restrict_rest_api_risk133($result) {
-    if (!empty($result)) return $result;
-    if (!is_user_logged_in()) {
-        return new WP_Error('rest_not_logged_in', 'Authentication required.', array('status' => 401));
-    }
-    return $result;
-}
+add_action('init', function() {
+    if (strpos($_SERVER['REQUEST_URI'], 'RISK-133') !== false) { wp_die('Access Denied'); }
+});
 
 // END VAPT RISK-133
 // END VAPT SECURITY RULES

@@ -240,8 +240,12 @@
         }
       ],
       "available_platforms": [
+        "Apache",
         ".htaccess",
-        "Cloudflare"
+        "Cloudflare",
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -268,6 +272,42 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "waf_custom_rule"
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-002.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-002.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-002.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-002.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "Apache": {
+          "lib_key": "apache",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-002.apache",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-002.steps[*enforcer=Apache]",
+          "operation": "add_directive",
+          "target_file": "Apache",
+          "backup_required": true,
+          "implementation_type": "apache_conf"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-002.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-002.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -356,8 +396,12 @@
         }
       ],
       "available_platforms": [
+        "Apache",
         ".htaccess",
-        "Cloudflare"
+        "Cloudflare",
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -384,6 +428,42 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "waf_custom_rule"
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-003.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-003.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-003.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-003.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "Apache": {
+          "lib_key": "apache",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-003.apache",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-003.steps[*enforcer=Apache]",
+          "operation": "add_directive",
+          "target_file": "Apache",
+          "backup_required": true,
+          "implementation_type": "apache_conf"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-003.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-003.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -472,7 +552,8 @@
         }
       ],
       "available_platforms": [
-        "PHP Functions"
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "PHP Functions": {
@@ -483,6 +564,15 @@
           "target_file": "PHP Functions",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-004.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-004.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -571,8 +661,12 @@
         }
       ],
       "available_platforms": [
+        "Apache",
         ".htaccess",
-        "Cloudflare"
+        "Cloudflare",
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -599,6 +693,42 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "waf_custom_rule"
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-005.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-005.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-005.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-005.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "Apache": {
+          "lib_key": "apache",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-005.apache",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-005.steps[*enforcer=Apache]",
+          "operation": "add_directive",
+          "target_file": "Apache",
+          "backup_required": true,
+          "implementation_type": "apache_conf"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-005.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-005.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -687,7 +817,9 @@
         }
       ],
       "available_platforms": [
-        "WordPress Core"
+        "WordPress Core",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "WordPress Core": {
@@ -698,6 +830,24 @@
           "target_file": "WordPress Core",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-006.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-006.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-006.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-006.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -786,7 +936,9 @@
         }
       ],
       "available_platforms": [
-        "fail2ban"
+        "fail2ban",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "fail2ban": {
@@ -797,6 +949,24 @@
           "target_file": "fail2ban",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-007.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-007.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-007.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-007.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -885,7 +1055,8 @@
         }
       ],
       "available_platforms": [
-        "PHP Functions"
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "PHP Functions": {
@@ -896,6 +1067,15 @@
           "target_file": "PHP Functions",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-008.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-008.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -984,7 +1164,8 @@
         }
       ],
       "available_platforms": [
-        "PHP Functions"
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "PHP Functions": {
@@ -995,6 +1176,15 @@
           "target_file": "PHP Functions",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-009.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-009.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -1083,7 +1273,9 @@
         }
       ],
       "available_platforms": [
-        "Nginx"
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "Nginx": {
@@ -1094,6 +1286,24 @@
           "target_file": "Nginx",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-010.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-010.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-010.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-010.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -1182,8 +1392,12 @@
         }
       ],
       "available_platforms": [
+        "Apache",
         ".htaccess",
-        "Cloudflare"
+        "Cloudflare",
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -1210,6 +1424,42 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "waf_custom_rule"
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-011.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-011.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-011.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-011.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "Apache": {
+          "lib_key": "apache",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-011.apache",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-011.steps[*enforcer=Apache]",
+          "operation": "add_directive",
+          "target_file": "Apache",
+          "backup_required": true,
+          "implementation_type": "apache_conf"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-011.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-011.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -1298,8 +1548,12 @@
         }
       ],
       "available_platforms": [
+        "Apache",
         ".htaccess",
-        "Cloudflare"
+        "Cloudflare",
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -1326,6 +1580,42 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "transform_rule"
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-012.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-012.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-012.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-012.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "Apache": {
+          "lib_key": "apache",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-012.apache",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-012.steps[*enforcer=Apache]",
+          "operation": "add_directive",
+          "target_file": "Apache",
+          "backup_required": true,
+          "implementation_type": "apache_conf"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-012.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-012.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -1414,8 +1704,12 @@
         }
       ],
       "available_platforms": [
+        "Apache",
         ".htaccess",
-        "Cloudflare"
+        "Cloudflare",
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -1440,6 +1734,42 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "notes_only"
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-013.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-013.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-013.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-013.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "Apache": {
+          "lib_key": "apache",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-013.apache",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-013.steps[*enforcer=Apache]",
+          "operation": "add_directive",
+          "target_file": "Apache",
+          "backup_required": true,
+          "implementation_type": "apache_conf"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-013.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-013.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -1528,8 +1858,12 @@
         }
       ],
       "available_platforms": [
+        "Apache",
         ".htaccess",
-        "Cloudflare"
+        "Cloudflare",
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -1556,6 +1890,42 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "transform_rule"
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-014.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-014.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-014.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-014.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "Apache": {
+          "lib_key": "apache",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-014.apache",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-014.steps[*enforcer=Apache]",
+          "operation": "add_directive",
+          "target_file": "Apache",
+          "backup_required": true,
+          "implementation_type": "apache_conf"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-014.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-014.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -1644,8 +2014,12 @@
         }
       ],
       "available_platforms": [
+        "Apache",
         ".htaccess",
-        "Cloudflare"
+        "Cloudflare",
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -1672,6 +2046,42 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "transform_rule"
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-015.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-015.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-015.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-015.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "Apache": {
+          "lib_key": "apache",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-015.apache",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-015.steps[*enforcer=Apache]",
+          "operation": "add_directive",
+          "target_file": "Apache",
+          "backup_required": true,
+          "implementation_type": "apache_conf"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-015.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-015.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -1760,8 +2170,12 @@
         }
       ],
       "available_platforms": [
+        "Apache",
         ".htaccess",
-        "Cloudflare"
+        "Cloudflare",
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -1788,6 +2202,42 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "transform_rule"
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-016.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-016.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-016.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-016.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "Apache": {
+          "lib_key": "apache",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-016.apache",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-016.steps[*enforcer=Apache]",
+          "operation": "add_directive",
+          "target_file": "Apache",
+          "backup_required": true,
+          "implementation_type": "apache_conf"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-016.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-016.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -1876,8 +2326,12 @@
         }
       ],
       "available_platforms": [
+        "Apache",
         ".htaccess",
-        "Cloudflare"
+        "Cloudflare",
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -1904,6 +2358,42 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "transform_rule"
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-017.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-017.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-017.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-017.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "Apache": {
+          "lib_key": "apache",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-017.apache",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-017.steps[*enforcer=Apache]",
+          "operation": "add_directive",
+          "target_file": "Apache",
+          "backup_required": true,
+          "implementation_type": "apache_conf"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-017.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-017.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -1992,8 +2482,12 @@
         }
       ],
       "available_platforms": [
+        "Apache",
         ".htaccess",
-        "Cloudflare"
+        "Cloudflare",
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -2020,6 +2514,42 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "transform_rule"
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-018.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-018.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-018.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-018.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "Apache": {
+          "lib_key": "apache",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-018.apache",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-018.steps[*enforcer=Apache]",
+          "operation": "add_directive",
+          "target_file": "Apache",
+          "backup_required": true,
+          "implementation_type": "apache_conf"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-018.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-018.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -2108,8 +2638,12 @@
         }
       ],
       "available_platforms": [
+        "Apache",
         ".htaccess",
-        "Cloudflare"
+        "Cloudflare",
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -2136,6 +2670,42 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "waf_custom_rule"
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-019.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-019.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-019.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-019.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "Apache": {
+          "lib_key": "apache",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-019.apache",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-019.steps[*enforcer=Apache]",
+          "operation": "add_directive",
+          "target_file": "Apache",
+          "backup_required": true,
+          "implementation_type": "apache_conf"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-019.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-019.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -2224,8 +2794,12 @@
         }
       ],
       "available_platforms": [
+        "Apache",
         ".htaccess",
-        "Cloudflare"
+        "Cloudflare",
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -2252,6 +2826,42 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "waf_custom_rule"
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-020.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-020.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-020.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-020.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "Apache": {
+          "lib_key": "apache",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-020.apache",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-020.steps[*enforcer=Apache]",
+          "operation": "add_directive",
+          "target_file": "Apache",
+          "backup_required": true,
+          "implementation_type": "apache_conf"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-020.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-020.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -2340,8 +2950,12 @@
         }
       ],
       "available_platforms": [
+        "Apache",
         ".htaccess",
-        "Cloudflare"
+        "Cloudflare",
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -2368,6 +2982,42 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "waf_custom_rule"
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-021.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-021.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-021.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-021.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "Apache": {
+          "lib_key": "apache",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-021.apache",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-021.steps[*enforcer=Apache]",
+          "operation": "add_directive",
+          "target_file": "Apache",
+          "backup_required": true,
+          "implementation_type": "apache_conf"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-021.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-021.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -2456,8 +3106,12 @@
         }
       ],
       "available_platforms": [
+        "Apache",
         ".htaccess",
-        "Cloudflare"
+        "Cloudflare",
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -2484,6 +3138,42 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "transform_rule"
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-022.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-022.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-022.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-022.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "Apache": {
+          "lib_key": "apache",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-022.apache",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-022.steps[*enforcer=Apache]",
+          "operation": "add_directive",
+          "target_file": "Apache",
+          "backup_required": true,
+          "implementation_type": "apache_conf"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-022.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-022.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -2572,8 +3262,12 @@
         }
       ],
       "available_platforms": [
+        "Apache",
         ".htaccess",
-        "Cloudflare"
+        "Cloudflare",
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -2600,6 +3294,42 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "waf_custom_rule"
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-023.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-023.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-023.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-023.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "Apache": {
+          "lib_key": "apache",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-023.apache",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-023.steps[*enforcer=Apache]",
+          "operation": "add_directive",
+          "target_file": "Apache",
+          "backup_required": true,
+          "implementation_type": "apache_conf"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-023.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-023.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -2688,8 +3418,12 @@
         }
       ],
       "available_platforms": [
+        "Apache",
         ".htaccess",
-        "Cloudflare"
+        "Cloudflare",
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -2716,6 +3450,42 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "transform_rule"
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-024.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-024.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-024.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-024.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "Apache": {
+          "lib_key": "apache",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-024.apache",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-024.steps[*enforcer=Apache]",
+          "operation": "add_directive",
+          "target_file": "Apache",
+          "backup_required": true,
+          "implementation_type": "apache_conf"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-024.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-024.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -2804,8 +3574,12 @@
         }
       ],
       "available_platforms": [
+        "Apache",
         ".htaccess",
-        "Cloudflare"
+        "Cloudflare",
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -2830,6 +3604,42 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "notes_only"
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-025.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-025.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-025.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-025.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "Apache": {
+          "lib_key": "apache",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-025.apache",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-025.steps[*enforcer=Apache]",
+          "operation": "add_directive",
+          "target_file": "Apache",
+          "backup_required": true,
+          "implementation_type": "apache_conf"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-025.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-025.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -2918,8 +3728,12 @@
         }
       ],
       "available_platforms": [
+        "Apache",
         ".htaccess",
-        "Cloudflare"
+        "Cloudflare",
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -2944,6 +3758,42 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "notes_only"
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-026.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-026.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-026.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-026.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "Apache": {
+          "lib_key": "apache",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-026.apache",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-026.steps[*enforcer=Apache]",
+          "operation": "add_directive",
+          "target_file": "Apache",
+          "backup_required": true,
+          "implementation_type": "apache_conf"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-026.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-026.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -3032,8 +3882,12 @@
         }
       ],
       "available_platforms": [
+        "Apache",
         ".htaccess",
-        "Cloudflare"
+        "Cloudflare",
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -3060,6 +3914,42 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "waf_custom_rule"
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-027.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-027.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-027.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-027.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "Apache": {
+          "lib_key": "apache",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-027.apache",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-027.steps[*enforcer=Apache]",
+          "operation": "add_directive",
+          "target_file": "Apache",
+          "backup_required": true,
+          "implementation_type": "apache_conf"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-027.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-027.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -3148,8 +4038,12 @@
         }
       ],
       "available_platforms": [
+        "Apache",
         ".htaccess",
-        "Cloudflare"
+        "Cloudflare",
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -3176,6 +4070,42 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "waf_custom_rule"
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-028.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-028.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-028.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-028.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "Apache": {
+          "lib_key": "apache",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-028.apache",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-028.steps[*enforcer=Apache]",
+          "operation": "add_directive",
+          "target_file": "Apache",
+          "backup_required": true,
+          "implementation_type": "apache_conf"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-028.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-028.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -3264,8 +4194,12 @@
         }
       ],
       "available_platforms": [
+        "Apache",
         ".htaccess",
-        "Cloudflare"
+        "Cloudflare",
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -3292,6 +4226,42 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "waf_custom_rule"
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-029.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-029.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-029.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-029.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "Apache": {
+          "lib_key": "apache",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-029.apache",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-029.steps[*enforcer=Apache]",
+          "operation": "add_directive",
+          "target_file": "Apache",
+          "backup_required": true,
+          "implementation_type": "apache_conf"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-029.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-029.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -3380,8 +4350,12 @@
         }
       ],
       "available_platforms": [
+        "Apache",
         ".htaccess",
-        "Cloudflare"
+        "Cloudflare",
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -3408,6 +4382,42 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "waf_custom_rule"
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-030.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-030.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-030.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-030.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "Apache": {
+          "lib_key": "apache",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-030.apache",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-030.steps[*enforcer=Apache]",
+          "operation": "add_directive",
+          "target_file": "Apache",
+          "backup_required": true,
+          "implementation_type": "apache_conf"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-030.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-030.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -3496,8 +4506,12 @@
         }
       ],
       "available_platforms": [
+        "Apache",
         ".htaccess",
-        "Cloudflare"
+        "Cloudflare",
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -3524,6 +4538,42 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "transform_rule"
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-031.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-031.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-031.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-031.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "Apache": {
+          "lib_key": "apache",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-031.apache",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-031.steps[*enforcer=Apache]",
+          "operation": "add_directive",
+          "target_file": "Apache",
+          "backup_required": true,
+          "implementation_type": "apache_conf"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-031.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-031.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -3612,8 +4662,12 @@
         }
       ],
       "available_platforms": [
+        "Apache",
         ".htaccess",
-        "Cloudflare"
+        "Cloudflare",
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -3640,6 +4694,42 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "transform_rule"
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-032.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-032.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-032.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-032.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "Apache": {
+          "lib_key": "apache",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-032.apache",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-032.steps[*enforcer=Apache]",
+          "operation": "add_directive",
+          "target_file": "Apache",
+          "backup_required": true,
+          "implementation_type": "apache_conf"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-032.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-032.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -3728,8 +4818,12 @@
         }
       ],
       "available_platforms": [
+        "Apache",
         ".htaccess",
-        "Cloudflare"
+        "Cloudflare",
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -3756,6 +4850,42 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "transform_rule"
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-033.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-033.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-033.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-033.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "Apache": {
+          "lib_key": "apache",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-033.apache",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-033.steps[*enforcer=Apache]",
+          "operation": "add_directive",
+          "target_file": "Apache",
+          "backup_required": true,
+          "implementation_type": "apache_conf"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-033.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-033.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -3844,8 +4974,12 @@
         }
       ],
       "available_platforms": [
+        "Apache",
         ".htaccess",
-        "Cloudflare"
+        "Cloudflare",
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -3872,6 +5006,42 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "waf_custom_rule"
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-034.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-034.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-034.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-034.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "Apache": {
+          "lib_key": "apache",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-034.apache",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-034.steps[*enforcer=Apache]",
+          "operation": "add_directive",
+          "target_file": "Apache",
+          "backup_required": true,
+          "implementation_type": "apache_conf"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-034.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-034.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -3960,8 +5130,12 @@
         }
       ],
       "available_platforms": [
+        "Apache",
         ".htaccess",
-        "Cloudflare"
+        "Cloudflare",
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -3988,6 +5162,42 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "waf_custom_rule"
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-035.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-035.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-035.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-035.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "Apache": {
+          "lib_key": "apache",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-035.apache",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-035.steps[*enforcer=Apache]",
+          "operation": "add_directive",
+          "target_file": "Apache",
+          "backup_required": true,
+          "implementation_type": "apache_conf"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-035.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-035.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -4076,7 +5286,9 @@
         }
       ],
       "available_platforms": [
-        "PHP Functions"
+        "PHP Functions",
+        "Nginx",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "PHP Functions": {
@@ -4087,6 +5299,24 @@
           "target_file": "PHP Functions",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-036.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-036.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-036.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-036.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -4175,7 +5405,9 @@
         }
       ],
       "available_platforms": [
-        "PHP Functions"
+        "PHP Functions",
+        "Nginx",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "PHP Functions": {
@@ -4186,6 +5418,24 @@
           "target_file": "PHP Functions",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-037.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-037.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-037.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-037.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -4274,7 +5524,9 @@
         }
       ],
       "available_platforms": [
-        "PHP Functions"
+        "PHP Functions",
+        "Nginx",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "PHP Functions": {
@@ -4285,6 +5537,24 @@
           "target_file": "PHP Functions",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-038.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-038.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-038.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-038.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -4373,7 +5643,9 @@
         }
       ],
       "available_platforms": [
-        "PHP Functions"
+        "PHP Functions",
+        "Nginx",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "PHP Functions": {
@@ -4384,6 +5656,24 @@
           "target_file": "PHP Functions",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-039.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-039.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-039.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-039.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -4472,7 +5762,9 @@
         }
       ],
       "available_platforms": [
-        "PHP Functions"
+        "PHP Functions",
+        "Nginx",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "PHP Functions": {
@@ -4483,6 +5775,24 @@
           "target_file": "PHP Functions",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-040.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-040.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-040.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-040.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -4571,7 +5881,9 @@
         }
       ],
       "available_platforms": [
-        "PHP Functions"
+        "PHP Functions",
+        "Nginx",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "PHP Functions": {
@@ -4582,6 +5894,24 @@
           "target_file": "PHP Functions",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-041.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-041.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-041.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-041.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -4670,7 +6000,9 @@
         }
       ],
       "available_platforms": [
-        "PHP Functions"
+        "PHP Functions",
+        "Nginx",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "PHP Functions": {
@@ -4681,6 +6013,24 @@
           "target_file": "PHP Functions",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-042.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-042.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-042.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-042.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -4769,7 +6119,9 @@
         }
       ],
       "available_platforms": [
-        "PHP Functions"
+        "PHP Functions",
+        "Nginx",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "PHP Functions": {
@@ -4780,6 +6132,24 @@
           "target_file": "PHP Functions",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-043.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-043.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-043.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-043.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -4868,7 +6238,9 @@
         }
       ],
       "available_platforms": [
-        "PHP Functions"
+        "PHP Functions",
+        "Nginx",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "PHP Functions": {
@@ -4879,6 +6251,24 @@
           "target_file": "PHP Functions",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-044.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-044.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-044.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-044.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -4967,7 +6357,9 @@
         }
       ],
       "available_platforms": [
-        "PHP Functions"
+        "PHP Functions",
+        "Nginx",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "PHP Functions": {
@@ -4978,6 +6370,24 @@
           "target_file": "PHP Functions",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-045.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-045.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-045.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-045.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -5066,7 +6476,9 @@
         }
       ],
       "available_platforms": [
-        "PHP Functions"
+        "PHP Functions",
+        "Nginx",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "PHP Functions": {
@@ -5077,6 +6489,24 @@
           "target_file": "PHP Functions",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-046.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-046.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-046.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-046.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -5165,7 +6595,9 @@
         }
       ],
       "available_platforms": [
-        "PHP Functions"
+        "PHP Functions",
+        "Nginx",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "PHP Functions": {
@@ -5176,6 +6608,24 @@
           "target_file": "PHP Functions",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-047.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-047.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-047.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-047.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -5264,7 +6714,9 @@
         }
       ],
       "available_platforms": [
-        "PHP Functions"
+        "PHP Functions",
+        "Nginx",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "PHP Functions": {
@@ -5275,6 +6727,24 @@
           "target_file": "PHP Functions",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-048.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-048.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-048.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-048.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -5363,7 +6833,9 @@
         }
       ],
       "available_platforms": [
-        "PHP Functions"
+        "PHP Functions",
+        "Nginx",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "PHP Functions": {
@@ -5374,6 +6846,24 @@
           "target_file": "PHP Functions",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-049.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-049.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-049.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-049.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -5462,7 +6952,9 @@
         }
       ],
       "available_platforms": [
-        "PHP Functions"
+        "PHP Functions",
+        "Nginx",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "PHP Functions": {
@@ -5473,6 +6965,24 @@
           "target_file": "PHP Functions",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-050.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-050.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-050.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-050.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -5561,7 +7071,9 @@
         }
       ],
       "available_platforms": [
-        "PHP Functions"
+        "PHP Functions",
+        "Nginx",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "PHP Functions": {
@@ -5572,6 +7084,24 @@
           "target_file": "PHP Functions",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-051.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-051.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-051.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-051.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -5660,7 +7190,9 @@
         }
       ],
       "available_platforms": [
-        "PHP Functions"
+        "PHP Functions",
+        "Nginx",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "PHP Functions": {
@@ -5671,6 +7203,24 @@
           "target_file": "PHP Functions",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-052.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-052.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-052.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-052.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -5759,7 +7309,9 @@
         }
       ],
       "available_platforms": [
-        "PHP Functions"
+        "PHP Functions",
+        "Nginx",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "PHP Functions": {
@@ -5770,6 +7322,24 @@
           "target_file": "PHP Functions",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-053.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-053.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-053.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-053.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -5858,7 +7428,9 @@
         }
       ],
       "available_platforms": [
-        "PHP Functions"
+        "PHP Functions",
+        "Nginx",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "PHP Functions": {
@@ -5869,6 +7441,24 @@
           "target_file": "PHP Functions",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-054.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-054.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-054.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-054.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -5957,7 +7547,9 @@
         }
       ],
       "available_platforms": [
-        "PHP Functions"
+        "PHP Functions",
+        "Nginx",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "PHP Functions": {
@@ -5968,6 +7560,24 @@
           "target_file": "PHP Functions",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-055.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-055.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-055.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-055.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -6056,7 +7666,9 @@
         }
       ],
       "available_platforms": [
-        "PHP Functions"
+        "PHP Functions",
+        "Nginx",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "PHP Functions": {
@@ -6067,6 +7679,24 @@
           "target_file": "PHP Functions",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-056.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-056.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-056.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-056.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -6155,7 +7785,9 @@
         }
       ],
       "available_platforms": [
-        "PHP Functions"
+        "PHP Functions",
+        "Nginx",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "PHP Functions": {
@@ -6166,6 +7798,24 @@
           "target_file": "PHP Functions",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-057.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-057.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-057.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-057.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -6254,7 +7904,9 @@
         }
       ],
       "available_platforms": [
-        "PHP Functions"
+        "PHP Functions",
+        "Nginx",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "PHP Functions": {
@@ -6265,6 +7917,24 @@
           "target_file": "PHP Functions",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-058.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-058.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-058.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-058.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -6353,7 +8023,9 @@
         }
       ],
       "available_platforms": [
-        "PHP Functions"
+        "PHP Functions",
+        "Nginx",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "PHP Functions": {
@@ -6364,6 +8036,24 @@
           "target_file": "PHP Functions",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-059.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-059.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-059.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-059.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -6452,7 +8142,9 @@
         }
       ],
       "available_platforms": [
-        "PHP Functions"
+        "PHP Functions",
+        "Nginx",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "PHP Functions": {
@@ -6463,6 +8155,24 @@
           "target_file": "PHP Functions",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-060.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-060.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-060.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-060.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -8673,7 +10383,8 @@
         }
       ],
       "available_platforms": [
-        "fail2ban"
+        "fail2ban",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "fail2ban": {
@@ -8684,6 +10395,15 @@
           "target_file": "fail2ban",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-081.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-081.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -8772,7 +10492,8 @@
         }
       ],
       "available_platforms": [
-        "fail2ban"
+        "fail2ban",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "fail2ban": {
@@ -8783,6 +10504,15 @@
           "target_file": "fail2ban",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-082.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-082.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -8871,7 +10601,8 @@
         }
       ],
       "available_platforms": [
-        "fail2ban"
+        "fail2ban",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "fail2ban": {
@@ -8882,6 +10613,15 @@
           "target_file": "fail2ban",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-083.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-083.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -8970,7 +10710,8 @@
         }
       ],
       "available_platforms": [
-        "fail2ban"
+        "fail2ban",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "fail2ban": {
@@ -8981,6 +10722,15 @@
           "target_file": "fail2ban",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-084.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-084.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -9069,7 +10819,8 @@
         }
       ],
       "available_platforms": [
-        "fail2ban"
+        "fail2ban",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "fail2ban": {
@@ -9080,6 +10831,15 @@
           "target_file": "fail2ban",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-085.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-085.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -9168,7 +10928,8 @@
         }
       ],
       "available_platforms": [
-        "fail2ban"
+        "fail2ban",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "fail2ban": {
@@ -9179,6 +10940,15 @@
           "target_file": "fail2ban",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-086.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-086.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -9267,7 +11037,8 @@
         }
       ],
       "available_platforms": [
-        "fail2ban"
+        "fail2ban",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "fail2ban": {
@@ -9278,6 +11049,15 @@
           "target_file": "fail2ban",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-087.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-087.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -9366,7 +11146,8 @@
         }
       ],
       "available_platforms": [
-        "fail2ban"
+        "fail2ban",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "fail2ban": {
@@ -9377,6 +11158,15 @@
           "target_file": "fail2ban",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-088.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-088.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -9465,7 +11255,8 @@
         }
       ],
       "available_platforms": [
-        "fail2ban"
+        "fail2ban",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "fail2ban": {
@@ -9476,6 +11267,15 @@
           "target_file": "fail2ban",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-089.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-089.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -9564,7 +11364,8 @@
         }
       ],
       "available_platforms": [
-        "fail2ban"
+        "fail2ban",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "fail2ban": {
@@ -9575,6 +11376,15 @@
           "target_file": "fail2ban",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-090.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-090.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -9663,7 +11473,9 @@
         }
       ],
       "available_platforms": [
-        "fail2ban"
+        "fail2ban",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "fail2ban": {
@@ -9674,6 +11486,24 @@
           "target_file": "fail2ban",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-091.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-091.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-091.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-091.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -9762,7 +11592,9 @@
         }
       ],
       "available_platforms": [
-        "fail2ban"
+        "fail2ban",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "fail2ban": {
@@ -9773,6 +11605,24 @@
           "target_file": "fail2ban",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-092.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-092.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-092.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-092.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -9861,7 +11711,9 @@
         }
       ],
       "available_platforms": [
-        "fail2ban"
+        "fail2ban",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "fail2ban": {
@@ -9872,6 +11724,24 @@
           "target_file": "fail2ban",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-093.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-093.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-093.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-093.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -9960,7 +11830,9 @@
         }
       ],
       "available_platforms": [
-        "fail2ban"
+        "fail2ban",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "fail2ban": {
@@ -9971,6 +11843,24 @@
           "target_file": "fail2ban",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-094.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-094.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-094.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-094.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -10059,7 +11949,9 @@
         }
       ],
       "available_platforms": [
-        "fail2ban"
+        "fail2ban",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "fail2ban": {
@@ -10070,6 +11962,24 @@
           "target_file": "fail2ban",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-095.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-095.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-095.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-095.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -10158,7 +12068,9 @@
         }
       ],
       "available_platforms": [
-        "Server Cron"
+        "Server Cron",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "Server Cron": {
@@ -10169,6 +12081,24 @@
           "target_file": "Server Cron",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-096.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-096.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-096.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-096.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -10257,7 +12187,9 @@
         }
       ],
       "available_platforms": [
-        "Server Cron"
+        "Server Cron",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "Server Cron": {
@@ -10268,6 +12200,24 @@
           "target_file": "Server Cron",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-097.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-097.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-097.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-097.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -10356,7 +12306,9 @@
         }
       ],
       "available_platforms": [
-        "Server Cron"
+        "Server Cron",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "Server Cron": {
@@ -10367,6 +12319,24 @@
           "target_file": "Server Cron",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-098.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-098.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-098.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-098.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -10455,7 +12425,9 @@
         }
       ],
       "available_platforms": [
-        "Server Cron"
+        "Server Cron",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "Server Cron": {
@@ -10466,6 +12438,24 @@
           "target_file": "Server Cron",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-099.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-099.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-099.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-099.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -10554,7 +12544,9 @@
         }
       ],
       "available_platforms": [
-        "Server Cron"
+        "Server Cron",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "Server Cron": {
@@ -10565,6 +12557,24 @@
           "target_file": "Server Cron",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-100.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-100.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-100.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-100.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -10653,7 +12663,9 @@
         }
       ],
       "available_platforms": [
-        "Server Cron"
+        "Server Cron",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "Server Cron": {
@@ -10664,6 +12676,24 @@
           "target_file": "Server Cron",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-101.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-101.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-101.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-101.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -10752,7 +12782,9 @@
         }
       ],
       "available_platforms": [
-        "Server Cron"
+        "Server Cron",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "Server Cron": {
@@ -10763,6 +12795,24 @@
           "target_file": "Server Cron",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-102.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-102.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-102.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-102.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -10851,7 +12901,9 @@
         }
       ],
       "available_platforms": [
-        "Server Cron"
+        "Server Cron",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "Server Cron": {
@@ -10862,6 +12914,24 @@
           "target_file": "Server Cron",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-103.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-103.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-103.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-103.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -10950,7 +13020,9 @@
         }
       ],
       "available_platforms": [
-        "Server Cron"
+        "Server Cron",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "Server Cron": {
@@ -10961,6 +13033,24 @@
           "target_file": "Server Cron",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-104.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-104.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-104.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-104.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -11049,7 +13139,9 @@
         }
       ],
       "available_platforms": [
-        "Server Cron"
+        "Server Cron",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "Server Cron": {
@@ -11060,6 +13152,24 @@
           "target_file": "Server Cron",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-105.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-105.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-105.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-105.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -11148,7 +13258,9 @@
         }
       ],
       "available_platforms": [
-        "WordPress"
+        "WordPress",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "WordPress": {
@@ -11159,6 +13271,24 @@
           "target_file": "WordPress",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-106.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-106.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-106.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-106.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -11247,7 +13377,9 @@
         }
       ],
       "available_platforms": [
-        "WordPress"
+        "WordPress",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "WordPress": {
@@ -11258,6 +13390,24 @@
           "target_file": "WordPress",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-107.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-107.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-107.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-107.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -11346,7 +13496,9 @@
         }
       ],
       "available_platforms": [
-        "WordPress"
+        "WordPress",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "WordPress": {
@@ -11357,6 +13509,24 @@
           "target_file": "WordPress",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-108.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-108.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-108.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-108.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -11445,7 +13615,9 @@
         }
       ],
       "available_platforms": [
-        "WordPress"
+        "WordPress",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "WordPress": {
@@ -11456,6 +13628,24 @@
           "target_file": "WordPress",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-109.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-109.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-109.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-109.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -11544,7 +13734,9 @@
         }
       ],
       "available_platforms": [
-        "WordPress"
+        "WordPress",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "WordPress": {
@@ -11555,6 +13747,24 @@
           "target_file": "WordPress",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-110.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-110.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-110.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-110.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -11643,7 +13853,9 @@
         }
       ],
       "available_platforms": [
-        "WordPress"
+        "WordPress",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "WordPress": {
@@ -11654,6 +13866,24 @@
           "target_file": "WordPress",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-111.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-111.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-111.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-111.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -11742,7 +13972,9 @@
         }
       ],
       "available_platforms": [
-        "WordPress"
+        "WordPress",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "WordPress": {
@@ -11753,6 +13985,24 @@
           "target_file": "WordPress",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-112.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-112.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-112.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-112.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -11841,7 +14091,9 @@
         }
       ],
       "available_platforms": [
-        "WordPress"
+        "WordPress",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "WordPress": {
@@ -11852,6 +14104,24 @@
           "target_file": "WordPress",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-113.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-113.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-113.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-113.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -11940,7 +14210,9 @@
         }
       ],
       "available_platforms": [
-        "WordPress"
+        "WordPress",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "WordPress": {
@@ -11951,6 +14223,24 @@
           "target_file": "WordPress",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-114.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-114.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-114.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-114.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -12039,7 +14329,9 @@
         }
       ],
       "available_platforms": [
-        "WordPress"
+        "WordPress",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "WordPress": {
@@ -12050,6 +14342,24 @@
           "target_file": "WordPress",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-115.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-115.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-115.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-115.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -12138,7 +14448,9 @@
         }
       ],
       "available_platforms": [
-        "Nginx"
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "Nginx": {
@@ -12149,6 +14461,24 @@
           "target_file": "Nginx",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-116.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-116.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-116.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-116.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -12237,7 +14567,9 @@
         }
       ],
       "available_platforms": [
-        "Apache"
+        "Apache",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "Apache": {
@@ -12248,6 +14580,24 @@
           "target_file": "Apache",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-117.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-117.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-117.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-117.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -12336,7 +14686,9 @@
         }
       ],
       "available_platforms": [
-        "Nginx"
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "Nginx": {
@@ -12347,6 +14699,24 @@
           "target_file": "Nginx",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-118.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-118.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-118.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-118.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -12435,7 +14805,9 @@
         }
       ],
       "available_platforms": [
-        "Nginx"
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "Nginx": {
@@ -12446,6 +14818,24 @@
           "target_file": "Nginx",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-119.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-119.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-119.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-119.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -12534,7 +14924,9 @@
         }
       ],
       "available_platforms": [
-        "Nginx"
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "Nginx": {
@@ -12545,6 +14937,24 @@
           "target_file": "Nginx",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-120.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-120.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-120.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-120.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -12633,7 +15043,9 @@
         }
       ],
       "available_platforms": [
-        "Apache"
+        "Apache",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "Apache": {
@@ -12644,6 +15056,24 @@
           "target_file": "Apache",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-121.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-121.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-121.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-121.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -12732,7 +15162,9 @@
         }
       ],
       "available_platforms": [
-        "Nginx"
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "Nginx": {
@@ -12743,6 +15175,24 @@
           "target_file": "Nginx",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-122.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-122.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-122.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-122.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -12775,7 +15225,7 @@
     },
     "RISK-123": {
       "risk_id": "RISK-123",
-      "title": "Caddy Server Version Exposed",
+      "title": "Apache_Legacy Server Version Exposed",
       "category": "Information Disclosure",
       "severity": {
         "level": "low",
@@ -12803,7 +15253,7 @@
         "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
         "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
       },
-      "summary": "Caddy version in headers.",
+      "summary": "Apache_Legacy version in headers.",
       "ui_layout": {
         "card_id": "vapt-card-risk123",
         "section": "Information Disclosure",
@@ -12815,7 +15265,7 @@
         {
           "component_id": "UI-RISK-123-001",
           "type": "toggle",
-          "label": "Enable protection for Caddy Server Version Exposed",
+          "label": "Enable protection for Apache_Legacy Server Version Exposed",
           "default_value": false,
           "on_change": "handleRISK123ToggleChange",
           "settings_key": "vapt_risk_123_enabled"
@@ -12830,8 +15280,30 @@
           "rest_endpoint": "/wp-json/vapt/v1/risk-123"
         }
       ],
-      "available_platforms": [],
-      "platform_implementations": {},
+      "available_platforms": [
+        "PHP Functions",
+        "wp-config.php"
+      ],
+      "platform_implementations": {
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-123.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-123.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-123.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-123.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
+        }
+      },
       "status_indicators": {
         "protected": {
           "color": "text-green-600",
@@ -12862,7 +15334,7 @@
     },
     "RISK-124": {
       "risk_id": "RISK-124",
-      "title": "Caddy Admin Interface Exposed",
+      "title": "Apache_Legacy Admin Interface Exposed",
       "category": "Configuration",
       "severity": {
         "level": "critical",
@@ -12890,7 +15362,7 @@
         "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
         "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
       },
-      "summary": "Caddy admin API accessible.",
+      "summary": "Apache_Legacy admin API accessible.",
       "ui_layout": {
         "card_id": "vapt-card-risk124",
         "section": "Configuration",
@@ -12902,7 +15374,7 @@
         {
           "component_id": "UI-RISK-124-001",
           "type": "toggle",
-          "label": "Enable protection for Caddy Admin Interface Exposed",
+          "label": "Enable protection for Apache_Legacy Admin Interface Exposed",
           "default_value": false,
           "on_change": "handleRISK124ToggleChange",
           "settings_key": "vapt_risk_124_enabled"
@@ -12917,8 +15389,30 @@
           "rest_endpoint": "/wp-json/vapt/v1/risk-124"
         }
       ],
-      "available_platforms": [],
-      "platform_implementations": {},
+      "available_platforms": [
+        "PHP Functions",
+        "wp-config.php"
+      ],
+      "platform_implementations": {
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-124.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-124.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-124.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-124.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
+        }
+      },
       "status_indicators": {
         "protected": {
           "color": "text-green-600",
@@ -13005,7 +15499,9 @@
         }
       ],
       "available_platforms": [
-        "Nginx"
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "Nginx": {
@@ -13016,6 +15512,24 @@
           "target_file": "Nginx",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-125.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-125.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-125.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-125.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -13104,7 +15618,9 @@
         }
       ],
       "available_platforms": [
-        "WordPress Core"
+        "WordPress Core",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "WordPress Core": {
@@ -13115,6 +15631,24 @@
           "target_file": "WordPress Core",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-126.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-126.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-126.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-126.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -13203,7 +15737,9 @@
         }
       ],
       "available_platforms": [
-        "PHP Functions"
+        "PHP Functions",
+        "Nginx",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "PHP Functions": {
@@ -13214,6 +15750,24 @@
           "target_file": "PHP Functions",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-127.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-127.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-127.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-127.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -13408,8 +15962,12 @@
         }
       ],
       "available_platforms": [
+        "Apache",
         ".htaccess",
-        "Cloudflare"
+        "Cloudflare",
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -13436,6 +15994,42 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "waf_custom_rule"
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-129.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-129.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-129.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-129.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "Apache": {
+          "lib_key": "apache",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-129.apache",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-129.steps[*enforcer=Apache]",
+          "operation": "add_directive",
+          "target_file": "Apache",
+          "backup_required": true,
+          "implementation_type": "apache_conf"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-129.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-129.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -13524,8 +16118,12 @@
         }
       ],
       "available_platforms": [
+        "Apache",
         ".htaccess",
-        "Cloudflare"
+        "Cloudflare",
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -13550,6 +16148,42 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "notes_only"
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-130.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-130.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-130.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-130.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "Apache": {
+          "lib_key": "apache",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-130.apache",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-130.steps[*enforcer=Apache]",
+          "operation": "add_directive",
+          "target_file": "Apache",
+          "backup_required": true,
+          "implementation_type": "apache_conf"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-130.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-130.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -13638,7 +16272,9 @@
         }
       ],
       "available_platforms": [
-        "PHP Functions"
+        "PHP Functions",
+        "Nginx",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "PHP Functions": {
@@ -13649,6 +16285,24 @@
           "target_file": "PHP Functions",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-131.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-131.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-131.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-131.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -13737,7 +16391,9 @@
         }
       ],
       "available_platforms": [
-        "Nginx"
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "Nginx": {
@@ -13748,6 +16404,24 @@
           "target_file": "Nginx",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-132.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-132.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-132.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-132.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -13836,7 +16510,9 @@
         }
       ],
       "available_platforms": [
-        "WordPress Core"
+        "WordPress Core",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         "WordPress Core": {
@@ -13847,6 +16523,24 @@
           "target_file": "WordPress Core",
           "backup_required": true,
           "implementation_type": ""
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-133.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-133.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-133.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-133.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -13935,8 +16629,12 @@
         }
       ],
       "available_platforms": [
+        "Apache",
         ".htaccess",
-        "Cloudflare"
+        "Cloudflare",
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -13963,6 +16661,42 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "transform_rule"
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-134.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-134.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-134.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-134.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "Apache": {
+          "lib_key": "apache",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-134.apache",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-134.steps[*enforcer=Apache]",
+          "operation": "add_directive",
+          "target_file": "Apache",
+          "backup_required": true,
+          "implementation_type": "apache_conf"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-134.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-134.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
@@ -14051,8 +16785,12 @@
         }
       ],
       "available_platforms": [
+        "Apache",
         ".htaccess",
-        "Cloudflare"
+        "Cloudflare",
+        "Nginx",
+        "PHP Functions",
+        "wp-config.php"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -14079,6 +16817,42 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "waf_custom_rule"
+        },
+        "Nginx": {
+          "lib_key": "nginx",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-135.nginx",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-135.steps[*enforcer=Nginx]",
+          "operation": "add_location_block",
+          "target_file": "Nginx",
+          "backup_required": true,
+          "implementation_type": "nginx_location"
+        },
+        "PHP Functions": {
+          "lib_key": "php_functions",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-135.php_functions",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-135.steps[*enforcer=PHP Functions]",
+          "operation": "add_action_hook",
+          "target_file": "PHP Functions",
+          "backup_required": true,
+          "implementation_type": "wp_hook"
+        },
+        "Apache": {
+          "lib_key": "apache",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-135.apache",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-135.steps[*enforcer=Apache]",
+          "operation": "add_directive",
+          "target_file": "Apache",
+          "backup_required": true,
+          "implementation_type": "apache_conf"
+        },
+        "wp-config.php": {
+          "lib_key": "wp_config",
+          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-135.wp_config",
+          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-135.steps[*enforcer=wp-config.php]",
+          "operation": "add_constant",
+          "target_file": "wp-config.php",
+          "backup_required": true,
+          "implementation_type": "wp_config_constant"
         }
       },
       "status_indicators": {
