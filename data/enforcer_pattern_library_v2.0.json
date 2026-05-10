@@ -10,20 +10,18 @@
     "driver_reference": "VAPT_Driver_Reference_v2.0.php",
     "readme": "VAPT_AI_Agent_System_README_v2.0.md"
   },
-  "description": "VAPT Enforcer Pattern Library v2.0 — All 135 risks, all enforcer types. Keys are enforcer-named (htaccess, wp_config, php_functions, wordpress, wordpress_core, fail2ban, nginx, apache, caddy_native, cloudflare, iis, caddy). Every entry includes a driver{} sub-object with machine-executable fields consumed by vapt_driver_manifest_v2.0.json.",
+  "description": "VAPT Enforcer Pattern Library v2.0 \u2014 All 135 risks, all enforcer types. Keys are enforcer-named (htaccess, wp_config, php_functions, wordpress, wordpress_core, fail2ban, nginx, apache, caddy_native, cloudflare, iis, caddy). Every entry includes a driver{} sub-object with machine-executable fields consumed by vapt_driver_manifest_v2.0.json.",
   "enforcer_key_map": {
-    "htaccess": ".htaccess enforcer — corrected rules + cloudflare/iis/caddy variants",
-    "wp_config": "wp-config.php enforcer — enriched with target_constants, insertion anchor",
-    "php_functions": "PHP Functions enforcer — hook-based code for functions.php / plugin file",
-    "wordpress": "WordPress enforcer — WP action/filter hooks",
-    "wordpress_core": "WordPress Core enforcer — core filter hooks",
-    "fail2ban": "fail2ban enforcer — jail.local config blocks",
-    "nginx": "Nginx enforcer — nginx.conf directives",
-    "apache": "Apache enforcer — httpd.conf / VirtualHost directives",
+    "htaccess": ".htaccess enforcer \u2014 corrected rules + cloudflare/iis/caddy variants",
+    "wp_config": "wp-config.php enforcer \u2014 enriched with target_constants, insertion anchor",
+    "php_functions": "PHP Functions enforcer \u2014 hook-based code for functions.php / plugin file",
+    "wordpress": "WordPress enforcer \u2014 WP action/filter hooks",
+    "wordpress_core": "WordPress Core enforcer \u2014 core filter hooks",
+    "fail2ban": "fail2ban enforcer \u2014 jail.local config blocks",
+    "nginx": "Nginx enforcer \u2014 nginx.conf directives",
+    "apache": "Apache enforcer \u2014 httpd.conf / VirtualHost directives",
     "caddy_native": "Native Caddy enforcer risks (RISK-123, RISK-124)",
-    "cloudflare": "Cloudflare edge implementation derived from .htaccess correction",
-    "iis": "IIS web.config implementation derived from .htaccess correction",
-    "caddy": "Caddyfile v2 implementation derived from .htaccess correction"
+    "cloudflare": "Cloudflare edge implementation derived from .htaccess correction"
   },
   "patterns": {
     "RISK-001": {
@@ -117,18 +115,8 @@
         "name": "VAPT RISK-002",
         "expression": "(http.request.uri.path ends_with \".xmlrpc\") or (http.request.uri.path ends_with \".php\")",
         "action": "Block",
-        "dashboard_path": "Cloudflare → Security → WAF → Custom Rules → Create Rule",
+        "dashboard_path": "Cloudflare \u2192 Security \u2192 WAF \u2192 Custom Rules \u2192 Create Rule",
         "verification": "curl -sI https://yoursite.com/blocked-file | grep HTTP"
-      },
-      "iis": {
-        "implementation_type": "web_config_request_filtering",
-        "web_config_snippet": "<!-- BEGIN VAPT RISK-002 -->\n<configuration>\n  <system.webServer>\n    <security><requestFiltering><hiddenSegments>\n      <add segment=\"xmlrpc.php\" />\n    </hiddenSegments></requestFiltering></security>\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-002 -->",
-        "verification": "curl -sI https://yoursite.com/xmlrpc.php | findstr HTTP"
-      },
-      "caddy": {
-        "implementation_type": "caddy_respond_block",
-        "caddyfile_snippet": "# BEGIN VAPT RISK-002\n@risk002 {\n    path /xmlrpc.php\n}\nrespond @risk002 \"Access Denied\" 403\n# END VAPT RISK-002",
-        "verification": "caddy validate && curl -sI https://yoursite.com/blocked | grep HTTP"
       }
     },
     "RISK-003": {
@@ -176,21 +164,8 @@
         "name": "VAPT RISK-003",
         "expression": "(http.request.uri.path eq \"/wp-json/wp/v2/users\") or (http.request.uri.path wildcard \"/wp-json/wp/v2/users/*\")",
         "action": "Block",
-        "dashboard_path": "Cloudflare → Security → WAF → Custom Rules → Create Rule",
+        "dashboard_path": "Cloudflare \u2192 Security \u2192 WAF \u2192 Custom Rules \u2192 Create Rule",
         "verification": "curl -sI https://yoursite.com | grep HTTP"
-      },
-      "iis": {
-        "implementation_type": "web_config_url_rewrite",
-        "web_config_snippet": "<!-- BEGIN VAPT RISK-003 -->\n<configuration>\n  <system.webServer>\n    <rewrite><rules>\n      <rule name=\"VAPT RISK-003\" stopProcessing=\"true\">\n        <match url=\"^wp-json/wp/v2/users.*\" />\n        <action type=\"CustomResponse\" statusCode=\"403\" statusReason=\"Forbidden\" statusDescription=\"Blocked by VAPT RISK-003\" />\n      </rule>\n    </rules></rewrite>\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-003 -->",
-        "requirements": [
-          "IIS URL Rewrite Module 2.1 — install from Web Platform Installer"
-        ],
-        "verification": "appcmd validate config && curl -sI https://yoursite.com | findstr HTTP"
-      },
-      "caddy": {
-        "implementation_type": "caddy_respond_block",
-        "caddyfile_snippet": "# BEGIN VAPT RISK-003\n@risk003 {\n    path /wp-json/wp/v2/users*\n}\nrespond @risk003 \"Access Denied\" 403\n# END VAPT RISK-003",
-        "verification": "caddy validate && curl -sI https://yoursite.com/blocked | grep HTTP"
       }
     },
     "RISK-004": {
@@ -278,21 +253,8 @@
         "name": "VAPT RISK-005",
         "expression": "(http.request.uri.query contains \"author=\")",
         "action": "Block",
-        "dashboard_path": "Cloudflare → Security → WAF → Custom Rules → Create Rule",
+        "dashboard_path": "Cloudflare \u2192 Security \u2192 WAF \u2192 Custom Rules \u2192 Create Rule",
         "verification": "curl -sI https://yoursite.com | grep HTTP"
-      },
-      "iis": {
-        "implementation_type": "web_config_url_rewrite",
-        "web_config_snippet": "<!-- BEGIN VAPT RISK-005 -->\n<configuration>\n  <system.webServer>\n    <rewrite><rules>\n      <rule name=\"VAPT RISK-005\" stopProcessing=\"true\">\n          <conditions><add input=\"{QUERY_STRING}\" pattern=\"author=\\d+\" /></conditions>\n        <match url=\".*\" />\n        <action type=\"CustomResponse\" statusCode=\"403\" statusReason=\"Forbidden\" statusDescription=\"Blocked by VAPT RISK-005\" />\n      </rule>\n    </rules></rewrite>\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-005 -->",
-        "requirements": [
-          "IIS URL Rewrite Module 2.1 — install from Web Platform Installer"
-        ],
-        "verification": "appcmd validate config && curl -sI https://yoursite.com | findstr HTTP"
-      },
-      "caddy": {
-        "implementation_type": "caddy_respond_block",
-        "caddyfile_snippet": "# BEGIN VAPT RISK-005\n@risk005 {\n    query author=*\n}\nrespond @risk005 \"Access Denied\" 403\n# END VAPT RISK-005",
-        "verification": "caddy validate && curl -sI https://yoursite.com/blocked | grep HTTP"
       }
     },
     "RISK-006": {
@@ -541,18 +503,8 @@
         "name": "VAPT RISK-011",
         "expression": "(http.request.uri.path ends_with \".readme\") or (http.request.uri.path ends_with \".html\")",
         "action": "Block",
-        "dashboard_path": "Cloudflare → Security → WAF → Custom Rules → Create Rule",
+        "dashboard_path": "Cloudflare \u2192 Security \u2192 WAF \u2192 Custom Rules \u2192 Create Rule",
         "verification": "curl -sI https://yoursite.com/blocked-file | grep HTTP"
-      },
-      "iis": {
-        "implementation_type": "web_config_request_filtering",
-        "web_config_snippet": "<!-- BEGIN VAPT RISK-011 -->\n<configuration>\n  <system.webServer>\n    <security><requestFiltering><hiddenSegments>\n      <add segment=\"readme.html\" />\n    </hiddenSegments></requestFiltering></security>\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-011 -->",
-        "verification": "curl -sI https://yoursite.com/readme.html | findstr HTTP"
-      },
-      "caddy": {
-        "implementation_type": "caddy_respond_block",
-        "caddyfile_snippet": "# BEGIN VAPT RISK-011\n@risk011 {\n    path /readme.html\n}\nrespond @risk011 \"Access Denied\" 403\n# END VAPT RISK-011",
-        "verification": "caddy validate && curl -sI https://yoursite.com/blocked | grep HTTP"
       }
     },
     "RISK-012": {
@@ -603,16 +555,6 @@
         "value": "max-age=31536000; includeSubDomains; preload",
         "expression": "true",
         "verification": "curl -sI https://yoursite.com | grep -i 'Strict-Transport-Security'"
-      },
-      "iis": {
-        "implementation_type": "web_config_http_headers",
-        "web_config_snippet": "<!-- BEGIN VAPT RISK-012 -->\n<configuration>\n  <system.webServer>\n    <httpProtocol>\n      <customHeaders>\n        <remove name=\"Strict-Transport-Security\" />\n        <add name=\"Strict-Transport-Security\" value=\"max-age=31536000; includeSubDomains; preload\" />\n      </customHeaders>\n    </httpProtocol>\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-012 -->",
-        "verification": "curl -sI https://yoursite.com | findstr \"Strict-Transport-Security\""
-      },
-      "caddy": {
-        "implementation_type": "caddy_header",
-        "caddyfile_snippet": "# BEGIN VAPT RISK-012\nheader {\n    Strict-Transport-Security \"max-age=31536000; includeSubDomains; preload\"\n    defer\n}\n# END VAPT RISK-012",
-        "verification": "caddy validate && curl -sI https://yoursite.com | grep -i 'Strict-Transport-Security'"
       }
     },
     "RISK-013": {
@@ -656,16 +598,6 @@
       "cloudflare": {
         "implementation_type": "notes_only",
         "note": "'Options -Indexes' has no Cloudflare edge equivalent. Enforce at origin server."
-      },
-      "iis": {
-        "implementation_type": "web_config_directory_browsing",
-        "web_config_snippet": "<!-- BEGIN VAPT RISK-013 -->\n<configuration>\n  <system.webServer>\n    <directoryBrowse enabled=\"false\" />\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-013 -->",
-        "verification": "curl -s https://yoursite.com/wp-content/uploads/ | findstr Index"
-      },
-      "caddy": {
-        "implementation_type": "caddy_file_server",
-        "caddyfile_snippet": "# BEGIN VAPT RISK-013\n# Directory listing disabled by default in Caddy file_server.\n# Ensure \"browse\" is NOT present:\nfile_server\n# END VAPT RISK-013",
-        "note": "Caddy disables directory listing by default. Remove 'browse' if present."
       }
     },
     "RISK-014": {
@@ -716,16 +648,6 @@
         "value": "SAMEORIGIN",
         "expression": "true",
         "verification": "curl -sI https://yoursite.com | grep -i 'X-Frame-Options'"
-      },
-      "iis": {
-        "implementation_type": "web_config_http_headers",
-        "web_config_snippet": "<!-- BEGIN VAPT RISK-014 -->\n<configuration>\n  <system.webServer>\n    <httpProtocol>\n      <customHeaders>\n        <remove name=\"X-Frame-Options\" />\n        <add name=\"X-Frame-Options\" value=\"SAMEORIGIN\" />\n      </customHeaders>\n    </httpProtocol>\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-014 -->",
-        "verification": "curl -sI https://yoursite.com | findstr \"X-Frame-Options\""
-      },
-      "caddy": {
-        "implementation_type": "caddy_header",
-        "caddyfile_snippet": "# BEGIN VAPT RISK-014\nheader {\n    X-Frame-Options \"SAMEORIGIN\"\n    defer\n}\n# END VAPT RISK-014",
-        "verification": "caddy validate && curl -sI https://yoursite.com | grep -i 'X-Frame-Options'"
       }
     },
     "RISK-015": {
@@ -776,16 +698,6 @@
         "value": "nosniff",
         "expression": "true",
         "verification": "curl -sI https://yoursite.com | grep -i 'X-Content-Type-Options'"
-      },
-      "iis": {
-        "implementation_type": "web_config_http_headers",
-        "web_config_snippet": "<!-- BEGIN VAPT RISK-015 -->\n<configuration>\n  <system.webServer>\n    <httpProtocol>\n      <customHeaders>\n        <remove name=\"X-Content-Type-Options\" />\n        <add name=\"X-Content-Type-Options\" value=\"nosniff\" />\n      </customHeaders>\n    </httpProtocol>\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-015 -->",
-        "verification": "curl -sI https://yoursite.com | findstr \"X-Content-Type-Options\""
-      },
-      "caddy": {
-        "implementation_type": "caddy_header",
-        "caddyfile_snippet": "# BEGIN VAPT RISK-015\nheader {\n    X-Content-Type-Options \"nosniff\"\n    defer\n}\n# END VAPT RISK-015",
-        "verification": "caddy validate && curl -sI https://yoursite.com | grep -i 'X-Content-Type-Options'"
       }
     },
     "RISK-016": {
@@ -836,16 +748,6 @@
         "value": "1; mode=block",
         "expression": "true",
         "verification": "curl -sI https://yoursite.com | grep -i 'X-XSS-Protection'"
-      },
-      "iis": {
-        "implementation_type": "web_config_http_headers",
-        "web_config_snippet": "<!-- BEGIN VAPT RISK-016 -->\n<configuration>\n  <system.webServer>\n    <httpProtocol>\n      <customHeaders>\n        <remove name=\"X-XSS-Protection\" />\n        <add name=\"X-XSS-Protection\" value=\"1; mode=block\" />\n      </customHeaders>\n    </httpProtocol>\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-016 -->",
-        "verification": "curl -sI https://yoursite.com | findstr \"X-XSS-Protection\""
-      },
-      "caddy": {
-        "implementation_type": "caddy_header",
-        "caddyfile_snippet": "# BEGIN VAPT RISK-016\nheader {\n    X-XSS-Protection \"1; mode=block\"\n    defer\n}\n# END VAPT RISK-016",
-        "verification": "caddy validate && curl -sI https://yoursite.com | grep -i 'X-XSS-Protection'"
       }
     },
     "RISK-017": {
@@ -896,16 +798,6 @@
         "value": "strict-origin-when-cross-origin",
         "expression": "true",
         "verification": "curl -sI https://yoursite.com | grep -i 'Referrer-Policy'"
-      },
-      "iis": {
-        "implementation_type": "web_config_http_headers",
-        "web_config_snippet": "<!-- BEGIN VAPT RISK-017 -->\n<configuration>\n  <system.webServer>\n    <httpProtocol>\n      <customHeaders>\n        <remove name=\"Referrer-Policy\" />\n        <add name=\"Referrer-Policy\" value=\"strict-origin-when-cross-origin\" />\n      </customHeaders>\n    </httpProtocol>\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-017 -->",
-        "verification": "curl -sI https://yoursite.com | findstr \"Referrer-Policy\""
-      },
-      "caddy": {
-        "implementation_type": "caddy_header",
-        "caddyfile_snippet": "# BEGIN VAPT RISK-017\nheader {\n    Referrer-Policy \"strict-origin-when-cross-origin\"\n    defer\n}\n# END VAPT RISK-017",
-        "verification": "caddy validate && curl -sI https://yoursite.com | grep -i 'Referrer-Policy'"
       }
     },
     "RISK-018": {
@@ -956,16 +848,6 @@
         "value": "geolocation=(), microphone=(), camera=()",
         "expression": "true",
         "verification": "curl -sI https://yoursite.com | grep -i 'Permissions-Policy'"
-      },
-      "iis": {
-        "implementation_type": "web_config_http_headers",
-        "web_config_snippet": "<!-- BEGIN VAPT RISK-018 -->\n<configuration>\n  <system.webServer>\n    <httpProtocol>\n      <customHeaders>\n        <remove name=\"Permissions-Policy\" />\n        <add name=\"Permissions-Policy\" value=\"geolocation=(), microphone=(), camera=()\" />\n      </customHeaders>\n    </httpProtocol>\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-018 -->",
-        "verification": "curl -sI https://yoursite.com | findstr \"Permissions-Policy\""
-      },
-      "caddy": {
-        "implementation_type": "caddy_header",
-        "caddyfile_snippet": "# BEGIN VAPT RISK-018\nheader {\n    Permissions-Policy \"geolocation=(), microphone=(), camera=()\"\n    defer\n}\n# END VAPT RISK-018",
-        "verification": "caddy validate && curl -sI https://yoursite.com | grep -i 'Permissions-Policy'"
       }
     },
     "RISK-019": {
@@ -1013,18 +895,8 @@
         "name": "VAPT RISK-019",
         "expression": "(http.request.uri.path ends_with \".env\") or (http.request.uri.path ends_with \".git\") or (http.request.uri.path ends_with \".sql\") or (http.request.uri.path ends_with \".log\") or (http.request.uri.path ends_with \".ini\") or (http.request.uri.path ends_with \".yml\")",
         "action": "Block",
-        "dashboard_path": "Cloudflare → Security → WAF → Custom Rules → Create Rule",
+        "dashboard_path": "Cloudflare \u2192 Security \u2192 WAF \u2192 Custom Rules \u2192 Create Rule",
         "verification": "curl -sI https://yoursite.com/blocked-file | grep HTTP"
-      },
-      "iis": {
-        "implementation_type": "web_config_request_filtering_extensions",
-        "web_config_snippet": "<!-- BEGIN VAPT RISK-019 -->\n<configuration>\n  <system.webServer>\n    <security><requestFiltering><fileExtensions>\n          <add fileExtension=\".env\" allowed=\"false\" />\n          <add fileExtension=\".git\" allowed=\"false\" />\n          <add fileExtension=\".sql\" allowed=\"false\" />\n          <add fileExtension=\".log\" allowed=\"false\" />\n          <add fileExtension=\".ini\" allowed=\"false\" />\n          <add fileExtension=\".yml\" allowed=\"false\" />\n          <add fileExtension=\".yaml\" allowed=\"false\" />\n          <add fileExtension=\".bak\" allowed=\"false\" />\n          <add fileExtension=\".conf\" allowed=\"false\" />\n    </fileExtensions></requestFiltering></security>\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-019 -->",
-        "verification": "curl -sI https://yoursite.com/test.bak | findstr HTTP"
-      },
-      "caddy": {
-        "implementation_type": "caddy_respond_block",
-        "caddyfile_snippet": "# BEGIN VAPT RISK-019\n@risk019 {\n    path *.env\n    path *.git\n    path *.sql\n    path *.log\n    path *.ini\n    path *.yml\n    path *.yaml\n    path *.bak\n    path *.conf\n}\nrespond @risk019 \"Access Denied\" 403\n# END VAPT RISK-019",
-        "verification": "caddy validate && curl -sI https://yoursite.com/blocked | grep HTTP"
       }
     },
     "RISK-020": {
@@ -1050,7 +922,7 @@
         "wrapped_code": "# BEGIN VAPT RISK-020\n<FilesMatch \"\\.php$\">\n    Order Deny,Allow\n    Deny from all\n</FilesMatch>\n# END VAPT RISK-020",
         "begin_marker": "# BEGIN VAPT RISK-020",
         "end_marker": "# END VAPT RISK-020",
-        "note": "CRITICAL: Place in wp-content/uploads/.htaccess — a separate file. <Directory> is silently ignored in .htaccess. Apache 2.4+: use Require all denied",
+        "note": "CRITICAL: Place in wp-content/uploads/.htaccess \u2014 a separate file. <Directory> is silently ignored in .htaccess. Apache 2.4+: use Require all denied",
         "verification": {
           "command": "apachectl -t",
           "expected": "Exit 0, no syntax errors"
@@ -1072,18 +944,8 @@
         "name": "VAPT RISK-020",
         "expression": "(http.request.uri.path ends_with \".php\")",
         "action": "Block",
-        "dashboard_path": "Cloudflare → Security → WAF → Custom Rules → Create Rule",
+        "dashboard_path": "Cloudflare \u2192 Security \u2192 WAF \u2192 Custom Rules \u2192 Create Rule",
         "verification": "curl -sI https://yoursite.com/blocked-file | grep HTTP"
-      },
-      "iis": {
-        "implementation_type": "web_config_request_filtering_extensions",
-        "web_config_snippet": "<!-- BEGIN VAPT RISK-020 -->\n<configuration>\n  <system.webServer>\n    <security><requestFiltering><fileExtensions>\n          <add fileExtension=\".php\" allowed=\"false\" />\n    </fileExtensions></requestFiltering></security>\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-020 -->",
-        "verification": "curl -sI https://yoursite.com/test.bak | findstr HTTP"
-      },
-      "caddy": {
-        "implementation_type": "caddy_respond_block",
-        "caddyfile_snippet": "# BEGIN VAPT RISK-020\n@risk020 {\n    path *.php\n}\nrespond @risk020 \"Access Denied\" 403\n# END VAPT RISK-020",
-        "verification": "caddy validate && curl -sI https://yoursite.com/blocked | grep HTTP"
       }
     },
     "RISK-021": {
@@ -1131,18 +993,8 @@
         "name": "VAPT RISK-021",
         "expression": "(http.request.uri.path ends_with \".wp\") or (http.request.uri.path ends_with \".config\") or (http.request.uri.path ends_with \".php\")",
         "action": "Block",
-        "dashboard_path": "Cloudflare → Security → WAF → Custom Rules → Create Rule",
+        "dashboard_path": "Cloudflare \u2192 Security \u2192 WAF \u2192 Custom Rules \u2192 Create Rule",
         "verification": "curl -sI https://yoursite.com/blocked-file | grep HTTP"
-      },
-      "iis": {
-        "implementation_type": "web_config_request_filtering",
-        "web_config_snippet": "<!-- BEGIN VAPT RISK-021 -->\n<configuration>\n  <system.webServer>\n    <security><requestFiltering><hiddenSegments>\n      <add segment=\"wp-config.php\" />\n    </hiddenSegments></requestFiltering></security>\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-021 -->",
-        "verification": "curl -sI https://yoursite.com/wp-config.php | findstr HTTP"
-      },
-      "caddy": {
-        "implementation_type": "caddy_respond_block",
-        "caddyfile_snippet": "# BEGIN VAPT RISK-021\n@risk021 {\n    path /wp-config.php\n}\nrespond @risk021 \"Access Denied\" 403\n# END VAPT RISK-021",
-        "verification": "caddy validate && curl -sI https://yoursite.com/blocked | grep HTTP"
       }
     },
     "RISK-022": {
@@ -1193,16 +1045,6 @@
         "value": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; frame-ancestors 'none';",
         "expression": "true",
         "verification": "curl -sI https://yoursite.com | grep -i 'Content-Security-Policy'"
-      },
-      "iis": {
-        "implementation_type": "web_config_http_headers",
-        "web_config_snippet": "<!-- BEGIN VAPT RISK-022 -->\n<configuration>\n  <system.webServer>\n    <httpProtocol>\n      <customHeaders>\n        <remove name=\"Content-Security-Policy\" />\n        <add name=\"Content-Security-Policy\" value=\"default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; frame-ancestors 'none';\" />\n      </customHeaders>\n    </httpProtocol>\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-022 -->",
-        "verification": "curl -sI https://yoursite.com | findstr \"Content-Security-Policy\""
-      },
-      "caddy": {
-        "implementation_type": "caddy_header",
-        "caddyfile_snippet": "# BEGIN VAPT RISK-022\nheader {\n    Content-Security-Policy \"default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; frame-ancestors 'none';\"\n    defer\n}\n# END VAPT RISK-022",
-        "verification": "caddy validate && curl -sI https://yoursite.com | grep -i 'Content-Security-Policy'"
       }
     },
     "RISK-023": {
@@ -1250,21 +1092,8 @@
         "name": "VAPT RISK-023",
         "expression": "(http.request.method eq \"TRACE\")",
         "action": "Block",
-        "dashboard_path": "Cloudflare → Security → WAF → Custom Rules → Create Rule",
+        "dashboard_path": "Cloudflare \u2192 Security \u2192 WAF \u2192 Custom Rules \u2192 Create Rule",
         "verification": "curl -sI https://yoursite.com | grep HTTP"
-      },
-      "iis": {
-        "implementation_type": "web_config_url_rewrite",
-        "web_config_snippet": "<!-- BEGIN VAPT RISK-023 -->\n<configuration>\n  <system.webServer>\n    <rewrite><rules>\n      <rule name=\"VAPT RISK-023\" stopProcessing=\"true\">\n          <conditions><add input=\"{REQUEST_METHOD}\" pattern=\"^TRACE$\" /></conditions>\n        <match url=\".*\" />\n        <action type=\"CustomResponse\" statusCode=\"403\" statusReason=\"Forbidden\" statusDescription=\"Blocked by VAPT RISK-023\" />\n      </rule>\n    </rules></rewrite>\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-023 -->",
-        "requirements": [
-          "IIS URL Rewrite Module 2.1 — install from Web Platform Installer"
-        ],
-        "verification": "appcmd validate config && curl -sI https://yoursite.com | findstr HTTP"
-      },
-      "caddy": {
-        "implementation_type": "caddy_respond_block",
-        "caddyfile_snippet": "# BEGIN VAPT RISK-023\n@risk023 {\n    method TRACE\n}\nrespond @risk023 \"Access Denied\" 403\n# END VAPT RISK-023",
-        "verification": "caddy validate && curl -sI https://yoursite.com/blocked | grep HTTP"
       }
     },
     "RISK-024": {
@@ -1317,19 +1146,6 @@
         ],
         "expression": "true",
         "note": "Cloudflare Pro+ removes Server header by default; use Transform Rule on Free plan."
-      },
-      "iis": {
-        "implementation_type": "web_config_remove_headers",
-        "web_config_snippet": "<!-- BEGIN VAPT RISK-024 -->\n<configuration>\n  <system.webServer>\n    <httpProtocol><customHeaders><remove name=\"X-Powered-By\" /></customHeaders></httpProtocol>\n    <security><requestFiltering removeServerHeader=\"true\" /></security>\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-024 -->",
-        "requirements": [
-          "IIS 10.0+ for removeServerHeader"
-        ],
-        "verification": "curl -sI https://yoursite.com | findstr Server"
-      },
-      "caddy": {
-        "implementation_type": "caddy_header",
-        "caddyfile_snippet": "# BEGIN VAPT RISK-024\nheader {\n    -Server\n    -X-Powered-By\n    defer\n}\n# END VAPT RISK-024",
-        "note": "Caddy omits Server header by default; this explicitly removes if a proxy upstream adds it."
       }
     },
     "RISK-025": {
@@ -1373,14 +1189,6 @@
       "cloudflare": {
         "implementation_type": "notes_only",
         "note": "'FileETag None' has no Cloudflare edge equivalent. Enforce at origin server."
-      },
-      "iis": {
-        "implementation_type": "notes_only",
-        "note": "No direct IIS equivalent for: FileETag None"
-      },
-      "caddy": {
-        "implementation_type": "notes_only",
-        "note": "No direct Caddy equivalent for: FileETag None"
       }
     },
     "RISK-026": {
@@ -1424,14 +1232,6 @@
       "cloudflare": {
         "implementation_type": "notes_only",
         "note": "'Options -FollowSymLinks\nOptions +SymLinksIfOwnerMatch' has no Cloudflare edge equivalent. Enforce at origin server."
-      },
-      "iis": {
-        "implementation_type": "notes_only",
-        "note": "No direct IIS equivalent for: Options -FollowSymLinks\nOptions +SymLinksIfOwnerMatch"
-      },
-      "caddy": {
-        "implementation_type": "notes_only",
-        "note": "No direct Caddy equivalent for: Options -FollowSymLinks\nOptions +SymLinksIfOwnerMatch"
       }
     },
     "RISK-027": {
@@ -1479,18 +1279,8 @@
         "name": "VAPT RISK-027",
         "expression": "(http.request.uri.path ends_with \".install\") or (http.request.uri.path ends_with \".php\")",
         "action": "Block",
-        "dashboard_path": "Cloudflare → Security → WAF → Custom Rules → Create Rule",
+        "dashboard_path": "Cloudflare \u2192 Security \u2192 WAF \u2192 Custom Rules \u2192 Create Rule",
         "verification": "curl -sI https://yoursite.com/blocked-file | grep HTTP"
-      },
-      "iis": {
-        "implementation_type": "web_config_request_filtering",
-        "web_config_snippet": "<!-- BEGIN VAPT RISK-027 -->\n<configuration>\n  <system.webServer>\n    <security><requestFiltering><hiddenSegments>\n      <add segment=\"install.php\" />\n    </hiddenSegments></requestFiltering></security>\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-027 -->",
-        "verification": "curl -sI https://yoursite.com/install.php | findstr HTTP"
-      },
-      "caddy": {
-        "implementation_type": "caddy_respond_block",
-        "caddyfile_snippet": "# BEGIN VAPT RISK-027\n@risk027 {\n    path /install.php\n}\nrespond @risk027 \"Access Denied\" 403\n# END VAPT RISK-027",
-        "verification": "caddy validate && curl -sI https://yoursite.com/blocked | grep HTTP"
       }
     },
     "RISK-028": {
@@ -1538,18 +1328,8 @@
         "name": "VAPT RISK-028",
         "expression": "(http.request.uri.path ends_with \".upgrade\") or (http.request.uri.path ends_with \".php\")",
         "action": "Block",
-        "dashboard_path": "Cloudflare → Security → WAF → Custom Rules → Create Rule",
+        "dashboard_path": "Cloudflare \u2192 Security \u2192 WAF \u2192 Custom Rules \u2192 Create Rule",
         "verification": "curl -sI https://yoursite.com/blocked-file | grep HTTP"
-      },
-      "iis": {
-        "implementation_type": "web_config_request_filtering",
-        "web_config_snippet": "<!-- BEGIN VAPT RISK-028 -->\n<configuration>\n  <system.webServer>\n    <security><requestFiltering><hiddenSegments>\n      <add segment=\"upgrade.php\" />\n    </hiddenSegments></requestFiltering></security>\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-028 -->",
-        "verification": "curl -sI https://yoursite.com/upgrade.php | findstr HTTP"
-      },
-      "caddy": {
-        "implementation_type": "caddy_respond_block",
-        "caddyfile_snippet": "# BEGIN VAPT RISK-028\n@risk028 {\n    path /upgrade.php\n}\nrespond @risk028 \"Access Denied\" 403\n# END VAPT RISK-028",
-        "verification": "caddy validate && curl -sI https://yoursite.com/blocked | grep HTTP"
       }
     },
     "RISK-029": {
@@ -1597,18 +1377,8 @@
         "name": "VAPT RISK-029",
         "expression": "(http.request.uri.path ends_with \".bak\") or (http.request.uri.path ends_with \".backup\") or (http.request.uri.path ends_with \".old\") or (http.request.uri.path ends_with \".orig\") or (http.request.uri.path ends_with \".save\") or (http.request.uri.path ends_with \".swp\")",
         "action": "Block",
-        "dashboard_path": "Cloudflare → Security → WAF → Custom Rules → Create Rule",
+        "dashboard_path": "Cloudflare \u2192 Security \u2192 WAF \u2192 Custom Rules \u2192 Create Rule",
         "verification": "curl -sI https://yoursite.com/blocked-file | grep HTTP"
-      },
-      "iis": {
-        "implementation_type": "web_config_request_filtering_extensions",
-        "web_config_snippet": "<!-- BEGIN VAPT RISK-029 -->\n<configuration>\n  <system.webServer>\n    <security><requestFiltering><fileExtensions>\n          <add fileExtension=\".bak\" allowed=\"false\" />\n          <add fileExtension=\".backup\" allowed=\"false\" />\n          <add fileExtension=\".old\" allowed=\"false\" />\n          <add fileExtension=\".orig\" allowed=\"false\" />\n          <add fileExtension=\".save\" allowed=\"false\" />\n          <add fileExtension=\".swp\" allowed=\"false\" />\n          <add fileExtension=\".sql\" allowed=\"false\" />\n          <add fileExtension=\".dump\" allowed=\"false\" />\n    </fileExtensions></requestFiltering></security>\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-029 -->",
-        "verification": "curl -sI https://yoursite.com/test.bak | findstr HTTP"
-      },
-      "caddy": {
-        "implementation_type": "caddy_respond_block",
-        "caddyfile_snippet": "# BEGIN VAPT RISK-029\n@risk029 {\n    path *.bak\n    path *.backup\n    path *.old\n    path *.orig\n    path *.save\n    path *.swp\n    path *.sql\n    path *.dump\n}\nrespond @risk029 \"Access Denied\" 403\n# END VAPT RISK-029",
-        "verification": "caddy validate && curl -sI https://yoursite.com/blocked | grep HTTP"
       }
     },
     "RISK-030": {
@@ -1656,18 +1426,8 @@
         "name": "VAPT RISK-030",
         "expression": "(http.request.uri.path ends_with \".log\")",
         "action": "Block",
-        "dashboard_path": "Cloudflare → Security → WAF → Custom Rules → Create Rule",
+        "dashboard_path": "Cloudflare \u2192 Security \u2192 WAF \u2192 Custom Rules \u2192 Create Rule",
         "verification": "curl -sI https://yoursite.com/blocked-file | grep HTTP"
-      },
-      "iis": {
-        "implementation_type": "web_config_request_filtering_extensions",
-        "web_config_snippet": "<!-- BEGIN VAPT RISK-030 -->\n<configuration>\n  <system.webServer>\n    <security><requestFiltering><fileExtensions>\n          <add fileExtension=\".log\" allowed=\"false\" />\n    </fileExtensions></requestFiltering></security>\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-030 -->",
-        "verification": "curl -sI https://yoursite.com/test.bak | findstr HTTP"
-      },
-      "caddy": {
-        "implementation_type": "caddy_respond_block",
-        "caddyfile_snippet": "# BEGIN VAPT RISK-030\n@risk030 {\n    path *.log\n}\nrespond @risk030 \"Access Denied\" 403\n# END VAPT RISK-030",
-        "verification": "caddy validate && curl -sI https://yoursite.com/blocked | grep HTTP"
       }
     },
     "RISK-031": {
@@ -1718,16 +1478,6 @@
         "value": "same-origin",
         "expression": "true",
         "verification": "curl -sI https://yoursite.com | grep -i 'Cross-Origin-Resource-Policy'"
-      },
-      "iis": {
-        "implementation_type": "web_config_http_headers",
-        "web_config_snippet": "<!-- BEGIN VAPT RISK-031 -->\n<configuration>\n  <system.webServer>\n    <httpProtocol>\n      <customHeaders>\n        <remove name=\"Cross-Origin-Resource-Policy\" />\n        <add name=\"Cross-Origin-Resource-Policy\" value=\"same-origin\" />\n      </customHeaders>\n    </httpProtocol>\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-031 -->",
-        "verification": "curl -sI https://yoursite.com | findstr \"Cross-Origin-Resource-Policy\""
-      },
-      "caddy": {
-        "implementation_type": "caddy_header",
-        "caddyfile_snippet": "# BEGIN VAPT RISK-031\nheader {\n    Cross-Origin-Resource-Policy \"same-origin\"\n    defer\n}\n# END VAPT RISK-031",
-        "verification": "caddy validate && curl -sI https://yoursite.com | grep -i 'Cross-Origin-Resource-Policy'"
       }
     },
     "RISK-032": {
@@ -1778,16 +1528,6 @@
         "value": "require-corp",
         "expression": "true",
         "verification": "curl -sI https://yoursite.com | grep -i 'Cross-Origin-Embedder-Policy'"
-      },
-      "iis": {
-        "implementation_type": "web_config_http_headers",
-        "web_config_snippet": "<!-- BEGIN VAPT RISK-032 -->\n<configuration>\n  <system.webServer>\n    <httpProtocol>\n      <customHeaders>\n        <remove name=\"Cross-Origin-Embedder-Policy\" />\n        <add name=\"Cross-Origin-Embedder-Policy\" value=\"require-corp\" />\n      </customHeaders>\n    </httpProtocol>\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-032 -->",
-        "verification": "curl -sI https://yoursite.com | findstr \"Cross-Origin-Embedder-Policy\""
-      },
-      "caddy": {
-        "implementation_type": "caddy_header",
-        "caddyfile_snippet": "# BEGIN VAPT RISK-032\nheader {\n    Cross-Origin-Embedder-Policy \"require-corp\"\n    defer\n}\n# END VAPT RISK-032",
-        "verification": "caddy validate && curl -sI https://yoursite.com | grep -i 'Cross-Origin-Embedder-Policy'"
       }
     },
     "RISK-033": {
@@ -1838,16 +1578,6 @@
         "value": "same-origin",
         "expression": "true",
         "verification": "curl -sI https://yoursite.com | grep -i 'Cross-Origin-Opener-Policy'"
-      },
-      "iis": {
-        "implementation_type": "web_config_http_headers",
-        "web_config_snippet": "<!-- BEGIN VAPT RISK-033 -->\n<configuration>\n  <system.webServer>\n    <httpProtocol>\n      <customHeaders>\n        <remove name=\"Cross-Origin-Opener-Policy\" />\n        <add name=\"Cross-Origin-Opener-Policy\" value=\"same-origin\" />\n      </customHeaders>\n    </httpProtocol>\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-033 -->",
-        "verification": "curl -sI https://yoursite.com | findstr \"Cross-Origin-Opener-Policy\""
-      },
-      "caddy": {
-        "implementation_type": "caddy_header",
-        "caddyfile_snippet": "# BEGIN VAPT RISK-033\nheader {\n    Cross-Origin-Opener-Policy \"same-origin\"\n    defer\n}\n# END VAPT RISK-033",
-        "verification": "caddy validate && curl -sI https://yoursite.com | grep -i 'Cross-Origin-Opener-Policy'"
       }
     },
     "RISK-034": {
@@ -1895,18 +1625,8 @@
         "name": "VAPT RISK-034",
         "expression": "(http.request.uri.path ends_with \".debug\") or (http.request.uri.path ends_with \".log\")",
         "action": "Block",
-        "dashboard_path": "Cloudflare → Security → WAF → Custom Rules → Create Rule",
+        "dashboard_path": "Cloudflare \u2192 Security \u2192 WAF \u2192 Custom Rules \u2192 Create Rule",
         "verification": "curl -sI https://yoursite.com/blocked-file | grep HTTP"
-      },
-      "iis": {
-        "implementation_type": "web_config_request_filtering",
-        "web_config_snippet": "<!-- BEGIN VAPT RISK-034 -->\n<configuration>\n  <system.webServer>\n    <security><requestFiltering><hiddenSegments>\n      <add segment=\"debug.log\" />\n    </hiddenSegments></requestFiltering></security>\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-034 -->",
-        "verification": "curl -sI https://yoursite.com/debug.log | findstr HTTP"
-      },
-      "caddy": {
-        "implementation_type": "caddy_respond_block",
-        "caddyfile_snippet": "# BEGIN VAPT RISK-034\n@risk034 {\n    path /debug.log\n}\nrespond @risk034 \"Access Denied\" 403\n# END VAPT RISK-034",
-        "verification": "caddy validate && curl -sI https://yoursite.com/blocked | grep HTTP"
       }
     },
     "RISK-035": {
@@ -1954,21 +1674,8 @@
         "name": "VAPT RISK-035",
         "expression": "(http.request.uri.path eq \"/server-status\") or (http.request.uri.path eq \"/server-info\")",
         "action": "Block",
-        "dashboard_path": "Cloudflare → Security → WAF → Custom Rules → Create Rule",
+        "dashboard_path": "Cloudflare \u2192 Security \u2192 WAF \u2192 Custom Rules \u2192 Create Rule",
         "verification": "curl -sI https://yoursite.com | grep HTTP"
-      },
-      "iis": {
-        "implementation_type": "web_config_url_rewrite",
-        "web_config_snippet": "<!-- BEGIN VAPT RISK-035 -->\n<configuration>\n  <system.webServer>\n    <rewrite><rules>\n      <rule name=\"VAPT RISK-035\" stopProcessing=\"true\">\n        <match url=\"^(server-status|server-info)$\" />\n        <action type=\"CustomResponse\" statusCode=\"403\" statusReason=\"Forbidden\" statusDescription=\"Blocked by VAPT RISK-035\" />\n      </rule>\n    </rules></rewrite>\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-035 -->",
-        "requirements": [
-          "IIS URL Rewrite Module 2.1 — install from Web Platform Installer"
-        ],
-        "verification": "appcmd validate config && curl -sI https://yoursite.com | findstr HTTP"
-      },
-      "caddy": {
-        "implementation_type": "caddy_respond_block",
-        "caddyfile_snippet": "# BEGIN VAPT RISK-035\n@risk035 {\n    path /server-status* /server-info*\n}\nrespond @risk035 \"Access Denied\" 403\n# END VAPT RISK-035",
-        "verification": "caddy validate && curl -sI https://yoursite.com/blocked | grep HTTP"
       }
     },
     "RISK-036": {
@@ -5864,18 +5571,8 @@
         "name": "VAPT RISK-129",
         "expression": "(http.request.uri.path ends_with \".xmlrpc\") or (http.request.uri.path ends_with \".php\")",
         "action": "Block",
-        "dashboard_path": "Cloudflare → Security → WAF → Custom Rules → Create Rule",
+        "dashboard_path": "Cloudflare \u2192 Security \u2192 WAF \u2192 Custom Rules \u2192 Create Rule",
         "verification": "curl -sI https://yoursite.com/blocked-file | grep HTTP"
-      },
-      "iis": {
-        "implementation_type": "web_config_request_filtering",
-        "web_config_snippet": "<!-- BEGIN VAPT RISK-129 -->\n<configuration>\n  <system.webServer>\n    <security><requestFiltering><hiddenSegments>\n      <add segment=\"xmlrpc.php\" />\n    </hiddenSegments></requestFiltering></security>\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-129 -->",
-        "verification": "curl -sI https://yoursite.com/xmlrpc.php | findstr HTTP"
-      },
-      "caddy": {
-        "implementation_type": "caddy_respond_block",
-        "caddyfile_snippet": "# BEGIN VAPT RISK-129\n@risk129 {\n    path /xmlrpc.php\n}\nrespond @risk129 \"Access Denied\" 403\n# END VAPT RISK-129",
-        "verification": "caddy validate && curl -sI https://yoursite.com/blocked | grep HTTP"
       }
     },
     "RISK-130": {
@@ -5919,16 +5616,6 @@
       "cloudflare": {
         "implementation_type": "notes_only",
         "note": "'Options -Indexes' has no Cloudflare edge equivalent. Enforce at origin server."
-      },
-      "iis": {
-        "implementation_type": "web_config_directory_browsing",
-        "web_config_snippet": "<!-- BEGIN VAPT RISK-130 -->\n<configuration>\n  <system.webServer>\n    <directoryBrowse enabled=\"false\" />\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-130 -->",
-        "verification": "curl -s https://yoursite.com/wp-content/uploads/ | findstr Index"
-      },
-      "caddy": {
-        "implementation_type": "caddy_file_server",
-        "caddyfile_snippet": "# BEGIN VAPT RISK-130\n# Directory listing disabled by default in Caddy file_server.\n# Ensure \"browse\" is NOT present:\nfile_server\n# END VAPT RISK-130",
-        "note": "Caddy disables directory listing by default. Remove 'browse' if present."
       }
     },
     "RISK-131": {
@@ -6100,16 +5787,6 @@
         "value": "SAMEORIGIN",
         "expression": "true",
         "verification": "curl -sI https://yoursite.com | grep -i 'X-Frame-Options'"
-      },
-      "iis": {
-        "implementation_type": "web_config_http_headers",
-        "web_config_snippet": "<!-- BEGIN VAPT RISK-134 -->\n<configuration>\n  <system.webServer>\n    <httpProtocol>\n      <customHeaders>\n        <remove name=\"X-Frame-Options\" />\n        <add name=\"X-Frame-Options\" value=\"SAMEORIGIN\" />\n      </customHeaders>\n    </httpProtocol>\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-134 -->",
-        "verification": "curl -sI https://yoursite.com | findstr \"X-Frame-Options\""
-      },
-      "caddy": {
-        "implementation_type": "caddy_header",
-        "caddyfile_snippet": "# BEGIN VAPT RISK-134\nheader {\n    X-Frame-Options \"SAMEORIGIN\"\n    defer\n}\n# END VAPT RISK-134",
-        "verification": "caddy validate && curl -sI https://yoursite.com | grep -i 'X-Frame-Options'"
       }
     },
     "RISK-135": {
@@ -6157,18 +5834,8 @@
         "name": "VAPT RISK-135",
         "expression": "(http.request.uri.path ends_with \".debug\") or (http.request.uri.path ends_with \".log\")",
         "action": "Block",
-        "dashboard_path": "Cloudflare → Security → WAF → Custom Rules → Create Rule",
+        "dashboard_path": "Cloudflare \u2192 Security \u2192 WAF \u2192 Custom Rules \u2192 Create Rule",
         "verification": "curl -sI https://yoursite.com/blocked-file | grep HTTP"
-      },
-      "iis": {
-        "implementation_type": "web_config_request_filtering",
-        "web_config_snippet": "<!-- BEGIN VAPT RISK-135 -->\n<configuration>\n  <system.webServer>\n    <security><requestFiltering><hiddenSegments>\n      <add segment=\"debug.log\" />\n    </hiddenSegments></requestFiltering></security>\n  </system.webServer>\n</configuration>\n<!-- END VAPT RISK-135 -->",
-        "verification": "curl -sI https://yoursite.com/debug.log | findstr HTTP"
-      },
-      "caddy": {
-        "implementation_type": "caddy_respond_block",
-        "caddyfile_snippet": "# BEGIN VAPT RISK-135\n@risk135 {\n    path /debug.log\n}\nrespond @risk135 \"Access Denied\" 403\n# END VAPT RISK-135",
-        "verification": "caddy validate && curl -sI https://yoursite.com/blocked | grep HTTP"
       }
     }
   }

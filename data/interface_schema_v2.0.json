@@ -10,7 +10,7 @@
     "driver_reference": "VAPT_Driver_Reference_v2.0.php",
     "readme": "VAPT_AI_Agent_System_README_v2.0.md"
   },
-  "description": "VAPT Interface Schema v2.0 — UI component definitions for all 135 risks. platform_implementations.code_ref points to enforcer_pattern_library_v2.0 using consistent lib_key names. driver_ref points to vapt_driver_manifest_v2.0.",
+  "description": "VAPT Interface Schema v2.0 \u2014 UI component definitions for all 135 risks. platform_implementations.code_ref points to enforcer_pattern_library_v2.0 using consistent lib_key names. driver_ref points to vapt_driver_manifest_v2.0.",
   "global_ui_config": {
     "severity_badge_colors": {
       "critical": {
@@ -241,9 +241,7 @@
       ],
       "available_platforms": [
         ".htaccess",
-        "Caddy",
-        "Cloudflare",
-        "IIS"
+        "Cloudflare"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -270,24 +268,6 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "waf_custom_rule"
-        },
-        "IIS": {
-          "lib_key": "iis",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-002.iis",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-002.steps[*enforcer=IIS]",
-          "operation": "",
-          "target_file": "",
-          "backup_required": true,
-          "implementation_type": "web_config_request_filtering"
-        },
-        "Caddy": {
-          "lib_key": "caddy",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-002.caddy",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-002.steps[*enforcer=Caddy]",
-          "operation": "",
-          "target_file": "Caddy",
-          "backup_required": true,
-          "implementation_type": "caddy_respond_block"
         }
       },
       "status_indicators": {
@@ -377,9 +357,7 @@
       ],
       "available_platforms": [
         ".htaccess",
-        "Caddy",
-        "Cloudflare",
-        "IIS"
+        "Cloudflare"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -406,24 +384,6 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "waf_custom_rule"
-        },
-        "IIS": {
-          "lib_key": "iis",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-003.iis",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-003.steps[*enforcer=IIS]",
-          "operation": "",
-          "target_file": "",
-          "backup_required": true,
-          "implementation_type": "web_config_url_rewrite"
-        },
-        "Caddy": {
-          "lib_key": "caddy",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-003.caddy",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-003.steps[*enforcer=Caddy]",
-          "operation": "",
-          "target_file": "Caddy",
-          "backup_required": true,
-          "implementation_type": "caddy_respond_block"
         }
       },
       "status_indicators": {
@@ -612,9 +572,7 @@
       ],
       "available_platforms": [
         ".htaccess",
-        "Caddy",
-        "Cloudflare",
-        "IIS"
+        "Cloudflare"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -641,24 +599,6 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "waf_custom_rule"
-        },
-        "IIS": {
-          "lib_key": "iis",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-005.iis",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-005.steps[*enforcer=IIS]",
-          "operation": "",
-          "target_file": "",
-          "backup_required": true,
-          "implementation_type": "web_config_url_rewrite"
-        },
-        "Caddy": {
-          "lib_key": "caddy",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-005.caddy",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-005.steps[*enforcer=Caddy]",
-          "operation": "",
-          "target_file": "Caddy",
-          "backup_required": true,
-          "implementation_type": "caddy_respond_block"
         }
       },
       "status_indicators": {
@@ -1243,9 +1183,7 @@
       ],
       "available_platforms": [
         ".htaccess",
-        "Caddy",
-        "Cloudflare",
-        "IIS"
+        "Cloudflare"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -1272,24 +1210,6 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "waf_custom_rule"
-        },
-        "IIS": {
-          "lib_key": "iis",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-011.iis",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-011.steps[*enforcer=IIS]",
-          "operation": "",
-          "target_file": "",
-          "backup_required": true,
-          "implementation_type": "web_config_request_filtering"
-        },
-        "Caddy": {
-          "lib_key": "caddy",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-011.caddy",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-011.steps[*enforcer=Caddy]",
-          "operation": "",
-          "target_file": "Caddy",
-          "backup_required": true,
-          "implementation_type": "caddy_respond_block"
         }
       },
       "status_indicators": {
@@ -1379,9 +1299,7 @@
       ],
       "available_platforms": [
         ".htaccess",
-        "Caddy",
-        "Cloudflare",
-        "IIS"
+        "Cloudflare"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -1408,24 +1326,6 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "transform_rule"
-        },
-        "IIS": {
-          "lib_key": "iis",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-012.iis",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-012.steps[*enforcer=IIS]",
-          "operation": "",
-          "target_file": "",
-          "backup_required": true,
-          "implementation_type": "web_config_http_headers"
-        },
-        "Caddy": {
-          "lib_key": "caddy",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-012.caddy",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-012.steps[*enforcer=Caddy]",
-          "operation": "",
-          "target_file": "Caddy",
-          "backup_required": true,
-          "implementation_type": "caddy_header"
         }
       },
       "status_indicators": {
@@ -1515,9 +1415,7 @@
       ],
       "available_platforms": [
         ".htaccess",
-        "Caddy",
-        "Cloudflare",
-        "IIS"
+        "Cloudflare"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -1542,24 +1440,6 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "notes_only"
-        },
-        "IIS": {
-          "lib_key": "iis",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-013.iis",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-013.steps[*enforcer=IIS]",
-          "operation": "",
-          "target_file": "",
-          "backup_required": true,
-          "implementation_type": "web_config_directory_browsing"
-        },
-        "Caddy": {
-          "lib_key": "caddy",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-013.caddy",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-013.steps[*enforcer=Caddy]",
-          "operation": "",
-          "target_file": "Caddy",
-          "backup_required": true,
-          "implementation_type": "caddy_file_server"
         }
       },
       "status_indicators": {
@@ -1649,9 +1529,7 @@
       ],
       "available_platforms": [
         ".htaccess",
-        "Caddy",
-        "Cloudflare",
-        "IIS"
+        "Cloudflare"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -1678,24 +1556,6 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "transform_rule"
-        },
-        "IIS": {
-          "lib_key": "iis",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-014.iis",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-014.steps[*enforcer=IIS]",
-          "operation": "",
-          "target_file": "",
-          "backup_required": true,
-          "implementation_type": "web_config_http_headers"
-        },
-        "Caddy": {
-          "lib_key": "caddy",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-014.caddy",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-014.steps[*enforcer=Caddy]",
-          "operation": "",
-          "target_file": "Caddy",
-          "backup_required": true,
-          "implementation_type": "caddy_header"
         }
       },
       "status_indicators": {
@@ -1785,9 +1645,7 @@
       ],
       "available_platforms": [
         ".htaccess",
-        "Caddy",
-        "Cloudflare",
-        "IIS"
+        "Cloudflare"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -1814,24 +1672,6 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "transform_rule"
-        },
-        "IIS": {
-          "lib_key": "iis",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-015.iis",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-015.steps[*enforcer=IIS]",
-          "operation": "",
-          "target_file": "",
-          "backup_required": true,
-          "implementation_type": "web_config_http_headers"
-        },
-        "Caddy": {
-          "lib_key": "caddy",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-015.caddy",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-015.steps[*enforcer=Caddy]",
-          "operation": "",
-          "target_file": "Caddy",
-          "backup_required": true,
-          "implementation_type": "caddy_header"
         }
       },
       "status_indicators": {
@@ -1921,9 +1761,7 @@
       ],
       "available_platforms": [
         ".htaccess",
-        "Caddy",
-        "Cloudflare",
-        "IIS"
+        "Cloudflare"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -1950,24 +1788,6 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "transform_rule"
-        },
-        "IIS": {
-          "lib_key": "iis",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-016.iis",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-016.steps[*enforcer=IIS]",
-          "operation": "",
-          "target_file": "",
-          "backup_required": true,
-          "implementation_type": "web_config_http_headers"
-        },
-        "Caddy": {
-          "lib_key": "caddy",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-016.caddy",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-016.steps[*enforcer=Caddy]",
-          "operation": "",
-          "target_file": "Caddy",
-          "backup_required": true,
-          "implementation_type": "caddy_header"
         }
       },
       "status_indicators": {
@@ -2057,9 +1877,7 @@
       ],
       "available_platforms": [
         ".htaccess",
-        "Caddy",
-        "Cloudflare",
-        "IIS"
+        "Cloudflare"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -2086,24 +1904,6 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "transform_rule"
-        },
-        "IIS": {
-          "lib_key": "iis",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-017.iis",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-017.steps[*enforcer=IIS]",
-          "operation": "",
-          "target_file": "",
-          "backup_required": true,
-          "implementation_type": "web_config_http_headers"
-        },
-        "Caddy": {
-          "lib_key": "caddy",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-017.caddy",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-017.steps[*enforcer=Caddy]",
-          "operation": "",
-          "target_file": "Caddy",
-          "backup_required": true,
-          "implementation_type": "caddy_header"
         }
       },
       "status_indicators": {
@@ -2193,9 +1993,7 @@
       ],
       "available_platforms": [
         ".htaccess",
-        "Caddy",
-        "Cloudflare",
-        "IIS"
+        "Cloudflare"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -2222,24 +2020,6 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "transform_rule"
-        },
-        "IIS": {
-          "lib_key": "iis",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-018.iis",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-018.steps[*enforcer=IIS]",
-          "operation": "",
-          "target_file": "",
-          "backup_required": true,
-          "implementation_type": "web_config_http_headers"
-        },
-        "Caddy": {
-          "lib_key": "caddy",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-018.caddy",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-018.steps[*enforcer=Caddy]",
-          "operation": "",
-          "target_file": "Caddy",
-          "backup_required": true,
-          "implementation_type": "caddy_header"
         }
       },
       "status_indicators": {
@@ -2329,9 +2109,7 @@
       ],
       "available_platforms": [
         ".htaccess",
-        "Caddy",
-        "Cloudflare",
-        "IIS"
+        "Cloudflare"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -2358,24 +2136,6 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "waf_custom_rule"
-        },
-        "IIS": {
-          "lib_key": "iis",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-019.iis",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-019.steps[*enforcer=IIS]",
-          "operation": "",
-          "target_file": "",
-          "backup_required": true,
-          "implementation_type": "web_config_request_filtering_extensions"
-        },
-        "Caddy": {
-          "lib_key": "caddy",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-019.caddy",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-019.steps[*enforcer=Caddy]",
-          "operation": "",
-          "target_file": "Caddy",
-          "backup_required": true,
-          "implementation_type": "caddy_respond_block"
         }
       },
       "status_indicators": {
@@ -2465,9 +2225,7 @@
       ],
       "available_platforms": [
         ".htaccess",
-        "Caddy",
-        "Cloudflare",
-        "IIS"
+        "Cloudflare"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -2484,7 +2242,7 @@
           "allowoverride": "",
           "insertion_point": "beginning_of_file",
           "anchor_string": null,
-          "note": "CRITICAL: Place in wp-content/uploads/.htaccess — a separate file. <Directory> is silently ignored in .htaccess. Apache 2.4+: use Require all denied"
+          "note": "CRITICAL: Place in wp-content/uploads/.htaccess \u2014 a separate file. <Directory> is silently ignored in .htaccess. Apache 2.4+: use Require all denied"
         },
         "Cloudflare": {
           "lib_key": "cloudflare",
@@ -2494,24 +2252,6 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "waf_custom_rule"
-        },
-        "IIS": {
-          "lib_key": "iis",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-020.iis",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-020.steps[*enforcer=IIS]",
-          "operation": "",
-          "target_file": "",
-          "backup_required": true,
-          "implementation_type": "web_config_request_filtering_extensions"
-        },
-        "Caddy": {
-          "lib_key": "caddy",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-020.caddy",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-020.steps[*enforcer=Caddy]",
-          "operation": "",
-          "target_file": "Caddy",
-          "backup_required": true,
-          "implementation_type": "caddy_respond_block"
         }
       },
       "status_indicators": {
@@ -2601,9 +2341,7 @@
       ],
       "available_platforms": [
         ".htaccess",
-        "Caddy",
-        "Cloudflare",
-        "IIS"
+        "Cloudflare"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -2630,24 +2368,6 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "waf_custom_rule"
-        },
-        "IIS": {
-          "lib_key": "iis",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-021.iis",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-021.steps[*enforcer=IIS]",
-          "operation": "",
-          "target_file": "",
-          "backup_required": true,
-          "implementation_type": "web_config_request_filtering"
-        },
-        "Caddy": {
-          "lib_key": "caddy",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-021.caddy",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-021.steps[*enforcer=Caddy]",
-          "operation": "",
-          "target_file": "Caddy",
-          "backup_required": true,
-          "implementation_type": "caddy_respond_block"
         }
       },
       "status_indicators": {
@@ -2737,9 +2457,7 @@
       ],
       "available_platforms": [
         ".htaccess",
-        "Caddy",
-        "Cloudflare",
-        "IIS"
+        "Cloudflare"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -2766,24 +2484,6 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "transform_rule"
-        },
-        "IIS": {
-          "lib_key": "iis",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-022.iis",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-022.steps[*enforcer=IIS]",
-          "operation": "",
-          "target_file": "",
-          "backup_required": true,
-          "implementation_type": "web_config_http_headers"
-        },
-        "Caddy": {
-          "lib_key": "caddy",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-022.caddy",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-022.steps[*enforcer=Caddy]",
-          "operation": "",
-          "target_file": "Caddy",
-          "backup_required": true,
-          "implementation_type": "caddy_header"
         }
       },
       "status_indicators": {
@@ -2873,9 +2573,7 @@
       ],
       "available_platforms": [
         ".htaccess",
-        "Caddy",
-        "Cloudflare",
-        "IIS"
+        "Cloudflare"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -2902,24 +2600,6 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "waf_custom_rule"
-        },
-        "IIS": {
-          "lib_key": "iis",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-023.iis",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-023.steps[*enforcer=IIS]",
-          "operation": "",
-          "target_file": "",
-          "backup_required": true,
-          "implementation_type": "web_config_url_rewrite"
-        },
-        "Caddy": {
-          "lib_key": "caddy",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-023.caddy",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-023.steps[*enforcer=Caddy]",
-          "operation": "",
-          "target_file": "Caddy",
-          "backup_required": true,
-          "implementation_type": "caddy_respond_block"
         }
       },
       "status_indicators": {
@@ -3009,9 +2689,7 @@
       ],
       "available_platforms": [
         ".htaccess",
-        "Caddy",
-        "Cloudflare",
-        "IIS"
+        "Cloudflare"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -3038,24 +2716,6 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "transform_rule"
-        },
-        "IIS": {
-          "lib_key": "iis",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-024.iis",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-024.steps[*enforcer=IIS]",
-          "operation": "",
-          "target_file": "",
-          "backup_required": true,
-          "implementation_type": "web_config_remove_headers"
-        },
-        "Caddy": {
-          "lib_key": "caddy",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-024.caddy",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-024.steps[*enforcer=Caddy]",
-          "operation": "",
-          "target_file": "Caddy",
-          "backup_required": true,
-          "implementation_type": "caddy_header"
         }
       },
       "status_indicators": {
@@ -3145,9 +2805,7 @@
       ],
       "available_platforms": [
         ".htaccess",
-        "Caddy",
-        "Cloudflare",
-        "IIS"
+        "Cloudflare"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -3170,24 +2828,6 @@
           "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-025.steps[*enforcer=Cloudflare]",
           "operation": "",
           "target_file": "",
-          "backup_required": true,
-          "implementation_type": "notes_only"
-        },
-        "IIS": {
-          "lib_key": "iis",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-025.iis",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-025.steps[*enforcer=IIS]",
-          "operation": "",
-          "target_file": "",
-          "backup_required": true,
-          "implementation_type": "notes_only"
-        },
-        "Caddy": {
-          "lib_key": "caddy",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-025.caddy",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-025.steps[*enforcer=Caddy]",
-          "operation": "",
-          "target_file": "Caddy",
           "backup_required": true,
           "implementation_type": "notes_only"
         }
@@ -3279,9 +2919,7 @@
       ],
       "available_platforms": [
         ".htaccess",
-        "Caddy",
-        "Cloudflare",
-        "IIS"
+        "Cloudflare"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -3304,24 +2942,6 @@
           "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-026.steps[*enforcer=Cloudflare]",
           "operation": "",
           "target_file": "",
-          "backup_required": true,
-          "implementation_type": "notes_only"
-        },
-        "IIS": {
-          "lib_key": "iis",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-026.iis",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-026.steps[*enforcer=IIS]",
-          "operation": "",
-          "target_file": "",
-          "backup_required": true,
-          "implementation_type": "notes_only"
-        },
-        "Caddy": {
-          "lib_key": "caddy",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-026.caddy",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-026.steps[*enforcer=Caddy]",
-          "operation": "",
-          "target_file": "Caddy",
           "backup_required": true,
           "implementation_type": "notes_only"
         }
@@ -3413,9 +3033,7 @@
       ],
       "available_platforms": [
         ".htaccess",
-        "Caddy",
-        "Cloudflare",
-        "IIS"
+        "Cloudflare"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -3442,24 +3060,6 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "waf_custom_rule"
-        },
-        "IIS": {
-          "lib_key": "iis",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-027.iis",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-027.steps[*enforcer=IIS]",
-          "operation": "",
-          "target_file": "",
-          "backup_required": true,
-          "implementation_type": "web_config_request_filtering"
-        },
-        "Caddy": {
-          "lib_key": "caddy",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-027.caddy",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-027.steps[*enforcer=Caddy]",
-          "operation": "",
-          "target_file": "Caddy",
-          "backup_required": true,
-          "implementation_type": "caddy_respond_block"
         }
       },
       "status_indicators": {
@@ -3549,9 +3149,7 @@
       ],
       "available_platforms": [
         ".htaccess",
-        "Caddy",
-        "Cloudflare",
-        "IIS"
+        "Cloudflare"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -3578,24 +3176,6 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "waf_custom_rule"
-        },
-        "IIS": {
-          "lib_key": "iis",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-028.iis",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-028.steps[*enforcer=IIS]",
-          "operation": "",
-          "target_file": "",
-          "backup_required": true,
-          "implementation_type": "web_config_request_filtering"
-        },
-        "Caddy": {
-          "lib_key": "caddy",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-028.caddy",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-028.steps[*enforcer=Caddy]",
-          "operation": "",
-          "target_file": "Caddy",
-          "backup_required": true,
-          "implementation_type": "caddy_respond_block"
         }
       },
       "status_indicators": {
@@ -3685,9 +3265,7 @@
       ],
       "available_platforms": [
         ".htaccess",
-        "Caddy",
-        "Cloudflare",
-        "IIS"
+        "Cloudflare"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -3714,24 +3292,6 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "waf_custom_rule"
-        },
-        "IIS": {
-          "lib_key": "iis",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-029.iis",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-029.steps[*enforcer=IIS]",
-          "operation": "",
-          "target_file": "",
-          "backup_required": true,
-          "implementation_type": "web_config_request_filtering_extensions"
-        },
-        "Caddy": {
-          "lib_key": "caddy",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-029.caddy",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-029.steps[*enforcer=Caddy]",
-          "operation": "",
-          "target_file": "Caddy",
-          "backup_required": true,
-          "implementation_type": "caddy_respond_block"
         }
       },
       "status_indicators": {
@@ -3821,9 +3381,7 @@
       ],
       "available_platforms": [
         ".htaccess",
-        "Caddy",
-        "Cloudflare",
-        "IIS"
+        "Cloudflare"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -3850,24 +3408,6 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "waf_custom_rule"
-        },
-        "IIS": {
-          "lib_key": "iis",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-030.iis",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-030.steps[*enforcer=IIS]",
-          "operation": "",
-          "target_file": "",
-          "backup_required": true,
-          "implementation_type": "web_config_request_filtering_extensions"
-        },
-        "Caddy": {
-          "lib_key": "caddy",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-030.caddy",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-030.steps[*enforcer=Caddy]",
-          "operation": "",
-          "target_file": "Caddy",
-          "backup_required": true,
-          "implementation_type": "caddy_respond_block"
         }
       },
       "status_indicators": {
@@ -3957,9 +3497,7 @@
       ],
       "available_platforms": [
         ".htaccess",
-        "Caddy",
-        "Cloudflare",
-        "IIS"
+        "Cloudflare"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -3986,24 +3524,6 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "transform_rule"
-        },
-        "IIS": {
-          "lib_key": "iis",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-031.iis",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-031.steps[*enforcer=IIS]",
-          "operation": "",
-          "target_file": "",
-          "backup_required": true,
-          "implementation_type": "web_config_http_headers"
-        },
-        "Caddy": {
-          "lib_key": "caddy",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-031.caddy",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-031.steps[*enforcer=Caddy]",
-          "operation": "",
-          "target_file": "Caddy",
-          "backup_required": true,
-          "implementation_type": "caddy_header"
         }
       },
       "status_indicators": {
@@ -4093,9 +3613,7 @@
       ],
       "available_platforms": [
         ".htaccess",
-        "Caddy",
-        "Cloudflare",
-        "IIS"
+        "Cloudflare"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -4122,24 +3640,6 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "transform_rule"
-        },
-        "IIS": {
-          "lib_key": "iis",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-032.iis",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-032.steps[*enforcer=IIS]",
-          "operation": "",
-          "target_file": "",
-          "backup_required": true,
-          "implementation_type": "web_config_http_headers"
-        },
-        "Caddy": {
-          "lib_key": "caddy",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-032.caddy",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-032.steps[*enforcer=Caddy]",
-          "operation": "",
-          "target_file": "Caddy",
-          "backup_required": true,
-          "implementation_type": "caddy_header"
         }
       },
       "status_indicators": {
@@ -4229,9 +3729,7 @@
       ],
       "available_platforms": [
         ".htaccess",
-        "Caddy",
-        "Cloudflare",
-        "IIS"
+        "Cloudflare"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -4258,24 +3756,6 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "transform_rule"
-        },
-        "IIS": {
-          "lib_key": "iis",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-033.iis",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-033.steps[*enforcer=IIS]",
-          "operation": "",
-          "target_file": "",
-          "backup_required": true,
-          "implementation_type": "web_config_http_headers"
-        },
-        "Caddy": {
-          "lib_key": "caddy",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-033.caddy",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-033.steps[*enforcer=Caddy]",
-          "operation": "",
-          "target_file": "Caddy",
-          "backup_required": true,
-          "implementation_type": "caddy_header"
         }
       },
       "status_indicators": {
@@ -4365,9 +3845,7 @@
       ],
       "available_platforms": [
         ".htaccess",
-        "Caddy",
-        "Cloudflare",
-        "IIS"
+        "Cloudflare"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -4394,24 +3872,6 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "waf_custom_rule"
-        },
-        "IIS": {
-          "lib_key": "iis",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-034.iis",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-034.steps[*enforcer=IIS]",
-          "operation": "",
-          "target_file": "",
-          "backup_required": true,
-          "implementation_type": "web_config_request_filtering"
-        },
-        "Caddy": {
-          "lib_key": "caddy",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-034.caddy",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-034.steps[*enforcer=Caddy]",
-          "operation": "",
-          "target_file": "Caddy",
-          "backup_required": true,
-          "implementation_type": "caddy_respond_block"
         }
       },
       "status_indicators": {
@@ -4501,9 +3961,7 @@
       ],
       "available_platforms": [
         ".htaccess",
-        "Caddy",
-        "Cloudflare",
-        "IIS"
+        "Cloudflare"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -4530,24 +3988,6 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "waf_custom_rule"
-        },
-        "IIS": {
-          "lib_key": "iis",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-035.iis",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-035.steps[*enforcer=IIS]",
-          "operation": "",
-          "target_file": "",
-          "backup_required": true,
-          "implementation_type": "web_config_url_rewrite"
-        },
-        "Caddy": {
-          "lib_key": "caddy",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-035.caddy",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-035.steps[*enforcer=Caddy]",
-          "operation": "",
-          "target_file": "Caddy",
-          "backup_required": true,
-          "implementation_type": "caddy_respond_block"
         }
       },
       "status_indicators": {
@@ -13390,20 +12830,8 @@
           "rest_endpoint": "/wp-json/vapt/v1/risk-123"
         }
       ],
-      "available_platforms": [
-        "Caddy"
-      ],
-      "platform_implementations": {
-        "Caddy": {
-          "lib_key": "caddy_native",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-123.caddy_native",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-123.steps[*enforcer=Caddy]",
-          "operation": "configtest_pass",
-          "target_file": "Caddy",
-          "backup_required": true,
-          "implementation_type": ""
-        }
-      },
+      "available_platforms": [],
+      "platform_implementations": {},
       "status_indicators": {
         "protected": {
           "color": "text-green-600",
@@ -13489,20 +12917,8 @@
           "rest_endpoint": "/wp-json/vapt/v1/risk-124"
         }
       ],
-      "available_platforms": [
-        "Caddy"
-      ],
-      "platform_implementations": {
-        "Caddy": {
-          "lib_key": "caddy_native",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-124.caddy_native",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-124.steps[*enforcer=Caddy]",
-          "operation": "configtest_pass",
-          "target_file": "Caddy",
-          "backup_required": true,
-          "implementation_type": ""
-        }
-      },
+      "available_platforms": [],
+      "platform_implementations": {},
       "status_indicators": {
         "protected": {
           "color": "text-green-600",
@@ -13993,9 +13409,7 @@
       ],
       "available_platforms": [
         ".htaccess",
-        "Caddy",
-        "Cloudflare",
-        "IIS"
+        "Cloudflare"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -14022,24 +13436,6 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "waf_custom_rule"
-        },
-        "IIS": {
-          "lib_key": "iis",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-129.iis",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-129.steps[*enforcer=IIS]",
-          "operation": "",
-          "target_file": "",
-          "backup_required": true,
-          "implementation_type": "web_config_request_filtering"
-        },
-        "Caddy": {
-          "lib_key": "caddy",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-129.caddy",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-129.steps[*enforcer=Caddy]",
-          "operation": "",
-          "target_file": "Caddy",
-          "backup_required": true,
-          "implementation_type": "caddy_respond_block"
         }
       },
       "status_indicators": {
@@ -14129,9 +13525,7 @@
       ],
       "available_platforms": [
         ".htaccess",
-        "Caddy",
-        "Cloudflare",
-        "IIS"
+        "Cloudflare"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -14156,24 +13550,6 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "notes_only"
-        },
-        "IIS": {
-          "lib_key": "iis",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-130.iis",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-130.steps[*enforcer=IIS]",
-          "operation": "",
-          "target_file": "",
-          "backup_required": true,
-          "implementation_type": "web_config_directory_browsing"
-        },
-        "Caddy": {
-          "lib_key": "caddy",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-130.caddy",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-130.steps[*enforcer=Caddy]",
-          "operation": "",
-          "target_file": "Caddy",
-          "backup_required": true,
-          "implementation_type": "caddy_file_server"
         }
       },
       "status_indicators": {
@@ -14560,9 +13936,7 @@
       ],
       "available_platforms": [
         ".htaccess",
-        "Caddy",
-        "Cloudflare",
-        "IIS"
+        "Cloudflare"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -14589,24 +13963,6 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "transform_rule"
-        },
-        "IIS": {
-          "lib_key": "iis",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-134.iis",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-134.steps[*enforcer=IIS]",
-          "operation": "",
-          "target_file": "",
-          "backup_required": true,
-          "implementation_type": "web_config_http_headers"
-        },
-        "Caddy": {
-          "lib_key": "caddy",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-134.caddy",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-134.steps[*enforcer=Caddy]",
-          "operation": "",
-          "target_file": "Caddy",
-          "backup_required": true,
-          "implementation_type": "caddy_header"
         }
       },
       "status_indicators": {
@@ -14696,9 +14052,7 @@
       ],
       "available_platforms": [
         ".htaccess",
-        "Caddy",
-        "Cloudflare",
-        "IIS"
+        "Cloudflare"
       ],
       "platform_implementations": {
         ".htaccess": {
@@ -14725,24 +14079,6 @@
           "target_file": "",
           "backup_required": true,
           "implementation_type": "waf_custom_rule"
-        },
-        "IIS": {
-          "lib_key": "iis",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-135.iis",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-135.steps[*enforcer=IIS]",
-          "operation": "",
-          "target_file": "",
-          "backup_required": true,
-          "implementation_type": "web_config_request_filtering"
-        },
-        "Caddy": {
-          "lib_key": "caddy",
-          "code_ref": "enforcer_pattern_library_v2.0.patterns.RISK-135.caddy",
-          "driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-135.steps[*enforcer=Caddy]",
-          "operation": "",
-          "target_file": "Caddy",
-          "backup_required": true,
-          "implementation_type": "caddy_respond_block"
         }
       },
       "status_indicators": {

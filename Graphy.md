@@ -2,14 +2,17 @@
 
 ## Project: VAPTSecure-Clean
 
-Generated: 2026-05-07 10:47:53
+Generated: 2026-05-10 07:02:14
 
 ### File Structure Summary
-- Total Files: 1524
-- Total Directories: 259
-- File Extensions: .rules: 5, .agrules: 4, .md: 51, .json: 59, .rar: 2, .php: 42, .ps1: 3, .zip: 10, .yml: 2, .js: 211, .cjs: 194, .cts: 194, .ts: 706, .css: 2, .jsx: 5, .clinerules: 1, .txt: 3, .sh: 1, .roorules: 1, .windsurfrules: 1, .ftp: 1, .png: 1
+- Total Files: 2307
+- Total Directories: 437
+- File Extensions: .rules: 25, .agrules: 20, .md: 216, .json: 341, .rar: 2, .php: 206, .ps1: 10, .zip: 21, .yml: 6, .css: 10, .js: 276, .jsx: 25, .clinerules: 5, .roorules: 5, .windsurfrules: 5, .mdc: 1, .cjs: 194, .cts: 194, .ts: 706, .graphify_python: 1, .txt: 4, .html: 1, .py: 2, .ftp: 1, .png: 1
 
 ### Directory Tree
+├── .agent
+   ├── rules
+   ├── workflows
 ├── .ai
    ├── rules
       ├── cursor.rules
@@ -79,10 +82,806 @@ Generated: 2026-05-07 10:47:53
    ├── SOUL_enhanced.md
    ├── SOUL_with_selfcheck.md
    ├── VAPTSECURE.md
+├── .claude
+   ├── worktrees
+      ├── agent-ab1314db78ae88a68
+         ├── .ai
+            ├── rules
+               ├── cursor.rules
+               ├── develop-to-deploy.agrules
+               ├── gemini.md
+               ├── opencode.md
+               ├── session-start-cleanup.agrules
+               ├── stay-in-planning-mode.md
+               ├── transition-to-develop.agrules
+               ├── workspace-focus.agrules
+            ├── skills
+               ├── vaptschema-builder
+                  ├── examples
+                     ├── example-apache.json
+                     ├── example-caddy-native.json
+                     ├── example-caddy.json
+                     ├── example-cloudflare.json
+                     ├── example-fail2ban.json
+                     ├── example-htaccess.json
+                     ├── example-iis.json
+                     ├── example-nginx.json
+                     ├── example-php-functions.json
+                     ├── example-server-cron.json
+                     ├── example-wordpress-core.json
+                     ├── example-wordpress.json
+                     ├── example-wp-config.json
+                  ├── resources
+                     ├── ai_agent_instructions_v2.0.json
+                     ├── enforcer_pattern_library_v2.0.json
+                     ├── interface_schema_v2.0.json
+                     ├── schema-template.json
+                     ├── VAPT_AI_Agent_System_README_v2.0.md
+                     ├── vapt_driver_manifest_v2.0.json
+                     ├── VAPT_Driver_Reference_v2.0.php
+                  ├── scripts
+                     ├── Query-Risk.ps1
+                     ├── Validate-Schema.ps1
+                  ├── DEVELOPER_GUIDE.md
+                  ├── README.md
+                  ├── Rebuild-VAPTSchema-Builder-Skill-20260311_1652.md
+                  ├── SKILL.md
+                  ├── USAGE_GUIDE.md
+                  ├── VISUAL_FLOW.md
+               ├── vapt-expert_Initial.zip
+            ├── workflows
+               ├── 3-copy-design-prompt.md
+               ├── bump-version.md
+               ├── develop-to-deploy.md
+               ├── git-commit.md
+               ├── init-session-cleanup.md
+               ├── mapping-configuration-keys.md
+               ├── semver-release.yml
+               ├── superadmin-login-hermasnet.md
+               ├── transition-to-develop.md
+               ├── wpadmin-login-hermasnet.md
+            ├── AGENTS.md
+            ├── EDITOR_OPTIMIZATION_GUIDE.md
+            ├── README-Claude-Ext.md
+            ├── README.md
+            ├── SOUL-Claude-Ext.md
+            ├── SOUL-Claude.md
+            ├── SOUL.md
+            ├── SOUL_Claude-Notes.md
+            ├── SOUL_comprehensive.md
+            ├── SOUL_enhanced.md
+            ├── SOUL_with_selfcheck.md
+            ├── VAPTSECURE.md
+         ├── .claude
+            ├── settings.local.json
+         ├── .continue
+            ├── rules
+               ├── soul.md
+         ├── .cursor
+            ├── cursor.rules
+         ├── .gemini
+            ├── gemini.md
+         ├── .github
+            ├── copilot-instructions.md
+         ├── .junie
+            ├── guidelines.md
+         ├── .kilocode
+            ├── rules
+               ├── soul.md
+         ├── .opencode
+            ├── instructions
+               ├── SOUL.md
+         ├── .qoder
+            ├── qoder.rules
+         ├── .roo
+            ├── rules
+               ├── soul.md
+         ├── .trae
+            ├── trae.rules
+         ├── admin
+            ├── css
+               ├── admin.css
+         ├── assets
+            ├── css
+               ├── admin.css
+            ├── js
+               ├── __tests__
+                  ├── aplus-generator.test.js
+                  ├── interface-generator.test.js
+               ├── admin
+                  ├── shared
+                     ├── AlertModal.jsx
+                     ├── ApiHelper.js
+                     ├── ConfirmDialog.jsx
+                     ├── DataTable.jsx
+                     ├── StatusBadge.jsx
+                  ├── App.jsx
+               ├── admin-modules
+                  ├── api-fetch-hotpatch.js
+                  ├── design-modal.js
+                  ├── domains.js
+                  ├── field-mapping.js
+                  ├── logger.js
+                  ├── modals.js
+               ├── modules
+                  ├── aplus-generator.js
+                  ├── generated-interface.js
+                  ├── interface-generator.js
+               ├── admin - Copy.js
+               ├── admin.js
+               ├── client.js
+               ├── workbench.js
+         ├── data
+            ├── Enforcers
+               ├── apache-template.json
+               ├── caddy-template.json
+               ├── fail2ban-template.json
+               ├── htaccess-template.json
+               ├── nginx-template.json
+               ├── php-functions-template.json
+               ├── server-cron-template.json
+               ├── wordpress-template.json
+               ├── wp-config-template.json
+            ├── ai_agent_instructions_v2.0.json
+            ├── Babar12-Data.zip
+            ├── enforcer_pattern_library_v2.0.json
+            ├── interface_schema_v2.0.json
+            ├── VAPT_AI_Agent_System_README_v2.0.md
+            ├── vapt_driver_manifest_v2.0.json
+            ├── VAPT_Driver_Reference_v2.0.php
+         ├── includes
+            ├── admin
+               ├── class-vapt-diagnostics-page.php
+            ├── enforcers
+               ├── class-vaptsecure-apache-deployer.php
+               ├── class-vaptsecure-caddy-driver.php
+               ├── class-vaptsecure-config-deployer.php
+               ├── class-vaptsecure-config-driver.php
+               ├── class-vaptsecure-hook-driver.php
+               ├── class-vaptsecure-htaccess-driver.php
+               ├── class-vaptsecure-iis-driver.php
+               ├── class-vaptsecure-nginx-deployer.php
+               ├── class-vaptsecure-nginx-driver.php
+               ├── class-vaptsecure-php-deployer.php
+               ├── class-vaptsecure-php-driver.php
+            ├── interfaces
+               ├── interface-vaptsecure-driver.php
+            ├── rest
+               ├── class-vaptsecure-rest-base.php
+            ├── self-check
+               ├── class-vapt-audit-log.php
+               ├── class-vapt-auto-correct.php
+               ├── class-vapt-check-item.php
+               ├── class-vapt-cron.php
+               ├── class-vapt-lifecycle.php
+               ├── class-vapt-self-check-result.php
+               ├── class-vapt-self-check.php
+            ├── class-vaptsecure-admin.php
+            ├── class-vaptsecure-ai-config.php
+            ├── class-vaptsecure-ai-validator.php
+            ├── class-vaptsecure-auth.php
+            ├── class-vaptsecure-build.php
+            ├── class-vaptsecure-config-cleaner.php
+            ├── class-vaptsecure-db.php
+            ├── class-vaptsecure-deployment-orchestrator.php
+            ├── class-vaptsecure-enforcer.php
+            ├── class-vaptsecure-environment-detector.php
+            ├── class-vaptsecure-license-manager.php
+            ├── class-vaptsecure-migrations.php
+            ├── class-vaptsecure-rest.php
+            ├── class-vaptsecure-schema-validator.php
+            ├── class-vaptsecure-workflow.php
+            ├── debug-utils.php
+         ├── .clinerules
+         ├── .roorules
+         ├── .rules
+         ├── .windsurfrules
+         ├── CODEBASE_REVIEW.md
+         ├── LICENSE
+         ├── README.md
+         ├── vapt-functions.php
+         ├── VAPTSecure-Clean.zip
+         ├── vaptsecure.php
+      ├── agent-ae17a3f801c003445
+         ├── .ai
+            ├── rules
+               ├── cursor.rules
+               ├── develop-to-deploy.agrules
+               ├── gemini.md
+               ├── opencode.md
+               ├── session-start-cleanup.agrules
+               ├── stay-in-planning-mode.md
+               ├── transition-to-develop.agrules
+               ├── workspace-focus.agrules
+            ├── skills
+               ├── vaptschema-builder
+                  ├── examples
+                     ├── example-apache.json
+                     ├── example-caddy-native.json
+                     ├── example-caddy.json
+                     ├── example-cloudflare.json
+                     ├── example-fail2ban.json
+                     ├── example-htaccess.json
+                     ├── example-iis.json
+                     ├── example-nginx.json
+                     ├── example-php-functions.json
+                     ├── example-server-cron.json
+                     ├── example-wordpress-core.json
+                     ├── example-wordpress.json
+                     ├── example-wp-config.json
+                  ├── resources
+                     ├── ai_agent_instructions_v2.0.json
+                     ├── enforcer_pattern_library_v2.0.json
+                     ├── interface_schema_v2.0.json
+                     ├── schema-template.json
+                     ├── VAPT_AI_Agent_System_README_v2.0.md
+                     ├── vapt_driver_manifest_v2.0.json
+                     ├── VAPT_Driver_Reference_v2.0.php
+                  ├── scripts
+                     ├── Query-Risk.ps1
+                     ├── Validate-Schema.ps1
+                  ├── DEVELOPER_GUIDE.md
+                  ├── README.md
+                  ├── Rebuild-VAPTSchema-Builder-Skill-20260311_1652.md
+                  ├── SKILL.md
+                  ├── USAGE_GUIDE.md
+                  ├── VISUAL_FLOW.md
+               ├── vapt-expert_Initial.zip
+            ├── workflows
+               ├── 3-copy-design-prompt.md
+               ├── bump-version.md
+               ├── develop-to-deploy.md
+               ├── git-commit.md
+               ├── init-session-cleanup.md
+               ├── mapping-configuration-keys.md
+               ├── semver-release.yml
+               ├── superadmin-login-hermasnet.md
+               ├── transition-to-develop.md
+               ├── wpadmin-login-hermasnet.md
+            ├── AGENTS.md
+            ├── EDITOR_OPTIMIZATION_GUIDE.md
+            ├── README-Claude-Ext.md
+            ├── README.md
+            ├── SOUL-Claude-Ext.md
+            ├── SOUL-Claude.md
+            ├── SOUL.md
+            ├── SOUL_Claude-Notes.md
+            ├── SOUL_comprehensive.md
+            ├── SOUL_enhanced.md
+            ├── SOUL_with_selfcheck.md
+            ├── VAPTSECURE.md
+         ├── .claude
+            ├── settings.local.json
+         ├── .continue
+            ├── rules
+               ├── soul.md
+         ├── .cursor
+            ├── cursor.rules
+         ├── .gemini
+            ├── gemini.md
+         ├── .github
+            ├── copilot-instructions.md
+         ├── .junie
+            ├── guidelines.md
+         ├── .kilocode
+            ├── rules
+               ├── soul.md
+         ├── .opencode
+            ├── instructions
+               ├── SOUL.md
+         ├── .qoder
+            ├── qoder.rules
+         ├── .roo
+            ├── rules
+               ├── soul.md
+         ├── .trae
+            ├── trae.rules
+         ├── admin
+            ├── css
+               ├── admin.css
+         ├── assets
+            ├── css
+               ├── admin.css
+            ├── js
+               ├── __tests__
+                  ├── aplus-generator.test.js
+                  ├── interface-generator.test.js
+               ├── admin
+                  ├── shared
+                     ├── AlertModal.jsx
+                     ├── ApiHelper.js
+                     ├── ConfirmDialog.jsx
+                     ├── DataTable.jsx
+                     ├── StatusBadge.jsx
+                  ├── App.jsx
+               ├── admin-modules
+                  ├── api-fetch-hotpatch.js
+                  ├── design-modal.js
+                  ├── domains.js
+                  ├── field-mapping.js
+                  ├── logger.js
+                  ├── modals.js
+               ├── modules
+                  ├── aplus-generator.js
+                  ├── generated-interface.js
+                  ├── interface-generator.js
+               ├── admin - Copy.js
+               ├── admin.js
+               ├── client.js
+               ├── workbench.js
+         ├── data
+            ├── Enforcers
+               ├── apache-template.json
+               ├── caddy-template.json
+               ├── fail2ban-template.json
+               ├── htaccess-template.json
+               ├── nginx-template.json
+               ├── php-functions-template.json
+               ├── server-cron-template.json
+               ├── wordpress-template.json
+               ├── wp-config-template.json
+            ├── ai_agent_instructions_v2.0.json
+            ├── Babar12-Data.zip
+            ├── enforcer_pattern_library_v2.0.json
+            ├── interface_schema_v2.0.json
+            ├── VAPT_AI_Agent_System_README_v2.0.md
+            ├── vapt_driver_manifest_v2.0.json
+            ├── VAPT_Driver_Reference_v2.0.php
+         ├── includes
+            ├── admin
+               ├── class-vapt-diagnostics-page.php
+            ├── enforcers
+               ├── class-vaptsecure-apache-deployer.php
+               ├── class-vaptsecure-caddy-driver.php
+               ├── class-vaptsecure-config-deployer.php
+               ├── class-vaptsecure-config-driver.php
+               ├── class-vaptsecure-hook-driver.php
+               ├── class-vaptsecure-htaccess-driver.php
+               ├── class-vaptsecure-iis-driver.php
+               ├── class-vaptsecure-nginx-deployer.php
+               ├── class-vaptsecure-nginx-driver.php
+               ├── class-vaptsecure-php-deployer.php
+               ├── class-vaptsecure-php-driver.php
+            ├── interfaces
+               ├── interface-vaptsecure-driver.php
+            ├── rest
+               ├── class-vaptsecure-rest-base.php
+            ├── self-check
+               ├── class-vapt-audit-log.php
+               ├── class-vapt-auto-correct.php
+               ├── class-vapt-check-item.php
+               ├── class-vapt-cron.php
+               ├── class-vapt-lifecycle.php
+               ├── class-vapt-self-check-result.php
+               ├── class-vapt-self-check.php
+            ├── class-vaptsecure-admin.php
+            ├── class-vaptsecure-ai-config.php
+            ├── class-vaptsecure-ai-validator.php
+            ├── class-vaptsecure-auth.php
+            ├── class-vaptsecure-build.php
+            ├── class-vaptsecure-config-cleaner.php
+            ├── class-vaptsecure-db.php
+            ├── class-vaptsecure-deployment-orchestrator.php
+            ├── class-vaptsecure-enforcer.php
+            ├── class-vaptsecure-environment-detector.php
+            ├── class-vaptsecure-license-manager.php
+            ├── class-vaptsecure-migrations.php
+            ├── class-vaptsecure-rest.php
+            ├── class-vaptsecure-schema-validator.php
+            ├── class-vaptsecure-workflow.php
+            ├── debug-utils.php
+         ├── .clinerules
+         ├── .roorules
+         ├── .rules
+         ├── .windsurfrules
+         ├── CODEBASE_REVIEW.md
+         ├── LICENSE
+         ├── README.md
+         ├── vapt-functions.php
+         ├── VAPTSecure-Clean.zip
+         ├── vaptsecure.php
+      ├── agent-af3c1074fa2fbdb9b
+         ├── .ai
+            ├── rules
+               ├── cursor.rules
+               ├── develop-to-deploy.agrules
+               ├── gemini.md
+               ├── opencode.md
+               ├── session-start-cleanup.agrules
+               ├── stay-in-planning-mode.md
+               ├── transition-to-develop.agrules
+               ├── workspace-focus.agrules
+            ├── skills
+               ├── vaptschema-builder
+                  ├── examples
+                     ├── example-apache.json
+                     ├── example-caddy-native.json
+                     ├── example-caddy.json
+                     ├── example-cloudflare.json
+                     ├── example-fail2ban.json
+                     ├── example-htaccess.json
+                     ├── example-iis.json
+                     ├── example-nginx.json
+                     ├── example-php-functions.json
+                     ├── example-server-cron.json
+                     ├── example-wordpress-core.json
+                     ├── example-wordpress.json
+                     ├── example-wp-config.json
+                  ├── resources
+                     ├── ai_agent_instructions_v2.0.json
+                     ├── enforcer_pattern_library_v2.0.json
+                     ├── interface_schema_v2.0.json
+                     ├── schema-template.json
+                     ├── VAPT_AI_Agent_System_README_v2.0.md
+                     ├── vapt_driver_manifest_v2.0.json
+                     ├── VAPT_Driver_Reference_v2.0.php
+                  ├── scripts
+                     ├── Query-Risk.ps1
+                     ├── Validate-Schema.ps1
+                  ├── DEVELOPER_GUIDE.md
+                  ├── README.md
+                  ├── Rebuild-VAPTSchema-Builder-Skill-20260311_1652.md
+                  ├── SKILL.md
+                  ├── USAGE_GUIDE.md
+                  ├── VISUAL_FLOW.md
+               ├── vapt-expert_Initial.zip
+            ├── workflows
+               ├── 3-copy-design-prompt.md
+               ├── bump-version.md
+               ├── develop-to-deploy.md
+               ├── git-commit.md
+               ├── init-session-cleanup.md
+               ├── mapping-configuration-keys.md
+               ├── semver-release.yml
+               ├── superadmin-login-hermasnet.md
+               ├── transition-to-develop.md
+               ├── wpadmin-login-hermasnet.md
+            ├── AGENTS.md
+            ├── EDITOR_OPTIMIZATION_GUIDE.md
+            ├── README-Claude-Ext.md
+            ├── README.md
+            ├── SOUL-Claude-Ext.md
+            ├── SOUL-Claude.md
+            ├── SOUL.md
+            ├── SOUL_Claude-Notes.md
+            ├── SOUL_comprehensive.md
+            ├── SOUL_enhanced.md
+            ├── SOUL_with_selfcheck.md
+            ├── VAPTSECURE.md
+         ├── .claude
+            ├── settings.local.json
+         ├── .continue
+            ├── rules
+               ├── soul.md
+         ├── .cursor
+            ├── cursor.rules
+         ├── .gemini
+            ├── gemini.md
+         ├── .github
+            ├── copilot-instructions.md
+         ├── .junie
+            ├── guidelines.md
+         ├── .kilocode
+            ├── rules
+               ├── soul.md
+         ├── .opencode
+            ├── instructions
+               ├── SOUL.md
+         ├── .qoder
+            ├── qoder.rules
+         ├── .roo
+            ├── rules
+               ├── soul.md
+         ├── .trae
+            ├── trae.rules
+         ├── admin
+            ├── css
+               ├── admin.css
+         ├── assets
+            ├── css
+               ├── admin.css
+            ├── js
+               ├── __tests__
+                  ├── aplus-generator.test.js
+                  ├── interface-generator.test.js
+               ├── admin
+                  ├── shared
+                     ├── AlertModal.jsx
+                     ├── ApiHelper.js
+                     ├── ConfirmDialog.jsx
+                     ├── DataTable.jsx
+                     ├── StatusBadge.jsx
+                  ├── App.jsx
+               ├── admin-modules
+                  ├── api-fetch-hotpatch.js
+                  ├── design-modal.js
+                  ├── domains.js
+                  ├── field-mapping.js
+                  ├── logger.js
+                  ├── modals.js
+               ├── modules
+                  ├── aplus-generator.js
+                  ├── generated-interface.js
+                  ├── interface-generator.js
+               ├── admin - Copy.js
+               ├── admin.js
+               ├── client.js
+               ├── workbench.js
+         ├── data
+            ├── Enforcers
+               ├── apache-template.json
+               ├── caddy-template.json
+               ├── fail2ban-template.json
+               ├── htaccess-template.json
+               ├── nginx-template.json
+               ├── php-functions-template.json
+               ├── server-cron-template.json
+               ├── wordpress-template.json
+               ├── wp-config-template.json
+            ├── ai_agent_instructions_v2.0.json
+            ├── Babar12-Data.zip
+            ├── enforcer_pattern_library_v2.0.json
+            ├── interface_schema_v2.0.json
+            ├── VAPT_AI_Agent_System_README_v2.0.md
+            ├── vapt_driver_manifest_v2.0.json
+            ├── VAPT_Driver_Reference_v2.0.php
+         ├── includes
+            ├── admin
+               ├── class-vapt-diagnostics-page.php
+            ├── enforcers
+               ├── class-vaptsecure-apache-deployer.php
+               ├── class-vaptsecure-caddy-driver.php
+               ├── class-vaptsecure-config-deployer.php
+               ├── class-vaptsecure-config-driver.php
+               ├── class-vaptsecure-hook-driver.php
+               ├── class-vaptsecure-htaccess-driver.php
+               ├── class-vaptsecure-iis-driver.php
+               ├── class-vaptsecure-nginx-deployer.php
+               ├── class-vaptsecure-nginx-driver.php
+               ├── class-vaptsecure-php-deployer.php
+               ├── class-vaptsecure-php-driver.php
+            ├── interfaces
+               ├── interface-vaptsecure-driver.php
+            ├── rest
+               ├── class-vaptsecure-rest-base.php
+            ├── self-check
+               ├── class-vapt-audit-log.php
+               ├── class-vapt-auto-correct.php
+               ├── class-vapt-check-item.php
+               ├── class-vapt-cron.php
+               ├── class-vapt-lifecycle.php
+               ├── class-vapt-self-check-result.php
+               ├── class-vapt-self-check.php
+            ├── class-vaptsecure-admin.php
+            ├── class-vaptsecure-ai-config.php
+            ├── class-vaptsecure-ai-validator.php
+            ├── class-vaptsecure-auth.php
+            ├── class-vaptsecure-build.php
+            ├── class-vaptsecure-config-cleaner.php
+            ├── class-vaptsecure-db.php
+            ├── class-vaptsecure-deployment-orchestrator.php
+            ├── class-vaptsecure-enforcer.php
+            ├── class-vaptsecure-environment-detector.php
+            ├── class-vaptsecure-license-manager.php
+            ├── class-vaptsecure-migrations.php
+            ├── class-vaptsecure-rest.php
+            ├── class-vaptsecure-schema-validator.php
+            ├── class-vaptsecure-workflow.php
+            ├── debug-utils.php
+         ├── .clinerules
+         ├── .roorules
+         ├── .rules
+         ├── .windsurfrules
+         ├── CODEBASE_REVIEW.md
+         ├── LICENSE
+         ├── README.md
+         ├── vapt-functions.php
+         ├── VAPTSecure-Clean.zip
+         ├── vaptsecure.php
+      ├── agent-afdc919f57ece5b59
+         ├── .ai
+            ├── rules
+               ├── cursor.rules
+               ├── develop-to-deploy.agrules
+               ├── gemini.md
+               ├── opencode.md
+               ├── session-start-cleanup.agrules
+               ├── stay-in-planning-mode.md
+               ├── transition-to-develop.agrules
+               ├── workspace-focus.agrules
+            ├── skills
+               ├── vaptschema-builder
+                  ├── examples
+                     ├── example-apache.json
+                     ├── example-caddy-native.json
+                     ├── example-caddy.json
+                     ├── example-cloudflare.json
+                     ├── example-fail2ban.json
+                     ├── example-htaccess.json
+                     ├── example-iis.json
+                     ├── example-nginx.json
+                     ├── example-php-functions.json
+                     ├── example-server-cron.json
+                     ├── example-wordpress-core.json
+                     ├── example-wordpress.json
+                     ├── example-wp-config.json
+                  ├── resources
+                     ├── ai_agent_instructions_v2.0.json
+                     ├── enforcer_pattern_library_v2.0.json
+                     ├── interface_schema_v2.0.json
+                     ├── schema-template.json
+                     ├── VAPT_AI_Agent_System_README_v2.0.md
+                     ├── vapt_driver_manifest_v2.0.json
+                     ├── VAPT_Driver_Reference_v2.0.php
+                  ├── scripts
+                     ├── Query-Risk.ps1
+                     ├── Validate-Schema.ps1
+                  ├── DEVELOPER_GUIDE.md
+                  ├── README.md
+                  ├── Rebuild-VAPTSchema-Builder-Skill-20260311_1652.md
+                  ├── SKILL.md
+                  ├── USAGE_GUIDE.md
+                  ├── VISUAL_FLOW.md
+               ├── vapt-expert_Initial.zip
+            ├── workflows
+               ├── 3-copy-design-prompt.md
+               ├── bump-version.md
+               ├── develop-to-deploy.md
+               ├── git-commit.md
+               ├── init-session-cleanup.md
+               ├── mapping-configuration-keys.md
+               ├── semver-release.yml
+               ├── superadmin-login-hermasnet.md
+               ├── transition-to-develop.md
+               ├── wpadmin-login-hermasnet.md
+            ├── AGENTS.md
+            ├── EDITOR_OPTIMIZATION_GUIDE.md
+            ├── README-Claude-Ext.md
+            ├── README.md
+            ├── SOUL-Claude-Ext.md
+            ├── SOUL-Claude.md
+            ├── SOUL.md
+            ├── SOUL_Claude-Notes.md
+            ├── SOUL_comprehensive.md
+            ├── SOUL_enhanced.md
+            ├── SOUL_with_selfcheck.md
+            ├── VAPTSECURE.md
+         ├── .claude
+            ├── settings.local.json
+         ├── .continue
+            ├── rules
+               ├── soul.md
+         ├── .cursor
+            ├── cursor.rules
+         ├── .gemini
+            ├── gemini.md
+         ├── .github
+            ├── copilot-instructions.md
+         ├── .junie
+            ├── guidelines.md
+         ├── .kilocode
+            ├── rules
+               ├── soul.md
+         ├── .opencode
+            ├── instructions
+               ├── SOUL.md
+         ├── .qoder
+            ├── qoder.rules
+         ├── .roo
+            ├── rules
+               ├── soul.md
+         ├── .trae
+            ├── trae.rules
+         ├── admin
+            ├── css
+               ├── admin.css
+         ├── assets
+            ├── css
+               ├── admin.css
+            ├── js
+               ├── __tests__
+                  ├── aplus-generator.test.js
+                  ├── interface-generator.test.js
+               ├── admin
+                  ├── shared
+                     ├── AlertModal.jsx
+                     ├── ApiHelper.js
+                     ├── ConfirmDialog.jsx
+                     ├── DataTable.jsx
+                     ├── StatusBadge.jsx
+                  ├── App.jsx
+               ├── admin-modules
+                  ├── api-fetch-hotpatch.js
+                  ├── design-modal.js
+                  ├── domains.js
+                  ├── field-mapping.js
+                  ├── logger.js
+                  ├── modals.js
+               ├── modules
+                  ├── aplus-generator.js
+                  ├── generated-interface.js
+                  ├── interface-generator.js
+               ├── admin - Copy.js
+               ├── admin.js
+               ├── client.js
+               ├── workbench.js
+         ├── data
+            ├── Enforcers
+               ├── apache-template.json
+               ├── caddy-template.json
+               ├── fail2ban-template.json
+               ├── htaccess-template.json
+               ├── nginx-template.json
+               ├── php-functions-template.json
+               ├── server-cron-template.json
+               ├── wordpress-template.json
+               ├── wp-config-template.json
+            ├── ai_agent_instructions_v2.0.json
+            ├── Babar12-Data.zip
+            ├── enforcer_pattern_library_v2.0.json
+            ├── interface_schema_v2.0.json
+            ├── VAPT_AI_Agent_System_README_v2.0.md
+            ├── vapt_driver_manifest_v2.0.json
+            ├── VAPT_Driver_Reference_v2.0.php
+         ├── includes
+            ├── admin
+               ├── class-vapt-diagnostics-page.php
+            ├── enforcers
+               ├── class-vaptsecure-apache-deployer.php
+               ├── class-vaptsecure-caddy-driver.php
+               ├── class-vaptsecure-config-deployer.php
+               ├── class-vaptsecure-config-driver.php
+               ├── class-vaptsecure-hook-driver.php
+               ├── class-vaptsecure-htaccess-driver.php
+               ├── class-vaptsecure-iis-driver.php
+               ├── class-vaptsecure-nginx-deployer.php
+               ├── class-vaptsecure-nginx-driver.php
+               ├── class-vaptsecure-php-deployer.php
+               ├── class-vaptsecure-php-driver.php
+            ├── interfaces
+               ├── interface-vaptsecure-driver.php
+            ├── rest
+               ├── class-vaptsecure-rest-base.php
+            ├── self-check
+               ├── class-vapt-audit-log.php
+               ├── class-vapt-auto-correct.php
+               ├── class-vapt-check-item.php
+               ├── class-vapt-cron.php
+               ├── class-vapt-lifecycle.php
+               ├── class-vapt-self-check-result.php
+               ├── class-vapt-self-check.php
+            ├── class-vaptsecure-admin.php
+            ├── class-vaptsecure-ai-config.php
+            ├── class-vaptsecure-ai-validator.php
+            ├── class-vaptsecure-auth.php
+            ├── class-vaptsecure-build.php
+            ├── class-vaptsecure-config-cleaner.php
+            ├── class-vaptsecure-db.php
+            ├── class-vaptsecure-deployment-orchestrator.php
+            ├── class-vaptsecure-enforcer.php
+            ├── class-vaptsecure-environment-detector.php
+            ├── class-vaptsecure-license-manager.php
+            ├── class-vaptsecure-migrations.php
+            ├── class-vaptsecure-rest.php
+            ├── class-vaptsecure-schema-validator.php
+            ├── class-vaptsecure-workflow.php
+            ├── debug-utils.php
+         ├── .clinerules
+         ├── .roorules
+         ├── .rules
+         ├── .windsurfrules
+         ├── CODEBASE_REVIEW.md
+         ├── LICENSE
+         ├── README.md
+         ├── vapt-functions.php
+         ├── VAPTSecure-Clean.zip
+         ├── vaptsecure.php
 ├── .continue
    ├── rules
       ├── soul.md
 ├── .cursor
+   ├── rules
+      ├── graphify.mdc
    ├── cursor.rules
 ├── .gemini
    ├── gemini.md
@@ -94,53 +893,47 @@ Generated: 2026-05-07 10:47:53
    ├── node_modules
       ├── .cross-spawn-pUpE2KbH
       ├── .detect-libc-jsL9J9s0
+         ├── LICENSE
       ├── .effect-bAO2NOHy
-         ├── node_modules
-            ├── @msgpackr-extract
-               ├── msgpackr-extract-win32-x64
-            ├── @standard-schema
-               ├── spec
-                  ├── LICENSE
-            ├── detect-libc
-               ├── LICENSE
-            ├── fast-check
-            ├── find-my-way-ts
-            ├── ini
-            ├── kubernetes-types
-            ├── msgpackr
-               ├── LICENSE
-            ├── msgpackr-extract
-            ├── multipasta
-               ├── LICENSE
-            ├── node-gyp-build-optional-packages
-               ├── LICENSE
-            ├── pure-rand
-            ├── toml
-               ├── LICENSE
-            ├── uuid
-               ├── dist-node
-                  ├── bin
-            ├── yaml
+         ├── LICENSE
       ├── .fast-check-3YYN11mX
+         ├── LICENSE
       ├── .find-my-way-ts-0kwRpzKY
+         ├── LICENSE
       ├── .ini-XdFkaraa
+         ├── LICENSE
       ├── .isexe-yA4hoNQs
       ├── .kubernetes-types-JaZEsHoC
+         ├── package.json
       ├── .msgpackr-C5h1RHOs
+         ├── LICENSE
       ├── .msgpackr-extract-AVlgrCeV
+         ├── LICENSE
       ├── .multipasta-GKhBqh4A
+         ├── LICENSE
       ├── .node-gyp-build-optional-packages-JgkLahKv
+         ├── LICENSE
       ├── .path-key-Bpde2cOW
+         ├── license
       ├── .pure-rand-2uxV17JK
+         ├── LICENSE
       ├── .shebang-command-lViwyUBB
       ├── .shebang-regex-SIRrbeEz
+         ├── package.json
       ├── .toml-cIu9iYcX
+         ├── LICENSE
       ├── .uuid-DCy0mAW9
+         ├── dist-node
+            ├── bin
       ├── .which-2RpQuWJz
       ├── .yaml-aMj29Kdg
+         ├── LICENSE
       ├── @kilocode
          ├── .plugin-VBZuqoHk
+            ├── package.json
          ├── .sdk-nIQ1nBzj
+         ├── plugin
+         ├── sdk
             ├── node_modules
                ├── cross-spawn
                ├── isexe
@@ -153,52 +946,38 @@ Generated: 2026-05-07 10:47:53
                   ├── package.json
                ├── which
                   ├── LICENSE
-         ├── plugin
-            ├── package.json
-         ├── sdk
       ├── @msgpackr-extract
          ├── .msgpackr-extract-win32-x64-QYq4r1UF
-         ├── msgpackr-extract-win32-x64
             ├── index.js
       ├── @standard-schema
          ├── .spec-vQo6MXl3
-         ├── spec
-      ├── cross-spawn
-      ├── detect-libc
-         ├── LICENSE
       ├── effect
-         ├── LICENSE
-      ├── fast-check
-         ├── LICENSE
-      ├── find-my-way-ts
-         ├── LICENSE
-      ├── ini
-         ├── LICENSE
-      ├── isexe
-      ├── kubernetes-types
-         ├── package.json
-      ├── msgpackr
-         ├── LICENSE
-      ├── msgpackr-extract
-         ├── LICENSE
-      ├── multipasta
-         ├── LICENSE
-      ├── node-gyp-build-optional-packages
-         ├── LICENSE
-      ├── path-key
-         ├── license
-      ├── pure-rand
-         ├── LICENSE
-      ├── shebang-command
-      ├── shebang-regex
-         ├── package.json
-      ├── toml
-         ├── LICENSE
-      ├── uuid
-         ├── dist-node
-            ├── bin
-      ├── which
-      ├── yaml
+         ├── node_modules
+            ├── @msgpackr-extract
+               ├── msgpackr-extract-win32-x64
+                  ├── index.js
+            ├── @standard-schema
+               ├── spec
+                  ├── LICENSE
+            ├── detect-libc
+            ├── fast-check
+               ├── LICENSE
+            ├── find-my-way-ts
+               ├── LICENSE
+            ├── ini
+            ├── kubernetes-types
+            ├── msgpackr
+            ├── msgpackr-extract
+               ├── LICENSE
+            ├── multipasta
+            ├── node-gyp-build-optional-packages
+               ├── LICENSE
+            ├── pure-rand
+            ├── toml
+            ├── uuid
+               ├── dist-node
+                  ├── bin
+            ├── yaml
          ├── LICENSE
       ├── zod
          ├── locales
@@ -896,6 +1675,26 @@ Generated: 2026-05-07 10:47:53
       ├── .cross-spawn-pP6ZeuoU
       ├── .detect-libc-IVtQoIV8
       ├── .effect-hf3wMz9n
+         ├── node_modules
+            ├── @msgpackr-extract
+               ├── msgpackr-extract-win32-x64
+            ├── @standard-schema
+               ├── spec
+            ├── detect-libc
+            ├── fast-check
+            ├── find-my-way-ts
+            ├── ini
+            ├── kubernetes-types
+            ├── msgpackr
+            ├── msgpackr-extract
+            ├── multipasta
+            ├── node-gyp-build-optional-packages
+            ├── pure-rand
+            ├── toml
+            ├── uuid
+               ├── dist-node
+                  ├── bin
+            ├── yaml
       ├── .fast-check-a4A0v42x
       ├── .find-my-way-ts-cfan8QG3
       ├── .ini-LB9HLdEm
@@ -918,8 +1717,6 @@ Generated: 2026-05-07 10:47:53
       ├── @kilocode
          ├── .plugin-O3JrkUVm
          ├── .sdk-bUCoYDMk
-         ├── plugin
-         ├── sdk
             ├── node_modules
                ├── cross-spawn
                ├── isexe
@@ -927,13 +1724,14 @@ Generated: 2026-05-07 10:47:53
                ├── shebang-command
                ├── shebang-regex
                ├── which
+         ├── plugin
+         ├── sdk
       ├── @msgpackr-extract
          ├── .msgpackr-extract-win32-x64-DvHLYfCD
+         ├── msgpackr-extract-win32-x64
       ├── @opencode-ai
          ├── .plugin-T0WjQidz
          ├── .sdk-Oi7LOso9
-         ├── plugin
-         ├── sdk
             ├── node_modules
                ├── cross-spawn
                ├── isexe
@@ -941,29 +1739,31 @@ Generated: 2026-05-07 10:47:53
                ├── shebang-command
                ├── shebang-regex
                ├── which
+         ├── plugin
+         ├── sdk
       ├── @standard-schema
          ├── .spec-qrmKkVO0
+         ├── spec
+      ├── cross-spawn
+      ├── detect-libc
       ├── effect
-         ├── node_modules
-            ├── @msgpackr-extract
-               ├── msgpackr-extract-win32-x64
-            ├── @standard-schema
-               ├── spec
-            ├── detect-libc
-            ├── fast-check
-            ├── find-my-way-ts
-            ├── ini
-            ├── kubernetes-types
-            ├── msgpackr
-            ├── msgpackr-extract
-            ├── multipasta
-            ├── node-gyp-build-optional-packages
-            ├── pure-rand
-            ├── toml
-            ├── uuid
-               ├── dist-node
-                  ├── bin
-            ├── yaml
+      ├── fast-check
+      ├── find-my-way-ts
+      ├── ini
+      ├── isexe
+      ├── kubernetes-types
+      ├── msgpackr
+      ├── msgpackr-extract
+      ├── multipasta
+      ├── node-gyp-build-optional-packages
+      ├── path-key
+      ├── pure-rand
+      ├── shebang-command
+      ├── shebang-regex
+      ├── toml
+      ├── uuid
+      ├── which
+      ├── yaml
       ├── zod
          ├── locales
             ├── index.cjs
@@ -1715,7 +2515,6 @@ Generated: 2026-05-07 10:47:53
       ├── VAPT_AI_Agent_System_v2.0_metadata_fixed_bundle.zip
    ├── ai_agent_instructions_v2.0.json
    ├── Babar12-Data.zip
-   ├── Backup-Work_Folders.zip
    ├── enforcer_pattern_library_v2.0.json
    ├── interface_schema_v2.0.json
    ├── VAPT_AI_Agent_System_README_v2.0.md
@@ -1726,6 +2525,161 @@ Generated: 2026-05-07 10:47:53
    ├── VAPT_v2.0_risk_consolidation_patch.zip
    ├── VAPT_v2.0_risk_consolidation_patch_full_aligned.zip
    ├── VAPT_v2.0_selective_client_risks_addendum_patch.zip
+├── graphify-out
+   ├── cache
+      ├── ast
+         ├── 038cd3363080a60c5c182c726e19c8ff613133bf79cc8da66f69fc2fbe28f424.json
+         ├── 059ea2efa15f427e888cf36c24fcc203ee56b84fd27fa44181b4e34644f0d1fa.json
+         ├── 0c69d92781d1c20e167f29114fcee50df646cbbf6cbe61e64b93f2ae9411eaf0.json
+         ├── 0c7a9de03e88612ef2ad6e96e590bf52682b226fb48f57a3ab10c0b2e78507f9.json
+         ├── 0d1c53c9be93826fe6230c5fe14ed264e1d2871b3ef2f733c573c9c8fcbfea81.json
+         ├── 1926c2a052ebdb5f0c1205384ca62b3ff8f008ebd771b99c3ce78bebe4f93092.json
+         ├── 19a25828ecdf8d6dd482bb1653bcf7112b66fac6301f836125f0ed43e3514f3a.json
+         ├── 233c007d80c10a23c37ce83c75e359ef2094a005e3b8f712bb770a1498481e6a.json
+         ├── 239580b2ea87fa6b97fe3ce4fb80316d3d368462948244b29c1605ead94c2bfe.json
+         ├── 2ff324f9a1175db4e2ef332dd0a8f31c1e119624f8d540f79b71ccf46fa3582f.json
+         ├── 2ff4d26db4a98d9121d74d020b8aa0e6edebb344afb25aa7d48ef6a5425ed32a.json
+         ├── 38717ca80b919b5a82c23915ca4860a4f7e9ed876e14de1f3ea36f36cd50d09d.json
+         ├── 3a1515e05c002e3d9a250d0e8ce080567f26997bba11ee4179a785cb3a0ba4a5.json
+         ├── 3b40faa71d8499cf291003fabe25038d442af0e8bc1016b8617485f9723c7ebf.json
+         ├── 3f8a80616ca976174c8282bb8f65c2b21e54be30200c3a71b0181e0250ddb0a1.json
+         ├── 424b04584e54bc882a6361d0059acfc793cce2502220b829e76e21e824618fa0.json
+         ├── 46505677f14966d0d05f5327a12c63a53c72d699ab812c12b54fb0f0c71795aa.json
+         ├── 465bc6ff067888935a44cc382ea103282f038a26ddc7808385eb458857a7df97.json
+         ├── 48be623799d69b72b4c9991840c221023ca003f839f93ab7ca5a894425674b43.json
+         ├── 4ed6a36880200766dee443fd99e3823ff7d6143b10df692b22db2abf57e759f2.json
+         ├── 5b3340ea4fe9fb1105ed8e992cdff0364ea97193786d08813b7376ac885c0ea6.json
+         ├── 642a17b13a0ffdac548c493065cd2b4e4c0da1e545f20d11f9287bfd4ea2cc03.json
+         ├── 6894f18c6dfc3fca361aa84a8f097a3fcc98567caa537009434a5cb81a144736.json
+         ├── 6a0c512cd8175a02884e32bb607322c64128614ae40d295f9e09b907444f7d57.json
+         ├── 6bc1dab580ddc01a93a18f1a079c8825665adc390520b9706a55b113aef325ef.json
+         ├── 6bc9d1dbe7acdb6b2f4ad54bd9dffecd5ad217dc58ffd319a2ef05f8122a25d1.json
+         ├── 6d7123386eb15c06ab396acd87166a8cbf3e54d2056568697cf7f1eab1e11217.json
+         ├── 6ffd346b4aa39c1e3be0719c0e9063a07cdf80fd2ee14d0955f5fb843a75ff79.json
+         ├── 7996ee92bc67340ba99c0c2866dd7c7f675ebefcee64f7f809c30bdd50de0967.json
+         ├── 7a839a0d88802171b73f13923839aa6f99b07a169933fad85c6a45c829bc85a6.json
+         ├── 7b6e481026b1bdf8b2879bc06750c1444224ea1445afecef18884240693ea0cc.json
+         ├── 85b68b0fc6bf506cad7f210744453b67241ef13553ee04400e10073adf52057b.json
+         ├── 8af90b4fd18b02e28213e2e3781224763df24fcb17249dcf4ff4722d4b7f6d00.json
+         ├── 8c205a0fb894e6c24ea53dc81e018ac040df9c11269eb93d1c2c5d1e621a46b0.json
+         ├── 8d1822db860db75425eb7e55545db0cb418a98b14257691723ef0d54736c64e4.json
+         ├── 8e5d7016050422bf0b9a9a575a6d72d0ffadbdd075fc67b2440051c6148a3e8f.json
+         ├── 8e982f24bb004afe779cb27f4dfb22f85f1d17ccd0a8cc3015a3478f33e14899.json
+         ├── 900fdc7743427a99e3b39fc808961f2b0841d0067e815a88dc9e159917fe1507.json
+         ├── 9305f8281fd7b6396e3c78f97f2eccf4f550b4351e424e9f161993e84356b57f.json
+         ├── 93e06c4078b39a23d9130ead580e035a30bb67ea5af558e53bd954dd01019249.json
+         ├── 97759fe52f8687f8a08e8ec7cb5956fd8a41aa936579138ee4f9b13b1ba0c8ef.json
+         ├── 9b186e5c59987b03a692b4c5bc7c433da3865a6d71e23df3e0cadc03efd164e1.json
+         ├── 9c7ba42414477d5644d5c71a7b4d9fe451868dec8f1f9f6a40223d5c1f46d0e4.json
+         ├── a9f237523b119c704779702b3f88ca9ab6d99281195f642b8f8818de7a5913e1.json
+         ├── aedb9ecd1d94065b9653517e79e717ef278e4107b50e1044c39d46f128187c52.json
+         ├── b04b10ea4027f0a37cdfa9103813f2503cb3473a6889acc87198da70ffb28bca.json
+         ├── b1a4dc27667ea99768000ecde132768ccaaf2bad18f7708b0ed011219ae93f0a.json
+         ├── bec01b594e34dd1f3035733875a7f4af54138e4540a4ec3a8f85213c163ca542.json
+         ├── c02b34932c6183705a0377df9e308f245d3d80d821b6cff8c08ebb595820bd8b.json
+         ├── c1b020ca37657b1a70be27d214a76823a522ed57ba0ab2daed5d1c53cba68039.json
+         ├── c1bbf400e1d4898090d1778b54a64cb33a6d29db7f94ddf1f440297eda7a4df1.json
+         ├── c56135badf36afe944121d4d37f3fc9a60baa30b324aba4c5c0839976e6a21d7.json
+         ├── c57e0e98a97879fff593756ece7bf9a24d393705b1ca3ae5f0d11b3db7b6c7f7.json
+         ├── c6330b1184bb800f96c9b31b6a29a45a0292891041495edaa8b4178be42e3048.json
+         ├── cad32191388a4a37a4c528e82c2ac25cb6108884e1983a19f56413fa85101908.json
+         ├── cd9e197b365dda3cdc76c7555350a3e9719488798756d145934cfca4fcd4ed97.json
+         ├── d1e61477ded78b1b64afe0262f0babb3ab2e14f5e074b8cb4ea3ea1f317837f6.json
+         ├── d28a790d74a890fcb955e52287752bbc0553b824ab9d06ec48209c02d5ee61a4.json
+         ├── d4504c5efbb94de75c73654d4fce8c8289d182d447a6560671492b28986d2e48.json
+         ├── dcd5bbbc93ef14e4fc551363703b154937aa621e48b38944e81a473257a16caf.json
+         ├── dcecb23012e9cafc5328300bf001fa3e1510f0300a20c4eacafb45acfa285bac.json
+         ├── e8e97f314bae951f4b6e127a60e5d7f7a1cf6cb8bf9dd9d6662e5fa6435cdbd1.json
+         ├── f2d88eb4493c5dc5388ed97a07500a984fd6e21dc7d80bcd0daa86bbbef08cfc.json
+         ├── f5373b00653d4e8bbc03a602a38676ca8125e5f9887432aafb067f962fe8f425.json
+         ├── f77688807f77418daeea6a7f77b6b3d3d1d4684f06ce9c94bd887b4de11e0651.json
+         ├── f8254770e2171c16edfbc9d4e7920cb07718eaba10a5116cb92033556a2898ab.json
+      ├── semantic
+         ├── 02032d1e3615b1c5aaff89a10214a7d624ec3ec6ab234086fe3dc9a481eee933.json
+         ├── 038cd3363080a60c5c182c726e19c8ff613133bf79cc8da66f69fc2fbe28f424.json
+         ├── 059ea2efa15f427e888cf36c24fcc203ee56b84fd27fa44181b4e34644f0d1fa.json
+         ├── 0c69d92781d1c20e167f29114fcee50df646cbbf6cbe61e64b93f2ae9411eaf0.json
+         ├── 0c7a9de03e88612ef2ad6e96e590bf52682b226fb48f57a3ab10c0b2e78507f9.json
+         ├── 0d1c53c9be93826fe6230c5fe14ed264e1d2871b3ef2f733c573c9c8fcbfea81.json
+         ├── 1926c2a052ebdb5f0c1205384ca62b3ff8f008ebd771b99c3ce78bebe4f93092.json
+         ├── 233c007d80c10a23c37ce83c75e359ef2094a005e3b8f712bb770a1498481e6a.json
+         ├── 239580b2ea87fa6b97fe3ce4fb80316d3d368462948244b29c1605ead94c2bfe.json
+         ├── 2ff324f9a1175db4e2ef332dd0a8f31c1e119624f8d540f79b71ccf46fa3582f.json
+         ├── 2ff4d26db4a98d9121d74d020b8aa0e6edebb344afb25aa7d48ef6a5425ed32a.json
+         ├── 38717ca80b919b5a82c23915ca4860a4f7e9ed876e14de1f3ea36f36cd50d09d.json
+         ├── 3a1515e05c002e3d9a250d0e8ce080567f26997bba11ee4179a785cb3a0ba4a5.json
+         ├── 41349e32b50169c8059e37e7c0ed64062c9dded73451ce50b45270edde2140df.json
+         ├── 424b04584e54bc882a6361d0059acfc793cce2502220b829e76e21e824618fa0.json
+         ├── 46505677f14966d0d05f5327a12c63a53c72d699ab812c12b54fb0f0c71795aa.json
+         ├── 465bc6ff067888935a44cc382ea103282f038a26ddc7808385eb458857a7df97.json
+         ├── 48be623799d69b72b4c9991840c221023ca003f839f93ab7ca5a894425674b43.json
+         ├── 4ed6a36880200766dee443fd99e3823ff7d6143b10df692b22db2abf57e759f2.json
+         ├── 5b3340ea4fe9fb1105ed8e992cdff0364ea97193786d08813b7376ac885c0ea6.json
+         ├── 5e4cc2e99bb506cbcb3f3296560cb2649469a4c3bc61d16acbd041f0338b061d.json
+         ├── 603e2c9a9af80f4f3bc2bb6cc5d9c6841ced4455bec376a9ec4984e8ca0f97b2.json
+         ├── 642a17b13a0ffdac548c493065cd2b4e4c0da1e545f20d11f9287bfd4ea2cc03.json
+         ├── 6894f18c6dfc3fca361aa84a8f097a3fcc98567caa537009434a5cb81a144736.json
+         ├── 6a0c512cd8175a02884e32bb607322c64128614ae40d295f9e09b907444f7d57.json
+         ├── 6bc1dab580ddc01a93a18f1a079c8825665adc390520b9706a55b113aef325ef.json
+         ├── 6bc9d1dbe7acdb6b2f4ad54bd9dffecd5ad217dc58ffd319a2ef05f8122a25d1.json
+         ├── 6d7123386eb15c06ab396acd87166a8cbf3e54d2056568697cf7f1eab1e11217.json
+         ├── 7996ee92bc67340ba99c0c2866dd7c7f675ebefcee64f7f809c30bdd50de0967.json
+         ├── 7a839a0d88802171b73f13923839aa6f99b07a169933fad85c6a45c829bc85a6.json
+         ├── 7b6e481026b1bdf8b2879bc06750c1444224ea1445afecef18884240693ea0cc.json
+         ├── 85b68b0fc6bf506cad7f210744453b67241ef13553ee04400e10073adf52057b.json
+         ├── 8af90b4fd18b02e28213e2e3781224763df24fcb17249dcf4ff4722d4b7f6d00.json
+         ├── 8c205a0fb894e6c24ea53dc81e018ac040df9c11269eb93d1c2c5d1e621a46b0.json
+         ├── 8d1822db860db75425eb7e55545db0cb418a98b14257691723ef0d54736c64e4.json
+         ├── 8e5d7016050422bf0b9a9a575a6d72d0ffadbdd075fc67b2440051c6148a3e8f.json
+         ├── 8e982f24bb004afe779cb27f4dfb22f85f1d17ccd0a8cc3015a3478f33e14899.json
+         ├── 900fdc7743427a99e3b39fc808961f2b0841d0067e815a88dc9e159917fe1507.json
+         ├── 94d5cef3ad6b44ada8b51ac3d6ecbe57200ada8f2e052846d1e99158c96b277a.json
+         ├── 97759fe52f8687f8a08e8ec7cb5956fd8a41aa936579138ee4f9b13b1ba0c8ef.json
+         ├── 9b186e5c59987b03a692b4c5bc7c433da3865a6d71e23df3e0cadc03efd164e1.json
+         ├── 9c7ba42414477d5644d5c71a7b4d9fe451868dec8f1f9f6a40223d5c1f46d0e4.json
+         ├── a9f237523b119c704779702b3f88ca9ab6d99281195f642b8f8818de7a5913e1.json
+         ├── aedb9ecd1d94065b9653517e79e717ef278e4107b50e1044c39d46f128187c52.json
+         ├── b04b10ea4027f0a37cdfa9103813f2503cb3473a6889acc87198da70ffb28bca.json
+         ├── b1a4dc27667ea99768000ecde132768ccaaf2bad18f7708b0ed011219ae93f0a.json
+         ├── bec01b594e34dd1f3035733875a7f4af54138e4540a4ec3a8f85213c163ca542.json
+         ├── c02b34932c6183705a0377df9e308f245d3d80d821b6cff8c08ebb595820bd8b.json
+         ├── c1b020ca37657b1a70be27d214a76823a522ed57ba0ab2daed5d1c53cba68039.json
+         ├── c1bbf400e1d4898090d1778b54a64cb33a6d29db7f94ddf1f440297eda7a4df1.json
+         ├── c33e76c4d780d737c2e3d040e6b376deb2eadea1192abcaeb2eee3230bc3a85e.json
+         ├── c57e0e98a97879fff593756ece7bf9a24d393705b1ca3ae5f0d11b3db7b6c7f7.json
+         ├── c6330b1184bb800f96c9b31b6a29a45a0292891041495edaa8b4178be42e3048.json
+         ├── cad32191388a4a37a4c528e82c2ac25cb6108884e1983a19f56413fa85101908.json
+         ├── cd9e197b365dda3cdc76c7555350a3e9719488798756d145934cfca4fcd4ed97.json
+         ├── d06bdd0b71d14eef7be4feaba28acee493d4a872eaf1bf18203e9da9e24bc709.json
+         ├── d28a790d74a890fcb955e52287752bbc0553b824ab9d06ec48209c02d5ee61a4.json
+         ├── d4504c5efbb94de75c73654d4fce8c8289d182d447a6560671492b28986d2e48.json
+         ├── dcd5bbbc93ef14e4fc551363703b154937aa621e48b38944e81a473257a16caf.json
+         ├── dcecb23012e9cafc5328300bf001fa3e1510f0300a20c4eacafb45acfa285bac.json
+         ├── e20960c27ca5c9164fadd72c94f7d7cf80fe77b60111bc4154b568f065e06b55.json
+         ├── e8e97f314bae951f4b6e127a60e5d7f7a1cf6cb8bf9dd9d6662e5fa6435cdbd1.json
+         ├── f2d88eb4493c5dc5388ed97a07500a984fd6e21dc7d80bcd0daa86bbbef08cfc.json
+         ├── f5373b00653d4e8bbc03a602a38676ca8125e5f9887432aafb067f962fe8f425.json
+         ├── f8254770e2171c16edfbc9d4e7920cb07718eaba10a5116cb92033556a2898ab.json
+   ├── .graphify_analysis.json
+   ├── .graphify_ast.json
+   ├── .graphify_chunk_01.json
+   ├── .graphify_chunk_02.json
+   ├── .graphify_chunk_03.json
+   ├── .graphify_chunk_04.json
+   ├── .graphify_chunk_1.json
+   ├── .graphify_chunk_2.json
+   ├── .graphify_detect.json
+   ├── .graphify_extract.json
+   ├── .graphify_labels.json
+   ├── .graphify_python
+   ├── .graphify_semantic.json
+   ├── .graphify_semantic_new.json
+   ├── .graphify_uncached.txt
+   ├── cost.json
+   ├── graph.html
+   ├── graph.json
+   ├── GRAPH_REPORT.md
+   ├── manifest.json
 ├── includes
    ├── admin
       ├── class-vapt-diagnostics-page.php
@@ -1775,17 +2729,24 @@ Generated: 2026-05-07 10:47:53
    ├── BuildGenerator.md
    ├── ClientBuild-SSoT-Discrepancy-Map.md
 ├── .clinerules
-├── .git-branch-aliases.txt
-├── .git-branch-tree.ps1
-├── .git-branch-tree.sh
+├── .graphify_analysis.json
+├── .graphify_ast.json
+├── .graphify_cached.json
+├── .graphify_detect.json
+├── .graphify_extract.json
+├── .graphify_labels.json
+├── .graphify_semantic.json
+├── .graphify_uncached.txt
 ├── .roorules
 ├── .rules
 ├── .windsurfrules
 ├── ANALYSIS_REPORT.md
+├── check_cache.py
 ├── CODEBASE_REVIEW.md
 ├── COMMIT_MSG.txt
 ├── LICENSE
 ├── README.md
+├── run_ast.py
 ├── test.ftp
 ├── vapt-dashboard.png
 ├── vapt-debug.txt
@@ -1846,7 +2807,7 @@ Generated: 2026-05-07 10:47:53
 - G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/vapt_driver_manifest_v2.0.json
 - G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/scripts/Query-Risk.ps1
 
-... and 1474 more files
+... and 2257 more files
 
 ### Maintenance
 This file is auto-generated. To update it:

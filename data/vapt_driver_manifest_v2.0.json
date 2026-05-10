@@ -10,18 +10,18 @@
     "driver_reference": "VAPT_Driver_Reference_v2.0.php",
     "readme": "VAPT_AI_Agent_System_README_v2.0.md"
   },
-  "description": "VAPT Driver Manifest v2.0 — Machine-executable instructions for the WordPress plugin driver. Every field is directly usable with no inference required. Enforcer lib_key names match enforcer_pattern_library_v2.0 exactly.",
+  "description": "VAPT Driver Manifest v2.0 \u2014 Machine-executable instructions for the WordPress plugin driver. Every field is directly usable with no inference required. Enforcer lib_key names match enforcer_pattern_library_v2.0 exactly.",
   "driver_contract": {
     "read_sequence": [
       "1. Resolve {ABSPATH} in target_file to full filesystem path",
       "2. Create target file if it does not exist (especially wp-content/uploads/.htaccess)",
-      "3. Read idempotency.check_string — if found in file AND if_found=skip → stop, return already-applied",
+      "3. Read idempotency.check_string \u2014 if found in file AND if_found=skip \u2192 stop, return already-applied",
       "4. If backup_required=true, copy target_file to target_file + '.vapt.bak.' + timestamp",
-      "5. Read insertion.anchor_string — search target_file content for this exact string",
+      "5. Read insertion.anchor_string \u2014 search target_file content for this exact string",
       "6. If anchor found: apply anchor_position (before/after/prepend/append) to place write_block",
       "7. If anchor NOT found: use insertion.fallback strategy (prepend/append)",
       "8. Write new content to target_file",
-      "9. Run verification.command — check output matches verification.expected",
+      "9. Run verification.command \u2014 check output matches verification.expected",
       "10. On failure: remove begin_marker..end_marker block from target_file (rollback)"
     ],
     "write_modes": {
@@ -95,7 +95,6 @@
     "fail2ban": "/etc/fail2ban/jail.local",
     "Nginx": "/etc/nginx/conf.d/vapt-security.conf",
     "Apache": "/etc/apache2/conf-available/vapt-security.conf",
-    "Caddy": "/etc/caddy/Caddyfile",
     "Server Cron": "crontab"
   },
   "risks": {
