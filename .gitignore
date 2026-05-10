@@ -75,3 +75,14 @@ vapt-dashboard.png
 
 # Skill bundle backup archive
 .ai/skills/vaptschema-builder/resources/resources_backup.rar
+
+# Graphify Analysis Artifacts
+graphify-out/
+.graphify_*.json
+.graphify_*.txt
+check_cache.py
+run_ast.py
+
+# IDE / Agent temporary files
+.claude/
+.cursor/
