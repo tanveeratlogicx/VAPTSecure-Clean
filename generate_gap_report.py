@@ -18,7 +18,7 @@ def analyze_gaps():
         "| :--- | :--- | :--- | :--- |"
     ]
 
-    target_platforms = [".htaccess", "Nginx", "wp-config.php", "PHP Functions", "Cloudflare"]
+    target_platforms = [".htaccess", "Nginx", "wp-config.php", "PHP Functions", "Cloudflare", "IIS", "Caddy"]
     
     # Define which platforms are "logical" for different types of risks
     # This is a simplification, but helps in identifying major omissions.
@@ -33,12 +33,14 @@ def analyze_gaps():
         
         missing = []
         # General logic for missing platforms:
-        # 1. Network level risks should have .htaccess, Nginx, Cloudflare, PHP Functions
+        # 1. Network level risks should have .htaccess, Nginx, Cloudflare, PHP Functions, IIS, Caddy
         # 2. Policy/Bootloader risks should have wp-config.php
         
-        # Check for Nginx (High Priority)
-        if "Nginx" not in present and (".htaccess" in present or "PHP Functions" in present):
-            missing.append("Nginx")
+        # Check for Nginx/IIS/Caddy (High Priority for environment coverage)
+        if ".htaccess" in present or "PHP Functions" in present:
+            if "Nginx" not in present: missing.append("Nginx")
+            if "IIS" not in present: missing.append("IIS")
+            if "Caddy" not in present: missing.append("Caddy")
             
         # Check for PHP Functions (Universal Fallback)
         if "PHP Functions" not in present and not title.lower().startswith('disable') and "wp-config.php" not in present:
