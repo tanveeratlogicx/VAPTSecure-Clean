@@ -2327,23 +2327,40 @@ var vaptLog = window.vaptLog || {
             const impls = verificationFeatureData.platform_implementations || {};
             let addedCode = '';
             let targetFile = '';
+            let actionDesc = '';
 
             for (const [plat, details] of Object.entries(impls)) {
               if (details.code || details.wrapped_code) {
                 addedCode = details.wrapped_code || details.code;
                 targetFile = details.target_file || plat;
+                
+                // Narrative description logic (v3.13.8)
+                const op = String(details.operation || details.implementation_type || '').toLowerCase();
+                if (op.includes('block') || op.includes('files_block')) actionDesc = __('will be added to block access', 'vaptsecure');
+                else if (op.includes('constant') || op.includes('wp_config')) actionDesc = __('constant will be added', 'vaptsecure');
+                else if (op.includes('hook') || op.includes('action')) actionDesc = __('PHP hook will be registered', 'vaptsecure');
+                else actionDesc = __('rule will be added', 'vaptsecure');
+                
                 break;
               }
             }
 
             if (!addedCode) return null;
 
-            return el('div', { style: { padding: '8px', maxWidth: '300px' } }, [
-              el('div', { style: { marginBottom: '5px', fontWeight: 'bold', color: '#10b981' } },
-                __('Script to be added to: ', 'vaptsecure') + targetFile),
-              el('pre', { style: { fontSize: '10px', background: '#f1f5f9', padding: '5px', borderRadius: '3px', overflowX: 'auto', whiteSpace: 'pre-wrap', color: '#334155', border: '1px solid #e2e8f0' } }, addedCode),
-              el('div', { style: { marginTop: '8px', fontWeight: 'bold', color: '#ef4444' } },
-                __('When protection is disabled, this rule is removed from the file.', 'vaptsecure'))
+            return el('div', { style: { padding: '8px', maxWidth: '350px' } }, [
+              el('div', { style: { marginBottom: '8px', fontWeight: '600', color: '#1e293b', borderBottom: '1px solid #e2e8f0', pb: '4px' } },
+                __('Implementation Details', 'vaptsecure')),
+              el('div', { style: { marginBottom: '8px', fontSize: '12px', color: '#475569' } },
+                el('span', null, [
+                  el('strong', null, targetFile),
+                  ' ',
+                  actionDesc,
+                  '. ',
+                  __('This rule will be removed when protection is disabled.', 'vaptsecure')
+                ])
+              ),
+              el('div', { style: { fontSize: '11px', fontWeight: 'bold', color: '#10b981', marginBottom: '4px' } }, __('SCRIPT PREVIEW:', 'vaptsecure')),
+              el('pre', { style: { fontSize: '10px', background: '#f8fafc', padding: '8px', borderRadius: '4px', overflowX: 'auto', whiteSpace: 'pre-wrap', color: '#334155', border: '1px solid #e2e8f0', margin: 0 } }, addedCode)
             ]);
           };
 

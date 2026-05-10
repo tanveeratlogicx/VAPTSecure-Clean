@@ -467,7 +467,7 @@
         if (platform === 'fail2ban' || op.includes('jail')) return 'fail2ban';
         if (platform === 'wp-config' || platform === 'wpconfig' || op.includes('constant') || op.includes('config')) return 'wp-config';
         if (platform === 'php-functions' || platform === 'php-headers' || op.includes('hook') || op.includes('wordpress')) return 'php-headers';
-        if (platform === 'php-cron' || platform === 'server-cron' || op.includes('cron')) return 'php-cron';
+        if (platform === 'php-cron' || platform === 'server-cron' || op.includes('cron')) return (platform === 'server-cron') ? 'server-cron' : 'php-cron';
         return platform || 'php-headers';
       };
 

@@ -2,12 +2,12 @@
 
 ## Project: VAPTSecure-Clean
 
-Generated: 2026-05-10 08:58:43
+Generated: 2026-05-10 09:18:56
 
 ### File Structure Summary
-- Total Files: 2316
+- Total Files: 2317
 - Total Directories: 437
-- File Extensions: .rules: 25, .agrules: 20, .md: 217, .json: 341, .rar: 2, .php: 206, .ps1: 10, .zip: 21, .yml: 6, .css: 10, .js: 276, .jsx: 25, .clinerules: 5, .roorules: 5, .windsurfrules: 5, .mdc: 1, .cjs: 194, .cts: 194, .ts: 706, .graphify_python: 1, .txt: 4, .html: 1, .py: 10, .ftp: 1, .png: 1
+- File Extensions: .rules: 25, .agrules: 20, .md: 217, .json: 341, .rar: 2, .php: 206, .ps1: 10, .zip: 21, .yml: 6, .css: 10, .js: 276, .jsx: 25, .clinerules: 5, .roorules: 5, .windsurfrules: 5, .mdc: 1, .cjs: 194, .cts: 194, .ts: 706, .graphify_python: 1, .txt: 4, .html: 1, .py: 10, .png: 2, .ftp: 1
 
 ### Directory Tree
 ├── .agent
@@ -2755,6 +2755,7 @@ Generated: 2026-05-10 08:58:43
 ├── README.md
 ├── repair_drifts.py
 ├── run_ast.py
+├── screenshot2.png
 ├── test.ftp
 ├── vapt-dashboard.png
 ├── vapt-debug.txt
@@ -2816,7 +2817,7 @@ Generated: 2026-05-10 08:58:43
 - G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/vapt_driver_manifest_v2.0.json
 - G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/scripts/Query-Risk.ps1
 
-... and 2266 more files
+... and 2267 more files
 
 ### Maintenance
 This file is auto-generated. To update it:
