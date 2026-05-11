@@ -61,7 +61,7 @@ class VAPTSECURE_PHP_Driver implements VAPTSECURE_Driver_Interface
                     if (is_array($m_data) && isset($m_data['code_ref'])) {
                         $resolved_code = self::resolve_pattern_code($m_data['code_ref'], 'php_functions');
                     } else {
-                        $resolved_code = VAPTSECURE_Enforcer::extract_code_from_mapping($m_data, 'hook');
+                        $resolved_code = VAPTSECURE_Enforcer::extract_code_from_mapping($m_data, 'hook', $data);
                     }
                 }
             }
@@ -70,6 +70,11 @@ class VAPTSECURE_PHP_Driver implements VAPTSECURE_Driver_Interface
         // Final Fallback: Direct lookup by feature key if we still have nothing or just the placeholder
         if (empty($resolved_code) || $resolved_code === '/* Managed via PHP hooks */' || $resolved_code === '// Managed via PHP hooks') {
             $resolved_code = self::resolve_pattern_code($feature_key, 'php_functions');
+        }
+
+        // Apply placeholder replacements (v4.1.0)
+        if (!empty($resolved_code) && !empty($data)) {
+            $resolved_code = VAPTSECURE_Enforcer::replace_placeholders($resolved_code, $data);
         }
 
         if (!empty($resolved_code) && $resolved_code !== '/* Managed via PHP hooks */') {

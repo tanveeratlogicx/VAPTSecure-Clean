@@ -21,6 +21,199 @@ var vaptLog = window.vaptLog || {
   const apiFetch = wp.apiFetch;
 
   /**
+   * Placeholder Metadata (v4.1.0)
+   * Maps code placeholders to UI metadata for user configuration.
+   */
+  const PLACEHOLDER_METADATA = {
+    'YOUR_SITE_KEY': {
+      meta_key: 'vapt_risk_009_site_key',
+      label: __('reCAPTCHA v3 Site Key', 'vaptsecure'),
+      help: __('Enter your Google reCAPTCHA v3 Site Key.', 'vaptsecure'),
+      tutorial: 'https://www.google.com/recaptcha/admin',
+      tutorialLabel: __('How to get reCAPTCHA keys', 'vaptsecure'),
+      risk_id: 'RISK-009'
+    },
+    '6LelVOQsAAAAAAucOFHcAsC0H8CWHRGa8e17whwY': {
+      meta_key: 'vapt_risk_009_site_key',
+      label: __('reCAPTCHA v3 Site Key', 'vaptsecure'),
+      help: __('Enter your Google reCAPTCHA v3 Site Key.', 'vaptsecure'),
+      tutorial: 'https://www.google.com/recaptcha/admin',
+      tutorialLabel: __('How to get reCAPTCHA keys', 'vaptsecure'),
+      risk_id: 'RISK-009'
+    },
+    'unique-key-here': {
+      meta_key: 'vapt_risk_061_key',
+      label: __('Security Auth Key', 'vaptsecure'),
+      help: __('Provide a unique security salt string.', 'vaptsecure'),
+      tutorial: 'https://api.wordpress.org/secret-key/1.1/salt/',
+      tutorialLabel: __('Generate WordPress Salts', 'vaptsecure'),
+      risk_id: 'RISK-061'
+    }
+  };
+
+  /**
+   * Dynamic Configuration Section (v4.1.0)
+   * Rendered as a card below Implementation Control if placeholders are detected.
+   */
+  const DynamicConfigSection = ({ feature, verificationFeatureData, currentData, handleChange }) => {
+    // [v4.1.3] Local state for inputs to ensure responsiveness while typing
+    const [localValues, setLocalValues] = useState({});
+    const isTyping = useRef(false);
+    const typingTimer = useRef(null);
+    
+    // Sync local state with currentData only when NOT typing to avoid cursor jumps
+    useEffect(() => {
+      if (isTyping.current) return;
+
+      const nextLocal = {};
+      Object.keys(PLACEHOLDER_METADATA).forEach(p => {
+        const key = PLACEHOLDER_METADATA[p].meta_key;
+        if (currentData[key] !== undefined) {
+          nextLocal[key] = currentData[key];
+        }
+      });
+      setLocalValues(prev => ({ ...prev, ...nextLocal }));
+    }, [currentData]);
+
+    const rawId = (feature.key || feature.id || '').toString();
+    const riskId = rawId.toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+    const detectedPlaceholders = Object.keys(PLACEHOLDER_METADATA).filter(p => {
+      const meta = PLACEHOLDER_METADATA[p];
+      const metaRiskId = (meta.risk_id || '').toString().toUpperCase().replace(/[^A-Z0-9]/g, '');
+      
+      if (metaRiskId && riskId && metaRiskId === riskId) return true;
+
+      let impls = verificationFeatureData.platform_implementations || {};
+      if (typeof impls === 'string') {
+        try { impls = JSON.parse(impls); } catch (e) { impls = {}; }
+      }
+
+      return Object.values(impls).some(details => {
+        const code = (typeof details === 'string' ? details : (details.code || details.wrapped_code || '')).toString();
+        return code.includes(p);
+      });
+    });
+
+    const normalizedKeyPart = rawId.toLowerCase().replace('risk-', '').replace(/-/g, '_');
+    const riskKey = `vapt_risk_${normalizedKeyPart}_enabled`;
+    
+    const isEnforced = !!(
+      feature.is_enabled || 
+      feature.is_enforced || 
+      currentData.feat_enabled || 
+      currentData.enabled || 
+      currentData.prot_enabled || 
+      currentData[riskKey]
+    );
+
+    if (detectedPlaceholders.length === 0) return null;
+    if (!isEnforced) return null;
+
+    // Deduplicate by meta_key to prevent multiple inputs for the same setting
+    const seenMetaKeys = new Set();
+    const uniquePlaceholders = detectedPlaceholders.filter(p => {
+      const metaKey = PLACEHOLDER_METADATA[p].meta_key;
+      if (seenMetaKeys.has(metaKey)) return false;
+      seenMetaKeys.add(metaKey);
+      return true;
+    });
+
+    return el('div', {
+      className: 'vapt-dynamic-config-panel',
+      id: 'vapt-dynamic-config-root',
+      key: 'dynamic-config-row-inner',
+      style: {
+        margin: '15px 0 0 0',
+        padding: '15px 0 0 0',
+        borderTop: '1px solid #f1f5f9',
+        width: '100%',
+        maxWidth: '100%',
+        boxSizing: 'border-box',
+        overflow: 'hidden',
+        background: 'transparent'
+      }
+    }, [
+      el('h4', { 
+        style: { 
+          margin: '0 0 12px 0', 
+          fontSize: '11px', 
+          fontWeight: 700, 
+          color: '#475569', 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '8px',
+          textTransform: 'uppercase',
+          letterSpacing: '0.025em'
+        } 
+      }, [
+        Icon ? el(Icon, { icon: 'admin-settings', size: 14 }) : '⚙️',
+        __('Required Configuration', 'vaptsecure')
+      ]),
+      uniquePlaceholders.map(p => {
+        const meta = PLACEHOLDER_METADATA[p];
+        const metaKey = meta.meta_key;
+        
+        const handleLocalChange = (val) => {
+          isTyping.current = true;
+          setLocalValues(prev => ({ ...prev, [metaKey]: val }));
+          
+          if (typingTimer.current) clearTimeout(typingTimer.current);
+          typingTimer.current = setTimeout(() => {
+            isTyping.current = false;
+            handleChange(metaKey, val);
+          }, 500); // 500ms debounce
+        };
+
+        // Fallback to plain input if TextControl is missing
+        if (!TextControl) {
+          return el('div', { key: p, style: { marginBottom: '15px', width: '100%' } }, [
+            el('label', { style: { display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '5px', color: '#334155' } }, meta.label),
+            el('input', {
+              type: 'text',
+              value: localValues[metaKey] || '',
+              onChange: (e) => handleLocalChange(e.target.value),
+              style: { width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px', boxSizing: 'border-box' }
+            }),
+            el('p', { style: { fontSize: '11px', color: '#64748b', marginTop: '4px' } }, meta.help)
+          ]);
+        }
+
+        return el('div', { 
+          key: p, 
+          className: 'vapt-dynamic-config-row',
+          style: { 
+            marginBottom: '10px',
+            width: '100%',
+            boxSizing: 'border-box'
+          } 
+        }, [
+          el(TextControl, {
+            label: el('span', { style: { fontSize: '12px', color: '#334155', fontWeight: '600' } }, meta.label),
+            help: meta.help,
+            value: localValues[metaKey] || '',
+            onChange: handleLocalChange,
+            placeholder: `e.g. ${p}`,
+            __nextHasNoMarginBottom: true,
+            style: { width: '100%' }
+          }),
+          meta.tutorial && el('div', { style: { marginTop: '5px' } }, [
+            el('a', {
+              href: meta.tutorial,
+              target: '_blank',
+              rel: 'noopener noreferrer',
+              style: { fontSize: '11px', color: '#2563eb', display: 'flex', alignItems: 'center', gap: '4px', textDecoration: 'none', fontWeight: '500' }
+            }, [
+              Icon ? el(Icon, { icon: 'external', size: 12 }) : '🔗',
+              meta.tutorialLabel || __('Help Tutorial', 'vaptsecure')
+            ])
+          ])
+        ]);
+      })
+    ]);
+  };
+
+  /**
    * Universal URL Resolver (v3.13.2)
    * Standardizes on vaptSecureSettings.homeUrl and detects absolute paths/URLs.
    */
@@ -1472,6 +1665,12 @@ var vaptLog = window.vaptLog || {
           let traceStr = `URL: ${probe.path || restPath}\n`;
           traceStr += `Status: ${payload.status || 'unknown'}\n`;
           
+          if (payload.config_trace && typeof payload.config_trace === 'object') {
+            Object.entries(payload.config_trace).forEach(([label, val]) => {
+              traceStr += `${label}: ${val}\n`;
+            });
+          }
+
           if (payload.audit_summary && Array.isArray(payload.audit_summary)) {
             payload.audit_summary.forEach(item => {
               traceStr += `${item.label || item.target}: ${item.status || 'unknown'}\n`;
@@ -2087,6 +2286,14 @@ var vaptLog = window.vaptLog || {
   const GeneratedInterface = ({ feature, onUpdate, isGuidePanel = false, hideMonitor = false, hideOpNotes = false, hideProtocol = false, hideImplementationControl = false, hideThreatPanel = false, hideBadges = false, showTechnicalTrace = false, showVerificationDetails = true, globalProtection = true, isCompact = false }) => {
     const isWorkbench = window.location.search.includes('page=vaptsecure-workbench');
     vaptLog.log('GeneratedInterface Render:', { key: feature?.key, controls: feature?.generated_schema?.controls, isGuidePanel });
+    
+    // [v4.1.1] Local State for instant UI feedback
+    const [localData, setLocalData] = useState(() => {
+      if (!feature.implementation_data) return {};
+      if (typeof feature.implementation_data === 'object') return feature.implementation_data;
+      try { return JSON.parse(feature.implementation_data); } catch (e) { return {}; }
+    });
+
     let schema = useMemo(() => {
       if (!feature.generated_schema) return {};
       if (typeof feature.generated_schema === 'object') return feature.generated_schema;
@@ -2121,16 +2328,22 @@ var vaptLog = window.vaptLog || {
         return {};
       }
     }, [feature.implementation_data]);
+
+    // Sync localData when prop changes (from other sources)
+    useEffect(() => {
+      setLocalData(currentData);
+    }, [currentData]);
+
     const verificationFeatureData = useMemo(() => ({
       ...feature,
-      ...currentData,
+      ...localData,
       available_platforms: Array.isArray(feature.available_platforms)
         ? feature.available_platforms
-        : (Array.isArray(currentData.available_platforms) ? currentData.available_platforms : []),
+        : (Array.isArray(localData.available_platforms) ? localData.available_platforms : []),
       platform_implementations: feature.platform_implementations && typeof feature.platform_implementations === 'object'
         ? feature.platform_implementations
-        : (currentData.platform_implementations && typeof currentData.platform_implementations === 'object' ? currentData.platform_implementations : {})
-    }), [feature, currentData]);
+        : (localData.platform_implementations && typeof localData.platform_implementations === 'object' ? localData.platform_implementations : {})
+    }), [feature, localData]);
 
     const normalizedControls = useMemo(() => {
       if (!schema || !Array.isArray(schema.controls)) {
@@ -2334,16 +2547,24 @@ var vaptLog = window.vaptLog || {
     const isRateLimit = ['RISK-033', 'RISK-039'].includes(feature.key || feature.id) || !!feature.is_rate_limit;
 
     const handleChange = (key, val) => {
-      const newData = { ...currentData, [key]: val };
-      if (['feat_enabled', 'enabled', 'prot_enabled'].includes(key)) {
-        newData.feat_enabled = val;
-        newData.enabled = val;
-        newData.prot_enabled = val;
-      }
-      if (typeof onUpdate === 'function') {
-        return onUpdate(newData);
-      }
-      return Promise.resolve(newData);
+      setLocalData(prev => {
+        const next = { ...prev, [key]: val };
+        // Bi-directional sync for toggles (v4.1.1)
+        if (['feat_enabled', 'enabled', 'prot_enabled'].includes(key)) {
+          next.feat_enabled = val;
+          next.enabled = val;
+          next.prot_enabled = val;
+          
+          // Also sync risk-specific toggle if present
+          const riskKey = `vapt_risk_${(feature.key || feature.id || '').replace(/-/g, '_').toLowerCase()}_enabled`;
+          next[riskKey] = val;
+        }
+        
+        if (typeof onUpdate === 'function') {
+          onUpdate(next);
+        }
+        return next;
+      });
     };
 
     const renderControl = (control, index) => {
@@ -3000,7 +3221,10 @@ var vaptLog = window.vaptLog || {
 
       // Live Rate Limit Monitor
       mainControls.length > 0 && el('div', { className: 'vapt-functional-panel', style: { background: '#fff', borderRadius: '8px', padding: '0' } }, [
-        el('div', { style: { display: 'flex', flexDirection: 'column', gap: '15px' } }, mainControls.map(renderControl)),
+        el('div', { style: { display: 'flex', flexDirection: 'column', gap: '15px' } }, mainControls.reduce((acc, c, i) => {
+          acc.push(renderControl(c, i));
+          return acc;
+        }, [])),
       ]),
 
       // Live Rate Limit Monitor (Moved below controls v3.3.45)
@@ -3087,6 +3311,9 @@ var vaptLog = window.vaptLog || {
 
     ]);
   };
+  GeneratedInterface.DynamicConfigSection = DynamicConfigSection;
 
   window.VAPTSECURE_GeneratedInterface = GeneratedInterface;
+  window.VAPTSECURE_DynamicConfigSection = DynamicConfigSection;
+  window.VAPTSECURE_PLACEHOLDER_METADATA = PLACEHOLDER_METADATA;
 })();

@@ -828,6 +828,21 @@ $runtime_verified = false;
                     ? 'Runtime enforcement is registered for this feature.'
                     : 'No plugin-owned enforcement marker was found for this feature.'),
         );
+
+        // [v4.1.0] Include Configuration Trace if placeholders are active
+        $placeholders = [
+            'vapt_risk_009_site_key' => 'reCAPTCHA v3 Key',
+            'vapt_risk_061_key' => 'Security Key'
+        ];
+        $config_trace = [];
+        foreach ($placeholders as $meta_key => $label) {
+            if (!empty($implementation_data[$meta_key])) {
+                $config_trace[$label] = $implementation_data[$meta_key];
+            }
+        }
+        if (!empty($config_trace)) {
+            $response_data['config_trace'] = $config_trace;
+        }
         
         // Always include debug info for now to diagnose verification issues
         // TODO: Remove or condition on VAPTSECURE_DEBUG in production

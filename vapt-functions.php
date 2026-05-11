@@ -11,7 +11,7 @@ if (!defined('ABSPATH')) exit;
 
 add_action('wp_enqueue_scripts', 'vapt_add_recaptcha_v3');
 function vapt_add_recaptcha_v3() {
-    wp_enqueue_script('google-recaptcha', 'https://www.google.com/recaptcha/api.js?render=YOUR_SITE_KEY');
+    wp_enqueue_script('google-recaptcha', 'https://www.google.com/recaptcha/api.js?render=6LelVOQsAAAAAAucOFHcAsC0H8CWHRGa8e17whwY');
 }
 
 // END VAPT RISK-009

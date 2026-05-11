@@ -106,7 +106,7 @@ class VAPTSECURE_Htaccess_Driver implements VAPTSECURE_Driver_Interface
             $key_lower = strtolower($key);
             if (!empty($data_map[$key_lower])) {
                 // [v1.4.0] Support for v1.1/v2.0 rich mappings (Platform Objects)
-                $directive = VAPTSECURE_Enforcer::extract_code_from_mapping($directive, 'htaccess');
+                $directive = VAPTSECURE_Enforcer::extract_code_from_mapping($directive, 'htaccess', $data);
                 if (empty($directive)) { continue;
                 }
 

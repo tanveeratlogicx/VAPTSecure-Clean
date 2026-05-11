@@ -1251,10 +1251,12 @@ class VAPTSECURE_Enforcer
      * 
      * [v1.4.0] Support for v1.2/v2.0 Schema-First Architecture Platform Objects.
      */
-    public static function extract_code_from_mapping($directive, $platform = 'htaccess')
+    public static function extract_code_from_mapping($directive, $platform = 'htaccess', $data = [])
     {
         if (empty($directive)) { return '';
         }
+
+        $code = '';
 
         // If it's a JSON string, decode it first
         if (is_string($directive) && strpos(trim($directive), '{') === 0) {
@@ -1276,32 +1278,91 @@ class VAPTSECURE_Enforcer
             foreach ($platform_keys as $pK) {
                 if (isset($directive[$pK])) {
                     $inner = $directive[$pK];
-                    return is_array($inner) ? ($inner['code'] ?? '') : $inner;
+                    $code = is_array($inner) ? ($inner['code'] ?? '') : $inner;
+                    break;
                 }
             }
 
-            // 1b. Robust Iteration (Handle leading/trailing whitespace in keys)
-            foreach ($directive as $k => $v) {
-                $tk = trim((string)$k);
-                foreach ($platform_keys as $pK) {
-                    if ($tk === $pK) {
-                        return is_array($v) ? ($v['code'] ?? '') : $v;
+            if (empty($code)) {
+                // 1b. Robust Iteration (Handle leading/trailing whitespace in keys)
+                foreach ($directive as $k => $v) {
+                    $tk = trim((string)$k);
+                    foreach ($platform_keys as $pK) {
+                        if ($tk === $pK) {
+                            $code = is_array($v) ? ($v['code'] ?? '') : $v;
+                            break 2;
+                        }
                     }
                 }
             }
 
             // 2. Fallback to generic 'code' field
-            if (isset($directive['code'])) {
-                return $directive['code'];
+            if (empty($code) && isset($directive['code'])) {
+                $code = $directive['code'];
             }
 
             // 3. Fallback to first non-array element (v3.12.5 legacy)
-            foreach ($directive as $v) {
-                if (is_string($v) && strlen($v) > 0) { return $v;
+            if (empty($code)) {
+                foreach ($directive as $v) {
+                    if (is_string($v) && strlen($v) > 0) { 
+                        $code = $v;
+                        break;
+                    }
+                }
+            }
+        } else {
+            $code = is_string($directive) ? $directive : '';
+        }
+
+        if (!empty($code) && !empty($data)) {
+            $code = self::replace_placeholders($code, $data);
+        }
+
+        return $code;
+    }
+
+    /**
+     * [v4.1.1] Replace placeholders like YOUR_SITE_KEY with values from implementation data.
+     * Enhanced with logging and generic substitution.
+     */
+    public static function replace_placeholders($code, $data)
+    {
+        if (empty($code) || empty($data)) {
+            return $code;
+        }
+
+        $placeholders = [
+            'YOUR_SITE_KEY' => 'vapt_risk_009_site_key',
+            '6LelVOQsAAAAAAucOFHcAsC0H8CWHRGa8e17whwY' => 'vapt_risk_009_site_key',
+            'unique-key-here' => 'vapt_risk_061_key'
+        ];
+
+        $replaced = false;
+        foreach ($placeholders as $placeholder => $meta_key) {
+            if (strpos($code, $placeholder) !== false) {
+                $value = isset($data[$meta_key]) ? (string)$data[$meta_key] : '';
+                if ($value !== '') {
+                    $code = str_replace($placeholder, $value, $code);
+                    $replaced = true;
+                    error_log("VAPT: Replaced placeholder '{$placeholder}' with value from '{$meta_key}'");
+                } else {
+                    error_log("VAPT Warning: Placeholder '{$placeholder}' found in code but '{$meta_key}' is missing or empty in data.");
                 }
             }
         }
 
-        return is_string($directive) ? $directive : '';
+        // Generic substitution for any key in data (v4.1.1)
+        foreach ($data as $key => $value) {
+            if (is_scalar($value) && $value !== '' && strpos($code, (string)$key) !== false) {
+                $code = str_replace((string)$key, (string)$value, $code);
+                $replaced = true;
+            }
+        }
+
+        if (!$replaced && (strpos($code, 'YOUR_SITE_KEY') !== false || strpos($code, 'unique-key-here') !== false)) {
+             error_log("VAPT: No replacements made in code containing placeholders. Data keys: " . implode(', ', array_keys($data)));
+        }
+
+        return $code;
     }
 }

@@ -19,7 +19,7 @@ var vaptLog = window.vaptLog || {
 
   const { render, useState, useEffect, useMemo, Fragment, createElement: el } = wp.element || {};
   const { Button, ToggleControl, Spinner, Notice, Card, CardBody, CardHeader, CardFooter, Icon, Tooltip, Modal } = wp.components || {};
-  const settings = window.vaptSecureSettings || window.vaptSecureSettings || {};
+  const settings = window.vaptSecureSettings || {};
   const isSuper = settings.isSuper || false;
 
   const apiFetch = wp.apiFetch;
@@ -28,6 +28,12 @@ var vaptLog = window.vaptLog || {
   // Settings moved to top
 
   const GeneratedInterface = window.VAPTSECURE_GeneratedInterface || window.vapt_GeneratedInterface;
+  const DynamicConfigSection = window.VAPTSECURE_DynamicConfigSection || (GeneratedInterface ? GeneratedInterface.DynamicConfigSection : null);
+
+  vaptLog.info('Workbench Initialization:', { 
+    hasGeneratedInterface: !!GeneratedInterface, 
+    hasDynamicConfigSection: !!DynamicConfigSection 
+  });
 
   const STATUS_LABELS = {
     'All': __('All Lifecycle', 'vaptsecure'),
@@ -39,54 +45,61 @@ var vaptLog = window.vaptLog || {
     const [features, setFeatures] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    // [v4.1.4] Persistence: Initialize state from URL or LocalStorage
     const [activeStatus, setActiveStatus] = useState(() => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlVal = urlParams.get('status');
+      if (urlVal) return urlVal;
       const saved = localStorage.getItem('vaptsecure_workbench_active_status');
       return saved ? saved : 'Develop';
     });
-    const [activeCategory, setActiveCategory] = useState('all');
+    const [activeCategory, setActiveCategory] = useState(() => {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('category') || 'all';
+    });
     const [activeFeatureKey, setActiveFeatureKey] = useState(() => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlVal = urlParams.get('feature');
+      if (urlVal) return urlVal;
       const saved = localStorage.getItem('vaptsecure_workbench_active_feature');
       return saved ? saved : null;
     });
+
     const [saveStatus, setSaveStatus] = useState(null);
     const [verifFeature, setVerifFeature] = useState(null);
     const [viewportWidth, setViewportWidth] = useState(() => typeof window !== 'undefined' ? window.innerWidth : 1440);
     const [isNavigatorOpen, setIsNavigatorOpen] = useState(true);
     const [hasInitializedCategory, setHasInitializedCategory] = useState(false);
 
-    const isCompactViewport = viewportWidth < 1100;
-    const navigatorWidth = isCompactViewport ? Math.min(340, Math.max(280, viewportWidth - 48)) : 360;
-
+    // [v4.1.4] Persistence: Sync state to URL and LocalStorage
     useEffect(() => {
+      const url = new URL(window.location);
+      url.searchParams.set('status', activeStatus);
+      url.searchParams.set('category', activeCategory);
+      if (activeFeatureKey) {
+        url.searchParams.set('feature', activeFeatureKey);
+      } else {
+        url.searchParams.delete('feature');
+      }
+      window.history.replaceState({}, '', url);
+
       localStorage.setItem('vaptsecure_workbench_active_status', activeStatus);
-    }, [activeStatus]);
-
-    useEffect(() => {
-      if (typeof window === 'undefined') return;
-
-      const onResize = () => {
-        const nextWidth = window.innerWidth;
-        setViewportWidth(nextWidth);
-        if (nextWidth >= 1100) {
-          setIsNavigatorOpen(true);
-        }
-      };
-
-      window.addEventListener('resize', onResize);
-      onResize();
-      return () => window.removeEventListener('resize', onResize);
-    }, []);
-
-    useEffect(() => {
       if (activeFeatureKey) {
         localStorage.setItem('vaptsecure_workbench_active_feature', activeFeatureKey);
       }
-    }, [activeFeatureKey]);
+    }, [activeStatus, activeCategory, activeFeatureKey]);
+
+    const isCompactViewport = viewportWidth < 1100;
+    const navigatorWidth = isCompactViewport ? Math.min(340, Math.max(280, viewportWidth - 48)) : 360;
 
     // Auto-dismiss Success Toasts
     useEffect(() => {
       if (saveStatus && saveStatus.type === 'success') {
-        const timer = setTimeout(() => setSaveStatus(null), 1500);
+        const timer = setTimeout(() => {
+          vaptLog.info('Auto-clearing success toast');
+          setSaveStatus(null);
+        }, 3000); // Increased to 3s for better visibility
         return () => clearTimeout(timer);
       }
     }, [saveStatus]);
@@ -100,10 +113,12 @@ var vaptLog = window.vaptLog || {
         .then(data => {
           // Dedup features by key to prevent list inflation
           const uniqueFeatures = Array.from(new Map((data.features || []).map(item => [item.key, item])).values());
+          vaptLog.log('Features fetched:', uniqueFeatures.length);
           setFeatures(uniqueFeatures);
           setLoading(false);
         })
         .catch(err => {
+          vaptLog.error('Fetch failed:', err);
           setError(err.message || 'Failed to load features');
           setLoading(false);
         });
@@ -114,7 +129,9 @@ var vaptLog = window.vaptLog || {
     }, []);
 
     const updateFeature = (key, data, successMsg, silent = false) => {
+      vaptLog.info(`AJAX Update Feature: ${key}`, data);
       setFeatures(prev => prev.map(f => f.key === key ? { ...f, ...data } : f));
+      
       if (!silent) {
         setSaveStatus({ message: __('Saving...', 'vaptsecure'), type: 'info' });
       }
@@ -125,13 +142,14 @@ var vaptLog = window.vaptLog || {
         data: { key, ...data }
       })
         .then((res) => {
+          vaptLog.info(`AJAX Success for ${key}`, res);
           if (!silent) {
             setSaveStatus({ message: successMsg || __('Saved', 'vaptsecure'), type: 'success' });
           }
           return res;
         })
         .catch(err => {
-          vaptLog.error('Save failed:', err);
+          vaptLog.error(`AJAX Error for ${key}:`, err);
           if (!silent) {
             setSaveStatus({ message: __('Save Failed', 'vaptsecure'), type: 'error' });
           }
@@ -192,13 +210,15 @@ var vaptLog = window.vaptLog || {
     useEffect(() => {
       if (categories.length > 0) {
         if (!hasInitializedCategory) {
-          setActiveCategory('all');
+          // [v4.1.4] Only set default if URL/Storage didn't provide one
+          if (!activeCategory || activeCategory === 'all') {
+            setActiveCategory('all');
+          }
           setHasInitializedCategory(true);
         } else if (activeCategory && activeCategory !== 'all' && !categories.includes(activeCategory)) {
+          // If the specific category is no longer valid, fallback to all
           setActiveCategory('all');
         }
-      } else {
-        setActiveCategory(null);
       }
     }, [categories, activeCategory, hasInitializedCategory]);
 
@@ -645,6 +665,28 @@ var vaptLog = window.vaptLog || {
                     })
                   ])
                 ]),
+                // [v4.1.2] Dynamic Configuration (Moved above Security Insight)
+                DynamicConfigSection && el(DynamicConfigSection, {
+                  feature: f,
+                  verificationFeatureData: { 
+                    ...f, 
+                    platform_implementations: f.platform_implementations || {} 
+                  },
+                  currentData: (() => {
+                    if (!f.implementation_data) return {};
+                    if (typeof f.implementation_data === 'object') return f.implementation_data;
+                    try { return JSON.parse(f.implementation_data); } catch(e) { return {}; }
+                  })(),
+                  handleChange: (key, val) => {
+                    const current = (() => {
+                      if (!f.implementation_data) return {};
+                      if (typeof f.implementation_data === 'object') return f.implementation_data;
+                      try { return JSON.parse(f.implementation_data); } catch(e) { return {}; }
+                    })();
+                    const next = { ...current, [key]: val };
+                    updateFeature(f.key, buildImplementationUpdate(next), __('Configuration Updated', 'vaptsecure'));
+                  }
+                }),
                 insightControls.length > 0 && el('div', { style: { padding: '10px 0 0' } }, [
                   el(GeneratedInterface, {
                     feature: { ...f, generated_schema: { ...effectiveSchema, controls: insightControls } },
@@ -655,11 +697,11 @@ var vaptLog = window.vaptLog || {
                   })
                 ])
               ]),
+
               manualVerificationPanel
             ]),
             automatedVerificationPanel
-          ])
-        ]),
+          ]),
 
           // Operational Notes (Full Width, Below Grid)
           !!f.include_operational_notes && noteControls.length > 0 && el('div', { style: { marginTop: '25px', padding: '15px', background: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0' } }, [
@@ -673,12 +715,13 @@ var vaptLog = window.vaptLog || {
               hideMonitor: true
             })
           ])
-        ]),
-        el(CardFooter, { style: { borderTop: '1px solid #f3f4f6', padding: '12px 24px', background: '#fafafa' } }, [
-          el('span', { style: { fontSize: '11px', color: '#9ca3af' } }, sprintf(__('Feature Reference: %s', 'vaptsecure'), f.key))
         ])
-      ]);
-    };
+      ]),
+      el(CardFooter, { style: { borderTop: '1px solid #f3f4f6', padding: '12px 24px', background: '#fafafa' } }, [
+        el('span', { style: { fontSize: '11px', color: '#9ca3af' } }, sprintf(__('Feature Reference: %s', 'vaptsecure'), f.key))
+      ])
+    ]);
+  };
 
     if (loading) return el('div', { className: 'vapt-loading' }, [el(Spinner), el('p', null, __('Loading Workbench...', 'vaptsecure'))]);
     if (error) return el(Notice, { status: 'error', isDismissible: false }, error);
@@ -688,12 +731,12 @@ var vaptLog = window.vaptLog || {
       // Toast Notification
       saveStatus && el('div', {
         style: {
-          position: 'absolute', top: '20px', left: '50%', transform: 'translateX(-50%)',
+          position: 'fixed', top: '40px', left: '50%', transform: 'translateX(-50%)',
           background: saveStatus.type === 'error' ? '#fde8e8' : (saveStatus.type === 'success' ? '#def7ec' : '#e0f2fe'),
           color: saveStatus.type === 'error' ? '#9b1c1c' : (saveStatus.type === 'success' ? '#03543f' : '#0369a1'),
-          padding: '8px 16px', borderRadius: '20px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-          zIndex: 9999, fontWeight: '600', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px',
-          border: '1px solid rgba(0,0,0,0.05)'
+          padding: '10px 20px', borderRadius: '30px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)',
+          zIndex: 99999, fontWeight: '600', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px',
+          border: '1px solid rgba(0,0,0,0.1)'
         }
       }, [
         el(Icon, { icon: saveStatus.type === 'error' ? 'warning' : (saveStatus.type === 'success' ? 'yes' : 'update'), size: 16 }),
