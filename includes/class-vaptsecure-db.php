@@ -211,11 +211,16 @@ class VAPTSECURE_DB
             }
         }
 
-        return $wpdb->replace(
+        $result = $wpdb->replace(
             $table,
             $final_data,
             $formats
         );
+
+        // 🛡️ [FIX v3.7.15] Clear Enforcement Cache on Update
+        delete_transient('vaptsecure_active_enforcements');
+        
+        return $result;
     }
 
     /**

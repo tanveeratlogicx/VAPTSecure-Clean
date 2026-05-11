@@ -540,7 +540,11 @@ class VAPTSECURE_Build
             $test_logic = strtolower((string) ($control['test_logic'] ?? ''));
             $test_path = strtolower((string) ($control['test_config']['path'] ?? ''));
             $is_test = isset($control['type']) && $control['type'] === 'test_action';
-            $is_login_candidate = $is_login_error_surface && $is_test && (
+
+            // [FIX v4.1.5] Skip normalization if an explicit non-root path is already defined
+            $has_explicit_path = !empty($control['test_config']['path']) && $control['test_config']['path'] !== '/' && $control['test_config']['path'] !== '/index.php';
+
+            $is_login_candidate = !$has_explicit_path && $is_login_error_surface && $is_test && (
                 strpos($label, 'a+ header verification') !== false ||
                 strpos($label, 'rest api protection check') !== false ||
                 strpos($label, 'author enumeration check') !== false ||
@@ -551,7 +555,7 @@ class VAPTSECURE_Build
                 strpos($test_path, '/wp-json/wp/v2/users') !== false ||
                 strpos($test_path, '/?author=1') !== false
             );
-            $is_rest_candidate = $is_rest_users_surface && $is_test && (
+            $is_rest_candidate = !$has_explicit_path && $is_rest_users_surface && $is_test && (
                 strpos($label, 'a+ header verification') !== false ||
                 strpos($label, 'author enumeration check') !== false ||
                 strpos($label, 'rest api protection check') !== false ||
@@ -562,7 +566,7 @@ class VAPTSECURE_Build
                 strpos($test_path, '/wp-login.php') !== false ||
                 strpos($test_path, '/?author=1') !== false
             );
-            $is_author_candidate = $is_author_query_surface && $is_test && (
+            $is_author_candidate = !$has_explicit_path && $is_author_query_surface && $is_test && (
                 strpos($label, 'a+ header verification') !== false ||
                 strpos($label, 'rest api protection check') !== false ||
                 strpos($label, 'author enumeration check') !== false ||
@@ -571,13 +575,13 @@ class VAPTSECURE_Build
                 strpos($test_path, '/wp-json/wp/v2/users') !== false ||
                 strpos($test_path, '/wp-login.php') !== false
             );
-            $is_pingback_candidate = $is_pingback_surface && $is_test && (
+            $is_pingback_candidate = !$has_explicit_path && $is_pingback_surface && $is_test && (
                 $test_logic === 'check_headers' ||
                 $test_logic === 'block_xmlrpc' ||
                 strpos($label, 'xml-rpc') !== false ||
                 strpos($test_path, 'xmlrpc.php') !== false
             );
-            $is_cron_candidate = $is_cron_surface && $is_test && (
+            $is_cron_candidate = !$has_explicit_path && $is_cron_surface && $is_test && (
                 $test_logic === 'check_headers' ||
                 $test_logic === 'spam_requests' ||
                 strpos($label, 'cron') !== false ||

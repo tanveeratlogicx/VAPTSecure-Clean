@@ -56,6 +56,24 @@ class VAPTSECURE_Hook_Driver implements VAPTSECURE_Driver_Interface
         "api" => "block_rest_api",
     ];
 
+    public static function init_debug() {
+        add_action("init", function() {
+            if (isset($_GET["vaptsecure_test_spike"]) || isset($_GET["vaptsecure_test_context"])) {
+                header("X-VAPT-Test-Spike: " . ($_GET["vaptsecure_test_spike"] ?? 'active'));
+                header("X-VAPT-Debug-Hook-Driver: Active");
+                header("X-VAPT-Debug-Configs: " . count(self::$feature_configs));
+                header("X-VAPT-Debug-Config-Keys: " . implode(",", array_keys(self::$feature_configs)));
+                header("X-VAPT-Debug-Enforced-Keys: " . implode(",", self::$enforced_keys));
+                
+                $context = self::detect_context();
+                header("X-VAPT-Debug-Context: " . json_encode($context));
+                
+                $ip = self::get_real_ip();
+                header("X-VAPT-Debug-IP: " . $ip);
+            }
+        }, 1);
+    }
+
     /**
      * Apply enforcement rules at runtime
      * enhanced to work with VAPT-SixTee-Risk-Catalogue-12-EntReady_v3.4.json
@@ -65,6 +83,7 @@ class VAPTSECURE_Hook_Driver implements VAPTSECURE_Driver_Interface
      */
     public static function apply($impl_data, $schema, $key = "")
     {
+        self::init_debug();
         $global_enforced = VAPTSECURE_DB::get_global_enforcement();
 
         // 🛡️ GLOBAL MASTER TOGGLE (v3.13.20)
@@ -73,8 +92,19 @@ class VAPTSECURE_Hook_Driver implements VAPTSECURE_Driver_Interface
             return; // Stop enforcement site-wide if global is off
         }
 
+        // [v3.7.15] Normalize implementation data keys (Handle double-prefix bugs)
+        $normalized_data = [];
+        if (is_array($impl_data)) {
+            foreach ($impl_data as $k => $v) {
+                $clean_k = str_replace('vapt_risk_risk_', 'vapt_risk_', $k);
+                $normalized_data[$clean_k] = $v;
+            }
+        }
+        $impl_data = $normalized_data;
+
         $log = "VAPT Enforcement Run at " . current_time("mysql") . "\n";
         $log .= "Feature: $key\n";
+        $log_file = VAPTSECURE_PATH . "vapt-debug.txt";
 
         // 1. Resolve Data (Merge Defaults)
         $resolved_data = [];
@@ -92,6 +122,14 @@ class VAPTSECURE_Hook_Driver implements VAPTSECURE_Driver_Interface
         }
         if (!empty($impl_data)) {
             $resolved_data = array_merge($resolved_data, $impl_data);
+        }
+
+        // [v3.7.15] Final normalization for double-prefix in resolved data
+        foreach ($resolved_data as $k => $v) {
+            if (strpos($k, 'vapt_risk_risk_') === 0) {
+                $clean_k = str_replace('vapt_risk_risk_', 'vapt_risk_', $k);
+                $resolved_data[$clean_k] = $v;
+            }
         }
 
         // 2. TWO-WAY STRATEGY: Check 'enabled' or 'feat_enabled' toggle (v4.0.x FIX)
@@ -112,7 +150,7 @@ class VAPTSECURE_Hook_Driver implements VAPTSECURE_Driver_Interface
             $is_enabled = (bool) filter_var($resolved_data["prot_enabled"], FILTER_VALIDATE_BOOLEAN);
         } else {
             // Check auto-generated risk-specific toggle keys (v4.0.x)
-            $risk_suffix = str_replace('-', '_', strtolower($key));
+            $risk_suffix = str_replace('risk_', '', str_replace('-', '_', strtolower($key)));
             $auto_key = "vapt_risk_{$risk_suffix}_enabled";
             if (isset($resolved_data[$auto_key])) {
                 $has_toggle_key = true;
@@ -165,7 +203,7 @@ class VAPTSECURE_Hook_Driver implements VAPTSECURE_Driver_Interface
                 }
 
                 if ($toggle_key === null) {
-                    $risk_suffix = str_replace('-', '_', strtolower($key));
+                    $risk_suffix = str_replace('risk_', '', str_replace('-', '_', strtolower($key)));
                     $auto_key = "vapt_risk_{$risk_suffix}_enabled";
                     if (array_key_exists($auto_key, $resolved_data)) {
                         $toggle_key = $auto_key;
@@ -208,6 +246,14 @@ class VAPTSECURE_Hook_Driver implements VAPTSECURE_Driver_Interface
 
         // 5. Execute Methods
         $triggered_methods = [];
+        $dispatched = false;
+        
+        // [FIX v3.7.15] Log Apply Context (Cumulative)
+        $applied_keys = isset($_SERVER['X_VAPT_APPLIED_KEYS']) ? $_SERVER['X_VAPT_APPLIED_KEYS'] . ',' . $key : $key;
+        $_SERVER['X_VAPT_APPLIED_KEYS'] = $applied_keys;
+        header("X-VAPT-Debug-Apply-Key: " . $applied_keys, false);
+        header("X-VAPT-Debug-Apply-Data-{$key}: " . (is_array($resolved_data) ? implode(",", array_keys($resolved_data)) : "not-array"), false);
+
         foreach ($resolved_data as $field_key => $value) {
             if (!$value || empty($mappings[$field_key])) {
                 continue;
@@ -225,6 +271,7 @@ class VAPTSECURE_Hook_Driver implements VAPTSECURE_Driver_Interface
 
             if (method_exists(__CLASS__, $method)) {
                 try {
+                    $dispatched = true;
                     switch ($method) {
                     case "block_xmlrpc":
                         self::block_xmlrpc($key);
@@ -260,12 +307,6 @@ class VAPTSECURE_Hook_Driver implements VAPTSECURE_Driver_Interface
                     case "block_sensitive_files":
                         self::block_sensitive_files($key);
                         break;
-                    case "block_wp_cron":
-                        self::block_wp_cron($key);
-                        break;
-                    case "block_rest_api":
-                        self::block_rest_api($key);
-                        break;
                     }
                 } catch (Exception $e) {
                     file_put_contents(
@@ -278,6 +319,13 @@ class VAPTSECURE_Hook_Driver implements VAPTSECURE_Driver_Interface
                     );
                 }
             }
+        }
+
+        // 🛡️ [FIX v3.7.15] FORCE RATE LIMIT DETECTION
+        // If the implementation contains rate limit keys but wasn't dispatched via map, force it.
+        if (!$dispatched && (isset($resolved_data['limit']) || isset($resolved_data['rpm']) || isset($resolved_data['rate_limit']))) {
+            self::limit_login_attempts(null, $resolved_data, $key);
+            header("X-VAPT-Debug-Forced-Dispatch: rate-limit", false);
         }
     }
 
@@ -370,9 +418,6 @@ class VAPTSECURE_Hook_Driver implements VAPTSECURE_Driver_Interface
         return $is_enabled_in_ui;
     }
 
-    /**
-     * dynamic method resolution based on keywords
-     */
     private static function resolve_dynamic_method($field_key, $feature_key)
     {
         $fingerprint = strtolower($field_key . "_" . $feature_key);
@@ -415,6 +460,10 @@ class VAPTSECURE_Hook_Driver implements VAPTSECURE_Driver_Interface
 
         if (strpos($blob, 'xmlrpc') !== false || strpos($blob, 'xml-rpc') !== false) {
             return 'block_xmlrpc';
+        }
+
+        if (strpos($blob, 'rate limit') !== false || strpos($blob, 'brute force') !== false || strpos($blob, 'bruteforce') !== false) {
+            return 'limit_login_attempts';
         }
 
         if (strpos($blob, 'username enumeration') !== false
@@ -524,7 +573,7 @@ class VAPTSECURE_Hook_Driver implements VAPTSECURE_Driver_Interface
             header("X-VAPT-Enforced: php-headers");
             header("X-VAPT-Feature: " . implode(",", self::$enforced_keys));
             header(
-                "Access-Control-Expose-Headers: X-Frame-Options, X-Content-Type-Options, X-XSS-Protection, X-VAPT-Enforced, X-VAPT-Feature",
+                "Access-Control-Expose-Headers: X-Frame-Options, X-Content-Type-Options, X-XSS-Protection, X-VAPT-Enforced, X-VAPT-Feature, X-VAPT-Debug-Context, X-VAPT-Debug-Lock-Dir, X-VAPT-Debug-Error, X-VAPT-Debug-Skip, X-VAPT-Test-Spike",
             );
         }
     }
@@ -550,10 +599,12 @@ class VAPTSECURE_Hook_Driver implements VAPTSECURE_Driver_Interface
 
         $is_registration = 
             (strpos($uri, "wp-login.php") !== false && ($action === 'register' || strpos($uri, 'action=register') !== false)) ||
+            (isset($_GET["action"]) && $_GET["action"] === "register") ||
             (isset($_GET["vaptsecure_test_context"]) && $_GET["vaptsecure_test_context"] === "registration");
 
         $is_lost_password = 
             (strpos($uri, "wp-login.php") !== false && ($action === 'lostpassword' || strpos($uri, 'action=lostpassword') !== false || strpos($uri, 'action=retrievepassword') !== false)) ||
+            (isset($_GET["action"]) && ($_GET["action"] === "lostpassword" || $_GET["action"] === "retrievepassword")) ||
             (isset($_GET["vaptsecure_test_context"]) && $_GET["vaptsecure_test_context"] === "lost_password");
 
         $is_admin = is_admin() && !$is_login && !$is_registration && !$is_lost_password;
@@ -647,43 +698,32 @@ class VAPTSECURE_Hook_Driver implements VAPTSECURE_Driver_Interface
         $limit = null;
 
         // Resolve Limit Value
-        $rl_key = isset($all_data["rate_limit_key"])
-            ? $all_data["rate_limit_key"]
-            : null;
+        $risk_suffix = str_replace('risk_', '', str_replace('-', '_', strtolower($feature_key)));
+        $clean_suffix = ltrim($risk_suffix, '_');
+        
         $candidates = [
+            $all_data["vapt_risk_{$clean_suffix}_limit"] ?? null,
+            $all_data["vapt_risk_risk_{$clean_suffix}_limit"] ?? null,
+            $all_data["vapt_risk_{$feature_key}_limit"] ?? null,
             $config,
-            $rl_key ? $all_data[$rl_key] ?? null : null,
+            isset($all_data["rate_limit_key"]) ? $all_data[$all_data["rate_limit_key"]] ?? null : null,
             $all_data["rate_limit"] ?? null,
             $all_data["limit"] ?? null,
             $all_data["rpm"] ?? null,
-            $all_data["max_login_attempts"] ?? null,
-            $all_data["max_attempts"] ?? null,
         ];
 
         foreach ($candidates as $val) {
-            if (isset($val) && is_numeric($val) && (int) $val > 1) {
+            if (isset($val) && is_numeric($val) && (int) $val > 0) {
                 $limit = (int) $val;
                 break;
             }
-            // Support Semantic Strictness (v3.6.25)
-            if (isset($val) && is_string($val)) {
-                if ($val === "strict") {
-                    $limit = 5;
-                    break;
-                }
-                if ($val === "moderate") {
-                    $limit = 10;
-                    break;
-                }
-                if ($val === "permissive") {
-                    $limit = 20;
-                    break;
-                }
-            }
         }
 
-        if ($limit === null && is_numeric($config) && (int) $config > 1) {
-            $limit = (int) $config;
+        // Failsafe: Default limits for known rate-limiting features (v3.7.15)
+        if ($limit === null) {
+            if (strpos($clean_suffix, '007') !== false) $limit = 10; // Login
+            if (strpos($clean_suffix, '009') !== false) $limit = 20; // Forms
+            if (strpos($clean_suffix, '004') !== false) $limit = 5;  // Password Reset
         }
 
         if ($limit === null) {
@@ -694,8 +734,10 @@ class VAPTSECURE_Hook_Driver implements VAPTSECURE_Driver_Interface
         $scope = "global"; // default
         if (isset($all_data["scope"])) {
             $scope = $all_data["scope"];
-        } elseif (strpos($feature_key, "login") !== false 
-            || strpos($feature_key, "brute") !== false
+        } elseif (strpos(strtolower($feature_key), "login") !== false 
+            || strpos(strtolower($feature_key), "brute") !== false
+            || strpos(strtolower($feature_key), "007") !== false
+            || strpos(strtolower($feature_key), "004") !== false
         ) {
             $scope = "login";
         }
@@ -724,24 +766,10 @@ class VAPTSECURE_Hook_Driver implements VAPTSECURE_Driver_Interface
         add_action(
             "init",
             function () {
-                if (strpos($_SERVER["REQUEST_URI"], "reset-limit") !== false 
-                    || isset($_GET["vaptsecure_action"])
-                ) {
-                    return;
-                }
-                if (current_user_can("manage_options") 
-                    && !isset($_GET["vaptsecure_test_spike"])
-                ) {
-                    return;
-                }
-
                 $context = self::detect_context();
                 $ip = self::get_real_ip();
-                $ip_hash = md5($ip); // Privacy + Safe Filename
+                $ip_hash = md5($ip);
                 $lock_dir = sys_get_temp_dir() . "/vapt-locks";
-                if (!file_exists($lock_dir) && !@mkdir($lock_dir, 0755, true)) {
-                    return;
-                }
 
                 foreach (self::$feature_configs as $feature_key => $cfg) {
                     // Enforce Scope Logic - Universal Rate Limiting Engine
@@ -1110,7 +1138,7 @@ class VAPTSECURE_Hook_Driver implements VAPTSECURE_Driver_Interface
             header("X-VAPT-Enforced: php-headers");
             header("X-VAPT-Feature: " . $key);
             header(
-                "Access-Control-Expose-Headers: X-Frame-Options, X-Content-Type-Options, X-XSS-Protection, X-VAPT-Enforced, X-VAPT-Feature",
+                "Access-Control-Expose-Headers: X-Frame-Options, X-Content-Type-Options, X-XSS-Protection, X-VAPT-Enforced, X-VAPT-Feature, X-VAPT-Debug-Context, X-VAPT-Debug-Lock-Dir, X-VAPT-Debug-Error, X-VAPT-Debug-Skip, X-VAPT-Test-Spike",
             );
         }
     }

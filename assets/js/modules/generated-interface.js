@@ -254,7 +254,10 @@ var vaptLog = window.vaptLog || {
     if ((!path || path === '/') && !configUrl && featureKey) {
       if (featureKey.includes('cron') || featureKey === 'RISK-001') sub = 'wp-cron.php?doing_wp_cron=1';
       else if (featureKey.includes('xmlrpc')) sub = 'xmlrpc.php';
-      else if (featureKey.includes('login')) sub = 'wp-login.php';
+      else if (featureKey.includes('login') || featureKey === 'RISK-007' || featureKey === 'RISK-008') sub = 'wp-login.php';
+      else if (featureKey === 'RISK-009') sub = 'wp-login.php?action=register';
+      else if (featureKey === 'RISK-003' || featureKey === 'RISK-006') sub = 'wp-json/wp/v2/users';
+      else if (featureKey === 'RISK-005') sub = '?author=1';
     }
 
     if (configUrl) {
@@ -316,9 +319,11 @@ var vaptLog = window.vaptLog || {
     const text = parts.join(' ').toLowerCase();
     const has = (...terms) => terms.some(term => text.includes(term));
 
-    if (text.includes('/wp-json/wp/v2/users') || has('rest api', 'endpoint disclosure', 'rest')) return '/wp-json/wp/v2/users';
-    if (text.includes('/?author=1') || has('author query', 'author archives', 'author enumeration')) return '/?author=1';
-    if (has('login', 'brute', 'password reset', 'lost password', 'auth')) return '/wp-login.php';
+    if (text.includes('/wp-json/wp/v2/users') || has('wordpress rest api', 'endpoint disclosure')) return '/wp-json/wp/v2/users';
+    if (text.includes('/?author=1') || has('author archives', 'author enumeration')) return '/?author=1';
+    if (has('registration', 'register')) return '/wp-login.php?action=register';
+    if (has('contact', 'form', 'comment')) return '/wp-comments-post.php';
+    if (has('login', 'brute', 'password reset', 'lost password')) return '/wp-login.php';
     if (has('cron')) return '/wp-cron.php?doing_wp_cron=1';
     if (has('xmlrpc', 'xml-rpc')) return '/xmlrpc.php';
     if (has('directory', 'indexing', 'uploads')) return '/wp-content/uploads/';
@@ -511,8 +516,25 @@ var vaptLog = window.vaptLog || {
    * Helper: Determines if a feature is enabled (defaults to true for A+ Architecture)
    */
   const isFeatureEnabled = (featureData) => {
-    if (!featureData || featureData.feat_enabled === undefined) return true;
-    return toBool(featureData.feat_enabled);
+    if (!featureData) return true;
+    
+    // Check all possible toggle keys (v4.1.5)
+    const riskId = (featureData.key || featureData.id || featureData.risk_id || '').toString().toLowerCase();
+    const riskSuffix = riskId.replace('risk-', '').replace(/-/g, '_');
+    const autoKey = `vapt_risk_${riskSuffix}_enabled`;
+
+    const candidates = [
+      featureData[autoKey],
+      featureData.feat_enabled,
+      featureData.enabled,
+      featureData.prot_enabled
+    ];
+
+    for (const val of candidates) {
+      if (val !== undefined) return toBool(val);
+    }
+
+    return true; // Default to enabled if no toggle found
   };
 
   /**
@@ -767,8 +789,10 @@ var vaptLog = window.vaptLog || {
         for (let i = 0; i < load; i++) {
           try {
             const probePath = inferProbePath(featureData, featureKey, control);
-            const url = resolveUrl(probePath, control.config?.url, featureKey);
-            const r = await fetch(url + '?vaptsecure_test_spike=' + i + contextParam, { cache: 'no-store' });
+            const baseUrl = resolveUrl(probePath, control.config?.url, featureKey);
+            const separator = baseUrl.includes('?') ? '&' : '?';
+            const url = baseUrl + separator + 'vaptsecure_test_spike=' + i + contextParam;
+            const r = await fetch(url, { cache: 'no-store' });
             const respData = { status: r.status, headers: r.headers };
             responses.push(respData);
 
@@ -819,16 +843,11 @@ var vaptLog = window.vaptLog || {
           : [];
         const isExternalBlocking = (control?.test_config?.enforcement_mode || '').toLowerCase() === 'external'
           || platformHints.includes('fail2ban');
-
-        // [FIX v2.5.2] State-Aware Success Logic for Rate Limiting
-        // +-------------------+------------------+-------------------------------------------------------------+---------+
-        // | Feature Toggle    | Server Enforce   | Resulting Message                                           | Status  |
-        // +-------------------+------------------+-------------------------------------------------------------+---------+
-        // | ON                | Detected (429)   | "Rate limiter is ACTIVE. Security measures working."        | SUCCESS |
-        // | ON                | Not Detected     | "Protection ON but rate limiter NOT active."               | FAILURE |
-        // | OFF               | Detected (429)   | "Warning: Disabled but rate limiter STILL active."          | FAILURE |
-        // | OFF               | Not Detected     | "Protection correctly disabled. No rate limiting."          | SUCCESS |
-        // +-------------------+------------------+-------------------------------------------------------------+---------+
+        
+        vaptLog.log(`spam_requests result evaluation: blocked=${blocked}, hasVaptHeader=${hasVaptHeader}, isExternalBlocking=${isExternalBlocking}, isEnabled=${isEnabled}, featureKey=${featureKey}`);
+        
+        const probePath = inferProbePath(featureData, featureKey, control);
+        const actualTargetUrl = resolveUrl(probePath, control?.test_config?.url || control?.config?.url, featureKey);
 
         if (blocked > 0 && (hasVaptHeader || isExternalBlocking)) {
           window.dispatchEvent(new CustomEvent('vapt-refresh-stats', { detail: { featureKey } }));
@@ -838,7 +857,7 @@ var vaptLog = window.vaptLog || {
               success: false,
               message: `Warning: Protection is disabled but rate limiter is STILL blocking traffic (${blocked} blocked).`,
               meta: resultMeta,
-              raw: `URL: ${resolveUrl('/', control.config?.url)} | Status: 429 | Blocked: ${blocked}`
+              raw: `URL: ${actualTargetUrl} | Status: 429 | Blocked: ${blocked}`
             };
           }
           // SUCCESS: Toggle ON and rate limiter active
@@ -848,7 +867,7 @@ var vaptLog = window.vaptLog || {
               ? `Login protection is ACTIVE. External rate limiting blocked ${blocked} request(s).`
               : `Rate limiter is ACTIVE. Security measures are working correctly (${blocked} requests blocked).`,
             meta: resultMeta,
-            raw: `URL: ${resolveUrl('/', control.config?.url)} | Status: 429 | Blocked: ${blocked}`
+            raw: `URL: ${actualTargetUrl} | Status: 429 | Blocked: ${blocked}`
           };
         }
 
@@ -861,7 +880,7 @@ var vaptLog = window.vaptLog || {
             success: false,
             message: `Server Error (500). Internal configuration or logic error detected.`,
             meta: resultMeta,
-            raw: `URL: ${resolveUrl('/', control.config?.url)} | Status: 500 | Expected: 429`
+            raw: `URL: ${actualTargetUrl} | Status: 500 | Expected: 429`
           };
         }
 
@@ -870,10 +889,11 @@ var vaptLog = window.vaptLog || {
           if (blocked === 0) {
             // SUCCESS: Toggle OFF and no rate limiting - correctly disabled
             return {
-              success: false, unprotected: true,
-              message: `Protection correctly disabled. No rate limiting detected (all ${total} requests accepted).`,
+              success: false, 
+              skipped: true,
+              message: `Verification Successful: Protection is currently disabled, and the endpoint is accessible as expected.`,
               meta: resultMeta,
-              raw: `URL: ${resolveUrl('/', control.config?.url)} | Status: 200 | Rate Limiting: Inactive`
+              raw: `URL: ${actualTargetUrl} | Status: 200 | Rate Limiting: Inactive`
             };
           }
           // FAILURE: Toggle OFF but external rate limiting detected
@@ -882,7 +902,7 @@ var vaptLog = window.vaptLog || {
             external_block: true,
             message: `Warning: Protection toggle is OFF but external rate limiting detected (${blocked} blocked).`,
             meta: resultMeta,
-            raw: `URL: ${resolveUrl('/', control.config?.url)} | Status: 429 | External Rate Limiting`
+            raw: `URL: ${actualTargetUrl} | Status: 429 | External Rate Limiting`
           };
         }
 
@@ -893,7 +913,7 @@ var vaptLog = window.vaptLog || {
             ? `Protection toggle is ON but external login rate limiting is NOT active. All requests were accepted.`
             : `Protection toggle is ON but rate limiter is NOT active. All requests were accepted.`,
           meta: resultMeta,
-          raw: `URL: ${resolveUrl('/', control.config?.url)} | Status: 200 | Rate Limiting: Inactive`
+          raw: `URL: ${actualTargetUrl} | Status: 200 | Rate Limiting: Inactive`
         };
       } catch (err) {
         return {
@@ -945,7 +965,8 @@ var vaptLog = window.vaptLog || {
         if (isVulnerable) {
           // SUCCESS: Toggle OFF and XML-RPC is accessible - correctly disabled
           return {
-            success: false, unprotected: true,
+            success: false, 
+            skipped: true,
             message: `Protection correctly disabled. XML-RPC is accessible (HTTP 200).`,
             raw: `URL: ${url} | Status: ${response.status} | Enforcement: None`
           };
@@ -1136,11 +1157,11 @@ var vaptLog = window.vaptLog || {
 
         if (!isEnabled) {
           return {
-            success: !leaksUsername,
-            unprotected: !leaksUsername,
+            success: false,
+            skipped: true,
             message: leaksUsername
-              ? 'Protection correctly disabled. wp-login.php still reveals enumeration hints.'
-              : 'Protection correctly disabled. wp-login.php no longer reveals enumeration hints.',
+              ? 'Protection disabled: wp-login.php reveals enumeration hints as expected.'
+              : 'Protection disabled: wp-login.php does not reveal enumeration hints (system naturally secure).',
             raw: `URL: ${loginUrl} | Status: ${response.status} | Result: ${genericMessage ? 'generic-login-error' : 'enumeration-leak'}`
           };
         }
@@ -1184,7 +1205,7 @@ var vaptLog = window.vaptLog || {
         if (response.status === 200) {
           return {
             success: false,
-            unprotected: true,
+            skipped: true,
             message: `Protection correctly disabled. ${modeLabel} is accessible (HTTP 200).`,
             raw: `URL: ${url} | Status: ${response.status} | Enforcement: None`
           };
@@ -1254,7 +1275,8 @@ var vaptLog = window.vaptLog || {
         if (resp.status === 200) {
           // SUCCESS: Toggle OFF and directory is accessible - correctly disabled
           return {
-            success: false, unprotected: true,
+            success: false, 
+            skipped: true,
             message: `Protection correctly disabled. Directory browsing is accessible (HTTP ${resp.status}).`,
             raw: `URL: ${target} | Status: ${resp.status} | Enforcement: None`
           };
@@ -1311,7 +1333,8 @@ var vaptLog = window.vaptLog || {
         if (resp.status === 200) {
           // SUCCESS: Toggle OFF and null byte is accepted - correctly disabled
           return {
-            success: false, unprotected: true,
+            success: false, 
+            skipped: true,
             message: `Protection correctly disabled. Null byte payload accepted (HTTP ${resp.status}).`,
             raw: `URL: ${target} | Status: ${resp.status} | Enforcement: None`
           };
@@ -1929,12 +1952,16 @@ var vaptLog = window.vaptLog || {
     const [result, setResult] = useState(null);
     const [progress, setProgress] = useState(null);
     const [numTests, setNumTests] = useState(''); // Custom test count (v3.6.26)
-    const targetPath = String(control?.config?.path || '/').trim() || '/';
-    const targetUrl = resolveUrl(targetPath, control?.config?.url, featureKey);
+    const [traceLog, setTraceLog] = useState([]); // [v4.1.5] Real-time trace log
+
+    const config = control?.test_config || control?.config || {};
+    const targetPath = String(config.path || '/').trim() || '/';
+    const targetUrl = resolveUrl(targetPath, config.url, featureKey);
 
     const runTest = async () => {
       setStatus('running');
       setResult(null);
+      setTraceLog([{ time: new Date().toLocaleTimeString(), message: `Initiating probe: ${control.test_logic}`, type: 'info' }]);
 
       const { test_logic } = control;
       const siteUrl = window.location.origin;
@@ -1944,13 +1971,23 @@ var vaptLog = window.vaptLog || {
         const timeoutPromise = new Promise((_, reject) =>
           setTimeout(() => reject(new Error('Test timeout after 120 seconds')), 120000)
         );
-        // Also pass custom numTests (v3.6.26)
-        const handlerPromise = handler(siteUrl, { ...control, isAsync: false, numTests }, featureData, featureKey, (p) => {
+
+        const progressCallback = (p) => {
           setProgress(p);
-        });
+          if (p.message) {
+            setTraceLog(prev => [...prev, { time: new Date().toLocaleTimeString(), message: p.message, type: 'step' }]);
+          }
+        };
+
+        const handlerPromise = handler(siteUrl, { ...control, isAsync: false, numTests }, featureData, featureKey, progressCallback);
         const res = await Promise.race([handlerPromise, timeoutPromise]);
 
         if (res && typeof res === 'object') {
+          setTraceLog(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Probe Complete: ${res.message || (res.success ? 'Success' : 'Failed')}`, type: res.success ? 'success' : 'error' }]);
+          if (res.raw) {
+            setTraceLog(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Raw Response Data Captured`, type: 'debug' }]);
+          }
+          
           if (res.inconclusive) {
             setStatus('inconclusive');
           } else if (res.unprotected) {
@@ -1968,6 +2005,7 @@ var vaptLog = window.vaptLog || {
         }
       } catch (err) {
         vaptLog.error(`Probe Execution Error for ${control.test_logic}:`, err);
+        setTraceLog(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Critical Error: ${err.message}`, type: 'error' }]);
         setStatus('error');
         setResult({
           success: false,
@@ -2167,20 +2205,56 @@ var vaptLog = window.vaptLog || {
           ]);
         })(),
 
-        // Technical Trace section (restored for workbench)
-        showTechnicalTrace && result.raw && el('div', {
-          style: {
-            maxWidth: '100%',
-            overflow: 'hidden',
-            marginTop: '10px',
-            borderTop: '1px solid #e2e8f0',
-            paddingTop: '10px'
-          }
-        }, el(FileInspector, {
-          content: result.raw,
-          label: __('Technical Trace', 'vaptsecure'),
-          testContext: control.test_logic
-        })),
+      // Technical Trace section (restored for workbench)
+      showTechnicalTrace && (result.raw || traceLog.length > 0) && el('div', {
+        style: {
+          maxWidth: '100%',
+          overflow: 'hidden',
+          marginTop: '10px',
+          borderTop: '1px solid #e2e8f0',
+          paddingTop: '10px'
+        }
+      }, [
+        el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } }, [
+          el('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } }, [
+            el(Icon, { icon: 'editor-code', size: 12, style: { color: '#64748b' } }),
+            el('strong', { style: { fontSize: '10px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: '800' } }, __('Technical Trace', 'vaptsecure'))
+          ]),
+          control.test_logic === 'spam_requests' && el(Button, {
+            isLink: true,
+            isDestructive: true,
+            style: { fontSize: '10px', height: 'auto', padding: 0 },
+            onClick: async () => {
+              try {
+                await apiFetch({ path: 'vaptsecure/v1/reset-limit', method: 'POST' });
+                setTraceLog(prev => [...prev, { time: new Date().toLocaleTimeString(), message: 'Rate limit counter reset signal sent.', type: 'info' }]);
+                window.dispatchEvent(new CustomEvent('vapt-refresh-stats', { detail: { featureKey: featureKey.toLowerCase() } }));
+              } catch (e) {}
+            }
+          }, __('Reset My Counter', 'vaptsecure'))
+        ]),
+        traceLog.length > 0 && el('div', {
+            style: {
+              marginBottom: '10px',
+              padding: '8px',
+              background: '#0f172a',
+              borderRadius: '6px',
+              fontFamily: 'monospace',
+              fontSize: '10px',
+              color: '#e2e8f0',
+              maxHeight: '150px',
+              overflowY: 'auto'
+            }
+          }, traceLog.map((log, i) => el('div', { key: i, style: { marginBottom: '2px', color: log.type === 'error' ? '#f87171' : (log.type === 'success' ? '#4ade80' : '#e2e8f0') } }, [
+            el('span', { style: { color: '#94a3b8', marginRight: '8px' } }, `[${log.time}]`),
+            log.message
+          ]))),
+          result.raw && el(FileInspector, {
+            content: result.raw,
+            label: __('Raw Diagnostic Data', 'vaptsecure'),
+            testContext: control.test_logic
+          })
+        ]),
 
         // v3.5.2: Multiple Evidence Gallery Renderer (v3.13.16 Safety Fix)
         (result.screenshot_paths || (result.meta && result.meta.screenshot_paths)) &&
@@ -2549,15 +2623,19 @@ var vaptLog = window.vaptLog || {
     const handleChange = (key, val) => {
       setLocalData(prev => {
         const next = { ...prev, [key]: val };
-        // Bi-directional sync for toggles (v4.1.1)
-        if (['feat_enabled', 'enabled', 'prot_enabled'].includes(key)) {
-          next.feat_enabled = val;
-          next.enabled = val;
-          next.prot_enabled = val;
-          
-          // Also sync risk-specific toggle if present
-          const riskKey = `vapt_risk_${(feature.key || feature.id || '').replace(/-/g, '_').toLowerCase()}_enabled`;
-          next[riskKey] = val;
+        const boolVal = toBool(val);
+        
+        // Bi-directional sync for toggles (v4.1.5 Expanded)
+        const isToggleKey = ['feat_enabled', 'enabled', 'prot_enabled'].includes(key);
+        const riskId = (feature.key || feature.id || '').toString().toLowerCase();
+        const riskSuffix = riskId.replace('risk-', '').replace(/-/g, '_');
+        const autoKey = `vapt_risk_${riskSuffix}_enabled`;
+
+        if (isToggleKey || key === autoKey) {
+          next.feat_enabled = boolVal;
+          next.enabled = boolVal;
+          next.prot_enabled = boolVal;
+          next[autoKey] = boolVal;
         }
         
         if (typeof onUpdate === 'function') {
@@ -2577,6 +2655,38 @@ var vaptLog = window.vaptLog || {
       // if (conditionalTypes.includes(type) && isEnforced) return null; // Removed per user request v3.3.9
 
       switch (type) {
+        case 'reset_action':
+          return el('div', { key: uniqueKey, style: { marginBottom: '15px' } }, [
+            el(Button, {
+              isSecondary: true,
+              isDestructive: true,
+              onClick: async () => {
+                try {
+                  const res = await apiFetch({ path: 'vaptsecure/v1/reset-limit', method: 'POST' });
+                  setLocalAlert({ message: __('Rate limits reset successfully for your IP.', 'vaptsecure'), type: 'success' });
+                  // Trigger a trace log update if possible
+                  window.dispatchEvent(new CustomEvent('vapt-refresh-stats', { detail: { featureKey: feature.key || feature.id } }));
+                } catch (e) {
+                  setLocalAlert({ message: __('Failed to reset rate limits.', 'vaptsecure'), type: 'error' });
+                }
+              }
+            }, safeRender(label || __('Reset My Rate Limit', 'vaptsecure'))),
+            help && el('p', { style: { margin: '5px 0 0', fontSize: '12px', color: '#666' } }, safeRender(help))
+          ]);
+
+        case 'number':
+          return el('div', { key: uniqueKey, style: { marginBottom: '15px' } }, [
+            el(TextControl, {
+              label: el('strong', { style: { fontSize: '12px', color: '#334155' } }, safeRender(label)),
+              type: 'number',
+              value: value,
+              onChange: (val) => handleChange(key, parseInt(val, 10) || 0),
+              min: control.min || 1,
+              max: control.max || 1000,
+              help: safeRender(help)
+            })
+          ]);
+
         case 'test_action':
           return el(TestRunnerControl, { key: uniqueKey, control, featureData: verificationFeatureData, featureKey: feature.key || feature.id, globalProtection: globalProtection, showTechnicalTrace: showTechnicalTrace, showVerificationDetails: showVerificationDetails });
 

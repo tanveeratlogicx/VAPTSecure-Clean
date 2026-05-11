@@ -121,6 +121,38 @@
           "default_value": false,
           "on_change": "handleRISK001ToggleChange",
           "settings_key": "vapt_risk_001_enabled"
+        },
+        {
+          "component_id": "UI-RISK-001-003",
+          "type": "number",
+          "label": "Requests Per Minute (RPM)",
+          "settings_key": "vapt_risk_001_limit",
+          "default_value": 5,
+          "min": 1,
+          "max": 100,
+          "help": "Set the maximum allowed requests per minute for wp-cron.php."
+        },
+        {
+          "component_id": "UI-RISK-001-004",
+          "type": "reset_action",
+          "label": "Reset My Rate Limit",
+          "help": "Clear the rate limit counter for your current IP address."
+        },
+        {
+          "component_id": "UI-RISK-001-002",
+          "type": "test_action",
+          "label": "Verify Cron Protection",
+          "test_logic": "spam_requests",
+          "test_config": {
+            "method": "GET",
+            "path": "/wp-cron.php?doing_wp_cron=1",
+            "expected_status": [
+              403,
+              429
+            ],
+            "expected_enforcer": "php-cron"
+          },
+          "help": "Verifies that wp-cron.php abuse is blocked."
         }
       ],
       "actions": [
@@ -227,6 +259,18 @@
           "default_value": false,
           "on_change": "handleRISK002ToggleChange",
           "settings_key": "vapt_risk_002_enabled"
+        },
+        {
+          "component_id": "UI-RISK-002-002",
+          "type": "test_action",
+          "label": "Test: XML-RPC Pingback Block",
+          "test_logic": "disable_xmlrpc_pingback",
+          "test_config": {
+            "method": "POST",
+            "path": "/xmlrpc.php",
+            "expected_enforcer": "php-pingback"
+          },
+          "help": "Verifies that pingback methods are disabled in XML-RPC."
         }
       ],
       "actions": [
@@ -383,6 +427,24 @@
           "default_value": false,
           "on_change": "handleRISK003ToggleChange",
           "settings_key": "vapt_risk_003_enabled"
+        },
+        {
+          "component_id": "UI-RISK-003-002",
+          "type": "test_action",
+          "label": "REST API Protection Check",
+          "test_logic": "universal_probe",
+          "test_config": {
+            "method": "GET",
+            "path": "/wp-json/wp/v2/users",
+            "expected_status": [
+              401,
+              403,
+              404,
+              405
+            ],
+            "expected_enforcer": "php-author-enum"
+          },
+          "help": "Verifies the WordPress Users REST endpoint is protected."
         }
       ],
       "actions": [
@@ -539,6 +601,38 @@
           "default_value": false,
           "on_change": "handleRISK004ToggleChange",
           "settings_key": "vapt_risk_004_enabled"
+        },
+        {
+          "component_id": "UI-RISK-004-003",
+          "type": "number",
+          "label": "Requests Per Minute (RPM)",
+          "settings_key": "vapt_risk_004_limit",
+          "default_value": 3,
+          "min": 1,
+          "max": 50,
+          "help": "Set the maximum allowed password reset requests per minute."
+        },
+        {
+          "component_id": "UI-RISK-004-004",
+          "type": "reset_action",
+          "label": "Reset My Rate Limit",
+          "help": "Clear the rate limit counter for your current IP address."
+        },
+        {
+          "component_id": "UI-RISK-004-002",
+          "type": "test_action",
+          "label": "Verify Password Reset Rate Limiting",
+          "test_logic": "spam_requests",
+          "test_config": {
+            "method": "GET",
+            "path": "/wp-login.php?action=lostpassword",
+            "expected_status": [
+              403,
+              429
+            ],
+            "expected_enforcer": "php-rate-limit"
+          },
+          "help": "Verifies that password reset requests are rate-limited."
         }
       ],
       "actions": [
@@ -648,6 +742,22 @@
           "default_value": false,
           "on_change": "handleRISK005ToggleChange",
           "settings_key": "vapt_risk_005_enabled"
+        },
+        {
+          "component_id": "UI-RISK-005-002",
+          "type": "test_action",
+          "label": "Author Enumeration Check",
+          "test_logic": "universal_probe",
+          "test_config": {
+            "method": "GET",
+            "path": "/?author=1",
+            "expected_status": [
+              403,
+              404
+            ],
+            "expected_enforcer": "php-author-enum"
+          },
+          "help": "Verifies author enumeration via query string is blocked."
         }
       ],
       "actions": [
@@ -804,6 +914,22 @@
           "default_value": false,
           "on_change": "handleRISK006ToggleChange",
           "settings_key": "vapt_risk_006_enabled"
+        },
+        {
+          "component_id": "UI-RISK-006-002",
+          "type": "test_action",
+          "label": "REST API Root Lockdown Check",
+          "test_logic": "universal_probe",
+          "test_config": {
+            "method": "GET",
+            "path": "/wp-json/",
+            "expected_status": [
+              401,
+              403
+            ],
+            "expected_enforcer": "php-author-enum"
+          },
+          "help": "Verifies that the REST API root is only accessible to authenticated users."
         }
       ],
       "actions": [
@@ -923,6 +1049,38 @@
           "default_value": false,
           "on_change": "handleRISK007ToggleChange",
           "settings_key": "vapt_risk_007_enabled"
+        },
+        {
+          "component_id": "UI-RISK-007-003",
+          "type": "number",
+          "label": "Requests Per Minute (RPM)",
+          "settings_key": "vapt_risk_007_limit",
+          "default_value": 5,
+          "min": 1,
+          "max": 100,
+          "help": "Set the maximum allowed login attempts per minute."
+        },
+        {
+          "component_id": "UI-RISK-007-004",
+          "type": "reset_action",
+          "label": "Reset My Rate Limit",
+          "help": "Clear the rate limit counter for your current IP address."
+        },
+        {
+          "component_id": "UI-RISK-007-002",
+          "type": "test_action",
+          "label": "Verify Login Rate Limiting",
+          "test_logic": "spam_requests",
+          "test_config": {
+            "method": "GET",
+            "path": "/wp-login.php",
+            "expected_status": [
+              403,
+              429
+            ],
+            "expected_enforcer": "php-rate-limit"
+          },
+          "help": "Verifies that login attempts are rate-limited."
         }
       ],
       "actions": [
@@ -1042,6 +1200,28 @@
           "default_value": false,
           "on_change": "handleRISK008ToggleChange",
           "settings_key": "vapt_risk_008_enabled"
+        },
+        {
+          "component_id": "UI-RISK-008-002",
+          "type": "test_action",
+          "label": "Login Error Consistency Check",
+          "test_logic": "universal_probe",
+          "test_config": {
+            "method": "POST",
+            "path": "/wp-login.php",
+            "params": {
+              "log": "vaptsecure_nonexistent_user",
+              "pwd": "invalid-password",
+              "wp-submit": "Log In",
+              "testcookie": "1"
+            },
+            "expected_status": [
+              200
+            ],
+            "expected_text": "Invalid credentials. Please try again.",
+            "expected_enforcer": "php-headers"
+          },
+          "help": "Verifies wp-login.php returns a generic login error message."
         }
       ],
       "actions": [
@@ -1151,6 +1331,38 @@
           "default_value": false,
           "on_change": "handleRISK009ToggleChange",
           "settings_key": "vapt_risk_009_enabled"
+        },
+        {
+          "component_id": "UI-RISK-009-003",
+          "type": "number",
+          "label": "Requests Per Minute (RPM)",
+          "settings_key": "vapt_risk_009_limit",
+          "default_value": 5,
+          "min": 1,
+          "max": 100,
+          "help": "Set the maximum allowed requests per minute for forms."
+        },
+        {
+          "component_id": "UI-RISK-009-004",
+          "type": "reset_action",
+          "label": "Reset My Rate Limit",
+          "help": "Clear the rate limit counter for your current IP address."
+        },
+        {
+          "component_id": "UI-RISK-009-002",
+          "type": "test_action",
+          "label": "Verify Form Submission Rate Limiting",
+          "test_logic": "spam_requests",
+          "test_config": {
+            "method": "GET",
+            "path": "/wp-login.php?action=register",
+            "expected_status": [
+              403,
+              429
+            ],
+            "expected_enforcer": "php-rate-limit"
+          },
+          "help": "Verifies that form submissions are rate-limited."
         }
       ],
       "actions": [
@@ -1260,6 +1472,21 @@
           "default_value": false,
           "on_change": "handleRISK010ToggleChange",
           "settings_key": "vapt_risk_010_enabled"
+        },
+        {
+          "component_id": "UI-RISK-010-002",
+          "type": "test_action",
+          "label": "Server Banner Verification",
+          "test_logic": "check_headers",
+          "test_config": {
+            "method": "GET",
+            "path": "/",
+            "expected_headers": [
+              "x-vapt-enforced"
+            ],
+            "expected_enforcer": "php-headers"
+          },
+          "help": "Verifies that server banners are suppressed in response headers."
         }
       ],
       "actions": [
@@ -1379,6 +1606,22 @@
           "default_value": false,
           "on_change": "handleRISK011ToggleChange",
           "settings_key": "vapt_risk_011_enabled"
+        },
+        {
+          "component_id": "UI-RISK-011-002",
+          "type": "test_action",
+          "label": "readme.html Access Block Check",
+          "test_logic": "universal_probe",
+          "test_config": {
+            "method": "GET",
+            "path": "/readme.html",
+            "expected_status": [
+              403,
+              404
+            ],
+            "expected_enforcer": "php-headers"
+          },
+          "help": "Verifies that access to readme.html is blocked."
         }
       ],
       "actions": [
@@ -1535,6 +1778,21 @@
           "default_value": false,
           "on_change": "handleRISK012ToggleChange",
           "settings_key": "vapt_risk_012_enabled"
+        },
+        {
+          "component_id": "UI-RISK-012-002",
+          "type": "test_action",
+          "label": "HSTS Header Verification",
+          "test_logic": "check_headers",
+          "test_config": {
+            "method": "GET",
+            "path": "/",
+            "expected_headers": [
+              "strict-transport-security"
+            ],
+            "expected_enforcer": "php-headers"
+          },
+          "help": "Verifies that the Strict-Transport-Security header is present."
         }
       ],
       "actions": [
@@ -1691,6 +1949,22 @@
           "default_value": false,
           "on_change": "handleRISK013ToggleChange",
           "settings_key": "vapt_risk_013_enabled"
+        },
+        {
+          "component_id": "UI-RISK-013-002",
+          "type": "test_action",
+          "label": "Directory Browsing Block Check",
+          "test_logic": "universal_probe",
+          "test_config": {
+            "method": "GET",
+            "path": "/wp-content/uploads/",
+            "expected_status": [
+              403,
+              404
+            ],
+            "expected_enforcer": "php-dir"
+          },
+          "help": "Verifies that directory indexing is disabled for the uploads folder."
         }
       ],
       "actions": [
@@ -1845,6 +2119,21 @@
           "default_value": false,
           "on_change": "handleRISK014ToggleChange",
           "settings_key": "vapt_risk_014_enabled"
+        },
+        {
+          "component_id": "UI-RISK-014-002",
+          "type": "test_action",
+          "label": "Clickjacking Protection Check",
+          "test_logic": "check_headers",
+          "test_config": {
+            "method": "GET",
+            "path": "/",
+            "expected_headers": [
+              "x-frame-options"
+            ],
+            "expected_enforcer": "php-headers"
+          },
+          "help": "Verifies that the X-Frame-Options header is present to prevent clickjacking."
         }
       ],
       "actions": [
@@ -2001,6 +2290,21 @@
           "default_value": false,
           "on_change": "handleRISK015ToggleChange",
           "settings_key": "vapt_risk_015_enabled"
+        },
+        {
+          "component_id": "UI-RISK-015-002",
+          "type": "test_action",
+          "label": "MIME Sniffing Protection Check",
+          "test_logic": "check_headers",
+          "test_config": {
+            "method": "GET",
+            "path": "/",
+            "expected_headers": [
+              "x-content-type-options"
+            ],
+            "expected_enforcer": "php-headers"
+          },
+          "help": "Verifies that the X-Content-Type-Options header is present."
         }
       ],
       "actions": [

@@ -1015,7 +1015,7 @@ $runtime_verified = false;
                     }
                     $current_schema = isset($raw_data['schema']) ? $raw_data['schema'] : [];
                 } elseif (isset($raw_data['risk_interfaces']) && is_array($raw_data['risk_interfaces'])) {
-                    // 🛡️ INTERFACE SCHEMA FORMAT (risk_interfaces node — e.g. interface_schema_full125.json)
+                    // 🛡️ INTERFACE SCHEMA FORMAT (risk_interfaces node — e.g. interface_schema_v2.0.json)
                     // Converts the keyed RISK-NNN dictionary into the standard flat feature array.
                     foreach ($raw_data['risk_interfaces'] as $risk_key => $item) {
                         $item['id']          = isset($item['risk_id'])  ? $item['risk_id']  : $risk_key;
