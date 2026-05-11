@@ -363,7 +363,7 @@ var vaptLog = window.vaptLog || {
         : configuredPath;
       const url = resolveUrl(configPath, control.config?.url, featureKey);
       const contextParam = (featureKey && (featureKey.includes('login') || featureKey.includes('brute'))) ? '&vaptsecure_test_context=login' : '';
-      const finalUrl = url + (url.includes('?') ? '&' : '?') + 'vaptsecure_header_check=' + Date.now() + contextParam;
+      const finalUrl = url + (url.includes('?') ? '&' : '?') + 'vapt_header_check=1';
       vaptLog.log(`Header Probe: Fetching ${finalUrl}`);
       const response = await fetch(finalUrl, { method: 'GET', cache: 'no-store' });
       const headers = {};
@@ -418,7 +418,7 @@ var vaptLog = window.vaptLog || {
               return {
                 success: true,
                 message: `Pingback protection is active. XML-RPC no longer exposes pingback.ping.`,
-                raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Pingback: Disabled\n\n${headerStr.trim()}\n\n${body.substring(0, 800)}`
+                raw: `URL: ${url} | Status: ${response.status} | Pingback: Disabled\n\n${headerStr.trim()}\n\n${body.substring(0, 800)}`
               };
             }
           } catch (err) {
@@ -456,14 +456,14 @@ var vaptLog = window.vaptLog || {
               return {
                 success: false,
                 message: `Warning: ${featureKey} toggle is OFF but server is STILL enforcing it (${vaptEnforced}).${displayMessageSnippet}`,
-                raw: `URL: ${url} | Status: ${response.status} | Toggle: OFF | Enforcement: ${vaptEnforced} | Same Protection: ${fullList || 'none'}\n\n${headerStr.trim()}`
+                raw: `URL: ${url} | Status: ${response.status} | Enforcement: ${vaptEnforced} | Same Protection: ${fullList || 'none'}\n\n${headerStr.trim()}`
               };
             } else {
               // SUCCESS: Toggle is OFF, headers present but THIS feature is NOT in the list
               return {
                 success: false, unprotected: true,
                 message: `Protection currently disabled for this feature.${displayMessageSnippet}`,
-                raw: `URL: ${url} | Status: ${response.status} | Toggle: OFF | This Feature: Not Enforced | Same Protection: ${fullList || 'none'}\n\n${headerStr.trim()}`
+                raw: `URL: ${url} | Status: ${response.status} | This Feature: Not Enforced | Same Protection: ${fullList || 'none'}\n\n${headerStr.trim()}`
               };
             }
           }
@@ -471,7 +471,7 @@ var vaptLog = window.vaptLog || {
           return {
             success: false, unprotected: true,
             message: `Protection correctly disabled. No enforcement headers detected.`,
-            raw: `URL: ${url} | Status: ${response.status} | Toggle: OFF | Enforcement: None\n\n${headerStr.trim()}`
+            raw: `URL: ${url} | Status: ${response.status} | Enforcement: None\n\n${headerStr.trim()}`
           };
         }
 
@@ -483,11 +483,11 @@ var vaptLog = window.vaptLog || {
             message: expectedEnforcer
               ? `Protection toggle is ON but the expected VAPT enforcement header was not found. Expected ${expectedEnforcer}. Got: ${vaptEnforced || 'none'}.`
               : `Protection toggle is ON but VAPT enforcement headers not found. Expected x-vapt-enforced. Got: ${vaptEnforced || 'none'}.`,
-            raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Expected: A+ Headers\n\n${headerStr.trim()}`
+            raw: `URL: ${url} | Status: ${response.status} | Expected: A+ Headers\n\n${headerStr.trim()}`
           };
         }
         // SUCCESS: Toggle is ON and headers present - protection is active
-        return { success: true, message: `Plugin is actively enforcing protection (${vaptEnforced}).`, raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Enforcement: ${vaptEnforced}\n\n${headerStr.trim()}` };
+        return { success: true, message: `Plugin is actively enforcing protection (${vaptEnforced}).`, raw: `URL: ${url} | Status: ${response.status} | Enforcement: ${vaptEnforced}\n\n${headerStr.trim()}` };
       }
 
       // Legacy behavior for tests without expected_headers
@@ -633,7 +633,7 @@ var vaptLog = window.vaptLog || {
         // +-------------------+------------------+-------------------------------------------------------------+---------+
         // | ON                | Detected (429)   | "Rate limiter is ACTIVE. Security measures working."        | SUCCESS |
         // | ON                | Not Detected     | "Protection ON but rate limiter NOT active."               | FAILURE |
-        // | OFF               | Detected (429)   | "Warning: Toggle OFF but rate limiter STILL active."        | FAILURE |
+        // | OFF               | Detected (429)   | "Warning: Disabled but rate limiter STILL active."          | FAILURE |
         // | OFF               | Not Detected     | "Protection correctly disabled. No rate limiting."          | SUCCESS |
         // +-------------------+------------------+-------------------------------------------------------------+---------+
 
@@ -643,9 +643,9 @@ var vaptLog = window.vaptLog || {
             // FAILURE: Toggle OFF but rate limiter still active
             return {
               success: false,
-              message: `Warning: Protection toggle is OFF but rate limiter is STILL blocking traffic (${blocked} blocked).`,
+              message: `Warning: Protection is disabled but rate limiter is STILL blocking traffic (${blocked} blocked).`,
               meta: resultMeta,
-              raw: `URL: ${resolveUrl('/', control.config?.url)} | Status: 429 | Toggle: OFF | Blocked: ${blocked}`
+              raw: `URL: ${resolveUrl('/', control.config?.url)} | Status: 429 | Blocked: ${blocked}`
             };
           }
           // SUCCESS: Toggle ON and rate limiter active
@@ -655,7 +655,7 @@ var vaptLog = window.vaptLog || {
               ? `Login protection is ACTIVE. External rate limiting blocked ${blocked} request(s).`
               : `Rate limiter is ACTIVE. Security measures are working correctly (${blocked} requests blocked).`,
             meta: resultMeta,
-            raw: `URL: ${resolveUrl('/', control.config?.url)} | Status: 429 | Toggle: ON | Blocked: ${blocked}`
+            raw: `URL: ${resolveUrl('/', control.config?.url)} | Status: 429 | Blocked: ${blocked}`
           };
         }
 
@@ -680,7 +680,7 @@ var vaptLog = window.vaptLog || {
               success: false, unprotected: true,
               message: `Protection correctly disabled. No rate limiting detected (all ${total} requests accepted).`,
               meta: resultMeta,
-              raw: `URL: ${resolveUrl('/', control.config?.url)} | Status: 200 | Toggle: OFF | Rate Limiting: Inactive`
+              raw: `URL: ${resolveUrl('/', control.config?.url)} | Status: 200 | Rate Limiting: Inactive`
             };
           }
           // FAILURE: Toggle OFF but external rate limiting detected
@@ -689,7 +689,7 @@ var vaptLog = window.vaptLog || {
             external_block: true,
             message: `Warning: Protection toggle is OFF but external rate limiting detected (${blocked} blocked).`,
             meta: resultMeta,
-            raw: `URL: ${resolveUrl('/', control.config?.url)} | Status: 429 | Toggle: OFF | External Rate Limiting`
+            raw: `URL: ${resolveUrl('/', control.config?.url)} | Status: 429 | External Rate Limiting`
           };
         }
 
@@ -700,7 +700,7 @@ var vaptLog = window.vaptLog || {
             ? `Protection toggle is ON but external login rate limiting is NOT active. All requests were accepted.`
             : `Protection toggle is ON but rate limiter is NOT active. All requests were accepted.`,
           meta: resultMeta,
-          raw: `URL: ${resolveUrl('/', control.config?.url)} | Status: 200 | Toggle: ON | Rate Limiting: Inactive`
+          raw: `URL: ${resolveUrl('/', control.config?.url)} | Status: 200 | Rate Limiting: Inactive`
         };
       } catch (err) {
         return {
@@ -727,7 +727,7 @@ var vaptLog = window.vaptLog || {
       // +-------------------+------------------+-------------------------------------------------------------+---------+
       // | ON                | Blocked (403)    | "Plugin is actively blocking XML-RPC."                      | SUCCESS |
       // | ON                | Not Blocked      | "Protection ON but XML-RPC is OPEN and VULNERABLE."         | FAILURE |
-      // | OFF               | Blocked (403)    | "Warning: Toggle OFF but XML-RPC STILL blocked."           | FAILURE |
+      // | OFF               | Blocked (403)    | "Warning: Disabled but XML-RPC STILL blocked."             | FAILURE |
       // | OFF               | Not Blocked (200)| "Protection correctly disabled. XML-RPC accessible."        | SUCCESS |
       // +-------------------+------------------+-------------------------------------------------------------+---------+
 
@@ -739,10 +739,10 @@ var vaptLog = window.vaptLog || {
         }
         if (!isEnabled) {
           // FAILURE: Toggle OFF but still enforcing
-          return { success: false, message: `Warning: Protection toggle is OFF but XML-RPC is STILL being blocked (${vaptEnforced}).`, raw: `URL: ${url} | Status: ${response.status} | Toggle: OFF | Enforcement: ${vaptEnforced}` };
+          return { success: false, message: `Warning: Protection is disabled but XML-RPC is STILL being blocked (${vaptEnforced}).`, raw: `URL: ${url} | Status: ${response.status} | Enforcement: ${vaptEnforced}` };
         }
         // SUCCESS: Toggle ON and blocking active
-        return { success: true, message: `Plugin is actively blocking XML-RPC (${vaptEnforced}).`, raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Enforcement: ${vaptEnforced}` };
+        return { success: true, message: `Plugin is actively blocking XML-RPC (${vaptEnforced}).`, raw: `URL: ${url} | Status: ${response.status} | Enforcement: ${vaptEnforced}` };
       }
 
       const isVulnerable = response.status === 200;
@@ -754,15 +754,15 @@ var vaptLog = window.vaptLog || {
           return {
             success: false, unprotected: true,
             message: `Protection correctly disabled. XML-RPC is accessible (HTTP 200).`,
-            raw: `URL: ${url} | Status: ${response.status} | Toggle: OFF | Enforcement: None`
+            raw: `URL: ${url} | Status: ${response.status} | Enforcement: None`
           };
         }
         // FAILURE: Toggle OFF but XML-RPC is blocked by external system
         return {
           success: false,
           external_block: true,
-          message: `Warning: Protection toggle is OFF but XML-RPC is still blocked (HTTP ${response.status}). External protection detected.`,
-          raw: `URL: ${url} | Status: ${response.status} | Toggle: OFF | External Block`
+          message: `Warning: Protection is disabled but XML-RPC is still blocked (HTTP ${response.status}). External protection detected.`,
+          raw: `URL: ${url} | Status: ${response.status} | External Block`
         };
       }
 
@@ -773,16 +773,16 @@ var vaptLog = window.vaptLog || {
           message: vaptEnforced === 'php-xmlrpc'
             ? `Plugin is actively blocking XML-RPC (${vaptEnforced}).`
             : `Plugin is actively blocking XML-RPC (HTTP ${response.status}).`,
-          raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Enforcement: ${vaptEnforced || 'HTTP ' + response.status}`
+          raw: `URL: ${url} | Status: ${response.status} | Enforcement: ${vaptEnforced || 'HTTP ' + response.status}`
         };
       }
 
       return {
         success: false,
         message: isVulnerable
-          ? `SECURITY FAILURE: Protection toggle is ON but XML-RPC is OPEN and VULNERABLE (HTTP 200).`
+          ? `SECURITY FAILURE: Protection is enabled but XML-RPC is OPEN and VULNERABLE (HTTP 200).`
           : `XML-RPC is blocked (HTTP ${response.status}), but NOT by this plugin. VAPT enforcement header missing.`,
-        raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Expected: 403`
+        raw: `URL: ${url} | Status: ${response.status} | Expected: 403`
       };
     },
 
@@ -829,7 +829,7 @@ var vaptLog = window.vaptLog || {
         return {
           success: true,
           message: `Plugin enforcement confirmed: the target file contains this feature's XML-RPC rule.`,
-          raw: `URL: ${url} | Status: ${response.status} | Toggle: ${isEnabled ? 'ON' : 'OFF'} | File Audit: ${auditLabel}`
+          raw: `URL: ${url} | Status: ${response.status} | File Audit: ${auditLabel}`
         };
       }
 
@@ -838,9 +838,9 @@ var vaptLog = window.vaptLog || {
           return { inconclusive: true, success: false, message: `Inconclusive: XML-RPC pingback is blocked by another VAPT feature ('${enforcedFeature}').`, raw: `URL: ${url} | Status: ${response.status} | Enforcement: ${vaptEnforced || 'php-pingback'} | Origin: ${vaptOrigin || 'unknown'}` };
         }
         if (!isEnabled) {
-          return { success: false, message: `External block detected: pingback enforcement is present but the feature toggle is OFF.`, raw: `URL: ${url} | Status: ${response.status} | Toggle: OFF | Enforcement: ${vaptEnforced || 'php-pingback'} | Origin: ${vaptOrigin || 'unknown'} | Reason: ${vaptReason || 'n/a'}` };
+          return { success: false, message: `External block detected: pingback enforcement is present but the feature is disabled.`, raw: `URL: ${url} | Status: ${response.status} | Enforcement: ${vaptEnforced || 'php-pingback'} | Origin: ${vaptOrigin || 'unknown'} | Reason: ${vaptReason || 'n/a'}` };
         }
-        return { success: true, message: `Plugin enforcement confirmed: XML-RPC pingback is disabled by this plugin.`, raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Enforcement: ${vaptEnforced || 'php-pingback'} | Origin: ${vaptOrigin || 'vaptsecure'} | Reason: ${vaptReason || 'pingback-removed'}` };
+        return { success: true, message: `Plugin enforcement confirmed: XML-RPC pingback is disabled by this plugin.`, raw: `URL: ${url} | Status: ${response.status} | Enforcement: ${vaptEnforced || 'php-pingback'} | Origin: ${vaptOrigin || 'vaptsecure'} | Reason: ${vaptReason || 'pingback-removed'}` };
       }
 
       if (!isEnabled) {
@@ -848,23 +848,23 @@ var vaptLog = window.vaptLog || {
           return {
             inconclusive: true,
             success: false,
-            message: `Cleanup required: the feature toggle is OFF, but the target file still contains this feature's XML-RPC rule.`,
-            raw: `URL: ${url} | Status: ${response.status} | Toggle: OFF | File Audit: ${auditLabel}`
+            message: `Cleanup required: the feature is disabled, but the target file still contains this feature's XML-RPC rule.`,
+            raw: `URL: ${url} | Status: ${response.status} | File Audit: ${auditLabel}`
           };
         }
         if (httpBlocked || hasPluginOwnership) {
           return {
             success: false,
             external_block: true,
-            message: `External block detected: XML-RPC returned HTTP ${response.status} while this feature is OFF and no plugin-owned rule was found.`,
-            raw: `URL: ${url} | Status: ${response.status} | Toggle: OFF | Enforcement: ${vaptEnforced || 'none'} | File Audit: ${auditLabel}`
+            message: `External block detected: XML-RPC returned HTTP ${response.status} while this feature is disabled and no plugin-owned rule was found.`,
+            raw: `URL: ${url} | Status: ${response.status} | Enforcement: ${vaptEnforced || 'none'} | File Audit: ${auditLabel}`
           };
         }
         return {
           success: false,
           skipped: true,
           message: `Protection disabled: no plugin-owned XML-RPC enforcement was detected for this feature.`,
-          raw: `URL: ${url} | Status: ${response.status} | Toggle: OFF | Enforcement: ${vaptEnforced || 'none'} | File Audit: ${auditLabel}`
+          raw: `URL: ${url} | Status: ${response.status} | Enforcement: ${vaptEnforced || 'none'} | File Audit: ${auditLabel}`
         };
       }
 
@@ -874,7 +874,7 @@ var vaptLog = window.vaptLog || {
             inconclusive: true,
             success: false,
             message: `Verification audit unavailable: XML-RPC returned HTTP ${response.status}, but the verifier could not read the target-file audit for ${featureKey}.`,
-            raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Enforcement: ${vaptEnforced || 'none'} | Origin: ${vaptOrigin || 'none'} | File Audit: unavailable`
+            raw: `URL: ${url} | Status: ${response.status} | Enforcement: ${vaptEnforced || 'none'} | Origin: ${vaptOrigin || 'none'} | File Audit: unavailable`
           };
         }
         if (!hasPluginOwnership && !hasFileOwnership) {
@@ -882,13 +882,13 @@ var vaptLog = window.vaptLog || {
             success: false,
             external_block: true,
             message: `Blocked, but not by this feature: XML-RPC returned HTTP ${response.status} and the fresh file audit did not find a plugin-owned ${featureKey} rule.`,
-            raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Enforcement: ${vaptEnforced || 'none'} | Origin: ${vaptOrigin || 'none'} | File Audit: ${auditLabel}`
+            raw: `URL: ${url} | Status: ${response.status} | Enforcement: ${vaptEnforced || 'none'} | Origin: ${vaptOrigin || 'none'} | File Audit: ${auditLabel}`
           };
         }
         return {
           success: true,
           message: `Plugin enforcement confirmed: XML-RPC pingback is disabled by this plugin.`,
-          raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Enforcement: ${vaptEnforced || 'php-pingback'} | Origin: ${vaptOrigin || 'vaptsecure'} | Reason: ${vaptReason || 'pingback-removed'}`
+          raw: `URL: ${url} | Status: ${response.status} | Enforcement: ${vaptEnforced || 'php-pingback'} | Origin: ${vaptOrigin || 'vaptsecure'} | Reason: ${vaptReason || 'pingback-removed'}`
         };
       }
 
@@ -898,7 +898,7 @@ var vaptLog = window.vaptLog || {
         message: hasFileOwnership
           ? `Target file contains this feature's rule, but XML-RPC still exposes pingback methods.`
           : `Inconclusive: XML-RPC pingback state could not be attributed to this plugin from the fresh file audit.`,
-        raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Expected: pingback methods removed | File Audit: ${auditLabel}`
+        raw: `URL: ${url} | Status: ${response.status} | Expected: pingback methods removed | File Audit: ${auditLabel}`
       };
     },
 
@@ -938,7 +938,7 @@ var vaptLog = window.vaptLog || {
           if (featureKey && enforcedFeature && enforcedFeature !== featureKey) {
             return { success: false, message: `Inconclusive: login error protection is attributed to another VAPT feature ('${enforcedFeature}').`, raw: `URL: ${loginUrl} | Status: ${response.status} | Enforcement: ${vaptEnforced}` };
           }
-          return { success: true, message: 'Plugin is actively normalizing wp-login.php error messages.', raw: `URL: ${loginUrl} | Status: ${response.status} | Toggle: ${isEnabled ? 'ON' : 'OFF'} | Enforcement: ${vaptEnforced}` };
+          return { success: true, message: 'Plugin is actively normalizing wp-login.php error messages.', raw: `URL: ${loginUrl} | Status: ${response.status} | Enforcement: ${vaptEnforced}` };
         }
 
         if (!isEnabled) {
@@ -948,7 +948,7 @@ var vaptLog = window.vaptLog || {
             message: leaksUsername
               ? 'Protection correctly disabled. wp-login.php still reveals enumeration hints.'
               : 'Protection correctly disabled. wp-login.php no longer reveals enumeration hints.',
-            raw: `URL: ${loginUrl} | Status: ${response.status} | Toggle: OFF | Result: ${genericMessage ? 'generic-login-error' : 'enumeration-leak'}`
+            raw: `URL: ${loginUrl} | Status: ${response.status} | Result: ${genericMessage ? 'generic-login-error' : 'enumeration-leak'}`
           };
         }
 
@@ -956,14 +956,14 @@ var vaptLog = window.vaptLog || {
           return {
             success: true,
             message: 'Plugin is actively blocking login-error based enumeration.',
-            raw: `URL: ${loginUrl} | Status: ${response.status} | Toggle: ON | Result: generic-login-error`
+            raw: `URL: ${loginUrl} | Status: ${response.status} | Result: generic-login-error`
           };
         }
 
         return {
           success: false,
-          message: 'SECURITY FAILURE: Protection toggle is ON but wp-login.php still reveals username-specific error text.',
-          raw: `URL: ${loginUrl} | Status: ${response.status} | Toggle: ON | Expected: generic login error`
+          message: 'SECURITY FAILURE: Protection is enabled but wp-login.php still reveals username-specific error text.',
+          raw: `URL: ${loginUrl} | Status: ${response.status} | Expected: generic login error`
         };
       }
 
@@ -982,9 +982,9 @@ var vaptLog = window.vaptLog || {
           return { success: false, message: `Inconclusive: ${modeLabel} blocked by another VAPT feature ('${enforcedFeature}').`, raw: `URL: ${url} | Status: ${response.status} | Enforcement: ${vaptEnforced}` };
         }
         if (!isEnabled) {
-          return { success: false, message: `Warning: Protection toggle is OFF but ${modeLabel} is STILL being blocked (${vaptEnforced}).`, raw: `URL: ${url} | Status: ${response.status} | Toggle: OFF | Enforcement: ${vaptEnforced}` };
+          return { success: false, message: `Warning: Protection is disabled but ${modeLabel} is STILL being blocked (${vaptEnforced}).`, raw: `URL: ${url} | Status: ${response.status} | Enforcement: ${vaptEnforced}` };
         }
-        return { success: true, message: `Plugin is actively blocking ${modeLabel} (${vaptEnforced}).`, raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Enforcement: ${vaptEnforced}` };
+        return { success: true, message: `Plugin is actively blocking ${modeLabel} (${vaptEnforced}).`, raw: `URL: ${url} | Status: ${response.status} | Enforcement: ${vaptEnforced}` };
       }
 
       if (!isEnabled) {
@@ -993,14 +993,14 @@ var vaptLog = window.vaptLog || {
             success: false,
             unprotected: true,
             message: `Protection correctly disabled. ${modeLabel} is accessible (HTTP 200).`,
-            raw: `URL: ${url} | Status: ${response.status} | Toggle: OFF | Enforcement: None`
+            raw: `URL: ${url} | Status: ${response.status} | Enforcement: None`
           };
         }
         return {
           success: false,
           external_block: true,
-          message: `Warning: Protection toggle is OFF but ${modeLabel} is still blocked (HTTP ${response.status}). External protection detected.`,
-          raw: `URL: ${url} | Status: ${response.status} | Toggle: OFF | External Block`
+          message: `Warning: Protection is disabled but ${modeLabel} is still blocked (HTTP ${response.status}). External protection detected.`,
+          raw: `URL: ${url} | Status: ${response.status} | External Block`
         };
       }
 
@@ -1010,14 +1010,14 @@ var vaptLog = window.vaptLog || {
           message: response.status === 200
             ? `${modeLabel} is still exposed (HTTP 200).`
             : `Plugin is actively blocking ${modeLabel} (HTTP ${response.status}).`,
-          raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Enforcement: ${vaptEnforced || 'HTTP ' + response.status}`
+          raw: `URL: ${url} | Status: ${response.status} | Enforcement: ${vaptEnforced || 'HTTP ' + response.status}`
         };
       }
 
       return {
         success: false,
-        message: `SECURITY FAILURE: Protection toggle is ON but ${modeLabel} remains accessible (HTTP 200).`,
-        raw: `URL: ${url} | Status: ${response.status} | Toggle: ON | Expected: 403/404`
+        message: `SECURITY FAILURE: Protection is enabled but ${modeLabel} remains accessible (HTTP 200).`,
+        raw: `URL: ${url} | Status: ${response.status} | Expected: 403/404`
       };
     },
 
@@ -1038,7 +1038,7 @@ var vaptLog = window.vaptLog || {
       // +-------------------+------------------+-------------------------------------------------------------+---------+
       // | ON                | Blocked (403)    | "Plugin is actively blocking directory listing."           | SUCCESS |
       // | ON                | Not Blocked      | "Protection ON but directory browsing is ACCESSIBLE."      | FAILURE |
-      // | OFF               | Blocked (403)    | "Warning: Toggle OFF but directory STILL blocked."          | FAILURE |
+      // | OFF               | Blocked (403)    | "Warning: Disabled but directory STILL blocked."            | FAILURE |
       // | OFF               | Not Blocked (200)| "Protection correctly disabled. Directory accessible."     | SUCCESS |
       // +-------------------+------------------+-------------------------------------------------------------+---------+
 
@@ -1050,10 +1050,10 @@ var vaptLog = window.vaptLog || {
         }
         if (!isEnabled) {
           // FAILURE: Toggle OFF but still enforcing
-          return { success: false, message: `Warning: Protection toggle is OFF but directory listing is STILL being blocked (${vaptEnforced}).`, raw: `URL: ${target} | Status: ${resp.status} | Toggle: OFF | Enforcement: ${vaptEnforced}` };
+          return { success: false, message: `Warning: Protection is disabled but directory listing is STILL being blocked (${vaptEnforced}).`, raw: `URL: ${target} | Status: ${resp.status} | Enforcement: ${vaptEnforced}` };
         }
         // SUCCESS: Toggle ON and blocking active
-        return { success: true, message: `Plugin is actively blocking directory listing (${vaptEnforced}).`, raw: `URL: ${target} | Status: ${resp.status} | Toggle: ON | Enforcement: ${vaptEnforced}` };
+        return { success: true, message: `Plugin is actively blocking directory listing (${vaptEnforced}).`, raw: `URL: ${target} | Status: ${resp.status} | Enforcement: ${vaptEnforced}` };
       }
 
       if (!isEnabled) {
@@ -1063,20 +1063,20 @@ var vaptLog = window.vaptLog || {
           return {
             success: false, unprotected: true,
             message: `Protection correctly disabled. Directory browsing is accessible (HTTP ${resp.status}).`,
-            raw: `URL: ${target} | Status: ${resp.status} | Toggle: OFF | Enforcement: None`
+            raw: `URL: ${target} | Status: ${resp.status} | Enforcement: None`
           };
         }
         // FAILURE: Toggle OFF but directory is blocked by external system
         return {
           success: false,
           external_block: true,
-          message: `Warning: Protection toggle is OFF but directory is still blocked (HTTP ${resp.status}). External protection detected.`,
-          raw: `URL: ${target} | Status: ${resp.status} | Toggle: OFF | External Block\n\n${snippet}`
+          message: `Warning: Protection is disabled but directory is still blocked (HTTP ${resp.status}). External protection detected.`,
+          raw: `URL: ${target} | Status: ${resp.status} | External Block\n\n${snippet}`
         };
       }
 
       // Toggle is ON: Check if directory browsing is blocked
-      return { success: false, message: `Directory browsing blocked (HTTP ${resp.status}), but NOT by this plugin. VAPT enforcement header missing.`, raw: `URL: ${target} | Status: ${resp.status} | Toggle: ON\n\n${snippet}` };
+      return { success: false, message: `Directory browsing blocked (HTTP ${resp.status}), but NOT by this plugin. VAPT enforcement header missing.`, raw: `URL: ${target} | Status: ${resp.status}\n\n${snippet}` };
     },
 
     // 5. Null Byte Probe (and aliases)
@@ -1096,7 +1096,7 @@ var vaptLog = window.vaptLog || {
       // +-------------------+------------------+-------------------------------------------------------------+---------+
       // | ON                | Blocked (400)    | "Plugin is actively blocking null byte injection."         | SUCCESS |
       // | ON                | Not Blocked      | "Protection ON but null byte payload ACCEPTED."           | FAILURE |
-      // | OFF               | Blocked (400)    | "Warning: Toggle OFF but null byte STILL being blocked."   | FAILURE |
+      // | OFF               | Blocked (400)    | "Warning: Disabled but null byte STILL being blocked."     | FAILURE |
       // | OFF               | Not Blocked (200)| "Protection correctly disabled. Null byte accessible."      | SUCCESS |
       // +-------------------+------------------+-------------------------------------------------------------+---------+
 
@@ -1105,11 +1105,11 @@ var vaptLog = window.vaptLog || {
       if (vaptEnforced === 'php-null-byte' || resp.status === 400) {
         if (!isEnabled && vaptEnforced === 'php-null-byte') {
           // FAILURE: Toggle OFF but still enforcing
-          return { success: false, message: `Warning: Protection toggle is OFF but null byte injection is STILL being blocked (${vaptEnforced}).`, raw: `URL: ${target} | Status: ${resp.status} | Toggle: OFF | Enforcement: ${vaptEnforced}` };
+          return { success: false, message: `Warning: Protection is disabled but null byte injection is STILL being blocked (${vaptEnforced}).`, raw: `URL: ${target} | Status: ${resp.status} | Enforcement: ${vaptEnforced}` };
         }
         // SUCCESS: Either toggle ON with blocking, or server-level block (400)
         if (isEnabled) {
-          return { success: true, message: `Plugin is actively blocking null byte injection (HTTP ${resp.status}). Enforcer: ${vaptEnforced || 'Server'}`, raw: `URL: ${target} | Status: ${resp.status} | Toggle: ON | Enforcement: ${vaptEnforced || 'Server'}` };
+          return { success: true, message: `Plugin is actively blocking null byte injection (HTTP ${resp.status}). Enforcer: ${vaptEnforced || 'Server'}`, raw: `URL: ${target} | Status: ${resp.status} | Enforcement: ${vaptEnforced || 'Server'}` };
         }
       }
 
@@ -1120,20 +1120,20 @@ var vaptLog = window.vaptLog || {
           return {
             success: false, unprotected: true,
             message: `Protection correctly disabled. Null byte payload accepted (HTTP ${resp.status}).`,
-            raw: `URL: ${target} | Status: ${resp.status} | Toggle: OFF | Enforcement: None`
+            raw: `URL: ${target} | Status: ${resp.status} | Enforcement: None`
           };
         }
         // FAILURE: Toggle OFF but null byte is blocked by external system
         return {
           success: false,
           external_block: true,
-          message: `Warning: Protection toggle is OFF but null byte payload is still blocked (HTTP ${resp.status}). External protection detected.`,
-          raw: `URL: ${target} | Status: ${resp.status} | Toggle: OFF | External Block`
+          message: `Warning: Protection is disabled but null byte payload is still blocked (HTTP ${resp.status}). External protection detected.`,
+          raw: `URL: ${target} | Status: ${resp.status} | External Block`
         };
       }
 
       // Toggle is ON: Check if null byte is blocked
-      return { success: false, message: `SECURITY FAILURE: Protection toggle is ON but null byte payload was ACCEPTED (HTTP ${resp.status}).`, raw: `URL: ${target} | Status: ${resp.status} | Toggle: ON | Expected: 400 or 403` };
+      return { success: false, message: `SECURITY FAILURE: Protection toggle is ON but null byte payload was ACCEPTED (HTTP ${resp.status}).`, raw: `URL: ${target} | Status: ${resp.status} | Expected: 400 or 403` };
     },
 
     // 6. Version Hide Probe
@@ -1148,9 +1148,9 @@ var vaptLog = window.vaptLog || {
 
       if (!isEnabled) {
         if (!hasGenerator) {
-          return { success: false, unprotected: true, message: `Protection correctly disabled. WordPress generator tag is hidden by external policy.`, raw: `URL: ${url} | Status: ${resp.status} | Toggle: OFF | State: Secure` };
+          return { success: false, unprotected: true, message: `Protection correctly disabled. WordPress generator tag is hidden by external policy.`, raw: `URL: ${url} | Status: ${resp.status} | State: Secure` };
         }
-        return { success: false, unprotected: true, message: `Baseline Test: WordPress generator tag is present. You are unprotected for this risk vector.`, raw: `URL: ${url} | Status: ${resp.status} | Toggle: OFF | State: Vulnerable` };
+        return { success: false, unprotected: true, message: `Baseline Test: WordPress generator tag is present. You are unprotected for this risk vector.`, raw: `URL: ${url} | Status: ${resp.status} | State: Vulnerable` };
       }
 
       if (!hasGenerator) {
@@ -1270,7 +1270,7 @@ var vaptLog = window.vaptLog || {
       // +-------------------+------------------+-------------------------------------------------------------+---------+
       // | ON                | Detected/Blocked | "Protection is active. Attack blocked or headers present."  | SUCCESS |
       // | ON                | Not Detected     | "Protection ON but server NOT enforcing expected response." | FAILURE |
-      // | OFF               | Detected         | "Warning: Toggle OFF but server STILL enforcing."           | FAILURE |
+      // | OFF               | Detected         | "Warning: Disabled but server STILL enforcing."             | FAILURE |
       // | OFF               | Not Detected     | "Protection correctly disabled. No enforcement detected."   | SUCCESS |
       // +-------------------+------------------+-------------------------------------------------------------+---------+
 
@@ -1284,7 +1284,7 @@ var vaptLog = window.vaptLog || {
           return {
             success: false,
             message: `Warning: Feature '${featureKey}' is OFF but server is STILL enforcing it ('${vaptEnforced}').`,
-            raw: `URL: ${url} | Status: ${code} | Toggle: OFF | Enforcement: ${vaptEnforced}`
+            raw: `URL: ${url} | Status: ${code} | Enforcement: ${vaptEnforced}`
           };
         }
 
@@ -1293,7 +1293,7 @@ var vaptLog = window.vaptLog || {
           return {
             success: false,
             message: `Warning: Protection toggle is OFF but expected headers are still present (${vaptEnforced || 'headers matched'}).`,
-            raw: `URL: ${url} | Status: ${code} | Toggle: OFF | Headers: Matched`
+            raw: `URL: ${url} | Status: ${code} | Headers: Matched`
           };
         }
 
@@ -1302,7 +1302,7 @@ var vaptLog = window.vaptLog || {
           return {
             success: false,
             message: `Warning: Protection toggle is OFF but server is STILL enforcing (${vaptEnforced}).`,
-            raw: `URL: ${url} | Status: ${code} | Toggle: OFF | Enforcement: ${vaptEnforced}`
+            raw: `URL: ${url} | Status: ${code} | Enforcement: ${vaptEnforced}`
           };
         }
 
@@ -1310,21 +1310,21 @@ var vaptLog = window.vaptLog || {
         if (expectsBlock && !expectedStatusArray.includes(code) && code === 200) {
           return {
             success: false, unprotected: true,
-            message: `Protection correctly disabled. Target is accessible (HTTP ${code}) with toggle OFF.`,
-            raw: `URL: ${url} | Status: ${code} | Toggle: OFF | Enforcement: None`
+            message: `Protection correctly disabled. Target is accessible (HTTP ${code}).`,
+            raw: `URL: ${url} | Status: ${code} | Enforcement: None`
           };
         }
         if (expectsAllow && code === 200) {
           return {
             success: false, unprotected: true,
             message: `Protection correctly disabled. Target responded normally (HTTP ${code}).`,
-            raw: `URL: ${url} | Status: ${code} | Toggle: OFF | Enforcement: None`
+            raw: `URL: ${url} | Status: ${code} | Enforcement: None`
           };
         }
         return {
           success: false, unprotected: true,
           message: `Protection correctly disabled. No enforcement detected.`,
-          raw: `URL: ${url} | Status: ${code} | Toggle: OFF | Enforcement: None`
+          raw: `URL: ${url} | Status: ${code} | Enforcement: None`
         };
       } else if (hasHeaderCheck) {
         isSecure = headerMatches && (code === 200 || expectsAllow || statusMatches);
@@ -1414,32 +1414,85 @@ var vaptLog = window.vaptLog || {
       return {
         success: isSecure,
         message: message,
-        raw: `URL: ${url} | Status: ${code} | Expected: ${expectedStatus || 'N/A'} | Toggle: ${isEnabled ? 'ON' : 'OFF'}`
+        raw: `URL: ${url} | Status: ${code} | Expected: ${expectedStatus || 'N/A'}`
       };
     },
 
     verify_implementation: async (siteUrl, control, featureData, featureKey) => {
       try {
-        const endpoint = resolveUrl('/wp-json/vaptsecure/v1/verify-implementation', control.config?.url, featureKey);
-        const url = endpoint + (endpoint.includes('?') ? '&' : '?') + 'key=' + encodeURIComponent(featureKey || '');
-        const response = await fetch(url, { method: 'GET', cache: 'no-store', headers: { Accept: 'application/json' } });
-        const payload = await response.json();
+        const featureKeySanitized = encodeURIComponent(featureKey || '');
+        const restPath = `vaptsecure/v1/features/${featureKeySanitized}/verify`;
+        let payload;
+
+        // 🛡️ Standard WordPress API Fetch (v3.15.3) - Handles Nonce & Root automatically
+        if (window.wp && window.wp.apiFetch) {
+          try {
+            payload = await window.wp.apiFetch({ 
+              path: restPath, 
+              method: 'POST' 
+            });
+          } catch (apiErr) {
+            vaptLog.error(`apiFetch critical failure for ${featureKey}:`, apiErr);
+            // If apiFetch specifically returned an error object with message/code
+            const errorMsg = apiErr.message || (typeof apiErr === 'string' ? apiErr : JSON.stringify(apiErr));
+            throw new Error(`REST API Error: ${errorMsg}`);
+          }
+        }
+
+        if (!payload) {
+          const root = (window.vaptSecureSettings && window.vaptSecureSettings.root) ? window.vaptSecureSettings.root : (siteUrl + '/wp-json/');
+          // Normalize slashes: ensure root ends with / and restPath does NOT start with /
+          const normalizedRoot = root.endsWith('/') ? root : root + '/';
+          const url = `${normalizedRoot}${restPath}`;
+          const nonce = window.vaptSecureSettings?.nonce;
+          
+          const response = await fetch(url, { 
+            method: 'POST', 
+            cache: 'no-store', 
+            headers: { 
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              ...(nonce ? { 'X-WP-Nonce': nonce } : {})
+            } 
+          });
+
+          const contentType = response.headers.get('content-type');
+          if (!contentType || !contentType.includes('application/json')) {
+              const text = await response.text();
+              vaptLog.error('Verification non-JSON response:', text.substring(0, 500));
+              throw new Error(`Server returned ${response.status} ${response.statusText} at ${url}. Expected JSON but got ${contentType || 'text/html'}.`);
+          }
+
+          payload = await response.json();
+        }
 
         if (payload && typeof payload === 'object') {
+          // 🛡️ Format a clean raw trace for the UI (v3.15.4)
+          const probe = payload.probe || {};
+          let traceStr = `URL: ${probe.path || restPath}\n`;
+          traceStr += `Status: ${payload.status || 'unknown'}\n`;
+          
+          if (payload.audit_summary && Array.isArray(payload.audit_summary)) {
+            payload.audit_summary.forEach(item => {
+              traceStr += `${item.label || item.target}: ${item.status || 'unknown'}\n`;
+            });
+          }
+
           return {
             success: !!payload.success,
             message: payload.message || (payload.success ? 'Implementation verified.' : 'Implementation verification failed.'),
             meta: payload,
-            raw: JSON.stringify(payload)
+            raw: traceStr.trim() || JSON.stringify(payload)
           };
         }
 
         return {
           success: false,
           message: 'Implementation verification returned an empty response.',
-          raw: `URL: ${url} | Status: ${response.status}`
+          raw: `URL: ${restPath} | Status: OK`
         };
       } catch (err) {
+        vaptLog.error(`Verification Error for ${featureKey}:`, err);
         return {
           success: false,
           message: `Implementation verification failed: ${err.message}`,
@@ -1448,14 +1501,22 @@ var vaptLog = window.vaptLog || {
       }
     },
 
+    // 🛡️ Verification Aliases (v3.15.2)
+    verify_protection: async (siteUrl, control, featureData, featureKey) => {
+      return PROBE_REGISTRY.verify_implementation(siteUrl, control, featureData, featureKey);
+    },
+    block_wp_cron: async (siteUrl, control, featureData, featureKey) => {
+      return PROBE_REGISTRY.verify_implementation(siteUrl, control, featureData, featureKey);
+    },
+
     // 8. Default Generic Probe
     default: async (siteUrl, control, featureData) => {
       const resp = await fetch(siteUrl + '?vaptsecure_ping=1');
       const isEnabled = isFeatureEnabled(featureData);
       if (!isEnabled) {
-        return { success: false, unprotected: true, message: `Protection correctly disabled. Verification probe active (HTTP ${resp.status}).`, raw: `URL: ${siteUrl} | Status: ${resp.status} | Toggle: OFF` };
+        return { success: false, unprotected: true, message: `Protection correctly disabled. Verification probe active (HTTP ${resp.status}).`, raw: `URL: ${siteUrl} | Status: ${resp.status}` };
       }
-      return { success: resp.ok, message: `Probe result: HTTP ${resp.status}`, raw: `URL: ${siteUrl} | Status: ${resp.status} | Time: ${new Date().toISOString()} | Toggle: ON` };
+      return { success: resp.ok, message: `Probe result: HTTP ${resp.status}`, raw: `URL: ${siteUrl} | Status: ${resp.status} | Time: ${new Date().toISOString()}` };
     }
   };
 
@@ -1588,17 +1649,13 @@ var vaptLog = window.vaptLog || {
           if (part.startsWith('URL: ')) {
             // Extract URL and status info
             const urlMatch = part.match(/URL:\s*(https?:\/\/[^\s|]+)/);
-            const statusMatch = part.match(/\|\s*(Status:[^|]+)\|\s*(Toggle:[^|]+)(?:\|\s*(Enforcement:[^\n]+))?/);
+            const remainingContent = part.split(' | ').slice(1);
             
             if (urlMatch) {
               lines.push({ type: 'url', value: urlMatch[1] });
             }
-            if (statusMatch) {
-              const statusParts = [];
-              if (statusMatch[1]) statusParts.push(statusMatch[1].trim());
-              if (statusMatch[2]) statusParts.push(statusMatch[2].trim());
-              if (statusMatch[3]) statusParts.push(statusMatch[3].trim());
-              lines.push({ type: 'status', value: statusParts.join(' | ') });
+            if (remainingContent.length > 0) {
+              lines.push({ type: 'status', value: remainingContent.join(' | ') });
             }
           } else if (part.includes(':')) {
             // Header lines (x-powered-by:, x-vapt-enforced:, etc.)
@@ -1826,12 +1883,10 @@ var vaptLog = window.vaptLog || {
           // Parse the raw string to extract key information
           const urlMatch = result.raw.match(/URL:\s*([^\s|]+)/i);
           const statusMatch = result.raw.match(/Status:\s*([^\s|]+)/i);
-          const toggleMatch = result.raw.match(/Toggle:\s*([^\s|]+)/i);
           const enforcementMatch = result.raw.match(/Enforcement:\s*([^\s|]+)/i);
 
           const targetUrl = urlMatch ? urlMatch[1].trim() : '';
           const status = statusMatch ? statusMatch[1].trim() : '';
-          const toggle = toggleMatch ? toggleMatch[1].trim() : '';
           const enforcement = enforcementMatch ? enforcementMatch[1].trim() : '';
 
           const displayUrl = (() => {
@@ -1894,19 +1949,8 @@ var vaptLog = window.vaptLog || {
                   }, status)
                 ]),
                 // Separator
-                el('span', { style: { color: '#cbd5e1' } }, '|'),
-                // Toggle box
-                el('div', { style: { display: 'flex', alignItems: 'center', gap: '4px' } }, [
-                  el('span', { style: { color: '#64748b', fontWeight: '600' } }, __('Toggle:', 'vaptsecure')),
-                  el('span', {
-                    style: {
-                      color: toggle === 'ON' ? '#059669' : '#dc2626',
-                      fontWeight: '700'
-                    }
-                  }, toggle)
-                ]),
-                // Enforcement conditionally generated
                 enforcement ? el('span', { style: { color: '#cbd5e1' } }, '|') : null,
+                // Enforcement conditionally generated
                 enforcement ? el('div', { style: { display: 'flex', alignItems: 'center', gap: '4px' } }, [
                   el('span', { style: { color: '#64748b', fontWeight: '600' } }, __('Enforcement:', 'vaptsecure')),
                   el('span', {
@@ -2144,9 +2188,24 @@ var vaptLog = window.vaptLog || {
           return acc;
         }
 
-        const label = String(control.label || '').toLowerCase();
+        const labelLower = String(control.label || '').toLowerCase();
         const controlPath = String(control.test_config?.path || '').toLowerCase();
-        let nextControl = control;
+        let nextControl = { ...control };
+
+        // 🛡️ Global Label Normalization (v3.15.5) - Restore "A+" branding for existing features
+        if (labelLower === 'implementation verification') {
+          nextControl.label = 'A+ Adaptive Verification';
+          if (nextControl.help?.includes('released implementation')) {
+            nextControl.help = nextControl.help.replace('released implementation', 'A+ Adaptive implementation');
+          }
+        } else if (labelLower === 'platform header verification') {
+          nextControl.label = 'A+ Header Verification';
+          if (nextControl.help?.includes('platform-specific enforcement headers')) {
+            nextControl.help = nextControl.help.replace('platform-specific enforcement headers', 'A+ Adaptive headers (x-vapt-enforced)');
+          }
+        }
+
+        const label = String(nextControl.label || '').toLowerCase();
 
         if (isLoginErrorSurface && control.type === 'test_action') {
           const shouldNormalizeLogin = (
@@ -2159,7 +2218,7 @@ var vaptLog = window.vaptLog || {
             control.test_logic === 'verify_rest_lockdown' ||
             controlPath.includes('/wp-json/wp/v2/users') ||
             controlPath.includes('/?author=1')
-          );
+          ) && !label.includes('header verification') && !label.includes('adaptive verification');
 
           if (shouldNormalizeLogin) {
             nextControl = loginErrorControl(control);
@@ -2176,7 +2235,7 @@ var vaptLog = window.vaptLog || {
             control.test_logic === 'verify_rest_lockdown' ||
             controlPath.includes('/wp-login.php') ||
             controlPath.includes('/?author=1')
-          );
+          ) && !label.includes('header verification') && !label.includes('adaptive verification');
 
           if (shouldNormalizeRest) {
             nextControl = {
@@ -2204,7 +2263,7 @@ var vaptLog = window.vaptLog || {
             control.test_logic === 'verify_rest_lockdown' ||
             controlPath.includes('/wp-login.php') ||
             controlPath.includes('/wp-json/wp/v2/users')
-          );
+          ) && !label.includes('header verification') && !label.includes('adaptive verification');
 
           if (shouldNormalizeAuthor) {
             nextControl = {
@@ -2327,40 +2386,106 @@ var vaptLog = window.vaptLog || {
             const impls = verificationFeatureData.platform_implementations || {};
             let addedCode = '';
             let targetFile = '';
-            let actionDesc = '';
 
             for (const [plat, details] of Object.entries(impls)) {
               if (details.code || details.wrapped_code) {
                 addedCode = details.wrapped_code || details.code;
                 targetFile = details.target_file || plat;
-                
-                // Narrative description logic (v3.13.8)
-                const op = String(details.operation || details.implementation_type || '').toLowerCase();
-                if (op.includes('block') || op.includes('files_block')) actionDesc = __('will be added to block access', 'vaptsecure');
-                else if (op.includes('constant') || op.includes('wp_config')) actionDesc = __('constant will be added', 'vaptsecure');
-                else if (op.includes('hook') || op.includes('action')) actionDesc = __('PHP hook will be registered', 'vaptsecure');
-                else actionDesc = __('rule will be added', 'vaptsecure');
-                
                 break;
               }
             }
 
             if (!addedCode) return null;
 
-            return el('div', { style: { padding: '8px', maxWidth: '350px' } }, [
-              el('div', { style: { marginBottom: '8px', fontWeight: '600', color: '#1e293b', borderBottom: '1px solid #e2e8f0', pb: '4px' } },
-                __('Implementation Details', 'vaptsecure')),
-              el('div', { style: { marginBottom: '8px', fontSize: '12px', color: '#475569' } },
-                el('span', null, [
-                  el('strong', null, targetFile),
-                  ' ',
-                  actionDesc,
-                  '. ',
-                  __('This rule will be removed when protection is disabled.', 'vaptsecure')
-                ])
-              ),
-              el('div', { style: { fontSize: '11px', fontWeight: 'bold', color: '#10b981', marginBottom: '4px' } }, __('SCRIPT PREVIEW:', 'vaptsecure')),
-              el('pre', { style: { fontSize: '10px', background: '#f8fafc', padding: '8px', borderRadius: '4px', overflowX: 'auto', whiteSpace: 'pre-wrap', color: '#334155', border: '1px solid #e2e8f0', margin: 0 } }, addedCode)
+            const isCurrentlyEnforced = toBool(value);
+            const shortPath = targetFile.startsWith('/') || targetFile.includes('\\') ? getShortPath(targetFile) : `./${targetFile}`;
+
+            return el('div', {
+              style: {
+                padding: '12px',
+                maxWidth: '350px',
+                background: '#1e293b',
+                borderRadius: '8px',
+                border: '1px solid #334155',
+                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+              }
+            }, [
+              // Header
+              el('div', {
+                style: {
+                  fontSize: '10px',
+                  fontWeight: '800',
+                  color: '#94a3b8',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  marginBottom: '10px',
+                  borderBottom: '1px solid #334155',
+                  paddingBottom: '6px'
+                }
+              }, __('Technical Trace & Enforcement', 'vaptsecure')),
+
+              // Status Badge
+              el('div', {
+                style: {
+                  background: isCurrentlyEnforced ? '#f0fdf4' : '#fef2f2',
+                  borderRadius: '6px',
+                  padding: '8px 12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  marginBottom: '12px'
+                }
+              }, [
+                el(Icon, {
+                  icon: isCurrentlyEnforced ? 'yes' : 'no',
+                  size: 14,
+                  style: { color: isCurrentlyEnforced ? '#166534' : '#991b1b' }
+                }),
+                el('span', {
+                  style: {
+                    fontSize: '11px',
+                    fontWeight: '800',
+                    color: isCurrentlyEnforced ? '#166534' : '#991b1b',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.025em'
+                  }
+                }, isCurrentlyEnforced ? __('Status: Active & Injected', 'vaptsecure') : __('Status: Not Active', 'vaptsecure'))
+              ]),
+
+              // Path
+              el('div', {
+                style: {
+                  fontSize: '12px',
+                  fontWeight: '700',
+                  color: '#38bdf8',
+                  marginBottom: '8px',
+                  fontFamily: 'monospace'
+                }
+              }, shortPath),
+
+              // Code Preview
+              el('div', {
+                style: {
+                  position: 'relative',
+                  background: '#0f172a',
+                  borderRadius: '4px',
+                  borderLeft: `4px solid ${isCurrentlyEnforced ? '#22c55e' : '#94a3b8'}`,
+                  overflow: 'hidden'
+                }
+              }, [
+                el('pre', {
+                  style: {
+                    fontSize: '10px',
+                    padding: '10px',
+                    margin: 0,
+                    color: '#f8fafc',
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-all',
+                    fontFamily: 'monospace',
+                    lineHeight: '1.4'
+                  }
+                }, addedCode)
+              ])
             ]);
           };
 

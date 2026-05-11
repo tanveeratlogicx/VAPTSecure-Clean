@@ -2,7 +2,7 @@
 
 ## Project: VAPTSecure-Clean
 
-Generated: 2026-05-10 09:18:56
+Generated: 2026-05-11 07:16:12
 
 ### File Structure Summary
 - Total Files: 2317
@@ -2766,56 +2766,56 @@ Generated: 2026-05-10 09:18:56
 ├── verify_data_integrity.py
 
 ### File List (First 50 Files)
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/AGENTS.md
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/EDITOR_OPTIMIZATION_GUIDE.md
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/README-Claude-Ext.md
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/README.md
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/SOUL-Claude-Ext.md
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/SOUL-Claude.md
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/SOUL.md
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/SOUL_Claude-Notes.md
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/SOUL_comprehensive.md
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/SOUL_enhanced.md
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/SOUL_with_selfcheck.md
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/VAPTSECURE.md
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/rules/cursor.rules
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/rules/develop-to-deploy.agrules
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/rules/gemini.md
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/rules/opencode.md
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/rules/session-start-cleanup.agrules
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/rules/stay-in-planning-mode.md
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/rules/transition-to-develop.agrules
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/rules/workspace-focus.agrules
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vapt-expert_Initial.zip
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/DEVELOPER_GUIDE.md
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/README.md
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/Rebuild-VAPTSchema-Builder-Skill-20260311_1652.md
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/SKILL.md
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/USAGE_GUIDE.md
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/VISUAL_FLOW.md
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/examples/example-apache.json
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/examples/example-caddy-native.json
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/examples/example-caddy.json
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/examples/example-cloudflare.json
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/examples/example-fail2ban.json
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/examples/example-htaccess.json
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/examples/example-iis.json
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/examples/example-nginx.json
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/examples/example-php-functions.json
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/examples/example-server-cron.json
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/examples/example-wordpress-core.json
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/examples/example-wordpress.json
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/examples/example-wp-config.json
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/VAPT_AI_Agent_System_README_v2.0.md
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/VAPT_Driver_Reference_v2.0.php
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/VAPT_v2.0_changelog.md
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/ai_agent_instructions_v2.0.json
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/enforcer_pattern_library_v2.0.json
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/interface_schema_v2.0.json
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/resources_backup.rar
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/schema-template.json
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/vapt_driver_manifest_v2.0.json
-- G:\My Drive\laragon_data\VAPTBuilder\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/scripts/Query-Risk.ps1
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/AGENTS.md
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/EDITOR_OPTIMIZATION_GUIDE.md
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/README-Claude-Ext.md
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/README.md
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/SOUL-Claude-Ext.md
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/SOUL-Claude.md
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/SOUL.md
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/SOUL_Claude-Notes.md
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/SOUL_comprehensive.md
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/SOUL_enhanced.md
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/SOUL_with_selfcheck.md
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/VAPTSECURE.md
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/rules/cursor.rules
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/rules/develop-to-deploy.agrules
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/rules/gemini.md
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/rules/opencode.md
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/rules/session-start-cleanup.agrules
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/rules/stay-in-planning-mode.md
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/rules/transition-to-develop.agrules
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/rules/workspace-focus.agrules
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vapt-expert_Initial.zip
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/DEVELOPER_GUIDE.md
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/README.md
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/Rebuild-VAPTSchema-Builder-Skill-20260311_1652.md
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/SKILL.md
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/USAGE_GUIDE.md
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/VISUAL_FLOW.md
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/examples/example-apache.json
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/examples/example-caddy-native.json
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/examples/example-caddy.json
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/examples/example-cloudflare.json
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/examples/example-fail2ban.json
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/examples/example-htaccess.json
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/examples/example-iis.json
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/examples/example-nginx.json
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/examples/example-php-functions.json
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/examples/example-server-cron.json
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/examples/example-wordpress-core.json
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/examples/example-wordpress.json
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/examples/example-wp-config.json
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/VAPT_AI_Agent_System_README_v2.0.md
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/VAPT_Driver_Reference_v2.0.php
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/VAPT_v2.0_changelog.md
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/ai_agent_instructions_v2.0.json
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/enforcer_pattern_library_v2.0.json
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/interface_schema_v2.0.json
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/resources_backup.rar
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/schema-template.json
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/vapt_driver_manifest_v2.0.json
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/scripts/Query-Risk.ps1
 
 ... and 2267 more files
 

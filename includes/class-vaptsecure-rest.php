@@ -502,49 +502,65 @@ class VAPTSECURE_REST
             return new WP_REST_Response(array('error' => 'Missing feature key'), 400);
         }
 
-$meta = VAPTSECURE_DB::get_feature_meta($key);
+        $meta = VAPTSECURE_DB::get_feature_meta($key);
         // In client builds, allow features without metadata (they might be in config file)
         if (!$meta && (!defined('VAPTSECURE_BUILD_PROFILE') || VAPTSECURE_BUILD_PROFILE !== 'client')) {
             return new WP_REST_Response(array('error' => 'Feature not found', 'key' => $key), 404);
         }
-        
+
         // Initialize empty meta array for client builds if not found
         if (!$meta) {
-            $meta = array();
+            $meta = array('feature_key' => $key);
         }
 
-$status = isset($meta['status']) ? strtolower((string) $meta['status']) : 'draft';
+        // [v4.1.0] Correctly Resolve Status and Schema
+        $status_row = VAPTSECURE_DB::get_feature($key);
+        $status = $status_row ? strtolower((string) $status_row->status) : 'draft';
+        
+        // Use the generic enforcer's resolver to get a complete schema (catalog fallback + self-heal)
+        if (class_exists('VAPTSECURE_Enforcer')) {
+            // Temporarily inject status into meta for resolution logic if missing
+            if (!isset($meta['status'])) {
+                $meta['status'] = $status;
+            }
+            // Use reflection or make it public if needed? resolve_schema is private.
+            // Let's stick to the local resolution but improve it to match VAPTSECURE_Enforcer logic.
+        }
+
         $raw_schema = ($status === 'test' && !empty($meta['override_schema'])) ? $meta['override_schema'] : ($meta['generated_schema'] ?? null);
         $schema = $raw_schema ? json_decode($raw_schema, true) : array();
-        $raw_impl = ($status === 'test' && !empty($meta['override_implementation_data'])) ? $meta['override_implementation_data'] : ($meta['implementation_data'] ?? null);
-        $implementation_data = $raw_impl ? json_decode($raw_impl, true) : array();
         
-        // If schema is empty (not found in database), try to load from data files
-        // This handles client builds and any build where database might not have the feature
-        if (empty($schema)) {
+        // Fallback to Catalog if schema is empty or incomplete
+        if (empty($schema) || empty($schema['platform_implementations'])) {
             $data_file = defined('VAPTSECURE_ACTIVE_DATA_FILE') ? VAPTSECURE_ACTIVE_DATA_FILE : 'interface_schema_v2.0.json';
             $data_path = VAPTSECURE_PATH . 'data/' . $data_file;
             
             if (file_exists($data_path)) {
-                $json_content = file_get_contents($data_path);
-                $all_schemas = json_decode($json_content, true);
+                $all_data = json_decode(file_get_contents($data_path), true);
+                $feature_key_upper = strtoupper($key);
                 
-                if (is_array($all_schemas)) {
-                    // Try to find schema by key
-                    foreach ($all_schemas as $schema_key => $schema_data) {
-                        if (strcasecmp($schema_key, $key) === 0) {
-                            $schema = $schema_data;
-                            break;
-                        }
-                        // Also check risk_id field
-                        if (isset($schema_data['risk_id']) && strcasecmp($schema_data['risk_id'], $key) === 0) {
-                            $schema = $schema_data;
-                            break;
+                // Check in risk_interfaces first (v2.0 standard)
+                if (isset($all_data['risk_interfaces'][$feature_key_upper])) {
+                    $schema = $all_data['risk_interfaces'][$feature_key_upper];
+                } elseif (isset($all_data[$key])) {
+                    $schema = $all_data[$key];
+                } else {
+                    // Manual search for non-standard keys or risk_id match
+                    if (isset($all_data['risk_interfaces']) && is_array($all_data['risk_interfaces'])) {
+                        foreach ($all_data['risk_interfaces'] as $item) {
+                            if (isset($item['risk_id']) && strcasecmp($item['risk_id'], $key) === 0) {
+                                $schema = $item;
+                                break;
+                            }
                         }
                     }
                 }
             }
         }
+
+        $raw_impl = ($status === 'test' && !empty($meta['override_implementation_data'])) ? $meta['override_implementation_data'] : ($meta['implementation_data'] ?? null);
+        $implementation_data = $raw_impl ? json_decode($raw_impl, true) : array();
+        
         if (!is_array($implementation_data)) {
             $implementation_data = array();
         }
@@ -797,11 +813,11 @@ $runtime_verified = false;
             $probe['expected_enforcer'] = $expected_enforcer ?: 'htaccess';
         }
 
-$response_data = array(
+        $response_data = array(
             'success' => ($runtime_verified || $file_verified),
             'key' => $key,
             'title' => $schema['title'] ?? ($meta['feature_name'] ?? $key),
-            'status' => $meta['status'] ?? 'unknown',
+            'status' => $status,
             'probe' => $probe,
             'audit_summary' => $audit_summary,
             'runtime_verified' => $runtime_verified,

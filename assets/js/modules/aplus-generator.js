@@ -539,19 +539,19 @@ test_config: {
         tests.push({
           type: 'test_action',
           id: `vapt-test-implementation-${riskId}`,
-          label: 'Implementation Verification',
+          label: 'A+ Adaptive Verification',
           key: 'verify_implementation',
           test_logic: 'verify_implementation',
           test_config: {
             expected_enforcer: expectedEnforcer
           },
-          help: `Verifies that the released implementation is present for ${inferredPath} using the client verification endpoint.`
+          help: `Verifies that the A+ Adaptive implementation is present for ${inferredPath} using the client verification endpoint.`
         });
       } else if (isHeaderFlow) {
         tests.push({
           type: 'test_action',
           id: `vapt-test-headers-${riskId}`,
-          label: 'Platform Header Verification',
+          label: 'A+ Header Verification',
           key: 'verify_aplus_headers',
           test_logic: 'check_headers',
           test_config: {
@@ -561,7 +561,7 @@ test_config: {
               'x-vapt-enforced': expectedEnforcer
             }
           },
-          help: `Verifies that the platform-specific enforcement headers are correctly injected for ${inferredPath}.`
+          help: `Verifies that the A+ Adaptive headers (x-vapt-enforced) are correctly injected by the active enforcer.`
         });
       } else if (isRewriteFlow) {
         tests.push({
@@ -582,13 +582,13 @@ test_config: {
         tests.push({
           type: 'test_action',
           id: `vapt-test-implementation-${riskId}`,
-          label: 'Implementation Verification',
+          label: 'A+ Adaptive Verification',
           key: 'verify_implementation',
           test_logic: 'verify_implementation',
           test_config: {
             expected_enforcer: expectedEnforcer
           },
-          help: `Verifies that the released implementation is present for ${inferredPath} using the client verification endpoint.`
+          help: `Verifies that the A+ Adaptive implementation is present for ${inferredPath} using the client verification endpoint.`
         });
       }
 

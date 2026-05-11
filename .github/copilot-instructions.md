@@ -43,23 +43,9 @@ Your primary role is to:
 ## 🏗️ Project Context
 
 **Project**: VAPTSecure WordPress Plugin
-**Version**: 3.6.1
+**Version**: 3.2.0
 **Domain**: WordPress Security & Vulnerability Management
-**Architecture**: Plugin-based builder/client runtime with REST API integration and v2.0 risk-interface bundle
-
-### Active Datafile Contract
-
-The current source-of-truth data bundle is the v2.0 set in `/data/`.
-
-| File | Role |
-|------|------|
-| `/data/interface_schema_v2.0.json` | Primary UI/risk-interface source. Uses `schema_version: 2.0.0` and a `risk_interfaces` object keyed by `RISK-001` through `RISK-135`. |
-| `/data/enforcer_pattern_library_v2.0.json` | Canonical enforcement pattern source. Use `patterns.RISK-XXX.<platform>` references; never invent server rules from memory. |
-| `/data/vapt_driver_manifest_v2.0.json` | Driver/deployment manifest. Use `risks.RISK-XXX.steps` to determine target files, insertion anchors, and driver behavior. |
-| `/data/ai_agent_instructions_v2.0.json` | Agent formatting, workflow, and generation guidance. |
-| `/data/VAPT_Driver_Reference_v2.0.php` | PHP reference helper for driver behavior. |
-
-Each risk interface may include `available_platforms`, `platform_implementations`, `components`, `actions`, severity metadata, OWASP mappings, and status indicators. Agents must preserve the existing v2.0 structure unless explicitly asked to migrate it.
+**Architecture**: Plugin-based with REST API integration (125 Feature Dataset)
 
 ### Key Directories
 
@@ -68,10 +54,9 @@ Each risk interface may include `available_platforms`, `platform_implementations
 | `/includes/` | Core plugin functionality |
 | `/includes/self-check/` | Self-check automation engine |
 | `/assets/` | Frontend assets (CSS, JS) |
-| `/data/` | Active v2.0 vulnerability interface, enforcer, driver, and agent bundle |
-| `/data/Updated/` | Reference/import bundle copies and patch artifacts |
-| `/data/Consolidated/` | Consolidated reference bundle copies |
-| `/data/Enforcers/` | Server/platform enforcer templates |
+| `/data/` | Vulnerability catalog and JSON configs |
+| `/data/generated/` | Runtime-generated feature configs |
+| `/data/VAPTSchema-Builder/` | JSON schema definitions |
 | `/deployment/` | Client deployment configurations |
 | `/.agent/` | Legacy AI agent configuration |
 | `/.roo/` | Roo Code rules and context |
@@ -1998,15 +1983,14 @@ actions:
 
 ## 🔧 Technical Constraints
 
-1. Treat `/data/interface_schema_v2.0.json` as the primary UI/risk-interface source.
-2. Preserve the v2.0 object shape: `risk_interfaces.RISK-XXX`, `platform_implementations`, `available_platforms`, `components`, and `actions`.
-3. Use `/data/enforcer_pattern_library_v2.0.json` for enforcement snippets and `/data/vapt_driver_manifest_v2.0.json` for driver/target/insertion behavior.
-4. **Always reference the enforcer library and driver manifest** — never write Apache/Nginx/IIS/Caddy/PHP rules from memory.
-5. **4-step workflow**: Risk Interface → Platform Implementation → Driver Manifest → Verification/Self-Check.
-6. **Score output against 19-point rubric** before delivering when generating risk controls.
-7. **Unique ID Requirement**: Every generated UI `div` should have a stable `id` attribute for easier identification and tweaking.
-8. **Naming**: `UI-RISK-XXX-YYY`, `ACTION-XXX-YYY`, and `RISK-XXX` formats must stay aligned.
-9. **Domain**: always `{domain}` — never any literal hostname.
+1. All feature JSON must validate against `/data/VAPTSchema-Builder/`
+2. Use `interface_schema_v2.0.json` as blueprint; `ai_agent_instructions_v2.0.json` for formatting
+3. **Always reference the enforcer library** — never write patterns from memory
+4. **4-step workflow**: Rulebook → Blueprint → Enforcement → Self-Check
+5. **Score output against 19-point rubric** before delivering
+6. **Unique ID Requirement**: Every `div` element must have a mandatory `id` attribute for easier identification and tweaking.
+7. **Naming**: `UI-RISK-XXX-YYY` format
+8. **Domain**: always `{domain}` — never any literal hostname
 
 ---
 
@@ -2606,7 +2590,7 @@ done
 4. **WordPress Hardening** — [Hardening WordPress](https://developer.wordpress.org/advanced-administration/security/hardening/)
 5. **Plugin Lifecycle Hooks** — [Activation/Deactivation Hooks](https://developer.wordpress.org/plugins/plugin-basics/activation-deactivation-hooks/)
 6. **Vulnerability Catalogs** — [OWASP Top 10](https://owasp.org/Top10/), [NIST Cybersecurity Framework](https://www.nist.gov/cyberframework)
-7. **v2.0 Bundle Validation** — risk interfaces, enforcer patterns, and driver manifests in `/data/`
+7. **JSON Schema Validation** — VAPT schemas in `/data/VAPTSchema-Builder/`
 8. **Self-Check Automation** — event-driven validation and auto-correction
 9. **Rate Limiting & IP Blocking** — progressive lockout algorithms
 10. **Contact Form Security** — plugin-specific sanitization patterns
@@ -2667,8 +2651,6 @@ if ( $result->has_failures() ) {
 | VAPT AI Agent Instructions | `../../data/ai_agent_instructions_v2.0.json` |
 | Interface Schema | `../../data/interface_schema_v2.0.json` |
 | Enforcer Pattern Library | `../../data/enforcer_pattern_library_v2.0.json` |
-| Driver Manifest | `../../data/vapt_driver_manifest_v2.0.json` |
-| Driver Reference | `../../data/VAPT_Driver_Reference_v2.0.php` |
 | VAPTSchema Builder Skill | `skills/vapt-expert/SKILL.md` |
 | WordPress REST API Docs | [https://developer.wordpress.org/rest-api/](https://developer.wordpress.org/rest-api/) |
 | WordPress Security Handbook | [https://developer.wordpress.org/apis/security/](https://developer.wordpress.org/apis/security/) |
@@ -2689,4 +2671,4 @@ if ( $result->has_failures() ) {
 
 *This `SOUL.md` defines universal AI behavior for the VAPTSecure plugin project.*
 *Edit this file once — changes propagate to **all 14 editors and extensions** via their respective symlinks.*
-*Version: 2.7.0 | Last Updated: May 2026*
+*Version: 2.6.0 | Last Updated: April 2026*
