@@ -112,8 +112,6 @@ class VAPTSECURE_Deployment_Orchestrator
         'cloudflare_edge',  // Edge-level protection, highest priority
         'nginx_config',     // Native Nginx configuration
         'apache_htaccess',   // Apache .htaccess
-        'caddy_native',     // Caddy native config
-        'iis_config',       // IIS web.config
         'php_functions',    // PHP runtime enforcement
         'wp_config',        // WordPress config (always included if available)
         'server_cron',      // Cron-based enforcement
@@ -131,8 +129,6 @@ class VAPTSECURE_Deployment_Orchestrator
             'cloudflare_edge' => ['cloudflare_proxy'],
             'nginx_config'    => ['nginx'],
             'apache_htaccess' => ['apache', 'mod_rewrite', 'allowoverride'],
-            'caddy_native'    => ['caddy'],
-            'iis_config'      => ['iis'],
             'php_functions'   => ['php'],
             'wp_config'       => ['wordpress'],
             'server_cron'     => ['cron'],

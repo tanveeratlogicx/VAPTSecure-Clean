@@ -237,12 +237,6 @@ class VAPTSECURE_Enforcer
                 case 'nginx':
                     self::rebuild_nginx();
                     break;
-                case 'iis':
-                    self::rebuild_iis();
-                    break;
-                case 'caddy':
-                    self::rebuild_caddy();
-                    break;
                 case 'config':
                 case 'wp_config':
                 case 'wp-config':
@@ -272,8 +266,6 @@ class VAPTSECURE_Enforcer
 
                 if (strpos($server, 'nginx') !== false) {
                     self::rebuild_nginx();
-                } elseif (strpos($server, 'iis') !== false || strpos($server, 'windows') !== false) {
-                    self::rebuild_iis();
                 } else {
                     // Default to Apache/.htaccess
                     self::rebuild_htaccess();
@@ -284,14 +276,6 @@ class VAPTSECURE_Enforcer
             case 'nginx':
                 self::rebuild_nginx();
                 self::rebuild_htaccess(); // Also write PHP fallback
-                break;
-                
-            case 'iis':
-                self::rebuild_iis();
-                break;
-                
-            case 'caddy':
-                self::rebuild_caddy();
                 break;
                 
             case 'cloudflare':
@@ -361,90 +345,6 @@ class VAPTSECURE_Enforcer
         }
 
         VAPTSECURE_Nginx_Driver::write_batch($all_rules);
-    }
-
-    /**
-     * Rebuilds IIS Config
-     */
-    private static function rebuild_iis()
-    {
-        include_once VAPTSECURE_PATH . 'includes/enforcers/class-vaptsecure-iis-driver.php';
-        if (!class_exists('VAPTSECURE_IIS_Driver')) { return;
-        }
-
-        $features = self::get_enforced_features();
-
-        // [ENHANCEMENT] Filter by Active Data Files (v3.12.0)
-        $active_keys = self::get_active_file_keys();
-        if (!empty($active_keys)) {
-            $features = array_filter(
-                $features, function ($feat) use ($active_keys) {
-                    // [FIX] Always allow XML-RPC regardless of key mismatch (v3.12.13)
-                    if (strpos($feat['feature_key'], 'xml-rpc') !== false || strpos($feat['feature_key'], 'xmlrpc') !== false || $feat['feature_key'] === 'RISK-016-001') {
-                        return true;
-                    }
-                    return self::feature_matches_active_keys($feat, $active_keys);
-                }
-            );
-        }
-
-        $all_rules = [];
-
-        foreach ($features as $meta) {
-            $schema = self::resolve_schema($meta);
-            $impl = self::resolve_impl($meta);
-            $driver = $schema['enforcement']['driver'] ?? '';
-
-            if ($driver === 'iis' || $driver === 'htaccess' || $driver === 'universal') {
-                $rules = VAPTSECURE_IIS_Driver::generate_rules($impl, $schema);
-                if ($rules && is_array($rules)) { $all_rules = array_merge($all_rules, $rules);
-                }
-            }
-        }
-
-        VAPTSECURE_IIS_Driver::write_batch($all_rules);
-    }
-
-    /**
-     * Rebuilds Caddy Rules File
-     */
-    private static function rebuild_caddy()
-    {
-        include_once VAPTSECURE_PATH . 'includes/enforcers/class-vaptsecure-caddy-driver.php';
-        if (!class_exists('VAPTSECURE_Caddy_Driver')) { return;
-        }
-
-        $features = self::get_enforced_features();
-
-        // [ENHANCEMENT] Filter by Active Data Files (v3.12.0)
-        $active_keys = self::get_active_file_keys();
-        if (!empty($active_keys)) {
-            $features = array_filter(
-                $features, function ($feat) use ($active_keys) {
-                    // [FIX] Always allow XML-RPC regardless of key mismatch (v3.12.13)
-                    if (strpos($feat['feature_key'], 'xml-rpc') !== false || strpos($feat['feature_key'], 'xmlrpc') !== false || $feat['feature_key'] === 'RISK-016-001') {
-                        return true;
-                    }
-                    return self::feature_matches_active_keys($feat, $active_keys);
-                }
-            );
-        }
-
-        $all_rules = [];
-
-        foreach ($features as $meta) {
-            $schema = self::resolve_schema($meta);
-            $impl = self::resolve_impl($meta);
-            $driver = $schema['enforcement']['driver'] ?? '';
-
-            if ($driver === 'caddy' || $driver === 'htaccess' || $driver === 'universal') {
-                $rules = VAPTSECURE_Caddy_Driver::generate_rules($impl, $schema);
-                if ($rules && is_array($rules)) { $all_rules = array_merge($all_rules, $rules);
-                }
-            }
-        }
-
-        VAPTSECURE_Caddy_Driver::write_batch($all_rules);
     }
 
     /**
@@ -536,7 +436,7 @@ class VAPTSECURE_Enforcer
             $risk_suffix = str_replace('-', '_', strtolower((string) $risk_key));
             $auto_key = "vapt_risk_{$risk_suffix}_enabled";
 
-            $platform_order = array('.htaccess', 'htaccess', 'iis', 'caddy', 'cloudflare');
+            $platform_order = array('.htaccess', 'htaccess', 'cloudflare');
             $selected_platform = null;
             foreach ($platform_order as $candidate) {
                 foreach ($schema['platform_implementations'] as $platform_name => $platform_impl) {
@@ -566,7 +466,7 @@ class VAPTSECURE_Enforcer
 
                 if (!empty($platform_code)) {
                     $schema['enforcement'] = array(
-                    'driver' => (stripos($selected_platform, 'iis') !== false) ? 'iis' : ((stripos($selected_platform, 'caddy') !== false) ? 'caddy' : ((stripos($selected_platform, 'cloudflare') !== false) ? 'cloudflare' : 'htaccess')),
+                    'driver' => ((stripos($selected_platform, 'cloudflare') !== false) ? 'cloudflare' : 'htaccess'),
                     'target' => (stripos($selected_platform, 'uploads') !== false) ? 'uploads' : 'root',
                     'mappings' => self::build_toggle_alias_mappings($schema['feature_key'] ?? ($meta['feature_key'] ?? ''), $platform_code)
                     );
@@ -889,8 +789,6 @@ class VAPTSECURE_Enforcer
         self::rebuild_htaccess();
         self::rebuild_config();
         self::rebuild_nginx();
-        self::rebuild_iis();
-        self::rebuild_caddy();
         self::rebuild_php_functions();
         delete_transient('vaptsecure_active_enforcements');
     }
@@ -953,15 +851,9 @@ class VAPTSECURE_Enforcer
         } elseif (in_array($driver, array('hook', 'php_functions'), true)) {
             $path = VAPTSECURE_PATH . 'vapt-functions.php';
             $label = 'vapt-functions.php';
-        } elseif ($driver === 'iis') {
-            $path = ABSPATH . 'web.config';
-            $label = './web.config';
         } elseif ($driver === 'nginx') {
             $path = wp_upload_dir()['basedir'] . '/vapt-nginx-rules.conf';
             $label = 'vapt-nginx-rules.conf';
-        } elseif ($driver === 'caddy') {
-            $path = wp_upload_dir()['basedir'] . '/vapt-caddy-rules.conf';
-            $label = 'vapt-caddy-rules.conf';
         } else {
             $path = ($target === 'uploads') ? (wp_upload_dir()['basedir'] . '/.htaccess') : ((function_exists('get_home_path') ? get_home_path() : ABSPATH) . '.htaccess');
             $label = ($target === 'uploads') ? 'uploads/.htaccess' : './.htaccess';
@@ -990,12 +882,8 @@ class VAPTSECURE_Enforcer
                     (strpos($content, '// BEGIN VAPT ' . $feature_key) !== false) ||
                     (strpos($content, '# BEGIN VAPT ' . $feature_key) !== false) ||
                     (strpos($content, $feature_key) !== false);
-            } elseif ($driver === 'iis') {
-                $has_marker = (strpos($content, 'VAPT-Feature: ' . $feature_key) !== false);
             } elseif ($driver === 'nginx') {
                 $has_marker = (strpos($content, 'X-VAPT-Feature "' . $feature_key . '"') !== false);
-            } elseif ($driver === 'caddy') {
-                $has_marker = (strpos($content, 'VAPT-Feature: ' . $feature_key) !== false);
             }
         }
 
@@ -1083,26 +971,6 @@ class VAPTSECURE_Enforcer
             $results['nginx'] = true;
         }
     
-        // Clean web.config if exists (IIS)
-        $web_config = ABSPATH . 'web.config';
-        if (file_exists($web_config) && is_writable($web_config)) {
-            $content = file_get_contents($web_config);
-            $content = preg_replace('/<!-- BEGIN VAPT[^\n]*-->.*?<!-- END VAPT[^\n]*-->/s', '', $content);
-            $results['iis'] = (bool) file_put_contents($web_config, $content);
-        } else {
-            $results['iis'] = true;
-        }
-    
-        // Clean Caddyfile if exists
-        $caddyfile = ABSPATH . 'Caddyfile';
-        if (file_exists($caddyfile) && is_writable($caddyfile)) {
-            $content = file_get_contents($caddyfile);
-            $content = preg_replace('/# BEGIN VAPT[^\n]*\n.*?# END VAPT[^\n]*/s', '', $content);
-            $results['caddy'] = (bool) file_put_contents($caddyfile, $content);
-        } else {
-            $results['caddy'] = true;
-        }
-        
         return $results;
     }
 

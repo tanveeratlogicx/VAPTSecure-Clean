@@ -649,9 +649,6 @@ $runtime_verified = false;
             if ($value === 'server-cron' || $value === 'server_cron' || $value === 'php-cron' || $value === 'phpcron') {
                 return 'php-cron';
             }
-            if ($value === 'web-config' || $value === 'webconfig') {
-                return 'iis';
-            }
             if ($value === 'fail2ban') {
                 return 'fail2ban';
             }
@@ -699,12 +696,6 @@ $runtime_verified = false;
             if ($platform === 'nginx') {
                 return 'nginx';
             }
-            if ($platform === 'caddy') {
-                return 'caddy';
-            }
-            if ($platform === 'iis') {
-                return 'iis';
-            }
             if ($platform === 'cloudflare') {
                 return 'cloudflare';
             }
@@ -724,7 +715,7 @@ $runtime_verified = false;
         };
 
         $platform_hints = $collect_platform_hints($schema);
-        $platform_priority = array('htaccess', 'nginx', 'caddy', 'iis', 'cloudflare', 'php-headers', 'php-cron', 'wp-config', 'fail2ban');
+        $platform_priority = array('htaccess', 'nginx', 'cloudflare', 'php-headers', 'php-cron', 'wp-config', 'fail2ban');
         $primary_platform = '';
         foreach ($platform_priority as $candidate) {
             if (in_array($candidate, $platform_hints, true)) {

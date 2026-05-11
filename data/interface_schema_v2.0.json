@@ -71,8 +71,7 @@
       "handler": "handleRISK{NNN}ToggleChange | handleRISK{NNN}DropdownChange",
       "settings_key": "vapt_risk_{nnn}_enabled",
       "rest_endpoint": "/wp-json/vapt/v1/risk-{nnn}",
-      "php_function": "vapt_{descriptive_name}",
-      "caddy_matcher": "@risk{nnn} (alphanumeric only, no hyphens)"
+      "php_function": "vapt_{descriptive_name}"
     }
   },
   "risk_interfaces": {

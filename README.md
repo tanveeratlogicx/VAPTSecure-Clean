@@ -1,9 +1,9 @@
-# VAPTSecure Clean v3.7.13
+# VAPTSecure Clean v3.7.14
 
 Production-ready WordPress security plugin with VAPT and OWASP protection.
 
 ## Version
-**3.7.13** - Added dynamic configuration panels and smart placeholder replacement engine
+**3.7.14** - Deprecated IIS and Caddy drivers to focus on Apache/Cloudflare/PHP environments
 
 ## Package Contents
 - vaptsecure.php - Main plugin file

@@ -112,8 +112,6 @@ class VAPTSECURE_Schema_Validator
                 $web_server_keys = [
                     ".htaccess",
                     "nginx",
-                    "iis",
-                    "caddy",
                     "web_server",
                 ];
                 foreach ($web_server_keys as $server_key) {

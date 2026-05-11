@@ -26,9 +26,7 @@ class VAPTSECURE_Environment_Detector
         ['name' => 'php_sapi_detection', 'priority' => 20, 'confidence' => 1.0, 'timeout_ms' => 20],
         ['name' => 'filesystem_probe', 'priority' => 30, 'confidence' => 0.95, 'timeout_ms' => 200, 'probes' => [
           'apache' => ['.htaccess'],
-          'nginx' => ['nginx.conf'],
-          'iis' => ['web.config'],
-          'caddy' => ['Caddyfile']
+          'nginx' => ['nginx.conf']
         ]],
         ['name' => 'function_availability', 'priority' => 40, 'confidence' => 1.0, 'timeout_ms' => 50, 'tests' => [
           'apache' => ['apache_get_modules'],
@@ -55,11 +53,6 @@ class VAPTSECURE_Environment_Detector
           'detected_by' => ['server_software_header:apache', 'server_software_header:litespeed', 'filesystem_probe:apache'],
           'capabilities' => ['runtime_blocking', 'directory_context'],
           'requirements' => ['mod_rewrite', 'allowoverride']
-        ],
-        'iis_config' => [
-          'detected_by' => ['server_software_header:iis', 'filesystem_probe:iis'],
-          'capabilities' => ['url_rewrite'],
-          'requirements' => ['web_config_writable']
         ],
         'fail2ban' => [
           'detected_by' => ['php_sapi_detection:any'], 
@@ -138,7 +131,6 @@ class VAPTSECURE_Environment_Detector
         if (stripos($software, 'nginx') !== false) { $detected = 'nginx';
         } elseif (stripos($software, 'litespeed') !== false) { $detected = 'litespeed';
         } elseif (stripos($software, 'apache') !== false) { $detected = 'apache';
-        } elseif (stripos($software, 'iis') !== false) { $detected = 'iis';
         }
 
         return [
@@ -231,22 +223,6 @@ class VAPTSECURE_Environment_Detector
             }
 
             if ($is_match || $platform === 'php_functions') {
-                // MUTUAL EXCLUSIVITY: Hard guard for IIS/Caddy false positives based on filesystem probes
-                $detected_software = $results['server_software_header']['server_software'] ?? 'unknown';
-        
-                if ($platform === 'iis_config') {
-                    if (in_array($detected_software, ['apache', 'nginx', 'litespeed', 'caddy'])) {
-                        continue; 
-                    }
-                    if (isset($profile['capabilities']['apache_htaccess']) || isset($profile['capabilities']['nginx_config'])) {
-                        continue; // Final guard: don't show IIS if Apache/Nginx logic already matched
-                    }
-                }
-        
-                if ($platform === 'caddy_native' && in_array($detected_software, ['apache', 'nginx', 'litespeed', 'iis'])) {
-                    continue; 
-                }
-
                 $profile['capabilities'][$platform] = $definition['capabilities'];
             }
         }
@@ -282,8 +258,6 @@ class VAPTSECURE_Environment_Detector
         if (isset($capabilities['nginx_config'])) { return 'nginx_config';
         }
         if (isset($capabilities['apache_htaccess'])) { return 'apache_htaccess';
-        }
-        if (isset($capabilities['iis_config'])) { return 'iis_config';
         }
         return 'php_functions';
     }

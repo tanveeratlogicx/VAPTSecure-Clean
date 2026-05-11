@@ -43,8 +43,7 @@
               {
                 name: "filesystem_probe", priority: 3, method: "file_exists", probes: {
                   apache: [".htaccess"],
-                  nginx: ["/etc/nginx/nginx.conf"],
-                  iis: ["web.config"]
+                  nginx: ["/etc/nginx/nginx.conf"]
                 }, confidence: "high"
               }
             ],
@@ -139,10 +138,9 @@
                 // Map variations to canonical names
                 if (n === 'htaccess' || n === 'apachehtaccess' || n === 'apache') return 'htaccess';
                 if (n === 'nginx' || n === 'nginxconfig') return 'nginx';
-                if (n === 'wpconfig' || n === 'wpconfigphp' || n === 'config') return 'wp_config';
+                if (n === 'wpconfig' || n === 'wpconfigphp' || n === 'config' || n === 'wpconfigphpfile') return 'wp_config';
                 if (n === 'phpfunctions' || n === 'phpheaders' || n === 'hook' || n === 'wordpress' || n === 'wordpresscore' || n === 'wordpress-core') return 'php_functions';
                 if (n === 'servercron' || n === 'server-cron' || n === 'phpcron' || n === 'php-cron') return 'php_cron';
-                if (n === 'iis' || n === 'webconfig') return 'iis';
                 if (n === 'cloudflare') return 'cloudflare';
                 return n;
               };
@@ -153,7 +151,6 @@
                 const normalizedKey = normalizeEnforcerName(key);
                 if (normalizedKey === 'htaccess' && capabilities.apache_with_htaccess) return true;
                 if (normalizedKey === 'nginx' && capabilities.nginx_with_config) return true;
-                if (normalizedKey === 'iis' && !capabilities.iis) return false;
                 if (normalizedKey === 'cloudflare' && !capabilities.cloudflare) return false;
                 // php_functions is universal (WordPress hooks)
                 if (normalizedKey === 'php_functions') return true;
@@ -163,23 +160,26 @@
               for (const [key, details] of Object.entries(feature.platform_implementations)) {
                 let isRelevant = true;
 
-                if (activeEnforcer) {
-                  // Active enforcer set: ONLY show that specific enforcer
-                  const normalizedKey = normalizeEnforcerName(key);
-                  const normalizedActive = normalizeEnforcerName(activeEnforcer);
-                  isRelevant = (normalizedKey === normalizedActive);
-                } else if (envProfile && envProfile.capabilities) {
-                  // No active enforcer: filter by environment compatibility
-                  isRelevant = isEnforcerCompatible(key, envProfile.capabilities);
+                // [CLEAN] Exclude IIS and Caddy platforms
+                const normalizedKey = normalizeEnforcerName(key);
+                if (['iis', 'caddy', 'caddyfile', 'webconfig', 'web-config'].includes(normalizedKey) || 
+                    (details.lib_key && ['iis', 'caddy'].includes(details.lib_key.toLowerCase())) ||
+                    (details.target_file && ['web.config', 'Caddyfile'].includes(details.target_file))) {
+                  continue;
                 }
 
                 if (isRelevant) {
+                  let displayKey = key;
+                  if (normalizedKey === 'wp_config') displayKey = 'wp-config.php';
+                  if (normalizedKey === 'htaccess') displayKey = '.htaccess';
+                  if (normalizedKey === 'php_functions') displayKey = 'PHP Functions';
+
                   if (details.target_file) {
-                    platformTargetList.push(`${key} (targets ${details.target_file})`);
+                    platformTargetList.push(`${displayKey} (targets ${details.target_file})`);
                   } else if (details.lib_key) {
-                    platformTargetList.push(`${key} (via ${details.lib_key})`);
+                    platformTargetList.push(`${displayKey} (via ${details.lib_key})`);
                   } else {
-                    platformTargetList.push(key);
+                    platformTargetList.push(displayKey);
                   }
                 }
               }
@@ -395,7 +395,6 @@
         if (normalized === 'wp-config' || normalized === 'wp-config-php' || normalized === 'wpconfig' || normalized === 'config') return 'wp-config';
         if (normalized === 'php-functions' || normalized === 'hook' || normalized === 'wordpress' || normalized === 'wordpresscore' || normalized === 'wordpress-core') return 'php-functions';
         if (normalized === 'server-cron' || normalized === 'servercron' || normalized === 'php-cron' || normalized === 'phpcron') return 'php-cron';
-        if (normalized === 'web-config' || normalized === 'webconfig') return 'iis';
         return normalized;
       };
 
@@ -446,7 +445,7 @@
 
       const resolvePrimaryPlatform = (featureData = {}) => {
         const hints = collectPlatformHints(featureData);
-        const priority = ['htaccess', 'apache', 'nginx', 'caddy', 'iis', 'cloudflare', 'php-headers', 'php-functions', 'php-cron', 'wp-config', 'wpconfig', 'server-cron', 'fail2ban'];
+        const priority = ['htaccess', 'apache', 'nginx', 'cloudflare', 'php-headers', 'php-functions', 'php-cron', 'wp-config', 'wpconfig', 'server-cron', 'fail2ban'];
         for (const candidate of priority) {
           if (hints.has(normalizePlatformName(candidate))) {
             return candidate;
@@ -461,8 +460,6 @@
 
         if (platform === 'htaccess' || platform === 'apache') return 'htaccess';
         if (platform === 'nginx') return 'nginx';
-        if (platform === 'caddy') return 'caddy';
-        if (platform === 'iis') return 'iis';
         if (platform === 'cloudflare') return 'cloudflare';
         if (platform === 'fail2ban' || op.includes('jail')) return 'fail2ban';
         if (platform === 'wp-config' || platform === 'wpconfig' || op.includes('constant') || op.includes('config')) return 'wp-config';
@@ -506,9 +503,9 @@
       ).toLowerCase();
       const expectedEnforcer = resolveExpectedEnforcer(primaryPlatform, primaryOperation);
       const isRateLimitFlow = primaryPlatform === 'fail2ban' || primaryOperation.includes('jail') || /rate limit|brute|login/i.test(featureKey + ' ' + (feature.label || feature.title || feature.name || '') + ' ' + (feature.summary || feature.description || ''));
-      const isHeaderFlow = /header/.test(primaryOperation) || (['htaccess', 'apache', 'nginx', 'caddy', 'iis', 'cloudflare'].includes(normalizePlatformName(primaryPlatform)) && !/rewrite|block|respond|transform/.test(primaryOperation));
+      const isHeaderFlow = /header/.test(primaryOperation) || (['htaccess', 'apache', 'nginx', 'cloudflare'].includes(normalizePlatformName(primaryPlatform)) && !/rewrite|block|respond|transform/.test(primaryOperation));
       const isConfigFlow = primaryPlatform === 'wp-config' || primaryPlatform === 'wpconfig' || /constant|config/.test(primaryOperation);
-      const isRewriteFlow = /rewrite|block|respond|transform|url_rewrite|web_config|webconfig/.test(primaryOperation);
+      const isRewriteFlow = /rewrite|block|respond|transform|url_rewrite/.test(primaryOperation);
       const surfaceFamily = (() => {
         const blob = `${featureKey} ${(feature.label || feature.title || feature.name || '')} ${(feature.summary || feature.description || feature.remediation || '')} ${JSON.stringify(feature.platform_implementations || {})}`.toLowerCase();
         if (blob.includes('/wp-json/wp/v2/users') || blob.includes('rest api') || blob.includes('wordpress rest api')) return 'rest_users';

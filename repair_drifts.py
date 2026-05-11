@@ -14,15 +14,12 @@ def repair_drifts():
         with open(path, 'r', encoding='utf-8') as f:
             data[key] = json.load(f)
 
-    # 1. Sync Cloudflare, IIS, and Caddy Manifest Steps
+    # 1. Sync Cloudflare Manifest Steps
     risks_schema = data['schema'].get('risk_interfaces', {})
     risks_manifest = data['manifest'].get('risks', {})
     
     platforms_to_sync = {
-        "Cloudflare": {"lib_key": "cloudflare", "operation": "waf_custom_rule", "type": "waf_custom_rule"},
-        "IIS": {"lib_key": "iis", "operation": "add_web_config_rule", "type": "web_config"},
-        "Caddy": {"lib_key": "caddy", "operation": "add_caddyfile_rule", "type": "caddyfile"},
-        "Caddy Native": {"lib_key": "caddy_native", "operation": "caddy_api_rule", "type": "caddy_json"}
+        "Cloudflare": {"lib_key": "cloudflare", "operation": "waf_custom_rule", "type": "waf_custom_rule"}
     }
     
     for rid, rschema in risks_schema.items():

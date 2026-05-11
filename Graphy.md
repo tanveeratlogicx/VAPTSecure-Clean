@@ -2,12 +2,12 @@
 
 ## Project: VAPTSecure-Clean
 
-Generated: 2026-05-11 10:56:28
+Generated: 2026-05-11 11:51:44
 
 ### File Structure Summary
-- Total Files: 2317
+- Total Files: 2314
 - Total Directories: 437
-- File Extensions: .rules: 25, .agrules: 20, .md: 217, .json: 341, .rar: 2, .php: 206, .ps1: 10, .zip: 21, .yml: 6, .css: 10, .js: 276, .jsx: 25, .clinerules: 5, .roorules: 5, .windsurfrules: 5, .mdc: 1, .cjs: 194, .cts: 194, .ts: 706, .graphify_python: 1, .txt: 4, .html: 1, .py: 10, .png: 2, .ftp: 1
+- File Extensions: .rules: 25, .agrules: 20, .md: 217, .json: 340, .rar: 2, .php: 204, .ps1: 10, .zip: 21, .yml: 6, .css: 10, .js: 276, .jsx: 25, .clinerules: 5, .roorules: 5, .windsurfrules: 5, .mdc: 1, .cjs: 194, .cts: 194, .ts: 706, .graphify_python: 1, .txt: 4, .html: 1, .py: 10, .png: 2, .ftp: 1
 
 ### Directory Tree
 ├── .agent
@@ -2503,7 +2503,6 @@ Generated: 2026-05-11 10:56:28
       ├── VAPT_v2.0_risk_consolidation_patch.zip
    ├── Enforcers
       ├── apache-template.json
-      ├── caddy-template.json
       ├── fail2ban-template.json
       ├── htaccess-template.json
       ├── nginx-template.json
@@ -2685,12 +2684,10 @@ Generated: 2026-05-11 10:56:28
       ├── class-vapt-diagnostics-page.php
    ├── enforcers
       ├── class-vaptsecure-apache-deployer.php
-      ├── class-vaptsecure-caddy-driver.php
       ├── class-vaptsecure-config-deployer.php
       ├── class-vaptsecure-config-driver.php
       ├── class-vaptsecure-hook-driver.php
       ├── class-vaptsecure-htaccess-driver.php
-      ├── class-vaptsecure-iis-driver.php
       ├── class-vaptsecure-nginx-deployer.php
       ├── class-vaptsecure-nginx-driver.php
       ├── class-vaptsecure-php-deployer.php
@@ -2817,7 +2814,7 @@ Generated: 2026-05-11 10:56:28
 - T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/vapt_driver_manifest_v2.0.json
 - T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/scripts/Query-Risk.ps1
 
-... and 2267 more files
+... and 2264 more files
 
 ### Maintenance
 This file is auto-generated. To update it:

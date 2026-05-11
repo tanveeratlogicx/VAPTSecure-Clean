@@ -70,9 +70,6 @@ def verify_integrity():
                     'Cloudflare': 'cloudflare',
                     'PHP Functions': 'php_functions',
                     'wp-config.php': 'wp_config',
-                    'IIS': 'iis',
-                    'Caddy': 'caddy',
-                    'Caddy Native': 'caddy_native',
                     'Server Cron': 'server_cron'
                 }
                 lk = lib_key_map.get(p)

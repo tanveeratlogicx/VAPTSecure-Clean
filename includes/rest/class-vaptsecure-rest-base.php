@@ -132,7 +132,7 @@ abstract class VAPTSECURE_REST_Base
         }
 
         $platform_hints = array_unique($platform_hints);
-        $valid_platforms = ['apache', 'nginx', 'iis', 'caddy', 'php-fpm', 'cloudflare', 'generic'];
+        $valid_platforms = ['apache', 'nginx', 'php-fpm', 'cloudflare', 'generic'];
 
         foreach ($platform_hints as $hint) {
             if (in_array($hint, $valid_platforms)) {
@@ -142,7 +142,7 @@ abstract class VAPTSECURE_REST_Base
 
         // If no specific platforms found but has config patterns, suggest web servers
         if (empty($strategy_analysis['recommended_platforms']) && $has_config) {
-            $strategy_analysis['recommended_platforms'] = ['apache', 'nginx', 'iis', 'caddy'];
+            $strategy_analysis['recommended_platforms'] = ['apache', 'nginx'];
         }
 
         return $strategy_analysis;
@@ -215,7 +215,7 @@ abstract class VAPTSECURE_REST_Base
         }
 
         // Validate driver
-        $valid_drivers = ['hook', 'apache', 'nginx', 'iis', 'caddy', 'php-fpm', 'cloudflare', 'generic'];
+        $valid_drivers = ['hook', 'apache', 'nginx', 'php-fpm', 'cloudflare', 'generic'];
         if (isset($schema['driver']) && !in_array($schema['driver'], $valid_drivers)) {
             $errors[] = "Invalid driver. Must be one of: " . implode(', ', $valid_drivers);
         }

@@ -29,8 +29,6 @@ class VAPTSECURE_Config_Cleaner
             'wp_config' => self::clean_wp_config(),
             'php_functions' => self::clean_php_functions(),
             'nginx' => self::clean_nginx(),
-            'iis' => self::clean_iis(),
-            'caddy' => self::clean_caddy(),
         );
 
         $success_count = count(array_filter($results));
@@ -199,82 +197,6 @@ class VAPTSECURE_Config_Cleaner
         }
         
         error_log('[VAPTSecure Clean] Failed to write cleaned nginx.conf');
-        return false;
-    }
-
-    /**
-     * Clean web.config file (IIS) of VAPT rules
-     * 
-     * @return bool True if successful (or file doesn't exist)
-     */
-    public static function clean_iis()
-    {
-        $web_config = ABSPATH . 'web.config';
-        
-        if (!file_exists($web_config)) {
-            return true;
-        }
-
-        if (!is_writable($web_config)) {
-            error_log('[VAPTSecure Clean] Cannot clean web.config: file not writable');
-            return false;
-        }
-
-        $content = file_get_contents($web_config);
-        if ($content === false) {
-            error_log('[VAPTSecure Clean] Cannot clean web.config: failed to read file');
-            return false;
-        }
-
-        $content = preg_replace('/<!-- BEGIN VAPT[^\n]*-->.*?<!-- END VAPT[^\n]*-->/s', '', $content);
-        $content = preg_replace('/\n{3,}/', "\n\n", $content);
-
-        $result = file_put_contents($web_config, $content);
-        
-        if ($result !== false) {
-            error_log('[VAPTSecure Clean] Cleaned web.config');
-            return true;
-        }
-        
-        error_log('[VAPTSecure Clean] Failed to write cleaned web.config');
-        return false;
-    }
-
-    /**
-     * Clean Caddyfile of VAPT rules
-     * 
-     * @return bool True if successful (or file doesn't exist)
-     */
-    public static function clean_caddy()
-    {
-        $caddyfile = ABSPATH . 'Caddyfile';
-        
-        if (!file_exists($caddyfile)) {
-            return true;
-        }
-
-        if (!is_writable($caddyfile)) {
-            error_log('[VAPTSecure Clean] Cannot clean Caddyfile: file not writable');
-            return false;
-        }
-
-        $content = file_get_contents($caddyfile);
-        if ($content === false) {
-            error_log('[VAPTSecure Clean] Cannot clean Caddyfile: failed to read file');
-            return false;
-        }
-
-        $content = preg_replace('/# BEGIN VAPT[^\n]*\n.*?# END VAPT[^\n]*/s', '', $content);
-        $content = preg_replace('/\n{3,}/', "\n\n", $content);
-
-        $result = file_put_contents($caddyfile, $content);
-        
-        if ($result !== false) {
-            error_log('[VAPTSecure Clean] Cleaned Caddyfile');
-            return true;
-        }
-        
-        error_log('[VAPTSecure Clean] Failed to write cleaned Caddyfile');
         return false;
     }
 }

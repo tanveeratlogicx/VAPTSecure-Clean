@@ -84,14 +84,6 @@ class VAPTSECURE_AI_Validator {
             'weight' => 1,
             'description' => 'RISK-020 target_file = wp-content/uploads/.htaccess (not root .htaccess)'
         ),
-        'iis_requirements_noted' => array(
-            'weight' => 1,
-            'description' => 'IIS <rewrite> sections include URL Rewrite Module 2.1 requirement note'
-        ),
-        'caddy_v2_syntax' => array(
-            'weight' => 1,
-            'description' => 'Caddy output uses v2 syntax only - no Apache directives, no semicolons, no Order/Deny'
-        ),
         'code_ref_valid' => array(
             'weight' => 1,
             'description' => 'code_ref in interface schema uses correct lib_key'
@@ -135,7 +127,6 @@ class VAPTSECURE_AI_Validator {
         'toggle_handler' => '/^handleRISK\d{3}ToggleChange$/',
         'dropdown_handler' => '/^handleRISK\d{3}DropdownChange$/',
         'settings_key' => '/^vapt_risk_\d{3}_enabled$/',
-        'caddy_matcher' => '/^@risk\d{3}$/',
     );
 
     /**
@@ -147,7 +138,6 @@ class VAPTSECURE_AI_Validator {
         'htaccess' => array('begin' => '# BEGIN VAPT', 'end' => '# END VAPT'),
         'nginx' => array('begin' => '# BEGIN VAPT', 'end' => '# END VAPT'),
         'apache' => array('begin' => '# BEGIN VAPT', 'end' => '# END VAPT'),
-        'caddy' => array('begin' => '# BEGIN VAPT', 'end' => '# END VAPT'),
         'fail2ban' => array('begin' => '# BEGIN VAPT', 'end' => '# END VAPT'),
         'server_cron' => array('begin' => '# BEGIN VAPT', 'end' => '# END VAPT'),
         'wp_config' => array('begin' => '/* BEGIN VAPT', 'end' => '/* END VAPT'),
@@ -356,23 +346,6 @@ class VAPTSECURE_AI_Validator {
             }
         }
 
-        // Check 16: Caddy v2 syntax
-        if ($platform === 'caddy') {
-            $invalid_patterns = array('RewriteRule', 'RewriteCond', 'Order ', 'Deny ', 'Allow ', ';', '<?php');
-            $found_invalid = array();
-            foreach ($invalid_patterns as $pattern) {
-                if (strpos($code, $pattern) !== false) {
-                    $found_invalid[] = $pattern;
-                }
-            }
-            if (empty($found_invalid)) {
-                $results['passed'][] = 'caddy_v2_syntax';
-            } else {
-                $results['failed'][] = 'caddy_v2_syntax';
-                $results['details'][] = "Invalid Caddy v2 syntax found: " . implode(', ', $found_invalid);
-            }
-        }
-
         // Check 20: Syntax matches target
         if ($this->syntax_matches_target($code, $platform)) {
             $results['passed'][] = 'syntax_matches_target';
@@ -544,7 +517,7 @@ class VAPTSECURE_AI_Validator {
      */
     private function has_block_markers($code, $platform) {
         if (!isset($this->block_markers[$platform])) {
-            return true; // Skip for platforms without markers (cloudflare, iis)
+            return true; // Skip for platforms without markers (cloudflare)
         }
 
         $markers = $this->block_markers[$platform];
