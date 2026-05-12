@@ -109,21 +109,23 @@ class VAPTSECURE_REST
         }
 
 
-        register_rest_route(
-            'vaptsecure/v1', '/features/update', array(
-            'methods'  => 'POST',
-            'callback' => array($this, 'update_feature'),
-            'permission_callback' => array($this, 'check_read_permission'),
-            )
-        );
+        if (! $is_client_build) {
+            register_rest_route(
+                'vaptsecure/v1', '/features/update', array(
+                'methods'  => 'POST',
+                'callback' => array($this, 'update_feature'),
+                'permission_callback' => array($this, 'check_read_permission'),
+                )
+            );
 
-        register_rest_route(
-            'vaptsecure/v1', '/features/transition', array(
-            'methods'  => 'POST',
-            'callback' => array($this, 'transition_feature'),
-            'permission_callback' => array($this, 'check_permission'),
-            )
-        );
+            register_rest_route(
+                'vaptsecure/v1', '/features/transition', array(
+                'methods'  => 'POST',
+                'callback' => array($this, 'transition_feature'),
+                'permission_callback' => array($this, 'check_permission'),
+                )
+            );
+        }
 
         register_rest_route(
             'vaptsecure/v1', '/features/(?P<key>[a-zA-Z0-9_-]+)/history', array(
@@ -173,53 +175,55 @@ class VAPTSECURE_REST
             )
         );
 
-        register_rest_route(
-            'vaptsecure/v1', '/upload-json', array(
-            'methods'  => 'POST',
-            'callback' => array($this, 'upload_json'),
-            'permission_callback' => array($this, 'check_permission'),
-            )
-        );
-
-        register_rest_route(
-            'vaptsecure/v1', '/domains', array(
-            'methods'  => 'GET',
-            'callback' => array($this, 'get_domains'),
-            'permission_callback' => array($this, 'check_permission'),
-            )
-        );
-
-        register_rest_route(
-            'vaptsecure/v1', '/domains/update', array(
-            'methods'  => 'POST',
-            'callback' => array($this, 'update_domain'),
-            'permission_callback' => array($this, 'check_permission'),
-            )
-        );
-
-        register_rest_route(
-            'vaptsecure/v1', '/domains/features', array(
-            'methods'  => 'POST',
-            'callback' => array($this, 'update_domain_features'),
-            'permission_callback' => array($this, 'check_permission'),
-            )
-        );
-
-        register_rest_route(
-            'vaptsecure/v1', '/domains/delete', array(
-            'methods'  => 'DELETE',
-            'callback' => array($this, 'delete_domain'),
-            'permission_callback' => array($this, 'check_permission'),
-            )
-        );
-
-        register_rest_route(
-            'vaptsecure/v1', '/domains/batch-delete', array(
-                'methods' => 'POST',
-                'callback' => array($this, 'batch_delete_domains'),
+        if (! $is_client_build) {
+            register_rest_route(
+                'vaptsecure/v1', '/upload-json', array(
+                'methods'  => 'POST',
+                'callback' => array($this, 'upload_json'),
                 'permission_callback' => array($this, 'check_permission'),
-            )
-        );
+                )
+            );
+
+            register_rest_route(
+                'vaptsecure/v1', '/domains', array(
+                'methods'  => 'GET',
+                'callback' => array($this, 'get_domains'),
+                'permission_callback' => array($this, 'check_permission'),
+                )
+            );
+
+            register_rest_route(
+                'vaptsecure/v1', '/domains/update', array(
+                'methods'  => 'POST',
+                'callback' => array($this, 'update_domain'),
+                'permission_callback' => array($this, 'check_permission'),
+                )
+            );
+
+            register_rest_route(
+                'vaptsecure/v1', '/domains/features', array(
+                'methods'  => 'POST',
+                'callback' => array($this, 'update_domain_features'),
+                'permission_callback' => array($this, 'check_permission'),
+                )
+            );
+
+            register_rest_route(
+                'vaptsecure/v1', '/domains/delete', array(
+                'methods'  => 'DELETE',
+                'callback' => array($this, 'delete_domain'),
+                'permission_callback' => array($this, 'check_permission'),
+                )
+            );
+
+            register_rest_route(
+                'vaptsecure/v1', '/domains/batch-delete', array(
+                    'methods' => 'POST',
+                    'callback' => array($this, 'batch_delete_domains'),
+                    'permission_callback' => array($this, 'check_permission'),
+                )
+            );
+        }
 
         // License status check endpoint
         register_rest_route(
@@ -293,21 +297,23 @@ class VAPTSECURE_REST
             );
         }
 
-        register_rest_route(
-            'vaptsecure/v1', '/settings/enforcement', array(
-            'methods'  => 'GET',
-            'callback' => array($this, 'get_global_enforcement'),
-            'permission_callback' => array($this, 'check_read_permission'),
-            )
-        );
+        if (! $is_client_build) {
+            register_rest_route(
+                'vaptsecure/v1', '/settings/enforcement', array(
+                'methods'  => 'GET',
+                'callback' => array($this, 'get_global_enforcement'),
+                'permission_callback' => array($this, 'check_read_permission'),
+                )
+            );
 
-        register_rest_route(
-            'vaptsecure/v1', '/settings/enforcement', array(
-            'methods'  => 'POST',
-            'callback' => array($this, 'update_global_enforcement'),
-            'permission_callback' => array($this, 'check_read_permission'),
-            )
-        );
+            register_rest_route(
+                'vaptsecure/v1', '/settings/enforcement', array(
+                'methods'  => 'POST',
+                'callback' => array($this, 'update_global_enforcement'),
+                'permission_callback' => array($this, 'check_read_permission'),
+                )
+            );
+        }
 
         register_rest_route(
             'vaptsecure/v1', '/upload-media', array(
