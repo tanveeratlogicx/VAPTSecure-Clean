@@ -16,6 +16,34 @@ class VAPTSECURE_Admin
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_scripts'));
         add_action('admin_notices', array($this, 'show_nginx_notice'));
+        add_action('admin_init', array($this, 'maybe_run_background_verification'));
+    }
+
+    /**
+     * [v4.0.x] Continuous Self-Healing: Run background verification on admin pages.
+     * If a feature is enabled but its rules are missing from target files, re-inject them.
+     */
+    public function maybe_run_background_verification()
+    {
+        // Only run on VAPT admin pages to avoid overhead elsewhere
+        $screen = function_exists('get_current_screen') ? get_current_screen() : null;
+        if (!$screen || strpos($screen->id, 'vapt') === false) {
+            return;
+        }
+
+        // Rate limit: once per 5 minutes per admin session
+        $transient_key = 'vapt_bg_verify_' . get_current_user_id();
+        if (get_transient($transient_key)) {
+            return;
+        }
+        set_transient($transient_key, time(), 5 * MINUTE_IN_SECONDS);
+
+        if (class_exists('VAPTSECURE_Enforcer') && method_exists('VAPTSECURE_Enforcer', 'run_background_verification')) {
+            $healed = VAPTSECURE_Enforcer::run_background_verification();
+            if (!empty($healed)) {
+                error_log('VAPT ADMIN: Background verification healed features: ' . implode(', ', $healed));
+            }
+        }
     }
 
     public function show_nginx_notice()

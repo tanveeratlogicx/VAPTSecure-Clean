@@ -31,11 +31,14 @@ class VAPTSECURE_Deployment_Orchestrator
         include_once VAPTSECURE_PATH . 'includes/enforcers/class-vaptsecure-php-deployer.php';
         include_once VAPTSECURE_PATH . 'includes/enforcers/class-vaptsecure-config-deployer.php';
 
+        $apache_deployer = new VAPTSECURE_Apache_Deployer();
+
         $this->deployers = [
-        'apache_htaccess' => new VAPTSECURE_Apache_Deployer(),
-        'nginx_config'    => new VAPTSECURE_Nginx_Deployer(),
-        'php_functions'   => new VAPTSECURE_PHP_Deployer(),
-        'wp_config'       => new VAPTSECURE_Config_Deployer()
+        'apache_htaccess'    => $apache_deployer,
+        'litespeed_htaccess' => $apache_deployer, // Litespeed uses .htaccess with high compatibility
+        'nginx_config'       => new VAPTSECURE_Nginx_Deployer(),
+        'php_functions'      => new VAPTSECURE_PHP_Deployer(),
+        'wp_config'          => new VAPTSECURE_Config_Deployer()
         ];
     }
 
@@ -81,8 +84,18 @@ class VAPTSECURE_Deployment_Orchestrator
                 
                 error_log("VAPT ORCHESTRATOR: Deploying {$risk_id} to {$platform}, enabled=" . ($is_enabled ? 'true' : 'false'));
 
-                $implementation = $platform_matrix[$platform];
-                $res = $deployer->deploy($risk_id, $implementation, $is_enabled);
+                if ($is_enabled) {
+                    $implementation = $platform_matrix[$platform];
+                    $res = $deployer->deploy($risk_id, $implementation, true);
+                } else {
+                    // [v4.2.0] Proactive Cleanup: Explicitly undeploy when disabled
+                    error_log("VAPT ORCHESTRATOR: Feature disabled, triggering proactive undeploy for {$risk_id} on {$platform}");
+                    $target = $platform_matrix[$platform]['target'] ?? 'root';
+                    $res = $deployer->undeploy($risk_id, $target);
+                    // Standardize undeploy response
+                    $res = ['success' => true, 'status' => 'undeployed'];
+                }
+
                 if (is_wp_error($res)) {
                     $results[$platform] = [
                     'success' => false,
@@ -90,8 +103,8 @@ class VAPTSECURE_Deployment_Orchestrator
                     ];
                     error_log("VAPT ORCHESTRATOR: Deploy failed for {$risk_id} -> {$platform}: " . $res->get_error_message());
                 } else {
-                    $results[$platform] = array_merge(['success' => true], $res);
-                    error_log("VAPT ORCHESTRATOR: Deploy success for {$risk_id} -> {$platform}");
+                    $results[$platform] = array_merge(['success' => true], (array)$res);
+                    error_log("VAPT ORCHESTRATOR: Deploy/Undeploy success for {$risk_id} -> {$platform}");
                 }
             } else {
                 error_log("VAPT ORCHESTRATOR: Skipping {$platform} - no deployer or no implementation matrix");
@@ -125,6 +138,13 @@ class VAPTSECURE_Deployment_Orchestrator
     {
         $capabilities = $env['capabilities'] ?? [];
         
+        // [FIX v4.0.x] build_capability_profile produces nested capabilities array.
+        // If capabilities is nested (platform => [caps]), check if this platform exists.
+        if (isset($capabilities[$platform]) && is_array($capabilities[$platform]) && !empty($capabilities[$platform])) {
+            return true;
+        }
+        
+        // Fallback to flat array check for backward compatibility
         $compatibility_map = [
             'cloudflare_edge' => ['cloudflare_proxy'],
             'nginx_config'    => ['nginx'],
@@ -336,6 +356,48 @@ class VAPTSECURE_Deployment_Orchestrator
             $code = implode("\n", array_filter($extracted_code));
             if (!empty($code)) {
                 $matrix['php_functions'] = ['code' => $code];
+            }
+        } elseif ($driver === 'universal') {
+            // [FIX v4.0.x] Universal driver: derive matrix from platform_implementations
+            foreach ($schema['platform_implementations'] ?? [] as $platform_name => $platform_impl) {
+                $platform_code = '';
+                if (is_array($platform_impl)) {
+                    if (!empty($platform_impl['code'])) {
+                        $platform_code = $platform_impl['code'];
+                    } elseif (!empty($platform_impl['wrapped_code'])) {
+                        $platform_code = $platform_impl['wrapped_code'];
+                    } elseif (!empty($platform_impl['code_ref'])) {
+                        $platform_code = VAPTSECURE_Enforcer::resolve_pattern_code_ref($platform_impl['code_ref'], 'htaccess');
+                    }
+                } else {
+                    $platform_code = (string) $platform_impl;
+                }
+                if (empty($platform_code)) { continue;
+                }
+
+                $normalized = strtolower(str_replace(array(' ', '-', '.'), '', (string) $platform_name));
+                $matrix_key = null;
+                if (strpos($normalized, 'htaccess') !== false || strpos($normalized, 'apache') !== false) {
+                    $matrix_key = 'apache_htaccess';
+                    $p_target = !empty($platform_impl['target_file']) && $platform_impl['target_file'] === '.htaccess' ? 'root' : 'root';
+                } elseif (strpos($normalized, 'nginx') !== false) {
+                    $matrix_key = 'nginx_config';
+                    $p_target = 'root';
+                } elseif (strpos($normalized, 'php') !== false) {
+                    $matrix_key = 'php_functions';
+                } elseif (strpos($normalized, 'wpconfig') !== false || strpos($normalized, 'wp_config') !== false) {
+                    $matrix_key = 'wp_config';
+                } elseif (strpos($normalized, 'cloudflare') !== false) {
+                    $matrix_key = 'cloudflare_edge';
+                }
+
+                if ($matrix_key) {
+                    if ($matrix_key === 'apache_htaccess' || $matrix_key === 'nginx_config') {
+                        $matrix[$matrix_key] = ['rules' => $platform_code, 'target' => $p_target];
+                    } else {
+                        $matrix[$matrix_key] = ['code' => $platform_code];
+                    }
+                }
             }
         } else {
             // [FIX v4.0.x] Generic fallback - extract from each mapping

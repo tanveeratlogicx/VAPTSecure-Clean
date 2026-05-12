@@ -50,9 +50,14 @@ class VAPTSECURE_Environment_Detector
           'requirements' => ['reload_required']
         ],
         'apache_htaccess' => [
-          'detected_by' => ['server_software_header:apache', 'server_software_header:litespeed', 'filesystem_probe:apache'],
+          'detected_by' => ['server_software_header:apache', 'filesystem_probe:apache'],
           'capabilities' => ['runtime_blocking', 'directory_context'],
           'requirements' => ['mod_rewrite', 'allowoverride']
+        ],
+        'litespeed_htaccess' => [
+          'detected_by' => ['server_software_header:litespeed'],
+          'capabilities' => ['runtime_blocking', 'high_performance_rewrite', 'lsapi_optimizations'],
+          'requirements' => ['mod_rewrite', 'litespeed_finish_request']
         ],
         'fail2ban' => [
           'detected_by' => ['php_sapi_detection:any'], 
@@ -252,10 +257,12 @@ class VAPTSECURE_Environment_Detector
 
     private function select_optimal_platform($capabilities)
     {
-        // Preference order: Cloudflare > Nginx > Apache > PHP
+        // Preference order: Cloudflare > Nginx > Litespeed > Apache > PHP
         if (isset($capabilities['cloudflare_edge'])) { return 'cloudflare_edge';
         }
         if (isset($capabilities['nginx_config'])) { return 'nginx_config';
+        }
+        if (isset($capabilities['litespeed_htaccess'])) { return 'litespeed_htaccess';
         }
         if (isset($capabilities['apache_htaccess'])) { return 'apache_htaccess';
         }

@@ -2589,7 +2589,9 @@ var vaptLog = window.vaptLog || {
     }, [schema, feature, verificationFeatureData]);
     const [localAlert, setLocalAlert] = useState(null);
     const [statusMap, setStatusMap] = useState({});
+    const [liveAudit, setLiveAudit] = useState(null);
     const statusTimersRef = useRef({});
+    const pollTimersRef = useRef({});
 
     useEffect(() => () => {
       Object.values(statusTimersRef.current || {}).forEach(timer => {
@@ -2597,8 +2599,33 @@ var vaptLog = window.vaptLog || {
           clearTimeout(timer);
         }
       });
+      Object.values(pollTimersRef.current || {}).forEach(timer => {
+        if (timer) {
+          clearTimeout(timer);
+        }
+      });
       statusTimersRef.current = {};
+      pollTimersRef.current = {};
     }, []);
+
+    // [v4.0.x] Fetch live file audit status on mount / feature change
+    useEffect(() => {
+      if (!feature?.key || !apiFetch) return;
+      const fetchStatus = async () => {
+        try {
+          const resp = await apiFetch({
+            path: `vaptsecure/v1/features/${encodeURIComponent(feature.key)}/status`,
+            method: 'GET'
+          });
+          if (resp && Array.isArray(resp.audit_summary)) {
+            setLiveAudit(resp);
+          }
+        } catch (e) {
+          vaptLog.warn('Live audit fetch failed:', e);
+        }
+      };
+      fetchStatus();
+    }, [feature?.key]);
 
     if (!schema || !schema.controls || !Array.isArray(schema.controls)) {
       return el('div', { style: { padding: '20px', textAlign: 'center', color: '#999', fontStyle: 'italic' } },
@@ -2718,18 +2745,117 @@ var vaptLog = window.vaptLog || {
             let addedCode = '';
             let targetFile = '';
 
-            for (const [plat, details] of Object.entries(impls)) {
-              if (details.code || details.wrapped_code) {
-                addedCode = details.wrapped_code || details.code;
-                targetFile = details.target_file || plat;
-                break;
+            // [v4.0.x] Platforms with removed enforcers — skip stale data
+            const removedPlatforms = ['fail2ban', 'caddy', 'iis', 'nginx'];
+            const activeDriver = schema.enforcement?.driver || schema.client_deployment?.enforcement?.driver || 'hook';
+            const driverToPlatform = {
+              'htaccess': 'htaccess',
+              'apache': 'htaccess',
+              'wp_config': 'wp-config',
+              'php_functions': 'php_functions',
+              'hook': 'php_functions',
+              'universal': 'php_functions'
+            };
+            const preferredPlatform = driverToPlatform[activeDriver] || activeDriver;
+
+            const candidates = Object.entries(impls).filter(([plat, details]) => {
+              if (!details.code && !details.wrapped_code) return false;
+              const p = plat.toLowerCase().replace(/\s+/g, '_');
+              return !removedPlatforms.some(rp => p.includes(rp));
+            });
+
+            // [v4.0.x-source-of-truth] Use live audit label to pick correct platform implementation
+            const auditLabel = liveAudit?.audit_summary?.[0]?.label || '';
+            const labelToPlatform = {
+              './.htaccess': 'htaccess',
+              'uploads/.htaccess': 'htaccess',
+              './wp-config.php': 'wp-config',
+              'vapt-functions.php': 'php_functions',
+              'nginx.conf': 'nginx'
+            };
+            const auditPlatform = labelToPlatform[auditLabel] || '';
+
+            // 1. Try audit-matched platform first (ground truth)
+            if (auditPlatform) {
+              for (const [plat, details] of candidates) {
+                const p = plat.toLowerCase().replace(/\s+/g, '_');
+                if (p === auditPlatform || p.includes(auditPlatform) || auditPlatform.includes(p) || (auditPlatform === 'htaccess' && p.includes('litespeed'))) {
+                  addedCode = details.wrapped_code || details.code;
+                  targetFile = details.target_file || plat;
+                  break;
+                }
               }
+            }
+            // 2. Try schema-declared driver match
+            if (!addedCode) {
+              for (const [plat, details] of candidates) {
+                const p = plat.toLowerCase().replace(/\s+/g, '_');
+                if (p === preferredPlatform || p.includes(preferredPlatform) || preferredPlatform.includes(p)) {
+                  addedCode = details.wrapped_code || details.code;
+                  targetFile = details.target_file || plat;
+                  break;
+                }
+              }
+            }
+            // 3. Fallback to first valid candidate
+            if (!addedCode && candidates.length > 0) {
+              const [plat, details] = candidates[0];
+              addedCode = details.wrapped_code || details.code;
+              targetFile = details.target_file || plat;
             }
 
             if (!addedCode) return null;
 
             const isCurrentlyEnforced = toBool(value);
             const shortPath = targetFile.startsWith('/') || targetFile.includes('\\') ? getShortPath(targetFile) : `./${targetFile}`;
+
+            // [v4.0.x] Determine display state from live audit + UI state
+            let displayStatus = isCurrentlyEnforced ? 'active' : 'inactive';
+            let displayLabel = isCurrentlyEnforced ? __('Status: Active & Injected', 'vaptsecure') : __('Status: Not Active', 'vaptsecure');
+            let statusColor = isCurrentlyEnforced ? '#166534' : '#991b1b';
+            let statusBg = isCurrentlyEnforced ? '#f0fdf4' : '#fef2f2';
+            let statusIcon = isCurrentlyEnforced ? 'yes' : 'no';
+            let borderColor = isCurrentlyEnforced ? '#22c55e' : '#94a3b8';
+
+            // Check live audit data
+            const liveState = liveAudit?.audit_summary?.[0]?.live_state;
+            const isSelfHealed = liveAudit?.was_self_healed || liveAudit?.audit_summary?.[0]?.self_healed;
+            const isRemoving = statusMap[key]?.message === __('Removing...', 'vaptsecure');
+            const isCleaned = liveState === 'cleaned' || liveState === 'missing';
+
+            if (isRemoving) {
+              displayStatus = 'removing';
+              displayLabel = __('Status: Removing Rules...', 'vaptsecure');
+              statusColor = '#92400e';
+              statusBg = '#fef3c7';
+              statusIcon = 'update';
+              borderColor = '#f59e0b';
+            } else if (isSelfHealed) {
+              displayStatus = 'recovered';
+              displayLabel = __('Status: Auto-Recovered', 'vaptsecure');
+              statusColor = '#065f46';
+              statusBg = '#d1fae5';
+              statusIcon = 'update';
+              borderColor = '#10b981';
+            } else if (!isCurrentlyEnforced && isCleaned) {
+              displayStatus = 'cleaned';
+              displayLabel = __('Status: Cleaned', 'vaptsecure');
+              statusColor = '#166534';
+              statusBg = '#f0fdf4';
+              statusIcon = 'yes';
+              borderColor = '#22c55e';
+            } else if (isCurrentlyEnforced && liveState === 'present') {
+              displayStatus = 'active';
+              displayLabel = __('Status: Active & Injected', 'vaptsecure');
+              statusColor = '#166534';
+              statusBg = '#f0fdf4';
+              statusIcon = 'yes';
+              borderColor = '#22c55e';
+            }
+
+            // Build live state line for technical trace
+            const liveStateLabel = liveState || (isCurrentlyEnforced ? 'present' : 'cleaned');
+            const liveStateDisplay = liveStateLabel.charAt(0).toUpperCase() + liveStateLabel.slice(1);
 
             return el('div', {
               style: {
@@ -2758,7 +2884,7 @@ var vaptLog = window.vaptLog || {
               // Status Badge
               el('div', {
                 style: {
-                  background: isCurrentlyEnforced ? '#f0fdf4' : '#fef2f2',
+                  background: statusBg,
                   borderRadius: '6px',
                   padding: '8px 12px',
                   display: 'flex',
@@ -2768,19 +2894,34 @@ var vaptLog = window.vaptLog || {
                 }
               }, [
                 el(Icon, {
-                  icon: isCurrentlyEnforced ? 'yes' : 'no',
+                  icon: statusIcon,
                   size: 14,
-                  style: { color: isCurrentlyEnforced ? '#166534' : '#991b1b' }
+                  style: { color: statusColor }
                 }),
                 el('span', {
                   style: {
                     fontSize: '11px',
                     fontWeight: '800',
-                    color: isCurrentlyEnforced ? '#166534' : '#991b1b',
+                    color: statusColor,
                     textTransform: 'uppercase',
                     letterSpacing: '0.025em'
                   }
-                }, isCurrentlyEnforced ? __('Status: Active & Injected', 'vaptsecure') : __('Status: Not Active', 'vaptsecure'))
+                }, displayLabel)
+              ]),
+
+              // Live State Trace
+              el('div', {
+                style: {
+                  fontSize: '10px',
+                  fontWeight: '600',
+                  color: '#94a3b8',
+                  marginBottom: '8px',
+                  display: 'flex',
+                  justifyContent: 'space-between'
+                }
+              }, [
+                el('span', null, __('Live State:', 'vaptsecure')),
+                el('span', { style: { color: liveState === 'present' ? '#22c55e' : (liveState === 'recovered' ? '#10b981' : (liveState === 'missing' || liveState === 'cleaned' ? '#94a3b8' : '#f59e0b')) } }, liveStateDisplay)
               ]),
 
               // Path
@@ -2800,7 +2941,7 @@ var vaptLog = window.vaptLog || {
                   position: 'relative',
                   background: '#0f172a',
                   borderRadius: '4px',
-                  borderLeft: `4px solid ${isCurrentlyEnforced ? '#22c55e' : '#94a3b8'}`,
+                  borderLeft: `4px solid ${borderColor}`,
                   overflow: 'hidden'
                 }
               }, [
@@ -2889,14 +3030,55 @@ var vaptLog = window.vaptLog || {
                         auditSummary
                       }
                     }));
-                    statusTimersRef.current[key] = setTimeout(() => {
-                      setStatusMap(prev => {
-                        const next = { ...prev };
-                        delete next[key];
-                        return next;
-                      });
-                      delete statusTimersRef.current[key];
-                    }, 3000);
+
+                    // [v4.0.x] Poll file status after removal until confirmed cleaned
+                    if (isRemoval && apiFetch && feature?.key) {
+                      const doPoll = async (attempt = 0) => {
+                        if (attempt > 10) return; // max ~20s polling
+                        try {
+                          const resp = await apiFetch({
+                            path: `vaptsecure/v1/features/${encodeURIComponent(feature.key)}/status`,
+                            method: 'GET'
+                          });
+                          if (resp && Array.isArray(resp.audit_summary)) {
+                            setLiveAudit(resp);
+                            const first = resp.audit_summary[0];
+                            if (first && (first.live_state === 'cleaned' || first.live_state === 'missing' || first.status === 'removed')) {
+                              setStatusMap(prev => ({
+                                ...prev,
+                                [key]: {
+                                  message: __('Removed Successfully', 'vaptsecure'),
+                                  type: 'success'
+                                }
+                              }));
+                              // Clear after showing success
+                              statusTimersRef.current[key] = setTimeout(() => {
+                                setStatusMap(prev => {
+                                  const next = { ...prev };
+                                  delete next[key];
+                                  return next;
+                                });
+                                delete statusTimersRef.current[key];
+                              }, 3000);
+                              return;
+                            }
+                          }
+                        } catch (e) {
+                          vaptLog.warn('Removal poll failed:', e);
+                        }
+                        pollTimersRef.current[key] = setTimeout(() => doPoll(attempt + 1), 2000);
+                      };
+                      doPoll(0);
+                    } else {
+                      statusTimersRef.current[key] = setTimeout(() => {
+                        setStatusMap(prev => {
+                          const next = { ...prev };
+                          delete next[key];
+                          return next;
+                        });
+                        delete statusTimersRef.current[key];
+                      }, 3000);
+                    }
                   })
                   .catch((error) => {
                     const errMsg = error?.message || error?.data?.message || __('Save Failed', 'vaptsecure');

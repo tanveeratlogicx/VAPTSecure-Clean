@@ -67,6 +67,11 @@ class VAPTSECURE_PHP_Deployer implements VAPTSECURE_Driver_Interface
         $content = preg_replace($pattern, '', $content);
 
         if ($is_enabled && !empty($rules)) {
+            // [v4.0.x-safety] Reject rules that contain bare PHP keywords or corrupted tokens
+            if (preg_match('/\bArray\b/', $rules) || preg_match('/^[\d\s]+$/m', $rules)) {
+                error_log("[VAPTSecure Clean] PHP deployer rejected corrupted rules for {$feature_key}: contains bare tokens.");
+                return new WP_Error('vapt_php_corrupted_rules', 'Rejected corrupted PHP rules for ' . $feature_key);
+            }
             $new_block = "\n" . $start_marker . "\n" . $rules . "\n" . $end_marker . "\n";
             $content = rtrim($content) . $new_block;
         }
@@ -89,14 +94,20 @@ class VAPTSECURE_PHP_Deployer implements VAPTSECURE_Driver_Interface
         }
         if (is_array($input)) {
             if (isset($input['code'])) {
-                $code = is_array($input['code']) ? implode("\n", $input['code']) : $input['code'];
+                $code = is_array($input['code']) ? implode("\n", $input['code']) : (string) $input['code'];
                 return $code;
             }
             if (isset($input['rules'])) {
-                $rules = is_array($input['rules']) ? implode("\n", $input['rules']) : $input['rules'];
+                $rules = is_array($input['rules']) ? implode("\n", $input['rules']) : (string) $input['rules'];
                 return $rules;
             }
-            return implode("\n\n", $input);
+            // [v4.0.x-safety] Filter out non-string / non-scalar elements to prevent "Array" or "1" corruption
+            $filtered = array_filter(
+                $input, function ($item) {
+                    return is_string($item) && strlen($item) > 0;
+                }
+            );
+            return implode("\n\n", $filtered);
         }
         return '';
     }

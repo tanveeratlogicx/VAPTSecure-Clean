@@ -56,6 +56,20 @@ class VAPTSECURE_Apache_Deployer implements VAPTSECURE_Driver_Interface
         return is_writable($this->htaccess_path) || (!file_exists($this->htaccess_path) && is_writable(ABSPATH));
     }
 
+    /**
+     * Safely write to file with LOCK_EX, falling back to plain write if locking fails.
+     * [FIX v4.0.x] Windows hosts may silently fail with LOCK_EX on busy .htaccess files.
+     */
+    private function safe_file_put($path, $content)
+    {
+        $result = @file_put_contents($path, $content, LOCK_EX);
+        if ($result === false) {
+            error_log("VAPT APACHE DEPLOYER: LOCK_EX write failed for {$path}, retrying without lock");
+            $result = @file_put_contents($path, $content);
+        }
+        return $result;
+    }
+
     public function deploy($risk_id, $implementation, $is_enabled = true)
     {
         $target = $implementation['target'] ?? 'root';
@@ -220,9 +234,17 @@ class VAPTSECURE_Apache_Deployer implements VAPTSECURE_Driver_Interface
         // [v3.13.28] Tidy content: Collapse redundant blank lines
         $content = preg_replace("/\n\s*\n(\s*\n)+/", "\n\n", $content);
 
-        $result = file_put_contents($this->htaccess_path, trim($content) . "\n", LOCK_EX);
+        $result = $this->safe_file_put($this->htaccess_path, trim($content) . "\n");
 
-        return $result !== false ? ['status' => 'deployed', 'platform' => 'apache_htaccess'] : new WP_Error('vapt_write_error', 'Failed to write to .htaccess');
+        if ($result === false) {
+            $error = error_get_last();
+            $error_msg = isset($error['message']) ? $error['message'] : 'Unknown filesystem error';
+            error_log("VAPT APACHE DEPLOYER: write_rules failed for {$risk_id} at {$this->htaccess_path}. Error: {$error_msg}");
+            return new WP_Error('vapt_write_error', 'Failed to write to .htaccess');
+        }
+
+        error_log("VAPT APACHE DEPLOYER: write_rules success for {$risk_id} at {$this->htaccess_path} ({$result} bytes)");
+        return ['status' => 'deployed', 'platform' => 'apache_htaccess'];
     }
 
     private function ensure_global_whitelist()
@@ -246,7 +268,12 @@ class VAPTSECURE_Apache_Deployer implements VAPTSECURE_Driver_Interface
         // [v3.13.28] Tidy content: Collapse redundant blank lines
         $content = preg_replace("/\n\s*\n(\s*\n)+/", "\n\n", $content);
 
-        file_put_contents($this->htaccess_path, trim($content) . "\n", LOCK_EX);
+        $result = $this->safe_file_put($this->htaccess_path, trim($content) . "\n");
+        if ($result === false) {
+            error_log("VAPT APACHE DEPLOYER: Failed to write global whitelist to {$this->htaccess_path}");
+        } else {
+            error_log("VAPT APACHE DEPLOYER: Wrote global whitelist to {$this->htaccess_path} ({$result} bytes)");
+        }
     }
 
     public function undeploy($risk_id, $target = 'root')
@@ -264,7 +291,13 @@ class VAPTSECURE_Apache_Deployer implements VAPTSECURE_Driver_Interface
         $new_content = preg_replace($pattern, '', $content);
 
         if ($new_content !== $content) {
-            return file_put_contents($this->htaccess_path, trim($new_content) . "\n", LOCK_EX);
+            $result = $this->safe_file_put($this->htaccess_path, trim($new_content) . "\n");
+            if ($result === false) {
+                error_log("VAPT APACHE DEPLOYER: undeploy failed for {$risk_id} at {$this->htaccess_path}");
+            } else {
+                error_log("VAPT APACHE DEPLOYER: undeploy success for {$risk_id} at {$this->htaccess_path} ({$result} bytes)");
+            }
+            return $result;
         }
 
         return true;

@@ -152,6 +152,14 @@ class VAPTSECURE_REST
         );
 
         register_rest_route(
+            'vaptsecure/v1', '/features/(?P<key>[a-zA-Z0-9_-]+)/status', array(
+            'methods'             => 'GET',
+            'callback'            => array($this, 'get_feature_status'),
+            'permission_callback' => array($this, 'check_read_permission'),
+            )
+        );
+
+        register_rest_route(
             'vaptsecure/v1', '/features/(?P<key>[a-zA-Z0-9_-]+)/reset', array(
             'methods'  => 'POST',
             'callback' => array($this, 'reset_feature_stats'),
@@ -855,6 +863,43 @@ $runtime_verified = false;
         ) : array('build_profile_not_defined' => true);
         
         return new WP_REST_Response($response_data, 200);
+    }
+
+    /**
+     * [v4.0.x] GET /features/{key}/status
+     * Lightweight endpoint for polling file audit status during toggle transitions.
+     * Returns live_state: present | missing | cleaned | recovered
+     */
+    public function get_feature_status($request)
+    {
+        $key = $request['key'];
+        $audit_summary = array();
+
+        if (class_exists('VAPTSECURE_Enforcer') && method_exists('VAPTSECURE_Enforcer', 'audit_feature_cleanup')) {
+            $audit_summary = VAPTSECURE_Enforcer::audit_feature_cleanup($key);
+        }
+
+        $meta = VAPTSECURE_DB::get_feature_meta($key);
+        $is_enabled = !empty($meta['is_enabled']) || !empty($meta['is_enforced']);
+
+        // Check self-healed transient
+        $self_healed = get_transient('vaptsecure_self_healed_features');
+        $was_healed = is_array($self_healed) && in_array($key, $self_healed);
+
+        foreach ($audit_summary as &$item) {
+            if ($was_healed && $item['live_state'] === 'recovered') {
+                $item['self_healed'] = true;
+            }
+        }
+
+        return new WP_REST_Response(
+            array(
+            'key' => $key,
+            'is_enabled' => $is_enabled,
+            'audit_summary' => $audit_summary,
+            'was_self_healed' => $was_healed,
+            ), 200
+        );
     }
 
     public function get_features($request)

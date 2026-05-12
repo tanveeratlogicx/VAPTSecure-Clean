@@ -240,21 +240,38 @@ class VAPTSECURE_Enforcer
         $htaccess_rules = VAPTSECURE_Htaccess_Driver::generate_rules($impl_data, $schema);
         if (!empty($htaccess_rules)) {
             $deployer = new VAPTSECURE_Apache_Deployer();
-            $deployer->deploy($key, array('rules' => $htaccess_rules), true);
+            $result = $deployer->deploy($key, array('rules' => $htaccess_rules), true);
+            if (is_wp_error($result)) {
+                error_log("VAPT ENFORCER: Apache deploy failed for {$key}: " . $result->get_error_message());
+            } else {
+                error_log("VAPT ENFORCER: Apache deploy success for {$key}: " . json_encode($result));
+            }
+        } else {
+            error_log("VAPT ENFORCER: No htaccess rules generated for {$key}");
         }
 
         // wp-config.php
         $config_rules = VAPTSECURE_Config_Driver::generate_rules($impl_data, $schema);
         if (!empty($config_rules)) {
             $deployer = new VAPTSECURE_Config_Deployer();
-            $deployer->deploy($key, $config_rules, true);
+            $result = $deployer->deploy($key, $config_rules, true);
+            if (is_wp_error($result)) {
+                error_log("VAPT ENFORCER: Config deploy failed for {$key}: " . $result->get_error_message());
+            } else {
+                error_log("VAPT ENFORCER: Config deploy success for {$key}");
+            }
         }
 
         // vapt-functions.php
         $php_rules = VAPTSECURE_PHP_Driver::generate_rules($impl_data, $schema);
         if (!empty($php_rules)) {
             $deployer = new VAPTSECURE_PHP_Deployer();
-            $deployer->deploy($key, $php_rules, true);
+            $result = $deployer->deploy($key, $php_rules, true);
+            if (is_wp_error($result)) {
+                error_log("VAPT ENFORCER: PHP deploy failed for {$key}: " . $result->get_error_message());
+            } else {
+                error_log("VAPT ENFORCER: PHP deploy success for {$key}");
+            }
         }
     }
 
@@ -768,10 +785,13 @@ class VAPTSECURE_Enforcer
     }
 
     /**
-     * Build a file-target audit for a feature.
-     * Reports the status of the feature's primary enforcement target only.
+     * Self-Healing: Verify and re-inject rules for a single enabled feature if missing.
+     * Returns the audit result with a 'self_healed' flag if re-injection occurred.
+     *
+     * @param string $feature_key
+     * @return array Audit summary item with 'self_healed' flag
      */
-    public static function audit_feature_cleanup($feature_key)
+    public static function self_heal_feature($feature_key)
     {
         $feature_key = trim((string) $feature_key);
         if ($feature_key === '') {
@@ -783,90 +803,160 @@ class VAPTSECURE_Enforcer
             return array();
         }
 
-        $schema = self::resolve_schema($meta);
-        $driver = strtolower((string) ($schema['enforcement']['driver'] ?? ''));
-        $target = strtolower((string) ($schema['enforcement']['target'] ?? 'root'));
+        $is_enabled = !empty($meta['is_enabled']) || !empty($meta['is_enforced']);
+        if (!$is_enabled) {
+            return array();
+        }
+
+        $audit = self::audit_feature_cleanup($feature_key);
+        $needs_heal = true;
+        foreach ($audit as $item) {
+            if (isset($item['status']) && strtolower((string) $item['status']) === 'present') {
+                $needs_heal = false;
+                break;
+            }
+        }
+
+        if ($needs_heal) {
+            error_log("VAPT SELF-HEAL: Rules missing for enabled feature {$feature_key}. Re-injecting...");
+            $schema = self::resolve_schema($meta);
+            $impl_data = self::resolve_impl($meta);
+            self::deploy_feature($feature_key, $schema, $impl_data);
+
+            // Re-audit after healing
+            $audit = self::audit_feature_cleanup($feature_key);
+            foreach ($audit as &$item) {
+                $item['self_healed'] = true;
+                $item['live_state'] = 'recovered';
+            }
+            error_log("VAPT SELF-HEAL: Re-injection complete for {$feature_key}");
+        }
+
+        return $audit;
+    }
+
+    /**
+     * Background Verification: Run on admin page load.
+     * Checks all enabled features and re-injects missing rules.
+     * Stores results in a transient for frontend consumption.
+     *
+     * @return array Healed feature keys
+     */
+    public static function run_background_verification()
+    {
+        $features = self::get_enforced_features();
+        $healed = array();
+
+        foreach ($features as $feat) {
+            $key = $feat['feature_key'];
+            $audit = self::self_heal_feature($key);
+            foreach ($audit as $item) {
+                if (!empty($item['self_healed'])) {
+                    $healed[] = $key;
+                    break;
+                }
+            }
+        }
+
+        if (!empty($healed)) {
+            set_transient('vaptsecure_self_healed_features', $healed, HOUR_IN_SECONDS);
+        }
+
+        return $healed;
+    }
+
+    /**
+     * [v4.0.x] Build a file-target audit for a feature.
+     * Checks ALL three active deployment targets and returns the one(s)
+     * that actually contain the feature marker. Fixes stale schema driver
+     * drift where deploy_feature writes to .htaccess but schema says wp_config.
+     */
+    public static function audit_feature_cleanup($feature_key)
+    {
+        $feature_key = trim((string) $feature_key);
+        if ($feature_key === '') {
+            return array();
+        }
+
+        $meta = VAPTSECURE_DB::get_feature_meta($feature_key);
+        $is_enabled = !empty($meta['is_enabled']) || !empty($meta['is_enforced']);
+
+        // Resolve wp-config.php path robustly
+        $wp_config_path = ABSPATH . 'wp-config.php';
+        if (!file_exists($wp_config_path) && function_exists('get_home_path')) {
+            $alt = get_home_path() . 'wp-config.php';
+            if (file_exists($alt)) {
+                $wp_config_path = $alt;
+            }
+        }
+
+        $htaccess_path = (function_exists('get_home_path') ? get_home_path() : ABSPATH) . '.htaccess';
+        $php_path      = VAPTSECURE_PATH . 'vapt-functions.php';
+
+        $targets = array(
+            array('key' => 'htaccess', 'label' => './.htaccess', 'path' => $htaccess_path, 'type' => 'htaccess'),
+            array('key' => 'wp-config', 'label' => './wp-config.php', 'path' => $wp_config_path, 'type' => 'config'),
+            array('key' => 'php_functions', 'label' => 'vapt-functions.php', 'path' => $php_path, 'type' => 'php'),
+        );
 
         $audit = array();
+        $found_in_any = false;
 
-        $resolve_wp_config_path = function () {
-            $paths = array();
-            if (defined('ABSPATH')) {
-                $base = rtrim(ABSPATH, DIRECTORY_SEPARATOR);
-                $paths[] = $base . DIRECTORY_SEPARATOR . 'wp-config.php';
-                $paths[] = dirname($base) . DIRECTORY_SEPARATOR . 'wp-config.php';
-                if (function_exists('get_home_path')) {
-                    $home = rtrim(get_home_path(), DIRECTORY_SEPARATOR);
-                    if (!empty($home)) {
-                        $paths[] = $home . DIRECTORY_SEPARATOR . 'wp-config.php';
-                        $paths[] = dirname($home) . DIRECTORY_SEPARATOR . 'wp-config.php';
-                    }
-                }
-            }
+        foreach ($targets as $t) {
+            $exists = file_exists($t['path']);
+            $content = $exists ? @file_get_contents($t['path']) : '';
+            $has_marker = false;
 
-            foreach (array_unique($paths) as $path) {
-                if (file_exists($path)) {
-                    return $path;
-                }
-            }
-
-            return isset($paths[0]) ? $paths[0] : (ABSPATH . 'wp-config.php');
-        };
-
-        $path = '';
-        $label = '';
-
-        if ($driver === 'htaccess' || $driver === 'universal' || $driver === '') {
-            $path = ($target === 'uploads') ? (wp_upload_dir()['basedir'] . '/.htaccess') : ((function_exists('get_home_path') ? get_home_path() : ABSPATH) . '.htaccess');
-            $label = ($target === 'uploads') ? 'uploads/.htaccess' : './.htaccess';
-        } elseif (in_array($driver, array('config', 'wp-config', 'wp_config'), true)) {
-            $path = $resolve_wp_config_path();
-            $label = './wp-config.php';
-        } elseif (in_array($driver, array('hook', 'php_functions'), true)) {
-            $path = VAPTSECURE_PATH . 'vapt-functions.php';
-            $label = 'vapt-functions.php';
-        } elseif ($driver === 'nginx') {
-            $path = wp_upload_dir()['basedir'] . '/vapt-nginx-rules.conf';
-            $label = 'vapt-nginx-rules.conf';
-        } else {
-            $path = ($target === 'uploads') ? (wp_upload_dir()['basedir'] . '/.htaccess') : ((function_exists('get_home_path') ? get_home_path() : ABSPATH) . '.htaccess');
-            $label = ($target === 'uploads') ? 'uploads/.htaccess' : './.htaccess';
-        }
-
-        $exists = file_exists($path);
-        $content = $exists ? @file_get_contents($path) : '';
-        $has_marker = false;
-
-        if ($content !== false && $content !== '') {
-            if ($driver === 'htaccess' || $driver === 'universal' || $driver === '') {
-                $has_marker =
-                    (
-                        strpos($content, '# BEGIN VAPT SECURITY RULES') !== false ||
+            if ($content !== false && $content !== '') {
+                if ($t['type'] === 'htaccess') {
+                    $has_marker = (
+                        strpos($content, '# BEGIN VAPT ' . $feature_key) !== false ||
                         strpos($content, '# ' . $feature_key) !== false ||
-                        strpos($content, '# BEGIN VAPT ' . $feature_key) !== false
-                    ) &&
-                    (strpos($content, $feature_key) !== false);
-            } elseif (in_array($driver, array('config', 'wp-config', 'wp_config'), true)) {
-                $has_marker =
-                    (strpos($content, 'BEGIN VAPT CONFIG RULES') !== false) ||
-                    (strpos($content, 'BEGIN VAPT SECURITY RULES') !== false) ||
-                    (strpos($content, $feature_key) !== false);
-            } elseif (in_array($driver, array('hook', 'php_functions'), true)) {
-                $has_marker =
-                    (strpos($content, '// BEGIN VAPT ' . $feature_key) !== false) ||
-                    (strpos($content, '# BEGIN VAPT ' . $feature_key) !== false) ||
-                    (strpos($content, $feature_key) !== false);
-            } elseif ($driver === 'nginx') {
-                $has_marker = (strpos($content, 'X-VAPT-Feature "' . $feature_key . '"') !== false);
+                        (strpos($content, '# BEGIN VAPT SECURITY RULES') !== false && strpos($content, $feature_key) !== false)
+                    );
+                } elseif ($t['type'] === 'config') {
+                    $has_marker = (
+                        strpos($content, 'BEGIN VAPT CONFIG RULES') !== false ||
+                        strpos($content, 'BEGIN VAPT SECURITY RULES') !== false ||
+                        strpos($content, $feature_key) !== false
+                    );
+                } elseif ($t['type'] === 'php') {
+                    $has_marker = (
+                        strpos($content, '// BEGIN VAPT ' . $feature_key) !== false ||
+                        strpos($content, '# BEGIN VAPT ' . $feature_key) !== false ||
+                        strpos($content, $feature_key) !== false
+                    );
+                }
             }
+
+            if ($has_marker) {
+                $found_in_any = true;
+            }
+
+            $live_state = $has_marker ? 'present' : 'missing';
+            if (!$is_enabled && !$has_marker) {
+                $live_state = 'cleaned';
+            }
+
+            $audit[] = array(
+                'target'  => $t['key'],
+                'label'   => $t['label'],
+                'path'    => $t['path'],
+                'exists'  => $exists,
+                'status'  => $has_marker ? 'present' : 'removed',
+                'live_state' => $live_state,
+                'feature_enabled' => $is_enabled,
+            );
         }
 
-        $audit[] = array(
-            'target' => $driver ?: 'htaccess',
-            'label' => $label,
-            'path' => $path,
-            'exists' => $exists,
-            'status' => $has_marker ? 'present' : 'removed',
+        // Re-order: put the file that actually HAS the marker first (source of truth)
+        // so frontend tooltip can reliably use audit_summary[0]
+        usort(
+            $audit, function ($a, $b) {
+                $a_score = ($a['status'] === 'present') ? 2 : ($a['feature_enabled'] ? 1 : 0);
+                $b_score = ($b['status'] === 'present') ? 2 : ($b['feature_enabled'] ? 1 : 0);
+                return $b_score - $a_score;
+            }
         );
 
         return $audit;
