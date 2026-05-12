@@ -698,31 +698,6 @@
           }
         },
         {
-          "enforcer": "PHP Functions",
-          "lib_key": "php_functions",
-          "operation": "add_action_hook",
-          "write_mode": "append_to_file",
-          "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
-          "backup_required": true,
-          "idempotency": {
-            "check_string": "// BEGIN VAPT RISK-006",
-            "if_found": "skip",
-            "if_not_found": "insert"
-          },
-          "insertion": {
-            "anchor_string": null,
-            "anchor_position": "append",
-            "fallback": null
-          },
-          "write_block": "// BEGIN VAPT RISK-006\nadd_action('init', function() {\n    if (strpos($_SERVER['REQUEST_URI'], 'author=\\d+') !== false) { wp_die('Access Denied'); }\n});\n// END VAPT RISK-006",
-          "begin_marker": "// BEGIN VAPT RISK-006",
-          "end_marker": "// END VAPT RISK-006",
-          "verification": {
-            "command": "wp eval \"do_action('init');\"",
-            "expected": "No errors"
-          }
-        },
-        {
           "enforcer": "wp-config.php",
           "lib_key": "wp_config",
           "operation": "add_constant",
@@ -804,11 +779,11 @@
             "anchor_position": "append",
             "fallback": null
           },
-          "write_block": "// BEGIN VAPT RISK-007\nadd_action('init', function() {\n    if (strpos($_SERVER['REQUEST_URI'], 'author=\\d+') !== false) { wp_die('Access Denied'); }\n});\n// END VAPT RISK-007",
+          "write_block": "// BEGIN VAPT RISK-007\nadd_action('wp_login_failed', function($username) {\n    $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '0.0.0.0';\n    $key = 'vapt_risk007_' . md5($ip);\n    $attempts = get_transient($key);\n    if ($attempts === false) {\n        set_transient($key, 1, 3600);\n    } else {\n        if ($attempts >= 5) {\n            wp_die('Too many failed login attempts. Please try again later.');\n        }\n        set_transient($key, $attempts + 1, 3600);\n    }\n});\n// END VAPT RISK-007",
           "begin_marker": "// BEGIN VAPT RISK-007",
           "end_marker": "// END VAPT RISK-007",
           "verification": {
-            "command": "wp eval \"do_action('init');\"",
+            "command": "wp eval \"do_action('wp_login_failed', 'test');\" ",
             "expected": "No errors"
           }
         },
@@ -1570,7 +1545,7 @@
             "anchor_position": "after",
             "fallback": "append"
           },
-          "write_block": "# BEGIN VAPT RISK-014\nlocation ~* RISK-014 {\n    deny all;\n}\n# END VAPT RISK-014",
+          "write_block": "# BEGIN VAPT RISK-014\nadd_header X-Frame-Options \"SAMEORIGIN\" always;\n# END VAPT RISK-014",
           "begin_marker": "# BEGIN VAPT RISK-014",
           "end_marker": "# END VAPT RISK-014",
           "verification": {
@@ -1595,11 +1570,11 @@
             "anchor_position": "append",
             "fallback": null
           },
-          "write_block": "// BEGIN VAPT RISK-014\nadd_action('init', function() {\n    if (strpos($_SERVER['REQUEST_URI'], 'RISK-014') !== false) { wp_die('Access Denied'); }\n});\n// END VAPT RISK-014",
+          "write_block": "// BEGIN VAPT RISK-014\nadd_action('send_headers', function() {\n    header('X-Frame-Options: SAMEORIGIN');\n});\n// END VAPT RISK-014",
           "begin_marker": "// BEGIN VAPT RISK-014",
           "end_marker": "// END VAPT RISK-014",
           "verification": {
-            "command": "wp eval \"do_action('init');\"",
+            "command": "wp eval \"do_action('send_headers');\"",
             "expected": "No errors"
           }
         },
