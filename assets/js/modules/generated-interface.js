@@ -2827,7 +2827,9 @@ var vaptLog = window.vaptLog || {
             if (!addedCode) return null;
 
             const isCurrentlyEnforced = toBool(value);
-            const shortPath = targetFile.startsWith('/') || targetFile.includes('\\') ? getShortPath(targetFile) : `./${targetFile}`;
+            const shortPath = targetFile.startsWith('/') || targetFile.includes('\\')
+              ? getShortPath(targetFile)
+              : (targetFile.startsWith('./') ? targetFile : `./${targetFile}`);
 
             // [v4.0.x] Determine display state from live audit + UI state
             let displayStatus = isCurrentlyEnforced ? 'active' : 'inactive';
@@ -2946,12 +2948,14 @@ var vaptLog = window.vaptLog || {
 
               // Path
               el('div', {
+                title: liveAudit?.audit_summary?.[0]?.path || targetFile,
                 style: {
                   fontSize: '12px',
                   fontWeight: '700',
                   color: '#38bdf8',
                   marginBottom: '8px',
-                  fontFamily: 'monospace'
+                  fontFamily: 'monospace',
+                  cursor: 'help'
                 }
               }, shortPath),
 

@@ -908,23 +908,31 @@ class VAPTSECURE_Enforcer
             $has_marker = false;
 
             if ($content !== false && $content !== '') {
+                // [v4.0.x] Case-insensitive, robust marker detection
+                $lower_content = strtolower($content);
+                $lower_key      = strtolower($feature_key);
                 if ($t['type'] === 'htaccess') {
                     $has_marker = (
-                        strpos($content, '# BEGIN VAPT ' . $feature_key) !== false ||
-                        strpos($content, '# ' . $feature_key) !== false ||
-                        (strpos($content, '# BEGIN VAPT SECURITY RULES') !== false && strpos($content, $feature_key) !== false)
+                        stripos($content, '# BEGIN VAPT ' . $feature_key) !== false ||
+                        stripos($content, '# ' . $feature_key) !== false ||
+                        (stripos($content, '# BEGIN VAPT SECURITY RULES') !== false && stripos($content, $feature_key) !== false) ||
+                        // Also catch standalone # RISK-XXX lines (common Apache deployer format)
+                        preg_match('/#\s+' . preg_quote($feature_key, '/') . '\b/i', $content) === 1
                     );
                 } elseif ($t['type'] === 'config') {
                     $has_marker = (
-                        strpos($content, 'BEGIN VAPT CONFIG RULES') !== false ||
-                        strpos($content, 'BEGIN VAPT SECURITY RULES') !== false ||
-                        strpos($content, $feature_key) !== false
+                        stripos($content, 'BEGIN VAPT CONFIG RULES') !== false ||
+                        stripos($content, 'BEGIN VAPT SECURITY RULES') !== false ||
+                        stripos($content, $feature_key) !== false ||
+                        stripos($content, '/* ' . $feature_key) !== false ||
+                        stripos($content, '// ' . $feature_key) !== false
                     );
                 } elseif ($t['type'] === 'php') {
                     $has_marker = (
-                        strpos($content, '// BEGIN VAPT ' . $feature_key) !== false ||
-                        strpos($content, '# BEGIN VAPT ' . $feature_key) !== false ||
-                        strpos($content, $feature_key) !== false
+                        stripos($content, '// BEGIN VAPT ' . $feature_key) !== false ||
+                        stripos($content, '# BEGIN VAPT ' . $feature_key) !== false ||
+                        stripos($content, '/* BEGIN VAPT ' . $feature_key) !== false ||
+                        stripos($content, $feature_key) !== false
                     );
                 }
             }
