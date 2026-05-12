@@ -65,26 +65,90 @@ class VAPTSECURE_Config_Deployer implements VAPTSECURE_Driver_Interface
         return false;
     }
 
-    public function deploy($risk_id, $implementation, $is_enabled = true)
+    public function deploy($feature_key, $implementation, $is_enabled = true)
     {
-        if (!$this->can_deploy()) {
-            return new WP_Error('vapt_deploy_failed', 'wp-config.php is not writable.');
+        $wp_config_path = $this->resolve_wp_config_path();
+        if (!$wp_config_path) {
+            return new WP_Error('vapt_deploy_failed', 'wp-config.php not found or not writable.');
         }
 
-        // Since wp-config.php is managed as a batch by VAPTSECURE_Config_Driver,
-        // we don't write individual rules here. Instead, we trigger a global rebuild.
-        // The Config Driver will pull the latest meta and write all active rules.
-    
-        include_once VAPTSECURE_PATH . 'includes/class-vaptsecure-enforcer.php';
-        $result = VAPTSECURE_Enforcer::rebuild_config();
+        $rules = $this->normalize_rules($implementation);
 
-        return $result ? ['status' => 'rebuild_triggered', 'platform' => 'wp_config'] : new WP_Error('vapt_rebuild_failed', 'Failed to rebuild wp-config.php');
+        $content = file_get_contents($wp_config_path);
+        $start_marker = "// BEGIN VAPT FEATURE: {$feature_key}";
+        $end_marker = "// END VAPT FEATURE: {$feature_key}";
+
+        // Remove old block for this feature
+        $pattern = "/" . preg_quote($start_marker, '/') . ".*?" . preg_quote($end_marker, '/') . "/s";
+        $content = preg_replace($pattern, '', $content);
+
+        if ($is_enabled && !empty($rules)) {
+            $new_block = "\n" . $start_marker . "\n" . $rules . "\n" . $end_marker . "\n";
+
+            $insert_marker = "That's all, stop editing";
+            if (stripos($content, $insert_marker) !== false) {
+                $content = str_ireplace($insert_marker, $new_block . $insert_marker, $content);
+            } else {
+                $content .= $new_block;
+            }
+        }
+
+        // Clean up extra blank lines
+        $content = preg_replace("/\n\s*\n(\s*\n)+/", "\n\n", $content);
+
+        $original = file_get_contents($wp_config_path);
+        if (trim($content) !== trim($original)) {
+            @copy($wp_config_path, $wp_config_path . '.bak');
+            file_put_contents($wp_config_path, trim($content) . "\n");
+        }
+
+        return ['status' => 'deployed', 'platform' => 'wp_config'];
     }
 
-    public function undeploy($risk_id)
+    public function undeploy($feature_key)
     {
-        // Same as deploy, trigger a rebuild which will effectively remove it if disabled
-        include_once VAPTSECURE_PATH . 'includes/class-vaptsecure-enforcer.php';
-        return VAPTSECURE_Enforcer::rebuild_config();
+        return $this->deploy($feature_key, '', false);
+    }
+
+    private function resolve_wp_config_path()
+    {
+        $paths = [];
+        if (defined('ABSPATH')) {
+            $base = rtrim(ABSPATH, DIRECTORY_SEPARATOR);
+            $paths[] = $base . DIRECTORY_SEPARATOR . 'wp-config.php';
+            $paths[] = dirname($base) . DIRECTORY_SEPARATOR . 'wp-config.php';
+            if (function_exists('get_home_path')) {
+                $home = rtrim(get_home_path(), DIRECTORY_SEPARATOR);
+                if (!empty($home) && !in_array($home . DIRECTORY_SEPARATOR . 'wp-config.php', $paths)) {
+                    $paths[] = $home . DIRECTORY_SEPARATOR . 'wp-config.php';
+                    $paths[] = dirname($home) . DIRECTORY_SEPARATOR . 'wp-config.php';
+                }
+            }
+        }
+        foreach (array_unique($paths) as $path) {
+            if (@is_file($path) && @is_readable($path) && @is_writable($path)) {
+                return $path;
+            }
+        }
+        return null;
+    }
+
+    private function normalize_rules($input)
+    {
+        if (is_string($input)) {
+            return $input;
+        }
+        if (is_array($input)) {
+            if (isset($input['code'])) {
+                $code = is_array($input['code']) ? implode("\n", $input['code']) : $input['code'];
+                return $code;
+            }
+            if (isset($input['rules'])) {
+                $rules = is_array($input['rules']) ? implode("\n", $input['rules']) : $input['rules'];
+                return $rules;
+            }
+            return implode("\n", $input);
+        }
+        return '';
     }
 }

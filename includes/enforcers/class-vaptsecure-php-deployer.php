@@ -40,60 +40,64 @@ class VAPTSECURE_PHP_Deployer implements VAPTSECURE_Driver_Interface
         return true; // Universal fallback
     }
 
-    public function deploy($risk_id, $implementation, $is_enabled = true)
+    public function deploy($feature_key, $implementation, $is_enabled = true)
     {
-        // PHP implementations are typically handled by VAPTSECURE_Enforcer::runtime_enforcement
-        // This deployer just validates that the implementation exists.
+        $path = VAPTSECURE_PATH . 'vapt-functions.php';
 
-        $code = $this->extract_code($implementation);
+        $rules = $this->normalize_rules($implementation);
 
-        if (empty($code)) {
-            return new WP_Error('vapt_no_code', 'No PHP protection code found in implementation.');
+        $start_marker = "// BEGIN VAPT FEATURE: {$feature_key}";
+        $end_marker = "// END VAPT FEATURE: {$feature_key}";
+
+        if (!file_exists($path)) {
+            if (empty($rules) || !$is_enabled) {
+                return true;
+            }
+            $dir = dirname($path);
+            if (!is_dir($dir)) {
+                wp_mkdir_p($dir);
+            }
+            @file_put_contents($path, "<?php\n\n/**\n * VAPTSecure Clean: Centralized PHP Protections\n */\n\nif (!defined('ABSPATH')) exit;\n\n");
         }
 
-        // Neutralize code if disabled for consistency across platforms
-        if (!$is_enabled) {
-            $lines = explode("\n", trim($code));
-            $code = implode(
-                "\n", array_map(
-                    function ($l) {
-                        $l = trim($l);
-                        if ($l === '') { return '';
-                        }
-                        return '// ' . ltrim($l, '/ ');
-                    }, $lines
-                )
-            );
+        $content = file_get_contents($path);
+
+        // Remove old block for this feature
+        $pattern = "/" . preg_quote($start_marker, '/') . ".*?" . preg_quote($end_marker, '/') . "/s";
+        $content = preg_replace($pattern, '', $content);
+
+        if ($is_enabled && !empty($rules)) {
+            $new_block = "\n" . $start_marker . "\n" . $rules . "\n" . $end_marker . "\n";
+            $content = rtrim($content) . $new_block;
         }
 
-        include_once VAPTSECURE_PATH . 'includes/class-vaptsecure-enforcer.php';
-        VAPTSECURE_Enforcer::rebuild_php_functions();
+        $content = preg_replace("/(\r?\n){3,}/", "$1$1", $content);
+        @file_put_contents($path, $content);
 
-        return [
-        'status' => 'deployed',
-        'platform' => 'php_functions',
-        'note' => 'Active via vapt-functions.php',
-        'code' => $code
-        ];
+        return ['status' => 'deployed', 'platform' => 'php_functions'];
     }
 
-    private function extract_code($implementation)
+    public function undeploy($feature_key)
     {
-        if (isset($implementation['code'])) { return $implementation['code'];
-        }
-        if (isset($implementation['php_functions'])) { return $implementation['php_functions'];
-        }
+        return $this->deploy($feature_key, '', false);
+    }
 
-        if (class_exists('VAPTSECURE_Enforcer')) {
-            return VAPTSECURE_Enforcer::extract_code_from_mapping($implementation, 'hook');
+    private function normalize_rules($input)
+    {
+        if (is_string($input)) {
+            return $input;
         }
-
+        if (is_array($input)) {
+            if (isset($input['code'])) {
+                $code = is_array($input['code']) ? implode("\n", $input['code']) : $input['code'];
+                return $code;
+            }
+            if (isset($input['rules'])) {
+                $rules = is_array($input['rules']) ? implode("\n", $input['rules']) : $input['rules'];
+                return $rules;
+            }
+            return implode("\n\n", $input);
+        }
         return '';
-    }
-
-    public function undeploy($risk_id)
-    {
-        // Nothing to do for PHP hooks as they are active based on the 'is_enforced' meta flag
-        return true;
     }
 }
