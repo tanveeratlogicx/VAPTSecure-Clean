@@ -46,22 +46,16 @@ var vaptLog = window.vaptLog || {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // [v4.1.4] Persistence: Initialize state from URL or LocalStorage
+    // [v4.1.4] Persistence: Initialize state from LocalStorage only (URL params hidden for privacy)
     const [activeStatus, setActiveStatus] = useState(() => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const urlVal = urlParams.get('status');
-      if (urlVal) return urlVal;
       const saved = localStorage.getItem('vaptsecure_workbench_active_status');
       return saved ? saved : 'Develop';
     });
     const [activeCategory, setActiveCategory] = useState(() => {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get('category') || 'all';
+      const saved = localStorage.getItem('vaptsecure_workbench_active_category');
+      return saved ? saved : 'all';
     });
     const [activeFeatureKey, setActiveFeatureKey] = useState(() => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const urlVal = urlParams.get('feature');
-      if (urlVal) return urlVal;
       const saved = localStorage.getItem('vaptsecure_workbench_active_feature');
       return saved ? saved : null;
     });
@@ -72,21 +66,14 @@ var vaptLog = window.vaptLog || {
     const [isNavigatorOpen, setIsNavigatorOpen] = useState(true);
     const [hasInitializedCategory, setHasInitializedCategory] = useState(false);
 
-    // [v4.1.4] Persistence: Sync state to URL and LocalStorage
+    // [v4.1.4] Persistence: Sync state to LocalStorage only (URL params hidden for privacy)
     useEffect(() => {
-      const url = new URL(window.location);
-      url.searchParams.set('status', activeStatus);
-      url.searchParams.set('category', activeCategory);
-      if (activeFeatureKey) {
-        url.searchParams.set('feature', activeFeatureKey);
-      } else {
-        url.searchParams.delete('feature');
-      }
-      window.history.replaceState({}, '', url);
-
       localStorage.setItem('vaptsecure_workbench_active_status', activeStatus);
+      localStorage.setItem('vaptsecure_workbench_active_category', activeCategory);
       if (activeFeatureKey) {
         localStorage.setItem('vaptsecure_workbench_active_feature', activeFeatureKey);
+      } else {
+        localStorage.removeItem('vaptsecure_workbench_active_feature');
       }
     }, [activeStatus, activeCategory, activeFeatureKey]);
 

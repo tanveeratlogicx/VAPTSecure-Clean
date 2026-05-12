@@ -317,8 +317,8 @@
           "position": "append",
           "fallback": null
         },
-        "code": "add_action('init', function() {\n    if (strpos($_SERVER['REQUEST_URI'], '/wp-json/wp/v2/users') !== false) { wp_die('Access Denied'); }\n});",
-        "wrapped_code": "// BEGIN VAPT RISK-003\nadd_action('init', function() {\n    if (strpos($_SERVER['REQUEST_URI'], '/wp-json/wp/v2/users') !== false) { wp_die('Access Denied'); }\n});\n// END VAPT RISK-003",
+        "code": "add_action('init', function() {\n    if (strpos($_SERVER['REQUEST_URI'], '/wp-json/wp/v2/users') !== false) {\n        header('x-vapt-enforced: php-author-enum');\n        wp_die('Access Denied');\n    }\n});",
+        "wrapped_code": "// BEGIN VAPT RISK-003\nadd_action('init', function() {\n    if (strpos($_SERVER['REQUEST_URI'], '/wp-json/wp/v2/users') !== false) {\n        header('x-vapt-enforced: php-author-enum');\n        wp_die('Access Denied');\n    }\n});\n// END VAPT RISK-003",
         "begin_marker": "// BEGIN VAPT RISK-003",
         "end_marker": "// END VAPT RISK-003",
         "verification": {
@@ -328,7 +328,7 @@
         "driver": {
           "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
-          "write_block": "// BEGIN VAPT RISK-003\nadd_action('init', function() {\n    if (strpos($_SERVER['REQUEST_URI'], '/wp-json/wp/v2/users') !== false) { wp_die('Access Denied'); }\n});\n// END VAPT RISK-003",
+          "write_block": "// BEGIN VAPT RISK-003\nadd_action('init', function() {\n    if (strpos($_SERVER['REQUEST_URI'], '/wp-json/wp/v2/users') !== false) {\n        header('x-vapt-enforced: php-author-enum');\n        wp_die('Access Denied');\n    }\n});\n// END VAPT RISK-003",
           "anchor_string": null,
           "anchor_position": "append",
           "idempotency_check": "// BEGIN VAPT RISK-003",
@@ -766,18 +766,23 @@
           "position": "append",
           "fallback": null
         },
-        "code": "add_action('init', function() {\n    if (strpos($_SERVER['REQUEST_URI'], 'author=\\d+') !== false) { wp_die('Access Denied'); }\n});",
-        "wrapped_code": "// BEGIN VAPT RISK-007\nadd_action('init', function() {\n    if (strpos($_SERVER['REQUEST_URI'], 'author=\\d+') !== false) { wp_die('Access Denied'); }\n});\n// END VAPT RISK-007",
+        "code": "add_action('send_headers', function() {\n    if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'wp-login.php') !== false) {\n        header('x-vapt-enforced: php-rate-limit');\n    }\n});\nadd_action('wp_login_failed', function($username) {\n    $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '0.0.0.0';\n    $key = 'vapt_risk007_' . md5($ip);\n    $attempts = get_transient($key);\n    if ($attempts === false) {\n        set_transient($key, 1, 3600);\n    } else {\n        if ($attempts >= 5) {\n            header('x-vapt-enforced: php-rate-limit');\n            wp_die('Too many failed login attempts. Please try again later.');\n        }\n        set_transient($key, $attempts + 1, 3600);\n    }\n});",
+        "wrapped_code": "// BEGIN VAPT RISK-007\nadd_action('send_headers', function() {\n    if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'wp-login.php') !== false) {\n        header('x-vapt-enforced: php-rate-limit');\n    }\n});\nadd_action('wp_login_failed', function($username) {\n    $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '0.0.0.0';\n    $key = 'vapt_risk007_' . md5($ip);\n    $attempts = get_transient($key);\n    if ($attempts === false) {\n        set_transient($key, 1, 3600);\n    } else {\n        if ($attempts >= 5) {\n            header('x-vapt-enforced: php-rate-limit');\n            wp_die('Too many failed login attempts. Please try again later.');\n        }\n        set_transient($key, $attempts + 1, 3600);\n    }\n});\n// END VAPT RISK-007",
         "begin_marker": "// BEGIN VAPT RISK-007",
         "end_marker": "// END VAPT RISK-007",
+        "target_hook": null,
+        "target_jail": null,
+        "target_constant": null,
+        "target_value": null,
         "verification": {
-          "command": "wp eval \"do_action('init');\"",
+          "command": "wp eval \"do_action('wp_login_failed', 'test');\"",
           "expected": "No errors"
         },
+        "rollback": "Remove // BEGIN VAPT RISK-007...// END VAPT RISK-007 from target file",
         "driver": {
           "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
-          "write_block": "// BEGIN VAPT RISK-007\nadd_action('init', function() {\n    if (strpos($_SERVER['REQUEST_URI'], 'author=\\d+') !== false) { wp_die('Access Denied'); }\n});\n// END VAPT RISK-007",
+          "write_block": "// BEGIN VAPT RISK-007\nadd_action('send_headers', function() {\n    if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'wp-login.php') !== false) {\n        header('x-vapt-enforced: php-rate-limit');\n    }\n});\nadd_action('wp_login_failed', function($username) {\n    $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '0.0.0.0';\n    $key = 'vapt_risk007_' . md5($ip);\n    $attempts = get_transient($key);\n    if ($attempts === false) {\n        set_transient($key, 1, 3600);\n    } else {\n        if ($attempts >= 5) {\n            header('x-vapt-enforced: php-rate-limit');\n            wp_die('Too many failed login attempts. Please try again later.');\n        }\n        set_transient($key, $attempts + 1, 3600);\n    }\n});\n// END VAPT RISK-007",
           "anchor_string": null,
           "anchor_position": "append",
           "idempotency_check": "// BEGIN VAPT RISK-007",
@@ -828,8 +833,8 @@
           "position": "append",
           "fallback": null
         },
-        "code": "add_filter('login_errors', 'vapt_hide_login_errors');\nfunction vapt_hide_login_errors() {\n    return 'Invalid credentials. Please try again.';\n}",
-        "wrapped_code": "// BEGIN VAPT RISK-008\nadd_filter('login_errors', 'vapt_hide_login_errors');\nfunction vapt_hide_login_errors() {\n    return 'Invalid credentials. Please try again.';\n}\n// END VAPT RISK-008",
+        "code": "add_filter('login_errors', 'vapt_hide_login_errors');\nfunction vapt_hide_login_errors() {\n    return 'Invalid credentials. Please try again.';\n}\nadd_action('send_headers', function() {\n    if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'wp-login.php') !== false) {\n        header('x-vapt-enforced: php-headers');\n    }\n});",
+        "wrapped_code": "// BEGIN VAPT RISK-008\nadd_filter('login_errors', 'vapt_hide_login_errors');\nfunction vapt_hide_login_errors() {\n    return 'Invalid credentials. Please try again.';\n}\nadd_action('send_headers', function() {\n    if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'wp-login.php') !== false) {\n        header('x-vapt-enforced: php-headers');\n    }\n});\n// END VAPT RISK-008",
         "begin_marker": "// BEGIN VAPT RISK-008",
         "end_marker": "// END VAPT RISK-008",
         "target_hook": "login_errors",
@@ -844,7 +849,7 @@
         "driver": {
           "write_mode": "append_to_file",
           "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
-          "write_block": "// BEGIN VAPT RISK-008\nadd_filter('login_errors', 'vapt_hide_login_errors');\nfunction vapt_hide_login_errors() {\n    return 'Invalid credentials. Please try again.';\n}\n// END VAPT RISK-008",
+          "write_block": "// BEGIN VAPT RISK-008\nadd_filter('login_errors', 'vapt_hide_login_errors');\nfunction vapt_hide_login_errors() {\n    return 'Invalid credentials. Please try again.';\n}\nadd_action('send_headers', function() {\n    if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'wp-login.php') !== false) {\n        header('x-vapt-enforced: php-headers');\n    }\n});\n// END VAPT RISK-008",
           "anchor_string": null,
           "anchor_position": "append",
           "fallback": null,

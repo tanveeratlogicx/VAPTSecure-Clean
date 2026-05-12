@@ -2,12 +2,12 @@
 
 ## Project: VAPTSecure-Clean
 
-Generated: 2026-05-12 09:01:56
+Generated: 2026-05-12 09:54:36
 
 ### File Structure Summary
-- Total Files: 2352
+- Total Files: 2386
 - Total Directories: 440
-- File Extensions: .rules: 25, .agrules: 20, .md: 220, .json: 375, .rar: 2, .php: 204, .ps1: 10, .zip: 21, .yml: 6, .css: 10, .js: 276, .jsx: 25, .clinerules: 5, .roorules: 5, .windsurfrules: 5, .mdc: 1, .cjs: 194, .cts: 194, .ts: 706, .graphify_python: 1, .txt: 4, .html: 1, .py: 10, .png: 2, .ftp: 1
+- File Extensions: .rules: 25, .agrules: 20, .md: 220, .json: 404, .rar: 2, .php: 204, .ps1: 10, .zip: 21, .yml: 6, .css: 10, .js: 276, .jsx: 25, .clinerules: 5, .roorules: 5, .windsurfrules: 5, .mdc: 1, .cjs: 194, .cts: 194, .ts: 706, .graphify_python: 1, .txt: 4, .html: 1, .py: 15, .png: 2, .ftp: 1
 
 ### Directory Tree
 ├── .agent
@@ -2635,15 +2635,22 @@ Generated: 2026-05-12 09:01:56
          ├── 02032d1e3615b1c5aaff89a10214a7d624ec3ec6ab234086fe3dc9a481eee933.json
          ├── 038cd3363080a60c5c182c726e19c8ff613133bf79cc8da66f69fc2fbe28f424.json
          ├── 059ea2efa15f427e888cf36c24fcc203ee56b84fd27fa44181b4e34644f0d1fa.json
+         ├── 07768a21dd83acf3d9cf0060521ceafe4caf9cb04bf6794c53c35fd562d21c5d.json
          ├── 0c69d92781d1c20e167f29114fcee50df646cbbf6cbe61e64b93f2ae9411eaf0.json
          ├── 0c7a9de03e88612ef2ad6e96e590bf52682b226fb48f57a3ab10c0b2e78507f9.json
          ├── 0d1c53c9be93826fe6230c5fe14ed264e1d2871b3ef2f733c573c9c8fcbfea81.json
+         ├── 0fd3c0c7b55f5c80ff6f2498f6172e9a2a7e463833e962976b59382c5daa7ff2.json
+         ├── 16646b91776e486250b2d1d91e2c7ff6319e35f9497d894e4c7f42a9f1309622.json
          ├── 1926c2a052ebdb5f0c1205384ca62b3ff8f008ebd771b99c3ce78bebe4f93092.json
+         ├── 1e83d1b6716bc19027ebdc556906f53ec2a4156602e10726d0d77e1b62730bde.json
          ├── 233c007d80c10a23c37ce83c75e359ef2094a005e3b8f712bb770a1498481e6a.json
          ├── 239580b2ea87fa6b97fe3ce4fb80316d3d368462948244b29c1605ead94c2bfe.json
          ├── 2ff324f9a1175db4e2ef332dd0a8f31c1e119624f8d540f79b71ccf46fa3582f.json
          ├── 2ff4d26db4a98d9121d74d020b8aa0e6edebb344afb25aa7d48ef6a5425ed32a.json
+         ├── 348468175adbf2d6692cd9d5fdb6da3eb5baaca5acb3b718dc0d1816bff4a2df.json
+         ├── 37943a045e4c9c856688cc40f0ec9ece0c251f8480da961768fd5548dedd94dc.json
          ├── 38717ca80b919b5a82c23915ca4860a4f7e9ed876e14de1f3ea36f36cd50d09d.json
+         ├── 3954eafa21820e63b8679cb46a628b0d78507661d45a3b4b68b5c6899a09c18e.json
          ├── 3a1515e05c002e3d9a250d0e8ce080567f26997bba11ee4179a785cb3a0ba4a5.json
          ├── 41349e32b50169c8059e37e7c0ed64062c9dded73451ce50b45270edde2140df.json
          ├── 424b04584e54bc882a6361d0059acfc793cce2502220b829e76e21e824618fa0.json
@@ -2651,33 +2658,49 @@ Generated: 2026-05-12 09:01:56
          ├── 465bc6ff067888935a44cc382ea103282f038a26ddc7808385eb458857a7df97.json
          ├── 48be623799d69b72b4c9991840c221023ca003f839f93ab7ca5a894425674b43.json
          ├── 4ed6a36880200766dee443fd99e3823ff7d6143b10df692b22db2abf57e759f2.json
+         ├── 5a53b2fb4775b1808ed43254e9314f846d08d3275a98c57a2fcf382969716290.json
          ├── 5b3340ea4fe9fb1105ed8e992cdff0364ea97193786d08813b7376ac885c0ea6.json
          ├── 5e4cc2e99bb506cbcb3f3296560cb2649469a4c3bc61d16acbd041f0338b061d.json
          ├── 603e2c9a9af80f4f3bc2bb6cc5d9c6841ced4455bec376a9ec4984e8ca0f97b2.json
          ├── 642a17b13a0ffdac548c493065cd2b4e4c0da1e545f20d11f9287bfd4ea2cc03.json
+         ├── 666ea714529b3614d15e1437a871848a0cfc59feacbf4d9478ebeefc0325c9f3.json
+         ├── 6775ff141dd2a9b2471046c6777a5806c42bfac2ab2fe812a95c907c19476e1c.json
          ├── 6894f18c6dfc3fca361aa84a8f097a3fcc98567caa537009434a5cb81a144736.json
          ├── 6a0c512cd8175a02884e32bb607322c64128614ae40d295f9e09b907444f7d57.json
          ├── 6bc1dab580ddc01a93a18f1a079c8825665adc390520b9706a55b113aef325ef.json
          ├── 6bc9d1dbe7acdb6b2f4ad54bd9dffecd5ad217dc58ffd319a2ef05f8122a25d1.json
          ├── 6d7123386eb15c06ab396acd87166a8cbf3e54d2056568697cf7f1eab1e11217.json
+         ├── 784c7bf0ffd9296c8834856b9fc88f3d84186f71c21559644658ca0918321142.json
+         ├── 793d8ea733e98427f7eb71615bee7387c023007a9d8afe56665c364ff95b5595.json
          ├── 7996ee92bc67340ba99c0c2866dd7c7f675ebefcee64f7f809c30bdd50de0967.json
+         ├── 7999f0accb5709f58d1c0f3dba112e99ae295e58f1d784ad949f1af6e1492175.json
          ├── 7a839a0d88802171b73f13923839aa6f99b07a169933fad85c6a45c829bc85a6.json
          ├── 7b6e481026b1bdf8b2879bc06750c1444224ea1445afecef18884240693ea0cc.json
+         ├── 7fea62ffef232bdd72835d15ee95a63b5b33fe5d2656243ca1db5974e32236f2.json
          ├── 85b68b0fc6bf506cad7f210744453b67241ef13553ee04400e10073adf52057b.json
          ├── 8af90b4fd18b02e28213e2e3781224763df24fcb17249dcf4ff4722d4b7f6d00.json
          ├── 8c205a0fb894e6c24ea53dc81e018ac040df9c11269eb93d1c2c5d1e621a46b0.json
          ├── 8d1822db860db75425eb7e55545db0cb418a98b14257691723ef0d54736c64e4.json
+         ├── 8dffc68e4e1bb9279999953032ca68a89fac4d557409fe24ff2fd0a1bdd6d719.json
          ├── 8e5d7016050422bf0b9a9a575a6d72d0ffadbdd075fc67b2440051c6148a3e8f.json
          ├── 8e982f24bb004afe779cb27f4dfb22f85f1d17ccd0a8cc3015a3478f33e14899.json
          ├── 900fdc7743427a99e3b39fc808961f2b0841d0067e815a88dc9e159917fe1507.json
+         ├── 92fb2de4d85b0101f8d9f1159e4b8a99c5fbdccd5b3d1906854da6de0325e608.json
          ├── 94d5cef3ad6b44ada8b51ac3d6ecbe57200ada8f2e052846d1e99158c96b277a.json
          ├── 97759fe52f8687f8a08e8ec7cb5956fd8a41aa936579138ee4f9b13b1ba0c8ef.json
          ├── 9b186e5c59987b03a692b4c5bc7c433da3865a6d71e23df3e0cadc03efd164e1.json
          ├── 9c7ba42414477d5644d5c71a7b4d9fe451868dec8f1f9f6a40223d5c1f46d0e4.json
+         ├── 9d1cf18320978e9af27bf711dc1e8f2609e69ae215043151cb5297a8b0949650.json
+         ├── a3109d29b2c0f42b3fb507266d61c21145300a6c97be80290fa19741db8fdbdc.json
+         ├── a8a5941362f614eec8a185b0d71b5d5036b70d0f0abf16c8d6a767f0166ab2d2.json
          ├── a9f237523b119c704779702b3f88ca9ab6d99281195f642b8f8818de7a5913e1.json
          ├── aedb9ecd1d94065b9653517e79e717ef278e4107b50e1044c39d46f128187c52.json
          ├── b04b10ea4027f0a37cdfa9103813f2503cb3473a6889acc87198da70ffb28bca.json
          ├── b1a4dc27667ea99768000ecde132768ccaaf2bad18f7708b0ed011219ae93f0a.json
+         ├── b70cd92335f89a68e9803a7d3ef14f0d686a3e357b6d80ae513e224a6205156f.json
+         ├── b7ddf9a53df38678957129b34fc5e2fe593b205ec45571307cd2f6887d5be58c.json
+         ├── bb887c1a9cd12ce50294d15681b4de65810c0bf813a66a90b41ae44129e02c6a.json
+         ├── bc3bf6a6b07bb6498b67ee9d193bc54614196e3d404c3c94d08a2f1e57d6493c.json
          ├── bec01b594e34dd1f3035733875a7f4af54138e4540a4ec3a8f85213c163ca542.json
          ├── c02b34932c6183705a0377df9e308f245d3d80d821b6cff8c08ebb595820bd8b.json
          ├── c1b020ca37657b1a70be27d214a76823a522ed57ba0ab2daed5d1c53cba68039.json
@@ -2690,12 +2713,18 @@ Generated: 2026-05-12 09:01:56
          ├── d06bdd0b71d14eef7be4feaba28acee493d4a872eaf1bf18203e9da9e24bc709.json
          ├── d28a790d74a890fcb955e52287752bbc0553b824ab9d06ec48209c02d5ee61a4.json
          ├── d4504c5efbb94de75c73654d4fce8c8289d182d447a6560671492b28986d2e48.json
+         ├── d54675f3ac9cc2f2a3746c2a182b89efaf2a4f6f7556328fae3404b465fd22bf.json
          ├── dcd5bbbc93ef14e4fc551363703b154937aa621e48b38944e81a473257a16caf.json
          ├── dcecb23012e9cafc5328300bf001fa3e1510f0300a20c4eacafb45acfa285bac.json
+         ├── e17fc78b1b7269907d79d043e2e7122a650f63eae6b1d8d0d2d3bb5ca3153053.json
          ├── e20960c27ca5c9164fadd72c94f7d7cf80fe77b60111bc4154b568f065e06b55.json
+         ├── e89699ec693eab640a51ba44df897c02bf8dc81f253a7b34aac1098d921df923.json
          ├── e8e97f314bae951f4b6e127a60e5d7f7a1cf6cb8bf9dd9d6662e5fa6435cdbd1.json
+         ├── eeff36f74d2e6a1353faad6be94c5081bf91298dee671b37b4f2214c798364ee.json
          ├── f2d88eb4493c5dc5388ed97a07500a984fd6e21dc7d80bcd0daa86bbbef08cfc.json
+         ├── f498307c7eb858bb7a6abf6bde975851ae6057493a491ea48d91c9ef2433006b.json
          ├── f5373b00653d4e8bbc03a602a38676ca8125e5f9887432aafb067f962fe8f425.json
+         ├── f6609875d657f8416dcf788498283a5ec587aa2b3b5b023226e10a7cf942978f.json
          ├── f8254770e2171c16edfbc9d4e7920cb07718eaba10a5116cb92033556a2898ab.json
    ├── .graphify_analysis.json
    ├── .graphify_ast.json
@@ -2785,16 +2814,21 @@ Generated: 2026-05-12 09:01:56
 ├── align_batch_4.py
 ├── align_batch_5.py
 ├── ANALYSIS_REPORT.md
+├── build_graph.py
 ├── check_cache.py
 ├── CODEBASE_REVIEW.md
 ├── COMMIT_MSG.txt
+├── finalize.py
 ├── generate_gap_report.py
+├── label_communities.py
 ├── LICENSE
+├── merge_results.py
 ├── README.md
 ├── repair_drifts.py
 ├── run_ast.py
 ├── screenshot2.png
 ├── test.ftp
+├── update_report.py
 ├── vapt-dashboard.png
 ├── vapt-debug.txt
 ├── vapt-functions.php
@@ -2855,7 +2889,7 @@ Generated: 2026-05-12 09:01:56
 - T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/vapt_driver_manifest_v2.0.json
 - T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/scripts/Query-Risk.ps1
 
-... and 2302 more files
+... and 2336 more files
 
 ### Maintenance
 This file is auto-generated. To update it:
