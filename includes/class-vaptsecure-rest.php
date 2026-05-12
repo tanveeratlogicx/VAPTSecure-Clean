@@ -868,13 +868,14 @@ $runtime_verified = false;
             if ($requested_file === '__all__') {
                 $data_dir = VAPTSECURE_PATH . 'data';
                 if (is_dir($data_dir)) {
-                    $all_json = array_filter(
-                        scandir($data_dir), function ($f) {
+                    $dir_files = scandir($data_dir);
+                    $all_json = is_array($dir_files) ? array_filter(
+                        $dir_files, function ($f) {
                             return strtolower(pathinfo($f, PATHINFO_EXTENSION)) === 'json';
                         }
-                    );
-                    $hidden_files = get_option('vaptsecure_hidden_json_files', array());
-                    $removed_files = get_option('vaptsecure_removed_json_files', array());
+                    ) : array();
+                    $hidden_files = (array) get_option('vaptsecure_hidden_json_files', array());
+                    $removed_files = (array) get_option('vaptsecure_removed_json_files', array());
                     $hidden_normalized = array_map('sanitize_file_name', $hidden_files);
                     $removed_normalized = array_map('sanitize_file_name', $removed_files);
 
@@ -1273,11 +1274,12 @@ $runtime_verified = false;
         if (!is_dir($data_dir)) { return new WP_REST_Response([], 200);
         }
 
-        $files = array_diff(scandir($data_dir), array('..', '.'));
+        $dir_files = scandir($data_dir);
+        $files = is_array($dir_files) ? array_diff($dir_files, array('..', '.')) : array();
         $json_files = [];
 
-        $hidden_files  = get_option('vaptsecure_hidden_json_files', array());
-        $removed_files = get_option('vaptsecure_removed_json_files', array());
+        $hidden_files  = (array) get_option('vaptsecure_hidden_json_files', array());
+        $removed_files = (array) get_option('vaptsecure_removed_json_files', array());
         $active_option = get_option('vaptsecure_active_feature_file');
         $current_active = $active_option ? explode(',', $active_option) : array();
 
@@ -2035,10 +2037,11 @@ $runtime_verified = false;
         if (!is_dir($data_dir)) { return new WP_REST_Response([], 200);
         }
 
-        $files = array_diff(scandir($data_dir), array('..', '.'));
+        $dir_files = scandir($data_dir);
+        $files = is_array($dir_files) ? array_diff($dir_files, array('..', '.')) : array();
         $json_files = [];
-        $hidden_files  = get_option('vaptsecure_hidden_json_files', array());
-        $removed_files = get_option('vaptsecure_removed_json_files', array());
+        $hidden_files  = (array) get_option('vaptsecure_hidden_json_files', array());
+        $removed_files = (array) get_option('vaptsecure_removed_json_files', array());
 
         $hidden_normalized  = array_map('sanitize_file_name', $hidden_files);
         $removed_normalized = array_map('sanitize_file_name', $removed_files);
