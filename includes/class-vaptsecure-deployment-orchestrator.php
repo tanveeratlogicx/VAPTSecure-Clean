@@ -58,12 +58,12 @@ class VAPTSECURE_Deployment_Orchestrator
         // 1. Resolve Platform Matrix
         $platform_matrix = $schema['platform_matrix'] ?? $this->derive_matrix_from_legacy($schema, $impl_data);
         
-        error_log("VAPT ORCHESTRATOR: Processing {$risk_id} with profile={$profile}, targets=" . count($platform_matrix));
+        // error_log("VAPT ORCHESTRATOR: Processing {$risk_id} with profile={$profile}, targets=" . count($platform_matrix));
 
         // 2. Select Targets
         $targets = $this->resolve_targets($profile, $env, $platform_matrix);
         
-        error_log("VAPT ORCHESTRATOR: Selected targets for {$risk_id}: " . implode(', ', $targets));
+        // error_log("VAPT ORCHESTRATOR: Selected targets for {$risk_id}: " . implode(', ', $targets));
 
         // 3. Execute Deployment
         foreach ($targets as $platform) {
@@ -82,14 +82,14 @@ class VAPTSECURE_Deployment_Orchestrator
                     $is_enabled = filter_var($impl_data[$auto_key], FILTER_VALIDATE_BOOLEAN);
                 }
                 
-                error_log("VAPT ORCHESTRATOR: Deploying {$risk_id} to {$platform}, enabled=" . ($is_enabled ? 'true' : 'false'));
+                // error_log("VAPT ORCHESTRATOR: Deploying {$risk_id} to {$platform}, enabled=" . ($is_enabled ? 'true' : 'false'));
 
                 if ($is_enabled) {
                     $implementation = $platform_matrix[$platform];
                     $res = $deployer->deploy($risk_id, $implementation, true);
                 } else {
                     // [v4.2.0] Proactive Cleanup: Explicitly undeploy when disabled
-                    error_log("VAPT ORCHESTRATOR: Feature disabled, triggering proactive undeploy for {$risk_id} on {$platform}");
+                    // error_log("VAPT ORCHESTRATOR: Feature disabled, triggering proactive undeploy for {$risk_id} on {$platform}");
                     $target = $platform_matrix[$platform]['target'] ?? 'root';
                     $res = $deployer->undeploy($risk_id, $target);
                     // Standardize undeploy response
@@ -104,10 +104,10 @@ class VAPTSECURE_Deployment_Orchestrator
                     error_log("VAPT ORCHESTRATOR: Deploy failed for {$risk_id} -> {$platform}: " . $res->get_error_message());
                 } else {
                     $results[$platform] = array_merge(['success' => true], (array)$res);
-                    error_log("VAPT ORCHESTRATOR: Deploy/Undeploy success for {$risk_id} -> {$platform}");
+                    // error_log("VAPT ORCHESTRATOR: Deploy/Undeploy success for {$risk_id} -> {$platform}");
                 }
             } else {
-                error_log("VAPT ORCHESTRATOR: Skipping {$platform} - no deployer or no implementation matrix");
+                // error_log("VAPT ORCHESTRATOR: Skipping {$platform} - no deployer or no implementation matrix");
             }
         }
 

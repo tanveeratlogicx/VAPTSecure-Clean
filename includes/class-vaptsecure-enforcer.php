@@ -188,20 +188,20 @@ class VAPTSECURE_Enforcer
         }
 
         if ($toggle_off) {
-            error_log("VAPT ENFORCER: Toggle OFF detected for {$key}; removing feature from all config files.");
+            // error_log("VAPT ENFORCER: Toggle OFF detected for {$key}; removing feature from all config files.");
             self::undeploy_feature($key);
             return;
         }
 
-        error_log("VAPT ENFORCER: Toggle OFF NOT detected for {$key}; proceeding to deploy_feature.");
+        // error_log("VAPT ENFORCER: Toggle OFF NOT detected for {$key}; proceeding to deploy_feature.");
 
         $meta = VAPTSECURE_DB::get_feature_meta($key);
         if (!$meta) { 
-            error_log("VAPT ENFORCER: No meta found for {$key}, skipping dispatch");
+            // error_log("VAPT ENFORCER: No meta found for {$key}, skipping dispatch");
             return;
         }
         
-        error_log("VAPT ENFORCER: Dispatching enforcement for {$key}, is_enabled={$meta['is_enabled']}, is_enforced={$meta['is_enforced']}, is_adaptive={$meta['is_adaptive_deployment']}");
+        // error_log("VAPT ENFORCER: Dispatching enforcement for {$key}, is_enabled={$meta['is_enabled']}, is_enforced={$meta['is_enforced']}, is_adaptive={$meta['is_adaptive_deployment']}");
 
         // Fetch Status for Context
         global $wpdb;
@@ -214,14 +214,14 @@ class VAPTSECURE_Enforcer
         $raw_schema = $use_override_schema ? $meta['override_schema'] : $meta['generated_schema'];
         $schema = !empty($raw_schema) ? json_decode($raw_schema, true) : array();
         
-        error_log("VAPT ENFORCER: Schema has enforcement=" . (isset($schema['enforcement']) ? 'YES' : 'NO') . ", driver=" . ($schema['enforcement']['driver'] ?? 'none'));
+        // error_log("VAPT ENFORCER: Schema has enforcement=" . (isset($schema['enforcement']) ? 'YES' : 'NO') . ", driver=" . ($schema['enforcement']['driver'] ?? 'none'));
 
         $impl_data = self::resolve_impl($meta);
 
         // [FIX v1.4.0] Always deploy even if this feature has no enforcement block.
         // This ensures that toggling OFF removes previously written rules from config files.
         if (empty($schema['enforcement'])) {
-            error_log("VAPT ENFORCER: No enforcement block for {$key}, deploying feature to all platforms");
+            // error_log("VAPT ENFORCER: No enforcement block for {$key}, deploying feature to all platforms");
             self::deploy_feature($key, $schema, $impl_data);
             return;
         }
@@ -236,13 +236,13 @@ class VAPTSECURE_Enforcer
             $profile = get_option('vaptsecure_deployment_profile', 'auto_detect');
             $results = $orchestrator->orchestrate($key, $schema, $profile, $impl_data);
 
-            error_log("VAPT: Adaptive Deployment for {$key} results: " . json_encode($results));
+            // error_log("VAPT: Adaptive Deployment for {$key} results: " . json_encode($results));
             return;
         }
 
         // Non-adaptive: deploy to all relevant platforms for this feature only
         self::deploy_feature($key, $schema, $impl_data);
-        error_log("VAPT ENFORCER: Per-feature dispatch complete for {$key}");
+        // error_log("VAPT ENFORCER: Per-feature dispatch complete for {$key}");
     }
 
     /**
@@ -269,10 +269,10 @@ class VAPTSECURE_Enforcer
             if (is_wp_error($result)) {
                 error_log("VAPT ENFORCER: Apache deploy failed for {$key}: " . $result->get_error_message());
             } else {
-                error_log("VAPT ENFORCER: Apache deploy success for {$key}: " . json_encode($result));
+                // error_log("VAPT ENFORCER: Apache deploy success for {$key}: " . json_encode($result));
             }
         } else {
-            error_log("VAPT ENFORCER: No htaccess rules generated for {$key}");
+            // error_log("VAPT ENFORCER: No htaccess rules generated for {$key}");
         }
 
         // wp-config.php
@@ -283,7 +283,7 @@ class VAPTSECURE_Enforcer
             if (is_wp_error($result)) {
                 error_log("VAPT ENFORCER: Config deploy failed for {$key}: " . $result->get_error_message());
             } else {
-                error_log("VAPT ENFORCER: Config deploy success for {$key}");
+                // error_log("VAPT ENFORCER: Config deploy success for {$key}");
             }
         }
 
@@ -295,7 +295,7 @@ class VAPTSECURE_Enforcer
             if (is_wp_error($result)) {
                 error_log("VAPT ENFORCER: PHP deploy failed for {$key}: " . $result->get_error_message());
             } else {
-                error_log("VAPT ENFORCER: PHP deploy success for {$key}");
+                // error_log("VAPT ENFORCER: PHP deploy success for {$key}");
             }
         }
     }

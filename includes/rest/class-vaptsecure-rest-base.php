@@ -46,7 +46,7 @@ abstract class VAPTSECURE_REST_Base
         $login = $user ? $user->user_login : 'unknown';
 
         // Debug logging
-        error_log("VAPTSECURE_REST: check_read_permission - User ID: $uid ($login), is_super: " . ($is_super ? 'true' : 'false') . ", can_manage: " . ($can_manage ? 'true' : 'false'));
+        // error_log("VAPTSECURE_REST: check_read_permission - User ID: $uid ($login), is_super: " . ($is_super ? 'true' : 'false') . ", can_manage: " . ($can_manage ? 'true' : 'false'));
 
         if (!$is_super && !$can_manage) {
             error_log("VAPTSECURE_REST: check_read_permission FAILED for user ID $uid ($login). 'manage_options' capability required.");

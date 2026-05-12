@@ -97,7 +97,7 @@ class VAPTSECURE_Apache_Deployer implements VAPTSECURE_Driver_Interface
         
         // [FIX v4.0.x] Skip writing if rules are empty - prevents empty markers
         if (empty($rules)) {
-            error_log("VAPT APACHE DEPLOYER: No rules extracted for {$risk_id}, skipping write");
+            // error_log("VAPT APACHE DEPLOYER: No rules extracted for {$risk_id}, skipping write");
             // Try to undeploy any existing rules for this risk_id
             $this->undeploy($risk_id, $target);
             return ['status' => 'skipped', 'platform' => 'apache_htaccess', 'reason' => 'no_rules_extracted'];
@@ -248,7 +248,7 @@ class VAPTSECURE_Apache_Deployer implements VAPTSECURE_Driver_Interface
             return new WP_Error('vapt_write_error', 'Failed to write to .htaccess');
         }
 
-        error_log("VAPT APACHE DEPLOYER: write_rules success for {$risk_id} at {$this->htaccess_path} ({$result} bytes)");
+        // error_log("VAPT APACHE DEPLOYER: write_rules success for {$risk_id} at {$this->htaccess_path} ({$result} bytes)");
         return ['status' => 'deployed', 'platform' => 'apache_htaccess'];
     }
 
@@ -277,7 +277,7 @@ class VAPTSECURE_Apache_Deployer implements VAPTSECURE_Driver_Interface
         if ($result === false) {
             error_log("VAPT APACHE DEPLOYER: Failed to write global whitelist to {$this->htaccess_path}");
         } else {
-            error_log("VAPT APACHE DEPLOYER: Wrote global whitelist to {$this->htaccess_path} ({$result} bytes)");
+            // error_log("VAPT APACHE DEPLOYER: Wrote global whitelist to {$this->htaccess_path} ({$result} bytes)");
         }
     }
 
@@ -319,12 +319,12 @@ class VAPTSECURE_Apache_Deployer implements VAPTSECURE_Driver_Interface
             if ($result === false) {
                 error_log("VAPT APACHE DEPLOYER: undeploy failed for {$risk_id} at {$this->htaccess_path}");
             } else {
-                error_log("VAPT APACHE DEPLOYER: undeploy success for {$risk_id} at {$this->htaccess_path} ({$result} bytes)");
+                // error_log("VAPT APACHE DEPLOYER: undeploy success for {$risk_id} at {$this->htaccess_path} ({$result} bytes)");
             }
             return $result;
         }
 
-        error_log("VAPT APACHE DEPLOYER: No block found for {$risk_id} in {$this->htaccess_path} using any known marker format.");
+        // error_log("VAPT APACHE DEPLOYER: No block found for {$risk_id} in {$this->htaccess_path} using any known marker format.");
         return true;
     }
 

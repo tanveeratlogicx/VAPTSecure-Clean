@@ -1716,7 +1716,7 @@ $runtime_verified = false;
                     // Sync both is_enabled AND is_enforced for consistent enforcement
                     $meta_updates['is_enabled'] = $is_enabled ? 1 : 0;
                     $meta_updates['is_enforced'] = $is_enabled ? 1 : 0;
-                    error_log("VAPT: Toggled enforcement for $key to " . ($is_enabled ? 'ENABLED' : 'DISABLED') . " (synced from implementation_data to both is_enabled and is_enforced)");
+                    // error_log("VAPT: Toggled enforcement for $key to " . ($is_enabled ? 'ENABLED' : 'DISABLED') . " (synced from implementation_data to both is_enabled and is_enforced)");
                 }
             }
         }
@@ -1730,7 +1730,7 @@ $runtime_verified = false;
                     error_log("[VAPT Error] DB Update Failed for $key: " . $wpdb->last_error);
                 }
             }
-            error_log("VAPT REST: Triggering vaptsecure_feature_saved hook for feature '{$key}'");
+            // error_log("VAPT REST: Triggering vaptsecure_feature_saved hook for feature '{$key}'");
             do_action('vaptsecure_feature_saved', $key, $meta_updates);
         } else {
              // error_log("VAPT: No meta updates identified for $key");

@@ -99,11 +99,11 @@ class VAPTSECURE_PHP_Deployer implements VAPTSECURE_Driver_Interface
         if ($new_content !== $content) {
             $new_content = preg_replace("/(\r?\n){3,}/", "$1$1", $new_content);
             @file_put_contents($path, $new_content);
-            error_log("VAPT PHP DEPLOYER: Removed block for {$feature_key} from vapt-functions.php");
+            // error_log("VAPT PHP DEPLOYER: Removed block for {$feature_key} from vapt-functions.php");
             return true;
         }
 
-        error_log("VAPT PHP DEPLOYER: No block found for {$feature_key} in vapt-functions.php");
+        // error_log("VAPT PHP DEPLOYER: No block found for {$feature_key} in vapt-functions.php");
         return true;
     }
 

@@ -123,11 +123,11 @@ class VAPTSECURE_Config_Deployer implements VAPTSECURE_Driver_Interface
             $new_content = preg_replace("/\n\s*\n(\s*\n)+/", "\n\n", $new_content);
             @copy($wp_config_path, $wp_config_path . '.bak');
             file_put_contents($wp_config_path, trim($new_content) . "\n");
-            error_log("VAPT CONFIG DEPLOYER: Removed block for {$feature_key} from wp-config.php");
+            // error_log("VAPT CONFIG DEPLOYER: Removed block for {$feature_key} from wp-config.php");
             return true;
         }
 
-        error_log("VAPT CONFIG DEPLOYER: No block found for {$feature_key} in wp-config.php");
+        // error_log("VAPT CONFIG DEPLOYER: No block found for {$feature_key} in wp-config.php");
         return true;
     }
 
