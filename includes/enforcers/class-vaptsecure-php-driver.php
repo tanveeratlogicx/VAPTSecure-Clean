@@ -46,11 +46,17 @@ class VAPTSECURE_PHP_Driver implements VAPTSECURE_Driver_Interface
         $resolved_code = '';
     
         // Check platform implementations first (V2.0 Architecture)
-        if (isset($schema['platform_implementations']['PHP Functions'])) {
-            $impl = $schema['platform_implementations']['PHP Functions'];
-            if (!empty($impl['code'])) { $resolved_code = $impl['code'];
-            } elseif (!empty($impl['wrapped_code'])) { $resolved_code = $impl['wrapped_code'];
-            } elseif (!empty($impl['code_ref'])) { $resolved_code = self::resolve_pattern_code($impl['code_ref'], 'php_functions');
+        $php_platform_keys = array('PHP Functions', 'php_functions');
+        foreach ($php_platform_keys as $php_key) {
+            if (isset($schema['platform_implementations'][$php_key])) {
+                $impl = $schema['platform_implementations'][$php_key];
+                if (!empty($impl['code'])) { $resolved_code = $impl['code'];
+                } elseif (!empty($impl['wrapped_code'])) { $resolved_code = $impl['wrapped_code'];
+                } elseif (!empty($impl['code_ref'])) { $resolved_code = self::resolve_pattern_code($impl['code_ref'], 'php_functions');
+                }
+                if (!empty($resolved_code)) {
+                    break;
+                }
             }
         }
 

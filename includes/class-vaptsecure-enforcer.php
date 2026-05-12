@@ -532,7 +532,7 @@ class VAPTSECURE_Enforcer
     /**
      * Resolve a code_ref into concrete code from the bundled pattern library.
      */
-    private static function resolve_pattern_code_ref($ref, $platform)
+    public static function resolve_pattern_code_ref($ref, $platform)
     {
         $ref = trim((string) $ref);
         if ($ref === '') {
@@ -695,7 +695,10 @@ class VAPTSECURE_Enforcer
                 $target = 'root';
             }
 
-            if ($driver === 'htaccess' || $driver === 'universal') {
+            $has_htaccess_impl = ($driver === 'htaccess' || $driver === 'universal') ||
+                !empty($schema['platform_implementations']['.htaccess']) ||
+                !empty($schema['platform_implementations']['htaccess']);
+            if ($has_htaccess_impl) {
                 $feature_rules = VAPTSECURE_Htaccess_Driver::generate_rules($impl_data, $schema);
                 if (!empty($feature_rules)) {
                     if (!isset($targets_rules[$target])) {
@@ -748,7 +751,10 @@ class VAPTSECURE_Enforcer
                 $impl_data = self::resolve_impl($meta);
                 $driver = $schema['enforcement']['driver'] ?? '';
 
-                if ($driver === 'config' || $driver === 'wp-config' || $driver === 'wp_config' || $driver === 'universal') {
+                $has_config_impl = ($driver === 'config' || $driver === 'wp-config' || $driver === 'wp_config' || $driver === 'universal') ||
+                    !empty($schema['platform_implementations']['wp-config.php']) ||
+                    !empty($schema['platform_implementations']['wp_config']);
+                if ($has_config_impl) {
                     $feature_rules = VAPTSECURE_Config_Driver::generate_rules($impl_data, $schema);
                     if (!empty($feature_rules)) {
                         $all_rules[] = "// Rule for: " . ($meta['feature_key']);
@@ -1004,7 +1010,10 @@ class VAPTSECURE_Enforcer
             $impl_data = self::resolve_impl($meta);
             $driver = $schema['enforcement']['driver'] ?? '';
 
-            if ($driver === 'php_functions' || $driver === 'hook' || $driver === 'universal') {
+            $has_php_impl = ($driver === 'php_functions' || $driver === 'hook' || $driver === 'universal') ||
+                !empty($schema['platform_implementations']['PHP Functions']) ||
+                !empty($schema['platform_implementations']['php_functions']);
+            if ($has_php_impl) {
                 $feature_rules = VAPTSECURE_PHP_Driver::generate_rules($impl_data, $schema);
                 if (!empty($feature_rules) && is_array($feature_rules)) {
                     $all_rules = array_merge($all_rules, $feature_rules);
