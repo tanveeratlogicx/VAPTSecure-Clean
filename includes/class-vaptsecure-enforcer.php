@@ -251,6 +251,13 @@ class VAPTSECURE_Enforcer
      */
     private static function deploy_feature($key, $schema, $impl_data)
     {
+        include_once VAPTSECURE_PATH . 'includes/enforcers/class-vaptsecure-apache-deployer.php';
+        include_once VAPTSECURE_PATH . 'includes/enforcers/class-vaptsecure-config-deployer.php';
+        include_once VAPTSECURE_PATH . 'includes/enforcers/class-vaptsecure-php-deployer.php';
+        include_once VAPTSECURE_PATH . 'includes/enforcers/class-vaptsecure-htaccess-driver.php';
+        include_once VAPTSECURE_PATH . 'includes/enforcers/class-vaptsecure-config-driver.php';
+        include_once VAPTSECURE_PATH . 'includes/enforcers/class-vaptsecure-php-driver.php';
+
         // First, clean up any existing blocks for this feature across all platforms
         self::undeploy_feature($key);
 
@@ -299,6 +306,10 @@ class VAPTSECURE_Enforcer
      */
     private static function undeploy_feature($key)
     {
+        include_once VAPTSECURE_PATH . 'includes/enforcers/class-vaptsecure-apache-deployer.php';
+        include_once VAPTSECURE_PATH . 'includes/enforcers/class-vaptsecure-config-deployer.php';
+        include_once VAPTSECURE_PATH . 'includes/enforcers/class-vaptsecure-php-deployer.php';
+
         $deployer = new VAPTSECURE_Apache_Deployer();
         $deployer->undeploy($key, 'root');
         $deployer->undeploy($key, 'uploads');
