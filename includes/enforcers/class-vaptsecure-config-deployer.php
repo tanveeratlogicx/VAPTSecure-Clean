@@ -107,7 +107,28 @@ class VAPTSECURE_Config_Deployer implements VAPTSECURE_Driver_Interface
 
     public function undeploy($feature_key)
     {
-        return $this->deploy($feature_key, '', false);
+        $wp_config_path = $this->resolve_wp_config_path();
+        if (!$wp_config_path) {
+            return true;
+        }
+
+        $content = file_get_contents($wp_config_path);
+        $start_marker = "// BEGIN VAPT FEATURE: {$feature_key}";
+        $end_marker   = "// END VAPT FEATURE: {$feature_key}";
+
+        $pattern = "/" . preg_quote($start_marker, '/') . ".*?" . preg_quote($end_marker, '/') . "/s";
+        $new_content = preg_replace($pattern, '', $content);
+
+        if ($new_content !== $content) {
+            $new_content = preg_replace("/\n\s*\n(\s*\n)+/", "\n\n", $new_content);
+            @copy($wp_config_path, $wp_config_path . '.bak');
+            file_put_contents($wp_config_path, trim($new_content) . "\n");
+            error_log("VAPT CONFIG DEPLOYER: Removed block for {$feature_key} from wp-config.php");
+            return true;
+        }
+
+        error_log("VAPT CONFIG DEPLOYER: No block found for {$feature_key} in wp-config.php");
+        return true;
     }
 
     private function resolve_wp_config_path()

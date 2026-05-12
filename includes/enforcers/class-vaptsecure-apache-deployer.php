@@ -300,6 +300,7 @@ class VAPTSECURE_Apache_Deployer implements VAPTSECURE_Driver_Interface
             return $result;
         }
 
+        error_log("VAPT APACHE DEPLOYER: No block found for {$risk_id} in {$this->htaccess_path}");
         return true;
     }
 

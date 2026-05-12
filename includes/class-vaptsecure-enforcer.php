@@ -171,6 +171,22 @@ class VAPTSECURE_Enforcer
             }
         }
 
+        // Fallback: detect toggle-off from implementation_data when top-level params are missing
+        if (!$toggle_off && !empty($data['implementation_data'])) {
+            $impl = is_string($data['implementation_data']) ? json_decode($data['implementation_data'], true) : $data['implementation_data'];
+            if (is_array($impl)) {
+                foreach (array('feat_enabled', 'enabled', 'prot_enabled') as $toggle_key) {
+                    if (array_key_exists($toggle_key, $impl)) {
+                        $toggle_value = filter_var($impl[$toggle_key], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+                        if ($toggle_value === false) {
+                            $toggle_off = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
         if ($toggle_off) {
             error_log("VAPT ENFORCER: Toggle OFF detected for {$key}; removing feature from all config files.");
             self::undeploy_feature($key);

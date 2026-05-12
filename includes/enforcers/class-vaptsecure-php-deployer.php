@@ -84,7 +84,27 @@ class VAPTSECURE_PHP_Deployer implements VAPTSECURE_Driver_Interface
 
     public function undeploy($feature_key)
     {
-        return $this->deploy($feature_key, '', false);
+        $path = VAPTSECURE_PATH . 'vapt-functions.php';
+        if (!file_exists($path)) {
+            return true;
+        }
+
+        $content = file_get_contents($path);
+        $start_marker = "// BEGIN VAPT FEATURE: {$feature_key}";
+        $end_marker   = "// END VAPT FEATURE: {$feature_key}";
+
+        $pattern = "/" . preg_quote($start_marker, '/') . ".*?" . preg_quote($end_marker, '/') . "/s";
+        $new_content = preg_replace($pattern, '', $content);
+
+        if ($new_content !== $content) {
+            $new_content = preg_replace("/(\r?\n){3,}/", "$1$1", $new_content);
+            @file_put_contents($path, $new_content);
+            error_log("VAPT PHP DEPLOYER: Removed block for {$feature_key} from vapt-functions.php");
+            return true;
+        }
+
+        error_log("VAPT PHP DEPLOYER: No block found for {$feature_key} in vapt-functions.php");
+        return true;
     }
 
     private function normalize_rules($input)
