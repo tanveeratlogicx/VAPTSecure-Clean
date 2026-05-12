@@ -1668,9 +1668,11 @@ class VAPTSECURE_Build
         $guard_code .= "    \$is_wildcard_build = defined('VAPTSECURE_DOMAIN_WILDCARD') && VAPTSECURE_DOMAIN_WILDCARD;\n";
         $guard_code .= "    \$domain_match = (\$current_host === \$locked_host);\n";
         $guard_code .= "    if (!\$domain_match && \$is_wildcard_build && \$locked_host !== '') {\n";
-        $guard_code .= "        if (substr(\$current_host, -strlen(\$locked_host)) === \$locked_host) {\n";
-        $guard_code .= "            \$prefix = substr(\$current_host, 0, strlen(\$current_host) - strlen(\$locked_host));\n";
-        $guard_code .= "            if (\$prefix === '' || substr(\$prefix, -1) === '.') { \$domain_match = true; }\n";
+        $guard_code .= "        \$current_labels = explode('.', \$current_host);\n";
+        $guard_code .= "        \$locked_labels  = explode('.', \$locked_host);\n";
+        $guard_code .= "        if (count(\$current_labels) > count(\$locked_labels)) {\n";
+        $guard_code .= "            \$suffix = array_slice(\$current_labels, -count(\$locked_labels));\n";
+        $guard_code .= "            if (\$suffix === \$locked_labels) { \$domain_match = true; }\n";
         $guard_code .= "        }\n";
         $guard_code .= "    }\n";
         $guard_code .= "    if (!\$domain_match) {\n";

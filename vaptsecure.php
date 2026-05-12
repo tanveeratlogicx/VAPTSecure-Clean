@@ -209,12 +209,14 @@ function vaptsecure_is_domain_match()
         return false;
     }
 
-    // Wildcard matching: allow the apex domain plus any proper subdomain,
-    // but never allow substring lookalikes such as hermasnet.com.evil.com.
+    // Wildcard matching: strict dot-delimited label comparison.
+    // Prevents substring lookalikes such as hermasnet.com.evil.com.
     if (defined("VAPTSECURE_DOMAIN_WILDCARD") && VAPTSECURE_DOMAIN_WILDCARD) {
-        if (substr($current_host, -strlen($locked_domain)) === $locked_domain) {
-            $prefix = substr($current_host, 0, strlen($current_host) - strlen($locked_domain));
-            if ($prefix === "" || substr($prefix, -1) === ".") {
+        $current_labels = explode('.', $current_host);
+        $locked_labels  = explode('.', $locked_domain);
+        if (count($current_labels) > count($locked_labels)) {
+            $suffix = array_slice($current_labels, -count($locked_labels));
+            if ($suffix === $locked_labels) {
                 return true;
             }
         }
