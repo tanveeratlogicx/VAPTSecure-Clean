@@ -47,6 +47,9 @@ class VAPTSECURE_Config_Driver implements VAPTSECURE_Driver_Interface
                 'feat_enabled' => $platform_code,
                 'enabled' => $platform_code,
             );
+        } elseif (!empty($schema['platform_implementations']) && is_array($schema['platform_implementations'])) {
+            // Multi-platform feature with no wp-config.php code — skip to avoid cross-platform leakage
+            return array();
         }
 
         // 🛡️ TWO-WAY DEACTIVATION (v4.0.x - Toggle Detection for wp-config)

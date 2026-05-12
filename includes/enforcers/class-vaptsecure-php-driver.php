@@ -60,6 +60,11 @@ class VAPTSECURE_PHP_Driver implements VAPTSECURE_Driver_Interface
             }
         }
 
+        // Skip multi-platform features that have no PHP Functions implementation
+        if (empty($resolved_code) && !empty($schema['platform_implementations']) && is_array($schema['platform_implementations'])) {
+            return [];
+        }
+
         // Fallback to mappings
         if (empty($resolved_code) || $resolved_code === '/* Managed via PHP hooks */') {
             foreach ($mappings as $key => $m_data) {

@@ -41,7 +41,8 @@ class VAPTSECURE_Htaccess_Driver implements VAPTSECURE_Driver_Interface
     '/php_flag\s/i',
     '/AddHandler.*php/i',
     '/Action\s/i',
-    '/SetHandler\s/i'
+    '/SetHandler\s/i',
+    '/^\s*define\s*\(/im',
     ];
 
     /**
@@ -118,6 +119,9 @@ class VAPTSECURE_Htaccess_Driver implements VAPTSECURE_Driver_Interface
                 'feat_enabled' => $platform_code,
                 'enabled' => $platform_code,
             );
+        } elseif (!empty($schema['platform_implementations']) && is_array($schema['platform_implementations'])) {
+            // Multi-platform feature with no .htaccess code — skip to avoid cross-platform leakage
+            return array();
         }
 
         // 1. Iterate mappings and bind data
