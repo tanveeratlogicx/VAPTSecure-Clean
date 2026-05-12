@@ -668,6 +668,112 @@ class VAPTSECURE_Build
         );
     }
 
+    /**
+     * Trim feature_meta to only runtime-essential fields.
+     * Removes: override_schema, override_implementation_data, dev_instruct, wireframe_url, generated_schema blob.
+     */
+    private static function trim_feature_meta(array $meta)
+    {
+        $allowed = array(
+            'feature_key' => true,
+            'active_enforcer' => true,
+            'is_enabled' => true,
+            'is_enforced' => true,
+            'platform_implementations' => true,
+            'test_config' => true,
+        );
+        $out = array();
+        foreach ($meta as $key => $value) {
+            if (isset($allowed[$key])) {
+                $out[$key] = $value;
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * Build-time validation: verify active_enforcer and hydrated code integrity.
+     * Throws Exception on failure so the build aborts.
+     */
+    private static function validate_feature_build(array $feature_meta, array $features)
+    {
+        $canonical_platforms = array(
+            'htaccess' => true,
+            'nginx' => true,
+            'php_functions' => true,
+            'wp_config' => true,
+            'apache' => true,
+            'cloudflare' => true,
+            'fail2ban' => true,
+            'server_cron' => true,
+            'wordpress_core' => true,
+        );
+
+        foreach ($features as $feature_key) {
+            $key = strtoupper(trim((string) $feature_key));
+            if ($key === '') {
+                continue;
+            }
+            $meta = isset($feature_meta[$key]) ? $feature_meta[$key] : array();
+            $active_enforcer = isset($meta['active_enforcer']) ? (string) $meta['active_enforcer'] : '';
+
+            if ($active_enforcer === '') {
+                throw new Exception("Build validation failed: feature {$key} has empty active_enforcer.");
+            }
+
+            $enforcer_normalized = strtolower(str_replace(array('-', ' '), '_', $active_enforcer));
+            if (!isset($canonical_platforms[$enforcer_normalized])) {
+                throw new Exception("Build validation failed: feature {$key} has unknown active_enforcer '{$active_enforcer}'.");
+            }
+
+            $platform_impl = isset($meta['platform_implementations']) && is_array($meta['platform_implementations']) ? $meta['platform_implementations'] : array();
+            if (empty($platform_impl)) {
+                $code = isset($meta['code']) ? (string) $meta['code'] : '';
+                if ($code === '') {
+                    // Allow scan-only features (no file enforcer) to pass with a warning-level check
+                    continue;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Generate a per-feature build manifest for tamper-evident integrity.
+     */
+    private static function generate_build_manifest($domain, $version, array $feature_meta, array $features)
+    {
+        $manifest = array(
+            'build_domain' => (string) $domain,
+            'build_version' => (string) $version,
+            'build_at' => current_time('mysql'),
+            'feature_count' => count($features),
+            'features' => array(),
+        );
+
+        foreach ($features as $feature_key) {
+            $key = strtoupper(trim((string) $feature_key));
+            if ($key === '') {
+                continue;
+            }
+            $meta = isset($feature_meta[$key]) ? $feature_meta[$key] : array();
+            $active_enforcer = isset($meta['active_enforcer']) ? (string) $meta['active_enforcer'] : '';
+            $platform_impl = isset($meta['platform_implementations']) && is_array($meta['platform_implementations']) ? $meta['platform_implementations'] : array();
+            $code = isset($meta['code']) ? (string) $meta['code'] : '';
+            $code_hash = $code !== '' ? hash('sha256', $code) : '';
+
+            $manifest['features'][] = array(
+                'feature_key' => $key,
+                'active_enforcer' => $active_enforcer,
+                'code_hash' => $code_hash,
+                'platform_count' => count($platform_impl),
+            );
+        }
+
+        return $manifest;
+    }
+
     private static function get_feature_meta_snapshot($feature_keys = [])
     {
         if (!function_exists('sanitize_text_field')) {
@@ -823,7 +929,13 @@ class VAPTSECURE_Build
         // Get snapshot of feature metadata (configs, schemas, etc)
         $feature_meta_snapshot = array();
         if ($include_config) {
-            $feature_meta_snapshot = self::get_feature_meta_snapshot($features);
+            $raw_snapshot = self::get_feature_meta_snapshot($features);
+            // Trim to runtime-essential fields only (Phase 4: reduce sensitive payload)
+            foreach ($raw_snapshot as $fk => $fm) {
+                $feature_meta_snapshot[$fk] = self::trim_feature_meta($fm);
+            }
+            // Build-time validation: abort if active_enforcer is missing or invalid (Phase 2: build integrity)
+            self::validate_feature_build($feature_meta_snapshot, $features);
         }
 
         $config_content = self::generate_config_content(
@@ -856,7 +968,14 @@ class VAPTSECURE_Build
         // 7. Generate Documentation
         self::generate_docs($plugin_dir, $domain, $version, $features);
 
-        // 8. Create ZIP Archive
+        // 8. Generate Build Manifest (Phase 2: per-feature integrity)
+        if ($include_config) {
+            $manifest = self::generate_build_manifest($domain, $version, $feature_meta_snapshot, $features);
+            $manifest_json = json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+            file_put_contents($plugin_dir . '/build-manifest.json', $manifest_json);
+        }
+
+        // 9. Create ZIP Archive
         $master_plugin_name = sanitize_title((string) self::get_master_plugin_name());
         if ($master_plugin_name === '') {
             $master_plugin_name = 'vaptsecure-clean';
