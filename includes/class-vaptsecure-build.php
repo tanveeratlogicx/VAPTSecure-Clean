@@ -1104,14 +1104,9 @@ class VAPTSECURE_Build
         $config .= "                }\n";
         $config .= "            }\n";
         $config .= "        }\n";
-        $config .= "        if ( \$section !== 'default' && isset( \$payload['features'] ) && is_array( \$payload['features'] ) ) {\n";
-        $config .= "            foreach ( \$payload['features'] as \$key ) {\n";
-        $config .= "                \$key = (string) \$key;\n";
-        $config .= "                if ( \$key === '' ) { continue; }\n";
-        $config .= "                \$const = 'VAPTSECURE_FEATURE_' . strtoupper( str_replace( '-', '_', \$key ) );\n";
-        $config .= "                if ( ! defined( \$const ) ) { define( \$const, true ); }\n";
-        $config .= "            }\n";
-        $config .= "        }\n";
+        // Extended section can NOT define VAPTSECURE_FEATURE_* constants — Default is the sole authority
+        // to prevent a tampered Extended payload from enabling unauthorized features.
+
         $config .= "        if ( \$section !== 'default' && ! defined( 'VAPTSECURE_ACTIVE_DATA_FILE' ) && ! empty( \$payload['active_data_file'] ) ) { define( 'VAPTSECURE_ACTIVE_DATA_FILE', (string) \$payload['active_data_file'] ); }\n";
         $config .= "        if ( \$section !== 'default' && ! defined( 'VAPTSECURE_BUILD_AT' ) && ! empty( \$payload['build_at'] ) ) { define( 'VAPTSECURE_BUILD_AT', (string) \$payload['build_at'] ); }\n";
         $config .= "        if ( \$section !== 'default' && ! defined( 'VAPTSECURE_SECURITY_ALERT_EMAIL' ) && ! empty( \$payload['security_alert_email_b64'] ) ) { define( 'VAPTSECURE_SECURITY_ALERT_EMAIL', base64_decode( (string) \$payload['security_alert_email_b64'] ) ); }\n";
@@ -1121,6 +1116,20 @@ class VAPTSECURE_Build
         $config .= "}\n";
         $config .= "if ( ! function_exists( 'vaptsecure_load_config_sections' ) ) {\n";
         $config .= "    function vaptsecure_load_config_sections() {\n";
+        $config .= "        // Verify Default config integrity (fail-closed on tamper)\n";
+        $config .= "        if ( defined( 'VAPTSECURE_DEFAULT_CONFIG_HASH' ) && defined( 'VAPTSECURE_DEFAULT_CONFIG_B64' ) ) {\n";
+        $config .= "            if ( hash( 'sha256', VAPTSECURE_DEFAULT_CONFIG_B64 ) !== VAPTSECURE_DEFAULT_CONFIG_HASH ) {\n";
+        $config .= "                if ( ! defined( 'VAPTSECURE_CONFIG_HASH_MISMATCH' ) ) { define( 'VAPTSECURE_CONFIG_HASH_MISMATCH', true ); }\n";
+        $config .= "                return false;\n";
+        $config .= "            }\n";
+        $config .= "        }\n";
+        $config .= "        // Verify Extended config integrity (fail-closed on tamper)\n";
+        $config .= "        if ( defined( 'VAPTSECURE_EXTENDED_CONFIG_HASH' ) && defined( 'VAPTSECURE_EXTENDED_CONFIG_B64' ) && VAPTSECURE_EXTENDED_CONFIG_B64 !== '' ) {\n";
+        $config .= "            if ( hash( 'sha256', VAPTSECURE_EXTENDED_CONFIG_B64 ) !== VAPTSECURE_EXTENDED_CONFIG_HASH ) {\n";
+        $config .= "                if ( ! defined( 'VAPTSECURE_CONFIG_HASH_MISMATCH' ) ) { define( 'VAPTSECURE_CONFIG_HASH_MISMATCH', true ); }\n";
+        $config .= "                return false;\n";
+        $config .= "            }\n";
+        $config .= "        }\n";
         $config .= "        \$default_json = base64_decode( VAPTSECURE_DEFAULT_CONFIG_B64, true );\n";
         $config .= "        \$default_payload = \$default_json ? json_decode( \$default_json, true ) : null;\n";
         $config .= "        if ( is_array( \$default_payload ) ) { vaptsecure_apply_config_payload( \$default_payload, 'default' ); }\n";
