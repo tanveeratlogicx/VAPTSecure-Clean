@@ -303,7 +303,8 @@ class VAPTSECURE_Apache_Deployer implements VAPTSECURE_Driver_Interface
         foreach ($markers as $m) {
             $start = preg_quote($m[0], '/');
             $end   = preg_quote($m[1], '/');
-            $pattern = "/{$start}.*?{$end}/s";
+            // Support optional suffixes like ' - ACTIVE' or ' - DISABLED' in the start marker
+            $pattern = "/{$start}[^\n]*?.*?{$end}/s";
             
             $temp_content = preg_replace($pattern, '', $new_content);
             if ($temp_content !== $new_content) {
