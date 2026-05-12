@@ -17,7 +17,9 @@ class VAPTSECURE_Build
     {
         $result = preg_replace($pattern, $replacement, $subject, $limit);
         if ($result === null) {
-            return $subject;
+            $error = error_get_last();
+            $msg = isset($error['message']) ? $error['message'] : 'unknown regex error';
+            throw new Exception("safe_preg_replace failed: {$msg} (pattern: {$pattern})");
         }
         return $result;
     }
@@ -962,6 +964,9 @@ class VAPTSECURE_Build
         // 5. Rewrite Main Plugin File Headers & Logic
         self::rewrite_main_plugin_file($plugin_dir, $plugin_slug, $white_label, $version, $domain, $config_filename, $include_config, $require_wp, $require_php);
 
+        // 5b. Post-rewrite audit: scan for banned builder-only strings (Phase 6: rewrite safety)
+        self::audit_rewritten_plugin_file($plugin_dir);
+
         // 6. Generate uninstall cleanup entry for WordPress deletion flow.
         self::generate_uninstall_php($plugin_dir);
 
@@ -1708,6 +1713,55 @@ class VAPTSECURE_Build
         }
 
         file_put_contents($dest_main, $content);
+    }
+
+    /**
+     * Post-rewrite audit: scan generated vaptsecure.php for banned builder-only strings.
+     * Throws Exception if any banned string or builder-only REST route is found.
+     */
+    private static function audit_rewritten_plugin_file($plugin_dir)
+    {
+        $dest_main = $plugin_dir . '/vaptsecure.php';
+        if (!file_exists($dest_main)) {
+            return;
+        }
+        $content = file_get_contents($dest_main);
+        if ($content === false) {
+            throw new Exception("Post-rewrite audit failed: could not read {$dest_main}.");
+        }
+
+        $banned_strings = array(
+            'vaptsecure_get_superadmin_identity',
+            'vaptsecure_render_workbench_page',
+            'class-vaptsecure-build.php',
+        );
+
+        $found = array();
+        foreach ($banned_strings as $banned) {
+            if (strpos($content, $banned) !== false) {
+                $found[] = $banned;
+            }
+        }
+
+        // Also detect builder-only REST route registrations that should have been stripped
+        $builder_only_routes = array(
+            '/reset-limit',
+            '/ping',
+            '/features/update',
+            '/features/transition',
+            '/upload-json',
+            '/domains',
+            '/settings/enforcement',
+        );
+        foreach ($builder_only_routes as $route) {
+            if (strpos($content, "'" . $route . "'") !== false || strpos($content, '"' . $route . '"') !== false) {
+                $found[] = "builder-only REST route: {$route}";
+            }
+        }
+
+        if (!empty($found)) {
+            throw new Exception("Post-rewrite audit failed: banned strings found in client build: " . implode(', ', $found) . ". Build aborted.");
+        }
     }
 
     private static function get_feature_title_map()
