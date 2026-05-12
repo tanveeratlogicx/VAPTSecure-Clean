@@ -94,30 +94,30 @@ class VAPTSECURE_Htaccess_Driver implements VAPTSECURE_Driver_Interface
         $rules = array();
         $mappings = isset($enf_config['mappings']) ? $enf_config['mappings'] : array();
 
-        // [v4.1.x] Fallback to platform_implementations when enforcement.mappings is empty or mismatched
-        if (empty($mappings)) {
-            $platform_candidates = array('.htaccess', 'htaccess');
-            foreach ($platform_candidates as $candidate) {
-                if (!empty($schema['platform_implementations'][$candidate])) {
-                    $impl = $schema['platform_implementations'][$candidate];
-                    $platform_code = '';
-                    if (is_array($impl)) {
-                        $platform_code = $impl['code'] ?? $impl['wrapped_code'] ?? '';
-                        if (empty($platform_code) && !empty($impl['code_ref'])) {
-                            $platform_code = VAPTSECURE_Enforcer::resolve_pattern_code_ref($impl['code_ref'], 'htaccess');
-                        }
-                    } else {
-                        $platform_code = (string) $impl;
+        // [v4.1.x] Platform-first: always use platform_implementations for .htaccess
+        // so that driver='universal' features get the correct per-platform code.
+        $platform_code = null;
+        foreach (array('.htaccess', 'htaccess') as $candidate) {
+            if (!empty($schema['platform_implementations'][$candidate])) {
+                $impl = $schema['platform_implementations'][$candidate];
+                if (is_array($impl)) {
+                    $platform_code = $impl['code'] ?? $impl['wrapped_code'] ?? '';
+                    if (empty($platform_code) && !empty($impl['code_ref'])) {
+                        $platform_code = VAPTSECURE_Enforcer::resolve_pattern_code_ref($impl['code_ref'], 'htaccess');
                     }
-                    if (!empty($platform_code)) {
-                        $mappings = array(
-                            'feat_enabled' => $platform_code,
-                            'enabled' => $platform_code,
-                        );
-                        break;
-                    }
+                } else {
+                    $platform_code = (string) $impl;
+                }
+                if (!empty($platform_code)) {
+                    break;
                 }
             }
+        }
+        if (!empty($platform_code)) {
+            $mappings = array(
+                'feat_enabled' => $platform_code,
+                'enabled' => $platform_code,
+            );
         }
 
         // 1. Iterate mappings and bind data

@@ -474,6 +474,28 @@ class VAPTSECURE_Enforcer
             }
         }
 
+        // [v4.1.x] Multi-platform auto-detection: if a feature has 2+ real platform
+        // implementations, force driver to 'universal' so rebuild_htaccess,
+        // rebuild_config, and rebuild_php_functions all process it.
+        if (!empty($schema['platform_implementations']) && is_array($schema['platform_implementations'])) {
+            $real_platforms = 0;
+            foreach ($schema['platform_implementations'] as $pname => $pimpl) {
+                if (is_array($pimpl)) {
+                    if (!empty($pimpl['code']) || !empty($pimpl['wrapped_code']) || !empty($pimpl['code_ref'])) {
+                        $real_platforms++;
+                    }
+                } elseif (is_string($pimpl) && strlen(trim($pimpl)) > 0) {
+                    $real_platforms++;
+                }
+            }
+            if ($real_platforms > 1) {
+                if (empty($schema['enforcement']) || !is_array($schema['enforcement'])) {
+                    $schema['enforcement'] = array();
+                }
+                $schema['enforcement']['driver'] = 'universal';
+            }
+        }
+
         return $schema;
     }
 
@@ -695,10 +717,7 @@ class VAPTSECURE_Enforcer
                 $target = 'root';
             }
 
-            $has_htaccess_impl = ($driver === 'htaccess' || $driver === 'universal') ||
-                !empty($schema['platform_implementations']['.htaccess']) ||
-                !empty($schema['platform_implementations']['htaccess']);
-            if ($has_htaccess_impl) {
+            if ($driver === 'htaccess' || $driver === 'universal') {
                 $feature_rules = VAPTSECURE_Htaccess_Driver::generate_rules($impl_data, $schema);
                 if (!empty($feature_rules)) {
                     if (!isset($targets_rules[$target])) {
@@ -751,10 +770,7 @@ class VAPTSECURE_Enforcer
                 $impl_data = self::resolve_impl($meta);
                 $driver = $schema['enforcement']['driver'] ?? '';
 
-                $has_config_impl = ($driver === 'config' || $driver === 'wp-config' || $driver === 'wp_config' || $driver === 'universal') ||
-                    !empty($schema['platform_implementations']['wp-config.php']) ||
-                    !empty($schema['platform_implementations']['wp_config']);
-                if ($has_config_impl) {
+                if ($driver === 'config' || $driver === 'wp-config' || $driver === 'wp_config' || $driver === 'universal') {
                     $feature_rules = VAPTSECURE_Config_Driver::generate_rules($impl_data, $schema);
                     if (!empty($feature_rules)) {
                         $all_rules[] = "// Rule for: " . ($meta['feature_key']);
@@ -1010,10 +1026,7 @@ class VAPTSECURE_Enforcer
             $impl_data = self::resolve_impl($meta);
             $driver = $schema['enforcement']['driver'] ?? '';
 
-            $has_php_impl = ($driver === 'php_functions' || $driver === 'hook' || $driver === 'universal') ||
-                !empty($schema['platform_implementations']['PHP Functions']) ||
-                !empty($schema['platform_implementations']['php_functions']);
-            if ($has_php_impl) {
+            if ($driver === 'php_functions' || $driver === 'hook' || $driver === 'universal') {
                 $feature_rules = VAPTSECURE_PHP_Driver::generate_rules($impl_data, $schema);
                 if (!empty($feature_rules) && is_array($feature_rules)) {
                     $all_rules = array_merge($all_rules, $feature_rules);
