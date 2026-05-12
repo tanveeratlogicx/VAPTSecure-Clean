@@ -2764,7 +2764,7 @@ var vaptLog = window.vaptLog || {
               return !removedPlatforms.some(rp => p.includes(rp));
             });
 
-            // [v4.0.x-source-of-truth] Use live audit label to pick correct platform implementation
+            // [v4.0.x-source-of-truth] Use live audit label as source of truth for file path
             const auditLabel = liveAudit?.audit_summary?.[0]?.label || '';
             const labelToPlatform = {
               './.htaccess': 'htaccess',
@@ -2775,33 +2775,53 @@ var vaptLog = window.vaptLog || {
             };
             const auditPlatform = labelToPlatform[auditLabel] || '';
 
-            // 1. Try audit-matched platform first (ground truth)
+            // targetFile is ALWAYS from live audit when available; never from stale schema
+            if (auditLabel) {
+              targetFile = auditLabel;
+            } else if (candidates.length > 0) {
+              // Live audit not loaded yet: use schema-declared platform for file path ONLY
+              for (const [plat, details] of candidates) {
+                const p = plat.toLowerCase().replace(/\s+/g, '_');
+                if (p === preferredPlatform || p.includes(preferredPlatform) || preferredPlatform.includes(p)) {
+                  targetFile = details.target_file || plat;
+                  break;
+                }
+              }
+              if (!targetFile) {
+                targetFile = candidates[0][1].target_file || candidates[0][0];
+              }
+            } else {
+              return null; // No data at all
+            }
+
+            // 1. Try audit-matched platform for code snippet (ground truth)
             if (auditPlatform) {
               for (const [plat, details] of candidates) {
                 const p = plat.toLowerCase().replace(/\s+/g, '_');
                 if (p === auditPlatform || p.includes(auditPlatform) || auditPlatform.includes(p) || (auditPlatform === 'htaccess' && p.includes('litespeed'))) {
                   addedCode = details.wrapped_code || details.code;
-                  targetFile = details.target_file || plat;
                   break;
                 }
               }
             }
-            // 2. Try schema-declared driver match
-            if (!addedCode) {
+            // 2. If live audit present but no matching platform, show generic message
+            //    instead of falling back to wrong platform code
+            if (!addedCode && auditLabel) {
+              addedCode = __('/* Rules are deployed to this file.\n   Code preview is not available for this platform in the current schema. */', 'vaptsecure');
+            }
+            // 3. Live audit not loaded: use schema-declared platform for code
+            if (!addedCode && !auditLabel) {
               for (const [plat, details] of candidates) {
                 const p = plat.toLowerCase().replace(/\s+/g, '_');
                 if (p === preferredPlatform || p.includes(preferredPlatform) || preferredPlatform.includes(p)) {
                   addedCode = details.wrapped_code || details.code;
-                  targetFile = details.target_file || plat;
                   break;
                 }
               }
             }
-            // 3. Fallback to first valid candidate
-            if (!addedCode && candidates.length > 0) {
-              const [plat, details] = candidates[0];
-              addedCode = details.wrapped_code || details.code;
-              targetFile = details.target_file || plat;
+            // 4. Last resort: first valid candidate (only when no live audit)
+            if (!addedCode && !auditLabel && candidates.length > 0) {
+              addedCode = candidates[0][1].wrapped_code || candidates[0][1].code;
             }
 
             if (!addedCode) return null;
