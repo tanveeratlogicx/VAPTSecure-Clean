@@ -2,12 +2,12 @@
 
 ## Project: VAPTSecure-Clean
 
-Generated: 2026-05-12 09:54:36
+Generated: 2026-05-12 10:55:56
 
 ### File Structure Summary
-- Total Files: 2386
+- Total Files: 2373
 - Total Directories: 440
-- File Extensions: .rules: 25, .agrules: 20, .md: 220, .json: 404, .rar: 2, .php: 204, .ps1: 10, .zip: 21, .yml: 6, .css: 10, .js: 276, .jsx: 25, .clinerules: 5, .roorules: 5, .windsurfrules: 5, .mdc: 1, .cjs: 194, .cts: 194, .ts: 706, .graphify_python: 1, .txt: 4, .html: 1, .py: 15, .png: 2, .ftp: 1
+- File Extensions: .rules: 25, .agrules: 20, .md: 220, .json: 397, .rar: 2, .php: 204, .ps1: 10, .zip: 21, .yml: 6, .css: 10, .js: 276, .jsx: 25, .clinerules: 5, .roorules: 5, .windsurfrules: 5, .mdc: 1, .cjs: 194, .cts: 194, .ts: 706, .graphify_python: 1, .txt: 3, .html: 1, .py: 10, .png: 2, .ftp: 1
 
 ### Directory Tree
 ├── .agent
@@ -2797,14 +2797,6 @@ Generated: 2026-05-12 09:54:36
    ├── ClientBuild-SSoT-Discrepancy-Map.md
    ├── Universal-Enforcement-Alignment-Report.md
 ├── .clinerules
-├── .graphify_analysis.json
-├── .graphify_ast.json
-├── .graphify_cached.json
-├── .graphify_detect.json
-├── .graphify_extract.json
-├── .graphify_labels.json
-├── .graphify_semantic.json
-├── .graphify_uncached.txt
 ├── .roorules
 ├── .rules
 ├── .windsurfrules
@@ -2814,21 +2806,16 @@ Generated: 2026-05-12 09:54:36
 ├── align_batch_4.py
 ├── align_batch_5.py
 ├── ANALYSIS_REPORT.md
-├── build_graph.py
-├── check_cache.py
 ├── CODEBASE_REVIEW.md
 ├── COMMIT_MSG.txt
-├── finalize.py
 ├── generate_gap_report.py
-├── label_communities.py
 ├── LICENSE
-├── merge_results.py
 ├── README.md
 ├── repair_drifts.py
-├── run_ast.py
 ├── screenshot2.png
 ├── test.ftp
-├── update_report.py
+├── trace_enforcer.py
+├── trace_ssot.py
 ├── vapt-dashboard.png
 ├── vapt-debug.txt
 ├── vapt-functions.php
@@ -2889,7 +2876,7 @@ Generated: 2026-05-12 09:54:36
 - T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/vapt_driver_manifest_v2.0.json
 - T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/scripts/Query-Risk.ps1
 
-... and 2336 more files
+... and 2323 more files
 
 ### Maintenance
 This file is auto-generated. To update it:

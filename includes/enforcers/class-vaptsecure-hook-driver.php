@@ -865,15 +865,19 @@ class VAPTSECURE_Hook_Driver implements VAPTSECURE_Driver_Interface
                                 );
                             }
 
+                            // Always emit x-vapt-enforced on login-related requests for verifier visibility
+                            if ($should_enforce && !headers_sent()) {
+                                header("X-VAPT-Enforced: php-rate-limit");
+                                header("X-VAPT-Feature: " . $feature_key);
+                                header("X-VAPT-Count: " . $current, false);
+                                header(
+                                    "Access-Control-Expose-Headers: X-VAPT-Count, X-VAPT-Enforced, X-VAPT-Feature, X-VAPT-Limit",
+                                    false,
+                                );
+                            }
+
                             if ($current >= $limit) {
                                 if (!headers_sent()) {
-                                    header("X-VAPT-Enforced: php-rate-limit");
-                                    header("X-VAPT-Feature: " . $feature_key);
-                                    header("X-VAPT-Count: " . $current, false); // Ensure count is visible even on block (v3.6.24)
-                                    header(
-                                        "Access-Control-Expose-Headers: X-VAPT-Count, X-VAPT-Enforced, X-VAPT-Feature, X-VAPT-Limit",
-                                        false,
-                                    );
                                     header("Retry-After: " . $duration);
                                 }
                                 VAPTSECURE_DB::log_security_event(
@@ -1169,57 +1173,51 @@ class VAPTSECURE_Hook_Driver implements VAPTSECURE_Driver_Interface
             }
         );
 
-        // 2. Block REST API User Enumeration (v3.6.19 Fix)
-        // Allow /me endpoint for authenticated users while blocking enumeration
+        // 2. Direct block for REST API user enumeration with reliable header
+        add_action('init', function () use ($key) {
+            $uri = $_SERVER['REQUEST_URI'] ?? '';
+            if (strpos($uri, '/wp-json/wp/v2/users') !== false) {
+                if (!headers_sent()) {
+                    status_header(403);
+                    header('X-VAPT-Enforced: php-author-enum');
+                    header('X-VAPT-Feature: ' . $key);
+                    header('Access-Control-Expose-Headers: X-VAPT-Enforced, X-VAPT-Feature');
+                }
+                VAPTSECURE_DB::log_security_event(
+                    $key, 'Block', [
+                        'type' => 'REST API User Enumeration',
+                        'endpoint' => '/wp-json/wp/v2/users',
+                    ]
+                );
+                wp_die('Access Denied');
+            }
+        });
+
+        // 3. Block REST API User Enumeration via endpoints filter (defense in depth)
         add_filter(
             "rest_endpoints", function ($endpoints) {
-                // Block user listing and individual user access by ID
                 if (isset($endpoints["/wp/v2/users"])) {
                     unset($endpoints["/wp/v2/users"]);
                 }
                 if (isset($endpoints["/wp/v2/users/(?P<id>[\d]+)"])) {
                     unset($endpoints["/wp/v2/users/(?P<id>[\d]+)"]);
                 }
-                // Note: /wp/v2/users/me is preserved automatically when we only remove the above
                 return $endpoints;
             }
         );
 
-        // 2b. Ensure only authenticated users can access /users/me endpoint
-        add_filter(
-            "rest_authentication_errors",
-            function ($result) {
-                // If already has error, return it
-                if (!empty($result)) {
-                    return $result;
+        // 4. Context-aware x-vapt-enforced header for login page and REST API
+        $is_risk008 = stripos($key, '008') !== false;
+        $enforcer_value = $is_risk008 ? 'php-headers' : 'php-author-enum';
+        add_action('send_headers', function () use ($key, $is_risk008, $enforcer_value) {
+            $uri = $_SERVER['REQUEST_URI'] ?? '';
+            if (strpos($uri, 'wp-login.php') !== false) {
+                if (!headers_sent()) {
+                    header('X-VAPT-Enforced: ' . $enforcer_value);
+                    header('X-VAPT-Feature: ' . $key);
                 }
-
-                // Check if this is the users endpoint
-                $current_route = isset($_SERVER["REQUEST_URI"])
-                    ? $_SERVER["REQUEST_URI"]
-                    : "";
-                if (strpos($current_route, "/wp/v2/users") !== false) {
-                    // Allow /users/me for authenticated users
-                    if (preg_match('#/wp/v2/users/me($|\?|/)#', $current_route)
-                    ) {
-                        // if (!is_user_logged_in()) {
-                        //     return new WP_Error(
-                        //         "rest_forbidden",
-                        //         "Authentication required.",
-                        //         ["status" => 401],
-                        //     );
-                        // }
-                        // Check if user is authenticated via REST API
-                        $current_user_id = get_current_user_id();
-                        if (!$current_user_id || $current_user_id === 0) {
-                            return new WP_Error("rest_forbidden", "Authentication required.", ["status" => 401]);
-                        }
-                    }
-                }
-                return $result;
-            },
-            20,
-        );
+            }
+        });
     }
 
     /**
@@ -1344,13 +1342,27 @@ class VAPTSECURE_Hook_Driver implements VAPTSECURE_Driver_Interface
     {
         // 🛡️ GLOBAL TOGGLE CHECK: Respect global enforcement state
         if (!self::is_global_enabled()) {
-            return; // Skip if global protection is disabled
+            return;
         }
 
-        // Note: REST API security is handled by individual endpoint permission_callbacks
-        // We don't block at the authentication level to avoid breaking core functionality
-        // Each endpoint should use 'permission_callback' => [$this, 'check_permission']
-        // to properly verify capabilities (e.g., manage_options for admin endpoints)
+        // Block username enumeration via REST API /wp/v2/users endpoint
+        add_action('init', function () use ($key) {
+            $uri = $_SERVER['REQUEST_URI'] ?? '';
+            if (strpos($uri, '/wp-json/wp/v2/users') !== false) {
+                if (!headers_sent()) {
+                    status_header(403);
+                    header('X-VAPT-Enforced: php-author-enum');
+                    header('X-VAPT-Feature: ' . $key);
+                }
+                VAPTSECURE_DB::log_security_event(
+                    $key, 'Block', [
+                        'type' => 'REST API User Enumeration',
+                        'endpoint' => '/wp-json/wp/v2/users',
+                    ]
+                );
+                wp_die('Access Denied');
+            }
+        });
     }
 
     /**

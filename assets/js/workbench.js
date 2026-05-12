@@ -66,6 +66,18 @@ var vaptLog = window.vaptLog || {
     const [isNavigatorOpen, setIsNavigatorOpen] = useState(true);
     const [hasInitializedCategory, setHasInitializedCategory] = useState(false);
 
+    // Strip legacy URL params on mount so they never appear in the address bar
+    useEffect(() => {
+      const url = new URL(window.location);
+      let changed = false;
+      ['status', 'category', 'feature'].forEach(p => {
+        if (url.searchParams.has(p)) { url.searchParams.delete(p); changed = true; }
+      });
+      if (changed) {
+        window.history.replaceState({}, '', url);
+      }
+    }, []);
+
     // [v4.1.4] Persistence: Sync state to LocalStorage only (URL params hidden for privacy)
     useEffect(() => {
       localStorage.setItem('vaptsecure_workbench_active_status', activeStatus);
