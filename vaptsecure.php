@@ -27,7 +27,7 @@ if (file_exists(dirname(__FILE__) . "/vendor/autoload.php")) {
 if (defined("VAPTSECURE_BUILD_VERSION")) {
     define("VAPTSECURE_VERSION", VAPTSECURE_BUILD_VERSION);
 } else {
-    define("VAPTSECURE_VERSION", "3.7.21"); // v3.7.21 - Comprehensive debug log cleanup and noise reduction (Duplicate REST logs)
+    define("VAPTSECURE_VERSION", "3.7.22"); // v3.7.22 - Comprehensive live state audit & marker detection fix
 }
 if (!defined("VAPTSECURE_DATA_VERSION")) {
     define("VAPTSECURE_DATA_VERSION", "2.5.0");

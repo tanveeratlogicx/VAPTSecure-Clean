@@ -927,43 +927,41 @@ class VAPTSECURE_Enforcer
             array('key' => 'htaccess', 'label' => './.htaccess', 'path' => $htaccess_path, 'type' => 'htaccess'),
             array('key' => 'wp-config', 'label' => './wp-config.php', 'path' => $wp_config_path, 'type' => 'config'),
             array('key' => 'php_functions', 'label' => 'vapt-functions.php', 'path' => $php_path, 'type' => 'php'),
+            array('key' => 'nginx', 'label' => 'nginx.conf', 'path' => VAPTSECURE_PATH . 'vaptsecure-nginx.rules', 'type' => 'htaccess'), // Use htaccess logic for simple markers
+            array('key' => 'fail2ban', 'label' => '/etc/fail2ban/jail.local', 'path' => '/etc/fail2ban/jail.local', 'type' => 'config'),
         );
 
         $audit = array();
         $found_in_any = false;
 
         foreach ($targets as $t) {
-            $exists = file_exists($t['path']);
+            $exists = @file_exists($t['path']);
             $content = $exists ? @file_get_contents($t['path']) : '';
             $has_marker = false;
 
             if ($content !== false && $content !== '') {
-                // [v4.0.x] Case-insensitive, robust marker detection
-                $lower_content = strtolower($content);
-                $lower_key      = strtolower($feature_key);
-                if ($t['type'] === 'htaccess') {
-                    $has_marker = (
-                        stripos($content, '# BEGIN VAPT ' . $feature_key) !== false ||
-                        stripos($content, '# ' . $feature_key) !== false ||
-                        (stripos($content, '# BEGIN VAPT SECURITY RULES') !== false && stripos($content, $feature_key) !== false) ||
-                        // Also catch standalone # RISK-XXX lines (common Apache deployer format)
-                        preg_match('/#\s+' . preg_quote($feature_key, '/') . '\b/i', $content) === 1
-                    );
-                } elseif ($t['type'] === 'config') {
-                    $has_marker = (
-                        stripos($content, 'BEGIN VAPT CONFIG RULES') !== false ||
-                        stripos($content, 'BEGIN VAPT SECURITY RULES') !== false ||
-                        stripos($content, $feature_key) !== false ||
-                        stripos($content, '/* ' . $feature_key) !== false ||
-                        stripos($content, '// ' . $feature_key) !== false
-                    );
-                } elseif ($t['type'] === 'php') {
-                    $has_marker = (
-                        stripos($content, '// BEGIN VAPT ' . $feature_key) !== false ||
-                        stripos($content, '# BEGIN VAPT ' . $feature_key) !== false ||
-                        stripos($content, '/* BEGIN VAPT ' . $feature_key) !== false ||
-                        stripos($content, $feature_key) !== false
-                    );
+                // [v4.1.0] Comprehensive Marker Detection
+                $marker_formats = [
+                    "VAPT PROTECTION: {$feature_key}",
+                    "VAPT-RISK: {$feature_key}",
+                    "VAPT FEATURE: {$feature_key}",
+                    "VAPT {$feature_key}",
+                    "BEGIN VAPT {$feature_key}",
+                    "/* BEGIN VAPT {$feature_key}",
+                    "// BEGIN VAPT {$feature_key}",
+                    "# BEGIN VAPT {$feature_key}"
+                ];
+
+                foreach ($marker_formats as $mf) {
+                    if (stripos($content, $mf) !== false) {
+                        $has_marker = true;
+                        break;
+                    }
+                }
+
+                // Fallback for simple comment-only markers
+                if (!$has_marker) {
+                    $has_marker = preg_match('/#\s+' . preg_quote($feature_key, '/') . '\b/i', $content) === 1;
                 }
             }
 
