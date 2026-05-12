@@ -89,9 +89,7 @@ class VAPTSECURE_PHP_Driver implements VAPTSECURE_Driver_Interface
         }
 
         if (!empty($resolved_code) && $resolved_code !== '/* Managed via PHP hooks */') {
-            $rules[] = "// BEGIN VAPT $feature_key";
             $rules[] = $resolved_code;
-            $rules[] = "// END VAPT $feature_key";
         }
 
         return $rules;

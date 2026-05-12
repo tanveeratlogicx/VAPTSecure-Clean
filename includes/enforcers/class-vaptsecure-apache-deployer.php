@@ -47,7 +47,12 @@ class VAPTSECURE_Apache_Deployer implements VAPTSECURE_Driver_Interface
             $upload_dir = wp_upload_dir();
             $this->htaccess_path = $upload_dir['basedir'] . '/.htaccess';
         } else {
-            $this->htaccess_path = ABSPATH . '.htaccess';
+            // [FIX v4.0.x] Use get_home_path if available for accurate Apache root detection (Unify with Driver)
+            if (function_exists('get_home_path')) {
+                $this->htaccess_path = get_home_path() . '.htaccess';
+            } else {
+                $this->htaccess_path = ABSPATH . '.htaccess';
+            }
         }
     }
 
@@ -283,14 +288,32 @@ class VAPTSECURE_Apache_Deployer implements VAPTSECURE_Driver_Interface
         }
 
         $content = file_get_contents($this->htaccess_path);
-        $start_marker = "# BEGIN VAPT PROTECTION: {$risk_id}";
-        $end_marker = "# END VAPT PROTECTION: {$risk_id}";
+        
+        // Robust per-feature removal (v4.0.1) - Check multiple marker formats
+        $markers = [
+            ["# BEGIN VAPT PROTECTION: {$risk_id}", "# END VAPT PROTECTION: {$risk_id}"],
+            ["# BEGIN VAPT-RISK: {$risk_id}", "# END VAPT-RISK: {$risk_id}"],
+            ["# BEGIN VAPT FEATURE: {$risk_id}", "# END VAPT FEATURE: {$risk_id}"],
+            ["# BEGIN VAPT {$risk_id}", "# END VAPT {$risk_id}"]
+        ];
 
-        // Use regex to match block regardless of suffix
-        $pattern = "/" . preg_quote($start_marker, '/') . ".*?" . preg_quote($end_marker, '/') . "/s";
-        $new_content = preg_replace($pattern, '', $content);
+        $new_content = $content;
+        $removed = false;
 
-        if ($new_content !== $content) {
+        foreach ($markers as $m) {
+            $start = preg_quote($m[0], '/');
+            $end   = preg_quote($m[1], '/');
+            $pattern = "/{$start}.*?{$end}/s";
+            
+            $temp_content = preg_replace($pattern, '', $new_content);
+            if ($temp_content !== $new_content) {
+                $new_content = $temp_content;
+                $removed = true;
+            }
+        }
+
+        if ($removed) {
+            $new_content = preg_replace("/\n\s*\n(\s*\n)+/", "\n\n", $new_content);
             $result = $this->safe_file_put($this->htaccess_path, trim($new_content) . "\n");
             if ($result === false) {
                 error_log("VAPT APACHE DEPLOYER: undeploy failed for {$risk_id} at {$this->htaccess_path}");
@@ -300,7 +323,7 @@ class VAPTSECURE_Apache_Deployer implements VAPTSECURE_Driver_Interface
             return $result;
         }
 
-        error_log("VAPT APACHE DEPLOYER: No block found for {$risk_id} in {$this->htaccess_path}");
+        error_log("VAPT APACHE DEPLOYER: No block found for {$risk_id} in {$this->htaccess_path} using any known marker format.");
         return true;
     }
 

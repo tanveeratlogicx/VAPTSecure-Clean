@@ -1507,6 +1507,8 @@ $runtime_verified = false;
                 if (is_array($impl_temp)) {
                     $impl_temp[$auto_key] = $force_sync_val;
                     $impl_temp['enabled'] = $force_sync_val;
+                    $impl_temp['feat_enabled'] = $force_sync_val;
+                    $impl_temp['prot_enabled'] = $force_sync_val;
                     $request->set_param('implementation_data', $impl_temp);
                 }
             } else {
@@ -1515,6 +1517,8 @@ $runtime_verified = false;
                 if (!is_array($existing_impl)) { $existing_impl = []; }
                 $existing_impl[$auto_key] = $force_sync_val;
                 $existing_impl['enabled'] = $force_sync_val;
+                $existing_impl['feat_enabled'] = $force_sync_val;
+                $existing_impl['prot_enabled'] = $force_sync_val;
                 $request->set_param('implementation_data', $existing_impl);
                 $force_inject_impl = true;
             }

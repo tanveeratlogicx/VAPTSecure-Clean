@@ -193,6 +193,8 @@ class VAPTSECURE_Enforcer
             return;
         }
 
+        error_log("VAPT ENFORCER: Toggle OFF NOT detected for {$key}; proceeding to deploy_feature.");
+
         $meta = VAPTSECURE_DB::get_feature_meta($key);
         if (!$meta) { 
             error_log("VAPT ENFORCER: No meta found for {$key}, skipping dispatch");
@@ -298,7 +300,8 @@ class VAPTSECURE_Enforcer
     private static function undeploy_feature($key)
     {
         $deployer = new VAPTSECURE_Apache_Deployer();
-        $deployer->undeploy($key);
+        $deployer->undeploy($key, 'root');
+        $deployer->undeploy($key, 'uploads');
 
         $deployer = new VAPTSECURE_Config_Deployer();
         $deployer->undeploy($key);
