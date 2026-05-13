@@ -928,7 +928,6 @@ class VAPTSECURE_Enforcer
             array('key' => 'wp-config', 'label' => './wp-config.php', 'path' => $wp_config_path, 'type' => 'config'),
             array('key' => 'php_functions', 'label' => 'vapt-functions.php', 'path' => $php_path, 'type' => 'php'),
             array('key' => 'nginx', 'label' => 'nginx.conf', 'path' => VAPTSECURE_PATH . 'vaptsecure-nginx.rules', 'type' => 'htaccess'), // Use htaccess logic for simple markers
-            array('key' => 'fail2ban', 'label' => '/etc/fail2ban/jail.local', 'path' => '/etc/fail2ban/jail.local', 'type' => 'config'),
         );
 
         $audit = array();

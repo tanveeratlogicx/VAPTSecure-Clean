@@ -59,11 +59,6 @@ class VAPTSECURE_Environment_Detector
           'capabilities' => ['runtime_blocking', 'high_performance_rewrite', 'lsapi_optimizations'],
           'requirements' => ['mod_rewrite', 'litespeed_finish_request']
         ],
-        'fail2ban' => [
-          'detected_by' => ['php_sapi_detection:any'], 
-          'capabilities' => ['ip_blocking', 'brute_force_protection'],
-          'requirements' => ['jail_local_writable']
-        ],
         'server_cron' => [
           'detected_by' => ['php_sapi_detection:any'], // Universal for Linux/Unix hosts
           'capabilities' => ['background_tasks', 'scheduled_enforcement'],

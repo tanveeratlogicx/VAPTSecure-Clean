@@ -127,8 +127,7 @@ class VAPTSECURE_Deployment_Orchestrator
         'apache_htaccess',   // Apache .htaccess
         'php_functions',    // PHP runtime enforcement
         'wp_config',        // WordPress config (always included if available)
-        'server_cron',      // Cron-based enforcement
-        'fail2ban'          // Fail2ban integration
+        'server_cron'       // Cron-based enforcement
     ];
 
     /**
@@ -151,8 +150,7 @@ class VAPTSECURE_Deployment_Orchestrator
             'apache_htaccess' => ['apache', 'mod_rewrite', 'allowoverride'],
             'php_functions'   => ['php'],
             'wp_config'       => ['wordpress'],
-            'server_cron'     => ['cron'],
-            'fail2ban'        => ['fail2ban']
+            'server_cron'     => ['cron']
         ];
 
         $required = $compatibility_map[$platform] ?? [];

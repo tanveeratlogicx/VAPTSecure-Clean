@@ -663,9 +663,6 @@ $runtime_verified = false;
             if ($value === 'server-cron' || $value === 'server_cron' || $value === 'php-cron' || $value === 'phpcron') {
                 return 'php-cron';
             }
-            if ($value === 'fail2ban') {
-                return 'fail2ban';
-            }
             return $value;
         };
 
@@ -713,9 +710,6 @@ $runtime_verified = false;
             if ($platform === 'cloudflare') {
                 return 'cloudflare';
             }
-            if ($platform === 'fail2ban' || strpos($operation, 'jail') !== false) {
-                return 'fail2ban';
-            }
             if ($platform === 'wp-config' || strpos($operation, 'constant') !== false || strpos($operation, 'config') !== false) {
                 return 'wp-config';
             }
@@ -729,7 +723,7 @@ $runtime_verified = false;
         };
 
         $platform_hints = $collect_platform_hints($schema);
-        $platform_priority = array('htaccess', 'nginx', 'cloudflare', 'php-headers', 'php-cron', 'wp-config', 'fail2ban');
+        $platform_priority = array('htaccess', 'nginx', 'cloudflare', 'php-headers', 'php-cron', 'wp-config');
         $primary_platform = '';
         foreach ($platform_priority as $candidate) {
             if (in_array($candidate, $platform_hints, true)) {
@@ -789,17 +783,14 @@ $runtime_verified = false;
             $probe['expected_enforcer'] = $expected_enforcer ?: 'php-author-enum';
         } elseif (strpos($blob, 'login') !== false 
             || strpos($blob, 'rate limiting') !== false 
-            || strpos($blob, 'brute force') !== false 
-            || strpos($blob, 'brute-force') !== false
             || strpos($blob, 'password reset') !== false
             || strpos($blob, 'lost password') !== false
             || strpos($blob, 'auth') !== false
-            || $primary_platform === 'fail2ban'
         ) {
             $probe['path'] = '/wp-login.php';
             $probe['expected_statuses'] = array(401, 403, 404, 405, 429);
-            $probe['expected_enforcer'] = $expected_enforcer ?: 'fail2ban';
-} elseif (strpos($blob, 'directory') !== false 
+            $probe['expected_enforcer'] = $expected_enforcer ?: 'php-headers';
+        } elseif (strpos($blob, 'directory') !== false 
             || strpos($blob, 'indexing') !== false 
             || strpos($blob, 'uploads') !== false
         ) {
