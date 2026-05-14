@@ -1,4 +1,7 @@
-# VAPT Bundle v2.0 Risk Consolidation Patch
+# VAPT Bundle v2.0 Risk Consolidation Patch (LEGACY)
+
+> **⚠️ LEGACY DOCUMENT — SUPERSEDED**
+> This changelog documents the 14-finding consolidation patch applied to the original 127-risk catalogue. The live skill bundle has since been expanded to **133 risks** (RISK-001 through RISK-135, excluding RISK-123/RISK-124 which were deleted per the v3.0 platform scope contract). The `*.risk_consolidated.json` files referenced below no longer exist as separate artefacts; their contents were merged into the canonical v2.0 bundle files. Retain this document for historical reference only.
 
 Patch purpose: incorporate 14 externally supplied WordPress/VAPT findings into the existing VAPT risk catalogue without creating duplicate RiskIDs or changing the JSON file structure.
 
@@ -18,17 +21,17 @@ Patch purpose: incorporate 14 externally supplied WordPress/VAPT findings into t
 | 10 | Unauthenticated Exposure of WordPress REST API Endpoints | RISK-006 | Title and summary updated to explicitly cover unauthenticated REST endpoint exposure. |
 | 11 | Clickjacking | RISK-014 | Title and summary updated to explicitly reference clickjacking via missing anti-framing header. |
 | 12 | Public Exposure of Debug Log File | RISK-034 | Title and summary updated to explicitly cover public wp-content/debug.log exposure. |
-| 13 | Information Disclosure via readme.html | RISK-011 | Summary cleaned and strengthened; stray “New” text removed. |
+| 13 | Information Disclosure via readme.html | RISK-011 | Summary cleaned and strengthened; stray "New" text removed. |
 | 14 | No Input Validation | RISK-127 | Existing definition retained; summary strengthened for untrusted input/injection risk. |
 
-## Files Patched
+## Files Patched (Legacy — merged into canonical bundle)
 
-- `interface_schema_v2.0.risk_consolidated.json`
-- `enforcer_pattern_library_v2.0.risk_consolidated.json`
-- `vapt_driver_manifest_v2.0.risk_consolidated.json`
-- `ai_agent_instructions_v2.0.risk_consolidated.json`
+- `interface_schema_v2.0.risk_consolidated.json` → merged into `interface_schema_v2.0.json`
+- `enforcer_pattern_library_v2.0.risk_consolidated.json` → merged into `enforcer_pattern_library_v2.0.json`
+- `vapt_driver_manifest_v2.0.risk_consolidated.json` → merged into `vapt_driver_manifest_v2.0.json`
+- `ai_agent_instructions_v2.0.risk_consolidated.json` → merged into `ai_agent_instructions_v2.0.json`
 
-## Validation Results
+## Validation Results (at time of patch — 127 risks)
 
 - JSON parse validation: passed for all patched JSON files.
 - Risk count retained: 127 in interface schema, pattern library, and driver manifest.
@@ -39,6 +42,10 @@ Patch purpose: incorporate 14 externally supplied WordPress/VAPT findings into t
 - Driver required fields remain present for all manifest steps.
 - Driver `write_block` values still contain matching begin/end markers.
 
+## Subsequent Changes Since This Patch
+
+The 127-risk catalogue was later expanded to 133 risks with the addition of RISK-128 through RISK-135. RISK-123 and RISK-124 (Caddy-native risks) were deleted per the v3.0 platform scope contract (`vapt_platform_contract_v3.0.json`). The auto-heal consistency contract (`vapt_autoheal_contract_v2.0.json`) was added to document and remediate cross-file consistency gaps. All consolidated changes are now reflected in the canonical v2.0 bundle files.
+
 ## Scope Control
 
-No enforcement code blocks, driver write blocks, rollback markers, target files, or driver behavior were changed. This patch is limited to catalogue wording/title/summary consolidation and AI risk index title alignment.
+No enforcement code blocks, driver write blocks, rollback markers, target files, or driver behavior were changed. This patch was limited to catalogue wording/title/summary consolidation and AI risk index title alignment.

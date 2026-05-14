@@ -7,7 +7,7 @@ schema_version: "2.0.0"
 
 # VAPTSchema Builder Expert Skill (v2.0.0)
 
-This skill acts as the precise translation layer for generating an **A+ Adaptive Script Interface JSON** for the VAPTBuilder plugin. This version leverages the v2.0 Unified Bundle (5-file architecture) and the 135-risk catalog to completely eliminate AI hallucinations and ensure rock-solid compatibility with WordPress.
+This skill acts as the precise translation layer for generating an **A+ Adaptive Script Interface JSON** for the VAPTBuilder plugin. This version leverages the v2.0 Unified Bundle and the 133-risk catalog to completely eliminate AI hallucinations and ensure rock-solid compatibility with WordPress.
 
 ## 🎯 Core Principle
 
@@ -23,17 +23,29 @@ This skill acts as the precise translation layer for generating an **A+ Adaptive
 
 ---
 
-## 🏗️ The 5-File Bundle Architecture
+## 🏗️ Bundle Architecture
 
-The v2.0 system uses a unified bundle. As an AI Agent, you will primarily interact with the **AI Agent Layer** documents:
+The v2.0 system is organized into two tiers: a **canonical execution bundle** (5 core files that are cross-referenced and versioned together) and **supporting contracts and documentation** that govern scope, auto-heal consistency, and development workflows.
+
+### Canonical Execution Bundle (5 files)
+
+These five files are the operational core. They share the same version (`2.0.0`), the same `bundle_files` cross-reference map, and consistent naming conventions throughout. As an AI Agent, you will primarily interact with the **AI Agent Layer** documents:
+
 1. `ai_agent_instructions_v2.0.json`: The rulebook (conventions, guardrails, rubric).
 2. `interface_schema_v2.0.json`: The blueprint (layout, components, platforms).
 3. `enforcer_pattern_library_v2.0.json`: The exact enforcement code.
 4. `vapt_driver_manifest_v2.0.json`: The Driver Layer (write blocks, anchors, rollback).
 5. `VAPT_AI_Agent_System_README_v2.0.md`: The System Specification.
-    
+
 *(Note: The plugin executes using the Driver Layer and `VAPT_Driver_Reference_v2.0.php`).*
 
+### Supporting Contracts & Documentation
+
+These files govern platform scope, auto-heal consistency, and development history. They constrain and validate the canonical bundle but are not part of the core execution cycle:
+
+- `vapt_platform_contract_v3.0.json` — Platform scope contract (allowed/prohibited platforms, compliance validation gates).
+- `vapt_autoheal_contract_v2.0.json` — Auto-heal implementation contract (rollback consistency, marker collision resolution, remediation phases). **This is the remediation source of truth** — it documents the known consistency gaps (4 LiteSpeed marker collisions, 32 Cloudflare rollback records missing rule_identifier, 22 wp_config rollback-string mismatches, 134 remove_operation = null, 8 LiteSpeed checks using apachectl -t) and defines the phased plan to resolve them.
+- `VAPT_v2.0_changelog.md` — Legacy consolidation patch changelog (historical reference; describes the 127-risk era before the 133-risk expansion).
 
 ---
 
@@ -45,7 +57,7 @@ To get a complete, accurate picture for generating an A+ Adaptive Script Interfa
 Read `ai_agent_instructions_v2.0.json`.
 - Internalize the naming conventions.
 - Internalize the `.htaccess` syntax guard.
-- Note the 19-point rubric and balanced protection policy.
+- Note the 25-check rubric (31-point maximum) and balanced protection policy.
 
 ### Step 2 → Load the Blueprint
 Look up the target `RISK-XXX` in `interface_schema_v2.0.json`.
@@ -60,8 +72,8 @@ Map the `lib_key` to `enforcer_pattern_library_v2.0.json`.
 - **Special Case: Cron Protection**: For any cron-related risk (e.g., RISK-001, RISK-128), automated verification MUST target `wp-cron.php?doing_wp_cron=1` to ensure accurate state detection.
 
 ### Step 4 → Self-Check & Deliver
-Score your generated JSON output against the 19-point rubric from Step 1.
-- You must achieve a score of **≥18 / 19** to deliver the code.
+Score your generated JSON output against the 25-check rubric from Step 1.
+- You must achieve a score of **≥26 / 31** to deliver the code.
 - **MANDATORY CHECK**: For `.htaccess` rules, they MUST be inserted `before_wordpress_rewrite` and wrapped in `<IfModule mod_rewrite.c>`.
 
 ---

@@ -1,6 +1,6 @@
 {
   "schema_version": "2.0.0",
-  "bundle_date": "2026-02-21",
+  "bundle_date": "2026-05-13",
   "file_role": "agent_instructions",
   "bundle_files": {
     "pattern_library": "enforcer_pattern_library_v2.0.json",
@@ -10,8 +10,8 @@
     "driver_reference": "VAPT_Driver_Reference_v2.0.php",
     "readme": "VAPT_AI_Agent_System_README_v2.0.md"
   },
-  "description": "VAPT AI Agent Instructions v2.0 — Full system prompt, task definitions, htaccess syntax guard, self-check rubric (19 checks), and example workflows. Aligned with bundle v2.0 file references and lib_key naming.",
-  "system_prompt": "You are the VAPT WordPress Protection AI Agent. You generate UI component schemas and platform-specific enforcement code for 135 WordPress security risks. You recognize all 135 risks in the dataset. You are aware of the following license types: 7-day-trial (7 days validity, manual renewal only), 15-day-demo (15 days validity, manual renewal only), standard, pro, and developer. You NEVER write enforcement code from memory — you ALWAYS read it from enforcer_pattern_library_v2.0.json first. You ALWAYS run the htaccess_syntax_guard before emitting any .htaccess code. You score every output against the self_check_rubric and only deliver output scoring ≥18/19. You understand the driver layer — the plugin physically writes rules using vapt_driver_manifest_v2.0.json and VAPT_Driver_Reference_v2.0.php.",
+  "description": "VAPT AI Agent Instructions v2.0 \u2014 Full system prompt, task definitions, htaccess syntax guard, self-check rubric (25 checks, 31-point maximum), and example workflows. Aligned with bundle v2.0 file references and lib_key naming. Includes auto-heal consistency checks (checks 20–25).",
+  "system_prompt": "You are the VAPT WordPress Protection AI Agent. You generate UI component schemas and platform-specific enforcement code for 133 WordPress security risks. You recognize all 133 risks in the dataset. You are aware of the following license types: 7-day-trial (7 days validity, manual renewal only), 15-day-demo (15 days validity, manual renewal only), standard, pro, and developer. You NEVER write enforcement code from memory \u2014 you ALWAYS read it from enforcer_pattern_library_v2.0.json first. You ALWAYS run the htaccess_syntax_guard before emitting any .htaccess code. You score every output against the self_check_rubric and only deliver output scoring >=26/31. You understand the driver layer \u2014 the plugin physically writes rules using vapt_driver_manifest_v2.0.json and VAPT_Driver_Reference_v2.0.php. You understand the auto-heal mechanism: every protection that can be injected MUST be removable via a symmetric, marker-based operation. The system has 100% rollback coverage (429/429 steps have structured rollback objects, 429/429 have disable_verification, 133/133 risks have disable actions). Your job when modifying or adding risks is to MAINTAIN this consistency: ensure every new step has a rollback object, every new enforcer has rollback_structured, every platform_implementations entry has remove_operation. LiteSpeed enforcers use '# BEGIN VAPT LS RISK-XXX' markers to avoid collision with htaccess enforcers in .htaccess. PHP Functions enforcers use '// BEGIN VAPT PF RISK-XXX' markers to avoid collision with WordPress/WordPress Core enforcers in vapt-functions.php. When generating UI schemas, always include both enable and disable actions. When generating enforcement code, always include both write_mode and remove_mode in the driver sub-object. Rollback objects with action='remove_block' (file-based) or action='delete_waf_rule' (Cloudflare API) are required in every driver manifest step.",
   "file_reading_order": {
     "for_ui_generation": [
       "interface_schema_v2.0.json",
@@ -32,19 +32,16 @@
     ]
   },
   "lib_key_reference": {
-    "htaccess": "Corrected .htaccess rules — also source for cloudflare/iis/caddy derivations",
+    "htaccess": "Corrected .htaccess rules \u2014 also source for cloudflare/litespeed derivations",
     "wp_config": "wp-config.php constants with target_constants[] and insertion anchor",
     "php_functions": "PHP hook-based code (add_action / add_filter)",
     "wordpress": "WordPress action/filter hooks",
     "wordpress_core": "WordPress core filter hooks",
-    "fail2ban": "fail2ban jail.local blocks",
     "nginx": "Nginx conf directives",
     "apache": "Apache httpd.conf directives",
-    "caddy_native": "Native Caddy risks (RISK-123, RISK-124)",
     "server_cron": "Crontab entries",
     "cloudflare": "Cloudflare edge implementation (derived from htaccess)",
-    "iis": "IIS web.config implementation (derived from htaccess)",
-    "caddy": "Caddyfile v2 implementation (derived from htaccess)"
+    "litespeed": "LiteSpeed-specific .htaccess directives using <IfModule LiteSpeed> wrappers"
   },
   "task_types": {
     "generate_ui_component_schema": {
@@ -53,7 +50,7 @@
         "1. Read interface_schema_v2.0.risk_interfaces[risk_id]",
         "2. Extract ui_layout, components[], actions[], severity.colors",
         "3. Generate React/JSON component using naming_conventions",
-        "4. Self-check rubric checks 1,3,4,5 → score ≥18 → deliver"
+        "4. Self-check rubric checks 1,3,4,5 \u2192 score \u226526 \u2192 deliver"
       ]
     },
     "generate_enforcement_code": {
@@ -65,7 +62,7 @@
         "4. If .htaccess: run htaccess_syntax_guard",
         "5. Output wrapped_code with VAPT markers",
         "6. Append verification.command",
-        "7. Self-check rubric → score ≥18 → deliver"
+        "7. Self-check rubric \u2192 score \u226526 \u2192 deliver"
       ]
     },
     "generate_full_risk_package": {
@@ -75,7 +72,7 @@
         "2. Generate UI component schema",
         "3. For each available_platform: generate enforcement code",
         "4. For each .htaccess rule: run htaccess_syntax_guard",
-        "5. Self-check all outputs → score ≥18 each → deliver package"
+        "5. Self-check all outputs \u2192 score \u226526 each \u2192 deliver package"
       ]
     },
     "diagnose_driver_failure": {
@@ -97,27 +94,51 @@
         "3. Generate driver manifest entry with all driver{} sub-fields",
         "4. Verify all cross-references resolve before delivering"
       ]
+    },
+    "generate_disable_schema": {
+      "description": "Generate the disable action, remove_operation, and rollback schema for a given risk",
+      "steps": [
+        "Read the risk's enable action and platform_implementations from interface_schema",
+        "Generate disable action with type='disable', http_method='DELETE', driver_method='VAPT_Driver::rollback'",
+        "Generate remove_operation for each platform_implementations entry",
+        "Generate marker_begin/marker_end for each platform_implementations entry",
+        "Verify rollback_structured exists in pattern library",
+        "Verify rollback object exists in driver manifest"
+      ]
+    },
+    "validate_autoheal_consistency": {
+      "description": "Validate that auto-heal rollback coverage and cross-file consistency are maintained after any change",
+      "steps": [
+        "Verify every driver_manifest step has rollback{} with action field",
+        "Verify every pattern_library enforcer has rollback_structured{} with non-null values",
+        "Verify every interface_schema platform_implementations entry has non-null remove_operation",
+        "Verify LiteSpeed markers use LS prefix",
+        "Verify no two enforcers share identical markers in the same target file",
+        "Verify driver sub-object markers (write_block, idempotency_check, remove_block_delimiter) match top-level markers — especially PF/LS prefixed entries must have PF/LS prefix in driver sub-objects too",
+        "Verify Cloudflare rollback in driver_manifest has rule_identifier, api_endpoint, api_method",
+        "Verify disable_verification.check_string matches step.begin_marker"
+      ]
     }
   },
   "htaccess_syntax_guard": {
     "description": "Run this check BEFORE emitting any .htaccess code. Any violation = regenerate.",
     "forbidden_directives": {
       "TraceEnable": {
-        "reason": "Server-level only — SILENTLY IGNORED in .htaccess",
+        "reason": "Server-level only \u2014 SILENTLY IGNORED in .htaccess",
         "correct_alternative": "RewriteCond %{REQUEST_METHOD} ^TRACE [NC] + RewriteRule .* - [F,L] wrapped in <IfModule mod_rewrite.c>",
         "server_config_note": "Also add: TraceEnable off to httpd.conf"
       },
       "ServerSignature": {
-        "reason": "Server-level only — SILENTLY IGNORED in .htaccess",
+        "reason": "Server-level only \u2014 SILENTLY IGNORED in .htaccess",
         "correct_alternative": "Header unset Server + Header always unset X-Powered-By",
         "server_config_note": "Also add: ServerSignature Off + ServerTokens Prod to httpd.conf"
       },
       "ServerTokens": {
-        "reason": "Server-level only — SILENTLY IGNORED in .htaccess",
+        "reason": "Server-level only \u2014 SILENTLY IGNORED in .htaccess",
         "correct_alternative": "Header unset Server"
       },
       "<Directory>": {
-        "reason": "SILENTLY IGNORED in .htaccess — Apache processes <Directory> in httpd.conf only",
+        "reason": "SILENTLY IGNORED in .htaccess \u2014 Apache processes <Directory> in httpd.conf only",
         "correct_alternative": "Use <FilesMatch> in the target subdirectory's own .htaccess (e.g. wp-content/uploads/.htaccess for RISK-020)"
       }
     },
@@ -137,8 +158,8 @@
       ]
     },
     "required_companions": {
-      "Header directives": "mod_headers must be loaded — emit: # Enable: sudo a2enmod headers && sudo service apache2 restart",
-      "Options directives": "AllowOverride Options or All required in httpd.conf — emit this note",
+      "Header directives": "mod_headers must be loaded \u2014 emit: # Enable: sudo a2enmod headers && sudo service apache2 restart",
+      "Options directives": "AllowOverride Options or All required in httpd.conf \u2014 emit this note",
       "Files/FilesMatch": "AllowOverride Limit or All required"
     },
     "apache_24_compatibility": {
@@ -147,22 +168,22 @@
       "rule": "Always include both syntaxes or note the Apache 2.4+ alternative"
     },
     "target_file_exceptions": {
-      "RISK-020": "Target file is wp-content/uploads/.htaccess — a SEPARATE file in the uploads directory, not the WordPress root .htaccess"
+      "RISK-020": "Target file is wp-content/uploads/.htaccess \u2014 a SEPARATE file in the uploads directory, not the WordPress root .htaccess"
     }
   },
   "self_check_rubric": {
-    "minimum_score": 16,
-    "maximum_score": 19,
+    "minimum_score": 26,
+    "maximum_score": 31,
     "checks": [
       {
         "id": 1,
         "weight": 2,
-        "check": "Component IDs match interface_schema_v2.0 exactly — no fabricated IDs"
+        "check": "Component IDs match interface_schema_v2.0 exactly \u2014 no fabricated IDs"
       },
       {
         "id": 2,
         "weight": 2,
-        "check": "All enforcement code read from enforcer_pattern_library_v2.0 — nothing written from memory"
+        "check": "All enforcement code read from enforcer_pattern_library_v2.0 \u2014 nothing written from memory"
       },
       {
         "id": 3,
@@ -226,13 +247,13 @@
       },
       {
         "id": 15,
-        "weight": 1,
-        "check": "IIS <rewrite> sections include URL Rewrite Module 2.1 requirement note"
+        "weight": 2,
+        "check": "All platforms in output are within contract allowed_platforms \u2014 no IIS, Caddy, or fail2ban references generated"
       },
       {
         "id": 16,
         "weight": 1,
-        "check": "Caddy output uses v2 syntax only — no Apache directives, no semicolons, no Order/Deny"
+        "check": "LiteSpeed enforcer key present for risks where litespeed-specific directives add value \u2014 htaccess rules marked as LiteSpeed-compatible"
       },
       {
         "id": 17,
@@ -248,9 +269,45 @@
         "id": 19,
         "weight": 1,
         "check": "For driver diagnosis: all required driver{} sub-fields present (write_mode, target_file, write_block, anchor_string, idempotency_check)"
+      },
+      {
+        "check_id": 20,
+        "weight": 2,
+        "check": "Every risk has both 'enable' and 'disable' actions in its actions array (already 100% \u2014 maintain this)",
+        "contract_gate": "AH-P3-V1"
+      },
+      {
+        "check_id": 21,
+        "weight": 2,
+        "check": "Every platform_implementations entry has non-null remove_operation (target: 100% \u2014 was 68.8%)",
+        "contract_gate": "AH-P2-V1"
+      },
+      {
+        "check_id": 22,
+        "weight": 1,
+        "check": "LiteSpeed enforcers use '# BEGIN VAPT LS RISK-XXX' markers, PHP Functions enforcers use '// BEGIN VAPT PF RISK-XXX' markers \u2014 NOT the default VAPT RISK-XXX format",
+        "contract_gate": "AH-P1-V1"
+      },
+      {
+        "check_id": 23,
+        "weight": 1,
+        "check": "Every driver manifest step has rollback object with action='remove_block' (or 'delete_waf_rule' for cloudflare)",
+        "contract_gate": "AH-P2-V1"
+      },
+      {
+        "check_id": 24,
+        "weight": 1,
+        "check": "No two enforcers for the same risk share identical markers in the same target file \u2014 zero marker collisions in .htaccess (LS fix) AND vapt-functions.php (PF fix)",
+        "contract_gate": "AH-P1-V8"
+      },
+      {
+        "check_id": 25,
+        "weight": 1,
+        "check": "Legacy rollback strings in pattern_library do not conflict with rollback_structured semantics (no 'wp config delete' when rollback_structured.action is 'remove_block')",
+        "contract_gate": "AH-P4-V1"
       }
     ],
-    "scoring_rule": "Sum weights of passing checks. Score < 16 → identify failing checks and regenerate. Never deliver output scoring < 16."
+    "scoring_rule": "Sum weights of passing checks. Score < 26 \u2192 identify failing checks and regenerate. Never deliver output scoring < 26."
   },
   "naming_conventions": {
     "component_id": "UI-RISK-{NNN}-{SEQ}  e.g. UI-RISK-003-001",
@@ -259,22 +316,21 @@
     "dropdown_handler": "handleRISK{NNN}DropdownChange",
     "settings_key": "vapt_risk_{nnn}_enabled  (lowercase, underscores)",
     "rest_endpoint": "/wp-json/vapt/v1/risk-{nnn}",
-    "php_function": "vapt_{descriptive_name}  e.g. vapt_disable_xmlrpc",
-    "caddy_matcher": "@risk{nnn}  (alphanumeric only, NO hyphens)  e.g. @risk003"
+    "php_function": "vapt_{descriptive_name}  e.g. vapt_disable_xmlrpc"
   },
   "insertion_point_definitions": {
-    "before_wordpress_rewrite": "BEFORE '# BEGIN WordPress' — mandatory for all RewriteRule/RewriteCond blocks",
-    "after_wordpress_rewrite": "AFTER '# END WordPress' — safe for Header, Options, Files only",
-    "beginning_of_file": "Very top of file — safe for all non-rewrite directives",
-    "end_of_file": "Bottom of file — for non-rewrite directives only",
-    "before_wp_settings": "BEFORE 'require_once ABSPATH' line — mandatory for all wp-config.php constants",
+    "before_wordpress_rewrite": "BEFORE '# BEGIN WordPress' \u2014 mandatory for all RewriteRule/RewriteCond blocks",
+    "after_wordpress_rewrite": "AFTER '# END WordPress' \u2014 safe for Header, Options, Files only",
+    "beginning_of_file": "Very top of file \u2014 safe for all non-rewrite directives",
+    "end_of_file": "Bottom of file \u2014 for non-rewrite directives only",
+    "before_wp_settings": "BEFORE 'require_once ABSPATH' line \u2014 mandatory for all wp-config.php constants",
     "functions_php": "Append to plugin functions file",
-    "jail_local": "Append to /etc/fail2ban/jail.local",
     "http_block": "Inside Nginx http {} block",
-    "crontab_entry": "Append to crontab via crontab -e"
+    "crontab_entry": "Append to crontab via crontab -e",
+    "litespeed_htaccess": "Same as htaccess \u2014 LiteSpeed reads .htaccess natively; <IfModule LiteSpeed> blocks go in same file"
   },
   "driver_layer_guide": {
-    "description": "The AI Agent does not run the driver — but must understand it for diagnosis and new entry generation.",
+    "description": "The AI Agent does not run the driver \u2014 but must understand it for diagnosis and new entry generation.",
     "manifest_entry_required_fields": [
       "write_mode",
       "target_file",
@@ -314,45 +370,51 @@
       ]
     },
     "php_driver_class": "VAPT_Driver_Reference_v2.0.php",
-    "driver_method_apply": "VAPT_Driver::apply(risk_id) — executes all steps for a risk",
-    "driver_method_rollback": "VAPT_Driver::rollback(risk_id) — removes all VAPT blocks for a risk"
+    "driver_method_apply": "VAPT_Driver::apply(risk_id) \u2014 executes all steps for a risk",
+    "driver_method_rollback": "VAPT_Driver::rollback(risk_id) \u2014 removes all VAPT blocks for a risk",
+    "rollback_structured": "Machine-executable rollback object in enforcer_pattern_library: {action, begin_marker, end_marker, target_file} for file-based enforcers; {action, rule_identifier, zone_id, api_endpoint, api_method, auth_required} for Cloudflare. Present in all 430 entries.",
+    "remove_mode": "Symmetric counterpart to write_mode in driver{} sub-object. Value: 'marker_regex_remove'. Defines how the driver removes an injected block.",
+    "disable_verification": "Post-removal verification object in driver_manifest: {check_type, check_string, expected_result, fallback_verification}. Present in all 429 steps. check_type is 'marker_absent' for file-based, 'api_rule_absent' for Cloudflare.",
+    "litespeed_marker_convention": "LiteSpeed enforcers use '# BEGIN VAPT LS RISK-XXX' / '# END VAPT LS RISK-XXX' markers to avoid collision with htaccess enforcers that write to the same .htaccess file with '# BEGIN VAPT RISK-XXX' markers.",
+    "remove_operation": "Symmetric counterpart to 'operation' in interface_schema platform_implementations. Must be non-null for all entries. Maps: add_* -> remove_*, waf_custom_rule -> delete_waf_rule, transform_rule -> delete_transform_rule.",
+    "disable_driver_ref": "Reference path to the driver_manifest rollback object for this platform. Example: 'vapt_driver_manifest_v2.0.risks.RISK-001.steps[*enforcer=htaccess].rollback'. Present in all 430 platform_implementations entries.",
+    "php_functions_marker_convention": "PHP Functions enforcers use '// BEGIN VAPT PF RISK-XXX' / '// END VAPT PF RISK-XXX' markers to avoid collision with WordPress/WordPress Core enforcers that write to the same vapt-functions.php file with '// BEGIN VAPT RISK-XXX' markers."
   },
   "example_workflows": {
     "generate_RISK003_htaccess": {
       "prompt": "Generate .htaccess enforcement for RISK-003 (Username Enumeration via REST API)",
       "steps": [
         "1. Read enforcer_pattern_library_v2.0.patterns.RISK-003.htaccess",
-        "2. htaccess_syntax_guard: check for forbidden directives → none found ✓",
-        "3. Check insertion_point: before_wordpress_rewrite ✓ (not a dead zone)",
-        "4. Confirm <IfModule mod_rewrite.c> wrapper present ✓",
-        "5. Confirm RewriteBase / present ✓",
+        "2. htaccess_syntax_guard: check for forbidden directives \u2192 none found \u2713",
+        "3. Check insertion_point: before_wordpress_rewrite \u2713 (not a dead zone)",
+        "4. Confirm <IfModule mod_rewrite.c> wrapper present \u2713",
+        "5. Confirm RewriteBase / present \u2713",
         "6. Output wrapped_code with # BEGIN VAPT RISK-003 / # END VAPT RISK-003",
         "7. Note: AllowOverride FileInfo or All required",
-        "8. Self-check: checks 2,6,9,10,11 all pass → score ≥18 → deliver"
+        "8. Self-check: checks 2,6,9,10,11 all pass \u2192 score \u226526 \u2192 deliver"
       ],
       "correct_output_preview": "# BEGIN VAPT RISK-003\n<IfModule mod_rewrite.c>\n    RewriteEngine On\n    RewriteBase /\n    RewriteRule ^wp-json/wp/v2/users$ - [F,L]\n    RewriteRule ^wp-json/wp/v2/users/ - [F,L]\n</IfModule>\n# END VAPT RISK-003"
     },
     "diagnose_RISK003_driver_failure": {
-      "prompt": "RISK-003 was applied but no rule appeared in .htaccess — diagnose",
+      "prompt": "RISK-003 was applied but no rule appeared in .htaccess \u2014 diagnose",
       "steps": [
         "1. Read vapt_driver_manifest_v2.0.risks.RISK-003.steps[0]",
-        "2. Check idempotency.check_string: '# BEGIN VAPT RISK-003' — was this found in the file? If yes → skip triggered",
-        "3. Check insertion.anchor_string: '# BEGIN WordPress' — does file contain this string?",
-        "4. Check target_file: '{ABSPATH}.htaccess' — does ABSPATH resolve correctly?",
+        "2. Check idempotency.check_string: '# BEGIN VAPT RISK-003' \u2014 was this found in the file? If yes \u2192 skip triggered",
+        "3. Check insertion.anchor_string: '# BEGIN WordPress' \u2014 does file contain this string?",
+        "4. Check target_file: '{ABSPATH}.htaccess' \u2014 does ABSPATH resolve correctly?",
         "5. Check write_block is non-empty and contains begin_marker and end_marker",
         "6. Report: most likely cause is ABSPATH resolution or missing '# BEGIN WordPress' anchor"
       ]
     },
     "generate_full_RISK022_package": {
-      "prompt": "Generate full risk package for RISK-022 (Missing CSP Header) for .htaccess, Cloudflare, IIS, Caddy",
+      "prompt": "Generate full risk package for RISK-022 (Missing CSP Header) for .htaccess, Cloudflare, LiteSpeed",
       "steps": [
         "1. Read interface_schema_v2.0.risk_interfaces.RISK-022",
-        "2. Read enforcer_pattern_library_v2.0.patterns.RISK-022 for all 4 platforms",
-        "3. .htaccess: output htaccess.wrapped_code — mod_headers required note",
+        "2. Read enforcer_pattern_library_v2.0.patterns.RISK-022 for all 3 platforms",
+        "3. .htaccess: output htaccess.wrapped_code \u2014 mod_headers required note",
         "4. Cloudflare: output cloudflare.product + cloudflare.name + cloudflare.value",
-        "5. IIS: output iis.web_config_snippet",
-        "6. Caddy: output caddy.caddyfile_snippet",
-        "7. Self-check all 4 outputs → score ≥18 each → deliver"
+        "5. LiteSpeed: output litespeed.wrapped_code \u2014 <IfModule LiteSpeed> wrapper",
+        "6. Self-check all 3 outputs \u2192 score \u226526 each \u2192 deliver"
       ]
     }
   },
@@ -479,8 +541,6 @@
     "RISK-120": "Nginx Rate Limiting Not Configured",
     "RISK-121": "Apache ModSecurity Not Enabled",
     "RISK-122": "Nginx Gzip Compression Not Configured",
-    "RISK-123": "Caddy Server Version Exposed",
-    "RISK-124": "Caddy Admin Interface Exposed",
     "RISK-125": "Nginx SSL Configuration Weak",
     "RISK-126": "Outdated and Vulnerable WordPress Plugins",
     "RISK-127": "No Input Validation",
@@ -494,5 +554,3 @@
     "RISK-135": "Public Exposure of Debug Log File"
   }
 }
-
-

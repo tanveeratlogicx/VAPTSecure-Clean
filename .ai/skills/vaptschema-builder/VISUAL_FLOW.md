@@ -45,8 +45,8 @@ This document provides an ASCII-based visual flow of the transformation processe
                              |
          +-------------------v-------------------+
          | STEP 4: SELF-CHECK INSTRUCTIONS       |
-         | Grade output against 19-point rubric (≥18/19). |
-          |   [ ] Score >= 16?                    |
+         | Grade output against 25-check rubric (≥26/31). |
+         |   [ ] Score >= 26?                    |
          |   [ ] WP Whitelist intact?            |
          |   [ ] No forbidden Apache directives? |
          +-------------------+-------------------+

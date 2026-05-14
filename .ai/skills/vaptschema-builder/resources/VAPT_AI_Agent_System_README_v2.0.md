@@ -23,15 +23,15 @@ All five files share the same version (`2.0.0`), the same `bundle_files` cross-r
 
 | File | Role | Size |
 |------|------|------|
-| `enforcer_pattern_library_v2.0.json` | All 135 risks × all enforcer types — corrected code, driver sub-objects, Cloudflare/IIS/Caddy derivations | ~204 KB |
+| `enforcer_pattern_library_v2.0.json` | All 133 risks × all enforcer types — corrected code, driver sub-objects, Cloudflare/LiteSpeed derivations | ~204 KB |
 | `interface_schema_v2.0.json` | UI component definitions, `code_ref` and `driver_ref` pointers, available platforms per risk | ~281 KB |
-| `ai_agent_instructions_v2.0.json` | System prompt, task definitions, .htaccess syntax guard, 19-point self-check rubric, example workflows | ~20 KB |
+| `ai_agent_instructions_v2.0.json` | System prompt, task definitions, .htaccess syntax guard, 25-check self-check rubric (31-point maximum), example workflows | ~20 KB |
 
 ### Driver Layer
 
 | File | Role | Size |
 |------|------|------|
-| `vapt_driver_manifest_v2.0.json` | Machine-executable instructions for all 135 risks — every field directly usable by the PHP driver | ~145 KB |
+| `vapt_driver_manifest_v2.0.json` | Machine-executable instructions for all 133 risks — every field directly usable by the PHP driver | ~145 KB |
 | `VAPT_Driver_Reference_v2.0.php` | Drop-in `VAPT_Driver` PHP class — implements the full apply/rollback contract against the manifest | ~8 KB |
 
 ---
@@ -61,18 +61,15 @@ The pattern library uses consistent snake_case keys for every enforcer type. The
 | lib_key | Enforcer | File Written |
 |---------|----------|-------------|
 | `htaccess` | Apache / .htaccess | `{ABSPATH}.htaccess` |
+| `litespeed` | LiteSpeed (supplementary .htaccess) | `{ABSPATH}.htaccess` |
 | `wp_config` | wp-config.php | `{ABSPATH}wp-config.php` |
 | `php_functions` | PHP Functions | `{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php` |
 | `wordpress` | WordPress hooks | Same plugin file |
 | `wordpress_core` | WordPress Core filters | Same plugin file |
-| `fail2ban` | fail2ban | `/etc/fail2ban/jail.local` |
 | `nginx` | Nginx | `/etc/nginx/conf.d/vapt-security.conf` |
 | `apache` | Apache | `/etc/apache2/conf-available/vapt-security.conf` |
-| `caddy_native` | Native Caddy (RISK-123, RISK-124) | `/etc/caddy/Caddyfile` |
 | `server_cron` | Server Cron | `crontab` |
 | `cloudflare` | Cloudflare (derived from htaccess) | Dashboard / API |
-| `iis` | IIS web.config (derived from htaccess) | `web.config` |
-| `caddy` | Caddyfile v2 (derived from htaccess) | `/etc/caddy/Caddyfile` |
 
 **Special case — RISK-020:** `target_file` = `wp-content/uploads/.htaccess` (a separate file in the uploads directory, not the WordPress root `.htaccess`).
 
@@ -85,15 +82,14 @@ The pattern library uses consistent snake_case keys for every enforcer type. The
 | .htaccess (Apache) | 28 |
 | PHP Functions | 29 |
 | wp-config.php | 21 |
-| fail2ban | 16 |
 | Server Cron | 10 |
 | WordPress | 10 |
 | Nginx | 7 |
 | Apache | 2 |
-| Caddy (native) | 2 |
+| LiteSpeed (supplementary) | 8 |
 | WordPress Core | 2 |
 
-Platform derivations (Cloudflare, IIS, Caddy v2) added for all 28 `.htaccess` risks.
+Platform derivations (Cloudflare, LiteSpeed) added for applicable `.htaccess` risks.
 
 | Severity | Count |
 |----------|-------|
@@ -151,8 +147,7 @@ enforcer_pattern_library_v2.0.patterns[RISK-XXX][lib_key]
 
   .htaccess risks also have:
   → cloudflare     { implementation_type, … }
-  → iis            { implementation_type, web_config_snippet, … }
-  → caddy          { implementation_type, caddyfile_snippet, … }
+  → litespeed      { implementation_type, wrapped_code, … }
 ```
 
 ### Step 4 — Run the .htaccess Syntax Guard
@@ -192,7 +187,7 @@ Before emitting **any** `.htaccess` code, check every directive against these ru
 | `Options` | `AllowOverride Options` or `All` in server config |
 | `<Files>` / `<FilesMatch>` | `AllowOverride Limit` or `All` |
 
-### Step 5 — Self-Check Rubric (≥18 / 19 required)
+### Step 5 — Self-Check Rubric (≥26 / 31 required)
 
 | # | Check | Weight |
 |---|-------|--------|
@@ -210,13 +205,19 @@ Before emitting **any** `.htaccess` code, check every directive against these ru
 | 12 | `mod_headers` requirement noted for all `Header` directives | 1 |
 | 13 | `AllowOverride` requirement noted for `Options` directives | 1 |
 | 14 | RISK-020 `target_file` = `wp-content/uploads/.htaccess` | 1 |
-| 15 | IIS `<rewrite>` sections note URL Rewrite Module 2.1 requirement | 1 |
-| 16 | Caddy output uses v2 syntax only — no Apache directives, no semicolons | 1 |
+| 15 | All platforms within contract allowed_platforms — no IIS, Caddy, fail2ban | 2 |
+| 16 | LiteSpeed enforcer key present for applicable risks — htaccess LiteSpeed-compatible | 1 |
 | 17 | `code_ref` uses correct `lib_key` (e.g. `htaccess`, not `_htaccess`) | 1 |
 | 18 | `driver_ref` points to `vapt_driver_manifest_v2.0` | 1 |
 | 19 | Driver diagnosis/generation includes all required `driver{}` sub-fields | 1 |
+| 20 | Every risk has both 'enable' and 'disable' actions in its actions array | 2 |
+| 21 | Every `platform_implementations` entry has non-null `remove_operation` | 2 |
+| 22 | LiteSpeed enforcers use `# BEGIN VAPT LS RISK-XXX` markers, PHP Functions use `// BEGIN VAPT PF RISK-XXX` | 1 |
+| 23 | Every driver manifest step has rollback object with `action='remove_block'` (or `'delete_waf_rule'` for Cloudflare) | 1 |
+| 24 | No two enforcers for the same risk share identical markers in the same target file | 1 |
+| 25 | Legacy rollback strings do not conflict with `rollback_structured` semantics | 1 |
 
-**Score < 16 → identify failing checks and regenerate. Never deliver output scoring < 16.**
+**Score < 26 → identify failing checks and regenerate. Never deliver output scoring < 26.**
 
 ### Step 6 — Understand the Driver Layer
 
@@ -269,7 +270,7 @@ Every block written to disk is wrapped with markers so the driver can locate, ve
 
 | Enforcer | Begin Marker | End Marker |
 |----------|-------------|------------|
-| `.htaccess`, Nginx, Apache, Caddy, fail2ban, Server Cron | `# BEGIN VAPT RISK-XXX` | `# END VAPT RISK-XXX` |
+| `.htaccess`, Nginx, Apache, LiteSpeed, Server Cron | `# BEGIN VAPT RISK-XXX` | `# END VAPT RISK-XXX` |
 | `wp-config.php` | `/* BEGIN VAPT RISK-XXX */` | `/* END VAPT RISK-XXX */` |
 | PHP Functions, WordPress, WordPress Core | `// BEGIN VAPT RISK-XXX` | `// END VAPT RISK-XXX` |
 
@@ -285,7 +286,6 @@ Every block written to disk is wrapped with markers so the driver can locate, ve
 | `end_of_file` | *(none)* | append | Non-rewrite directives |
 | `before_wp_settings` | `require_once ABSPATH` | before | All wp-config.php constants |
 | `functions_php` | *(none)* | append | PHP Functions / WordPress hooks |
-| `jail_local` | *(none)* | append | fail2ban rules |
 | `http_block` | `http {` | after | Nginx directives |
 | `crontab_entry` | *(none)* | append | Server Cron jobs |
 
@@ -300,11 +300,8 @@ Every block written to disk is wrapped with markers so the driver can locate, ve
 | PHP Functions | `wp plugin list` | *(next request)* | `wp eval "do_action('hook');"` |
 | Nginx | `nginx -t` | `nginx -s reload` | `curl -sI https://yoursite.com` |
 | Apache (httpd.conf) | `apachectl -t` | `service apache2 reload` | `curl -sI https://yoursite.com` |
-| Caddy | `caddy validate --config /etc/caddy/Caddyfile` | `caddy reload` | `curl -sI https://yoursite.com` |
 | Cloudflare | Dashboard review | Instant on save | `curl -sI https://yoursite.com` |
-| IIS | `appcmd.exe validate config` | `iisreset /restart` | `curl -sI https://yoursite.com` |
-| fail2ban | `fail2ban-client -t` | `fail2ban-client reload` | `fail2ban-client status jail-name` |
-| Server Cron | `crontab -l` | *(auto)* | `crontab -l \| grep vapt` |
+| LiteSpeed | `apachectl -t` | `service lsws restart` | `curl -sI https://yoursite.com` || Server Cron | `crontab -l` | *(auto)* | `crontab -l \| grep vapt` |
 
 ---
 
@@ -319,7 +316,6 @@ Every block written to disk is wrapped with markers so the driver can locate, ve
 | Settings key | `vapt_risk_{nnn}_enabled` | `vapt_risk_003_enabled` |
 | REST endpoint | `/wp-json/vapt/v1/risk-{nnn}` | `/wp-json/vapt/v1/risk-003` |
 | PHP function | `vapt_{descriptive_name}` | `vapt_disable_xmlrpc` |
-| Caddy matcher | `@risk{nnn}` (alphanumeric, no hyphens) | `@risk003` |
 
 ---
 
@@ -333,31 +329,16 @@ Every block written to disk is wrapped with markers so the driver can locate, ve
 | `waf_custom_rule` | WAF Custom Rules | RISK-002, RISK-003, RISK-005, RISK-023, RISK-027–030 |
 | `notes_only` | Origin only — no edge equivalent | RISK-013, RISK-025, RISK-026 |
 
-### IIS (derived from .htaccess)
-
-| Type | IIS Config Section | Example |
-|------|--------------------|---------|
-| `web_config_http_headers` | `<httpProtocol><customHeaders>` | All header risks |
-| `web_config_url_rewrite` | `<rewrite><rules>` | RISK-003, RISK-005, RISK-023 |
-| `web_config_request_filtering` | `<requestFiltering>` | File block risks |
-| `web_config_request_filtering_extensions` | `<fileExtensions>` | Extension-based blocks |
-| `web_config_directory_browsing` | `<directoryBrowse>` | RISK-013 |
-| `web_config_remove_headers` | `removeServerHeader="true"` | RISK-024 |
-
-**Requirement:** IIS URL Rewrite Module 2.1 for `web_config_url_rewrite` rules.
-
-### Caddy (Caddyfile v2 — derived from .htaccess)
+### LiteSpeed (supplementary .htaccess directives)
 
 | Type | Directive | Example |
 |------|-----------|---------|
-| `caddy_header` | `header { Name "Value" defer }` | All header risks |
-| `caddy_respond_block` | `@matcher { } respond @matcher 403` | Rewrite/file block risks |
-| `caddy_file_server` | `file_server` (no `browse`) | RISK-013 |
-| `notes_only` | No Caddy equivalent | RISK-026 |
+| `litespeed_header` | `<IfModule LiteSpeed>` header suppression | RISK-010, RISK-024 |
+| `litespeed_rewrite` | `<IfModule LiteSpeed>` rewrite blocks | RISK-023, RISK-035 |
+| `litespeed_file_block` | `<IfModule LiteSpeed>` file blocking | RISK-020 |
+| `htaccess_compatible` | Same as Apache .htaccess (no LiteSpeed-specific directives needed) | RISK-013 |
 
-**Always run `caddy validate` before `caddy reload`.**
-
----
+**LiteSpeed natively supports .htaccess — all existing Apache rules work without modification. The `litespeed` enforcer key provides supplementary `<IfModule LiteSpeed>` directives only where server-specific optimizations add value.**
 
 ## Platform Limitations
 
@@ -372,16 +353,13 @@ Every block written to disk is wrapped with markers so the driver can locate, ve
 - `Header unset Server` → Transform Rule (all plans including Free)
 - Rate limiting beyond simple thresholds requires Cloudflare Pro or higher
 
-### IIS
-- `removeServerHeader="true"` requires IIS 10.0+
-- PHP `php_flag engine off` has no IIS equivalent — use `requestFiltering` to block `.php` files instead
-
-### Caddy
-- Caddyfile v2 syntax only — v1 directives are incompatible
-- Directory listing is disabled by default — no directive needed unless `browse` was explicitly added
-- Named matchers must use alphanumeric identifiers only (no hyphens)
-
 ---
+
+### LiteSpeed
+- Natively supports .htaccess — no separate configuration file required
+- `<IfModule LiteSpeed>` blocks are only processed by LiteSpeed; ignored by Apache
+- Some Apache modules may have LiteSpeed-specific behavior differences (e.g., mod_rewrite minor variations)
+- LiteSpeed Cache (LSCache) integration is out of scope for VAPT but should be noted for compatibility
 
 ## Usage Examples
 
@@ -408,7 +386,7 @@ Every block written to disk is wrapped with markers so the driver can locate, ve
 ```
 
 4. Verification: `apachectl -t && curl -sI 'https://yoursite.com/wp-json/wp/v2/users' | grep HTTP`
-5. Self-check: checks 2, 6, 9, 10, 11 all pass → score ≥18 → deliver
+5. Self-check: checks 2, 6, 9, 10, 11 all pass → score ≥26 → deliver
 
 ---
 
@@ -428,16 +406,15 @@ Every block written to disk is wrapped with markers so the driver can locate, ve
 
 ### Example 3 — Full risk package for RISK-022 across all platforms
 
-**Prompt:** `Generate full package for RISK-022 (Missing CSP Header) for .htaccess, Cloudflare, IIS, Caddy`
+**Prompt:** `Generate full package for RISK-022 (Missing CSP Header) for .htaccess, Cloudflare, LiteSpeed`
 
 **Agent steps:**
 1. Read `interface_schema_v2.0.risk_interfaces.RISK-022` → available_platforms, components, actions
-2. Read `enforcer_pattern_library_v2.0.patterns.RISK-022` → htaccess, cloudflare, iis, caddy keys
+2. Read `enforcer_pattern_library_v2.0.patterns.RISK-022` → htaccess, cloudflare, litespeed keys
 3. Output `.htaccess`: `Header always set Content-Security-Policy "..."` wrapped in VAPT markers
 4. Output `Cloudflare`: Transform Rule → Set `Content-Security-Policy` header
-5. Output `IIS`: `<customHeaders><add name="Content-Security-Policy" value="..." />`
-6. Output `Caddy`: `header { Content-Security-Policy "..." defer }`
-7. Self-check all four → score ≥18 each → deliver package
+5. Output `LiteSpeed`: `<IfModule LiteSpeed>` header block for Content-Security-Policy
+6. Self-check all three → score ≥26 each → deliver package
 
 ---
 
@@ -447,10 +424,10 @@ Every block written to disk is wrapped with markers so the driver can locate, ve
 
 **Agent steps:**
 1. Generate `enforcer_pattern_library_v2.0.patterns.RISK-126.htaccess` — include `driver{}` sub-object
-2. Derive `cloudflare`, `iis`, `caddy` from the htaccess entry
+2. Derive `cloudflare`, `litespeed` from the htaccess entry
 3. Generate `interface_schema_v2.0.risk_interfaces.RISK-126` — `code_ref` must use `lib_key=htaccess`, `driver_ref` must point to `vapt_driver_manifest_v2.0`
 4. Generate `vapt_driver_manifest_v2.0.risks.RISK-126.steps` — include all required driver fields
-5. Self-check: rubric checks 17, 18, 19 all pass → score ≥18 → deliver three JSON fragments
+5. Self-check: rubric checks 17, 18, 19 all pass → score ≥26 → deliver three JSON fragments
 
 ---
 
@@ -474,7 +451,7 @@ All five files generated together from source in a single build pass. Prior vers
 | Forbidden directives (`TraceEnable`, `ServerSignature`, `<Directory>`) in `.htaccess` | All corrected with safe alternatives |
 | RISK-005 regex matched only single-digit author IDs | Fixed to `(^|&)author=\d+` |
 | 19 wp-config risks missing `target_constants[]` | All 21 wp-config risks enriched |
-| Self-check rubric was 8-point then 15-point then 17-point | Unified 19-point rubric, threshold ≥18 |
+| Self-check rubric was 8-point then 15-point then 17-point | Unified 25-check rubric (31-point maximum), threshold ≥26 |
 
 ---
 
@@ -487,10 +464,11 @@ All five files generated together from source in a single build pass. Prior vers
 
 This addendum avoids duplicating client-reported titles that already exist exactly in the original catalogue. Exact-title matches remain on their existing RiskIDs. Only non-exact client-reported titles were added as independent risk entities.
 
-- Total risk entries after this addendum: **135**.
+- Total risk entries after this addendum: **133** (RISK-123 and RISK-124 removed — Caddy-native risks deleted per platform scope contract).
 - Newly added independent risks: **8**.
 - JSON files updated: interface schema, enforcer pattern library, driver manifest, and AI agent instructions.
 - Prior integrity fixes are retained: normalized settings keys, corrected RISK-010 Nginx syntax, and corrected append-only write_mode semantics.
+- v3.0 remediation: Removed IIS, Caddy, fail2ban enforcers; added LiteSpeed enforcer; deleted RISK-123/RISK-124 (Caddy-native risks with corrupted data); resolved find-and-replace corruption in description and enforcer_key_map fields.
 
 ### Existing exact-title matches retained
 

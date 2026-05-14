@@ -1,0 +1,441 @@
+{
+  "schema_version": "3.0.0",
+  "contract_date": "2026-05-13",
+  "file_role": "platform_execution_contract",
+  "contract_type": "AI_Agent_Executable",
+  "title": "VAPT Platform Scope & Enforcement Contract v3.0",
+  "description": "Machine-readable contract governing the VAPT WordPress Plugin Builder's platform scope, enforcer constraints, and compliance validation rules. This contract is loaded by the AI Agent at runtime and enforced as a hard constraint on all generation, validation, and diagnostic tasks. It replaces informal scope definitions and serves as the single source of truth for platform compliance.",
+
+  "stakeholder_context": {
+    "project": "VAPT WordPress Plugin Builder",
+    "objective": "Build WordPress plugins that provide security against VAPT risks and harden WordPress installations following OWASP's latest recommendations",
+    "environment_constraint": "Strictly WordPress — all enforcement must be achievable within a WordPress plugin context on standard and shared hosting",
+    "target_audience": "WordPress site owners on Apache, LiteSpeed, Nginx, and CloudFlare infrastructure"
+  },
+
+  "platform_scope": {
+    "allowed_platforms": [
+      {
+        "id": "apache",
+        "name": "Apache HTTP Server",
+        "enforcer_key": "htaccess",
+        "secondary_enforcer_key": "apache",
+        "target_file": "{ABSPATH}.htaccess",
+        "secondary_target_file": "/etc/apache2/conf-available/vapt-security.conf",
+        "notes": "Primary enforcer via .htaccess; server-level directives via apache enforcer. LiteSpeed shares .htaccess compatibility."
+      },
+      {
+        "id": "litespeed",
+        "name": "LiteSpeed Web Server",
+        "enforcer_key": "litespeed",
+        "target_file": "{ABSPATH}.htaccess",
+        "notes": "LiteSpeed natively supports .htaccess rules. Dedicated litespeed enforcer key added for LiteSpeed-specific optimizations (e.g., CacheLookup, RewriteEngine LiteSpeed-specific directives). Existing htaccess rules serve as the baseline — litespeed key adds server-specific enhancements where applicable.",
+        "htaccess_compatibility": "full",
+        "litespeed_specific_directives": [
+          "CacheLookup on",
+          "<IfModule LiteSpeed>",
+          "RewriteEngine On (LiteSpeed variant)"
+        ]
+      },
+      {
+        "id": "nginx",
+        "name": "Nginx Web Server",
+        "enforcer_key": "nginx",
+        "target_file": "/etc/nginx/conf.d/vapt-security.conf",
+        "notes": "Requires server-level access for configuration. Rate limiting via limit_req_zone."
+      },
+      {
+        "id": "cloudflare",
+        "name": "CloudFlare CDN/WAF",
+        "enforcer_key": "cloudflare",
+        "target_file": "Dashboard / API",
+        "notes": "Derived from htaccess rules. Includes transform_rule, waf_custom_rule, and notes_only implementation types. Rate limiting beyond simple thresholds requires CloudFlare Pro or higher."
+      }
+    ],
+    "prohibited_platforms": [
+      {
+        "id": "iis",
+        "name": "Microsoft IIS",
+        "reason": "Not in target infrastructure. IIS web.config rules are irrelevant to WordPress on Apache/LiteSpeed/Nginx/CloudFlare environments.",
+        "remediation_action": "remove_all_references",
+        "affected_files": [
+          "ai_agent_instructions_v2.0.json",
+          "VAPT_AI_Agent_System_README_v2.0.md",
+          "enforcer_pattern_library_v2.0.json",
+          "interface_schema_v2.0.json"
+        ]
+      },
+      {
+        "id": "caddy",
+        "name": "Caddy Web Server",
+        "reason": "Not in target infrastructure. Caddyfile v2 rules are irrelevant to the target WordPress hosting environments.",
+        "remediation_action": "remove_all_references",
+        "affected_files": [
+          "ai_agent_instructions_v2.0.json",
+          "VAPT_AI_Agent_System_README_v2.0.md",
+          "enforcer_pattern_library_v2.0.json",
+          "vapt_driver_manifest_v2.0.json",
+          "interface_schema_v2.0.json"
+        ]
+      },
+      {
+        "id": "fail2ban",
+        "name": "fail2ban Intrusion Prevention",
+        "reason": "Requires server-level filesystem access (/etc/fail2ban/jail.local) which a WordPress plugin cannot write to on standard or shared hosting. Incompatible with the WordPress plugin execution context. Replaced by PHP rate limiting (transient-based), CloudFlare WAF rules, Nginx limit_req_zone, and Apache mod_ratelimit.",
+        "remediation_action": "remove_and_replace_with_wordpress_compatible_alternatives",
+        "replacement_strategy": {
+          "php_functions": "WordPress transient-based rate limiting using get_transient/set_transient — already exists for most risks as php_functions enforcer",
+          "cloudflare": "CloudFlare WAF Custom Rules and Rate Limiting rules — already exists as cloudflare enforcer",
+          "nginx": "Nginx limit_req_zone and limit_req directives — to be added where applicable",
+          "apache": "Apache mod_ratelimit or mod_evasive directives — to be added where applicable"
+        },
+        "affected_risks": [
+          "RISK-007",
+          "RISK-081",
+          "RISK-082",
+          "RISK-083",
+          "RISK-084",
+          "RISK-085",
+          "RISK-086",
+          "RISK-087",
+          "RISK-088",
+          "RISK-089",
+          "RISK-090",
+          "RISK-091",
+          "RISK-092",
+          "RISK-093",
+          "RISK-094",
+          "RISK-095",
+          "RISK-104"
+        ],
+        "affected_files": [
+          "enforcer_pattern_library_v2.0.json",
+          "vapt_driver_manifest_v2.0.json",
+          "interface_schema_v2.0.json",
+          "VAPT_Driver_Reference_v2.0.php"
+        ]
+      }
+    ]
+  },
+
+  "risk_deletions": [
+    {
+      "risk_id": "RISK-123",
+      "original_title": "Caddy Server Version Exposed",
+      "corrupted_title": "Apache_Legacy Server Version Exposed",
+      "reason": "Caddy-native risk. A find-and-replace error corrupted this entry by replacing 'Caddy' with 'Apache_Legacy', breaking all references (/etc/Apache_Legacy/Caddyfile is not a real path, Apache_Legacy validate is not a real command). Since Caddy is a prohibited platform, deletion is the correct remediation — do NOT attempt to restore.",
+      "action": "delete_entire_risk",
+      "affected_files": [
+        "enforcer_pattern_library_v2.0.json",
+        "vapt_driver_manifest_v2.0.json",
+        "interface_schema_v2.0.json",
+        "ai_agent_instructions_v2.0.json"
+      ]
+    },
+    {
+      "risk_id": "RISK-124",
+      "original_title": "Caddy Admin Interface Exposed",
+      "corrupted_title": "Apache_Legacy Admin Interface Exposed",
+      "reason": "Caddy-native risk. Same Apache_Legacy corruption as RISK-123. Since Caddy is a prohibited platform, deletion is the correct remediation.",
+      "action": "delete_entire_risk",
+      "affected_files": [
+        "enforcer_pattern_library_v2.0.json",
+        "vapt_driver_manifest_v2.0.json",
+        "interface_schema_v2.0.json",
+        "ai_agent_instructions_v2.0.json"
+      ]
+    }
+  ],
+
+  "corruption_fixes": [
+    {
+      "bug_id": "BUG-001",
+      "description": "Apache_Legacy corruption — a find-and-replace error replaced 'Caddy' with 'Apache_Legacy' across enforcer_pattern_library_v2.0.json, vapt_driver_manifest_v2.0.json, and interface_schema_v2.0.json. This affected the description field, enforcer_key_map, and RISK-123/RISK-124 entries.",
+      "resolution": "Since RISK-123 and RISK-124 are being deleted (Caddy-native), the corruption in those entries is resolved by deletion. Remaining 'Apache_Legacy' references in enforcer_key_map and description fields are corrected to their proper values or removed.",
+      "affected_fields": [
+        "enforcer_pattern_library_v2.0.json / description — replace 'Apache_Legacy' with 'IIS/Caddy'",
+        "enforcer_pattern_library_v2.0.json / enforcer_key_map.htaccess — remove 'Apache_Legacy' from derivation list",
+        "enforcer_pattern_library_v2.0.json / enforcer_key_map.caddy_native — restore to 'Native Caddy enforcer risks (RISK-123, RISK-124) — DELETED in v3.0' or remove"
+      ]
+    }
+  ],
+
+  "litespeed_integration": {
+    "strategy": "LiteSpeed natively supports .htaccess directives, so existing Apache htaccess rules work without modification. The litespeed enforcer key is added as a supplementary enforcer for risks where LiteSpeed-specific optimizations provide additional security value.",
+    "new_enforcer_key": "litespeed",
+    "insertion_point": "beginning_of_file",
+    "target_file": "{ABSPATH}.htaccess",
+    "marker_style": "same as htaccess (# BEGIN VAPT / # END VAPT)",
+    "applicable_risks": [
+      {
+        "risk_id": "RISK-010",
+        "directive": "<IfModule LiteSpeed>\n    Header unset Server\n    Header always unset X-Powered-By\n</IfModule>",
+        "note": "LiteSpeed-specific header suppression using IfModule LiteSpeed wrapper"
+      },
+      {
+        "risk_id": "RISK-013",
+        "directive": "Options -Indexes",
+        "note": "LiteSpeed respects Options -Indexes identically to Apache — existing htaccess rule is sufficient, litespeed key references the same"
+      },
+      {
+        "risk_id": "RISK-020",
+        "directive": "<FilesMatch \"\\.(php|phtml)$\">\n    <IfModule LiteSpeed>\n        Order Deny,Allow\n        Deny from all\n    </IfModule>\n</FilesMatch>",
+        "note": "LiteSpeed-specific PHP execution blocking in uploads directory"
+      },
+      {
+        "risk_id": "RISK-023",
+        "directive": "<IfModule LiteSpeed>\n    RewriteEngine On\n    RewriteCond %{REQUEST_METHOD} ^TRACE [NC]\n    RewriteRule .* - [F,L]\n</IfModule>",
+        "note": "LiteSpeed TRACE method blocking"
+      },
+      {
+        "risk_id": "RISK-024",
+        "directive": "<IfModule LiteSpeed>\n    Header unset Server\n    ServerSignature Off\n</IfModule>",
+        "note": "LiteSpeed server signature suppression"
+      },
+      {
+        "risk_id": "RISK-035",
+        "directive": "<IfModule LiteSpeed>\n    RewriteEngine On\n    RewriteCond %{REQUEST_URI} /server-status [NC]\n    RewriteRule .* - [F,L]\n</IfModule>",
+        "note": "LiteSpeed server-status page blocking"
+      },
+      {
+        "risk_id": "RISK-116",
+        "directive": "<IfModule LiteSpeed>\n    Header unset Server\n</IfModule>",
+        "note": "LiteSpeed version hiding via header removal"
+      },
+      {
+        "risk_id": "RISK-117",
+        "directive": "<IfModule LiteSpeed>\n    Header unset Server\n</IfModule>",
+        "note": "Apache/LiteSpeed version hiding — same approach"
+      }
+    ],
+    "cross_platform_notes": {
+      "htaccess_compatibility": "All existing htaccess rules work on LiteSpeed without modification. The litespeed key provides supplementary directives only where LiteSpeed-specific optimizations add value beyond the Apache baseline.",
+      "no_separate_config": "Unlike Nginx, LiteSpeed does not require a separate configuration file — it reads .htaccess natively.",
+      "lscache": "LiteSpeed Cache plugin integration is out of scope for VAPT hardening but should be noted as a compatibility consideration."
+    }
+  },
+
+  "structural_preservation_rule": {
+    "description": "The JSON schema/structure of all 6 existing bundle files is IMMUTABLE. Remediation may only add or remove key-value pairs within the existing structure — never change the structure itself.",
+    "rules": [
+      "Top-level keys (schema_version, bundle_files, patterns, risks, risk_interfaces, etc.) must NEVER be renamed, removed, or reordered",
+      "The nesting hierarchy must remain identical — if htaccess is a sibling of nginx inside a risk object, litespeed must be added as the same type of sibling",
+      "Value types must be preserved — strings stay strings, objects stay objects, arrays stay arrays",
+      "New enforcer entries (litespeed) must follow the exact same key structure as existing siblings (nginx, apache, etc.)",
+      "Removed entries delete only their own key from the parent object — the parent object and its other keys remain untouched",
+      "The contract file (vapt_platform_contract_v3.0.json) is a NEW file with its own independent structure and is not bound by this rule",
+      "JSON formatting style (indentation, key ordering conventions) should match the source files"
+    ],
+    "severity": "CRITICAL",
+    "auto_enforce": true
+  },
+
+  "contract_validation_gates": {
+    "gate_1_platform_scope": {
+      "description": "No generated code or UI schema may reference a prohibited platform",
+      "check": "For every platform_implementations entry in interface_schema, verify platform is in allowed_platforms[]",
+      "auto_enforce": true,
+      "severity": "CRITICAL"
+    },
+    "gate_2_enforcer_keys": {
+      "description": "No enforcer pattern may use a prohibited enforcer key (fail2ban, caddy_native, caddy, iis)",
+      "check": "For every lib_key in enforcer_pattern_library patterns, verify key is in allowed enforcer keys list",
+      "allowed_enforcer_keys": ["htaccess", "wp_config", "php_functions", "wordpress", "wordpress_core", "nginx", "apache", "cloudflare", "litespeed", "server_cron"],
+      "prohibited_enforcer_keys": ["fail2ban", "caddy_native", "caddy", "iis"],
+      "auto_enforce": true,
+      "severity": "CRITICAL"
+    },
+    "gate_3_risk_existence": {
+      "description": "Deleted risks (RISK-123, RISK-124) must not appear in any bundle file",
+      "check": "Verify RISK-123 and RISK-124 do not exist as keys in any patterns, risks, or risk_interfaces object",
+      "auto_enforce": true,
+      "severity": "CRITICAL"
+    },
+    "gate_4_litespeed_presence": {
+      "description": "LiteSpeed must be represented as a platform in at least the key risks where it provides supplementary value",
+      "check": "Verify litespeed enforcer key exists in enforcer_pattern_library for at least the applicable_risks listed above",
+      "auto_enforce": false,
+      "severity": "HIGH"
+    },
+    "gate_5_apache_legacy_corruption": {
+      "description": "No 'Apache_Legacy' string may appear in any bundle file — this indicates unresolved corruption",
+      "check": "Grep all bundle files for 'Apache_Legacy' — must return zero results",
+      "auto_enforce": true,
+      "severity": "CRITICAL"
+    },
+    "gate_6_cross_reference_integrity": {
+      "description": "Every code_ref and driver_ref in interface_schema must resolve to an existing entry in the pattern library and driver manifest respectively",
+      "check": "For each risk_interface, verify code_ref points to existing lib_key in pattern library and driver_ref resolves to existing step in manifest",
+      "auto_enforce": true,
+      "severity": "HIGH"
+    },
+    "gate_7_wordpress_context": {
+      "description": "All enforcement must be achievable within a WordPress plugin context — no server-level filesystem writes outside ABSPATH or standard WordPress plugin paths, except for Nginx and Apache server config files which require server admin access",
+      "check": "Verify all target_file paths either contain {ABSPATH} or are documented server-level paths (/etc/nginx/*, /etc/apache2/*)",
+      "auto_enforce": true,
+      "severity": "HIGH"
+    }
+  },
+
+  "self_check_rubric_updates": {
+    "description": "The AI Agent self-check rubric in ai_agent_instructions_v2.0.json must be updated to reflect the contract constraints",
+    "removed_checks": [
+      {
+        "old_check_id": 15,
+        "old_text": "IIS <rewrite> sections include URL Rewrite Module 2.1 requirement note",
+        "action": "REPLACE with platform scope validation check"
+      },
+      {
+        "old_check_id": 16,
+        "old_text": "Caddy output uses v2 syntax only — no Apache directives, no semicolons, no Order/Deny",
+        "action": "REPLACE with LiteSpeed compatibility check"
+      }
+    ],
+    "new_checks": [
+      {
+        "check_id": 15,
+        "weight": 2,
+        "check": "All platforms in output are within contract.allowed_platforms — no IIS, Caddy, or fail2ban references generated",
+        "contract_gate": "gate_1_platform_scope"
+      },
+      {
+        "check_id": 16,
+        "weight": 1,
+        "check": "LiteSpeed enforcer key present for risks where litespeed-specific directives add value — htaccess rules marked as LiteSpeed-compatible",
+        "contract_gate": "gate_4_litespeed_presence"
+      }
+    ],
+    "new_minimum_score": 18,
+    "new_maximum_score": 19,
+    "scoring_rule": "Sum weights of passing checks. Score < 18 → identify failing checks and regenerate. Contract gates 1, 2, 3, 5 are CRITICAL — any violation blocks delivery regardless of total score."
+  },
+
+  "remediation_execution_log": {
+    "description": "Tracks the remediation actions taken to bring all 6 bundle files into compliance with this contract",
+    "status": "pending_execution",
+    "actions": [
+      {
+        "action_id": "REM-001",
+        "description": "Remove IIS references from ai_agent_instructions_v2.0.json (lib_key_reference.iis, self-check #15, example workflows)",
+        "status": "pending"
+      },
+      {
+        "action_id": "REM-002",
+        "description": "Remove Caddy references from ai_agent_instructions_v2.0.json (lib_key_reference.caddy, lib_key_reference.caddy_native, self-check #16, example workflows, naming_conventions.caddy_matcher, insertion_point_definitions.jail_local)",
+        "status": "pending"
+      },
+      {
+        "action_id": "REM-003",
+        "description": "Remove fail2ban references from ai_agent_instructions_v2.0.json (lib_key_reference.fail2ban, insertion_point_definitions.jail_local)",
+        "status": "pending"
+      },
+      {
+        "action_id": "REM-004",
+        "description": "Add LiteSpeed to ai_agent_instructions_v2.0.json (lib_key_reference.litespeed, updated self-check #15/#16, system prompt, naming_conventions)",
+        "status": "pending"
+      },
+      {
+        "action_id": "REM-005",
+        "description": "Remove RISK-123 and RISK-124 from ai_agent_instructions_v2.0.json risk_index",
+        "status": "pending"
+      },
+      {
+        "action_id": "REM-006",
+        "description": "Update VAPT_AI_Agent_System_README_v2.0.md — remove all IIS, Caddy, fail2ban sections; add LiteSpeed sections; update enforcer key map, platform coverage, verification commands, limitations, and examples",
+        "status": "pending"
+      },
+      {
+        "action_id": "REM-007",
+        "description": "Remove fail2ban enforcer entries from enforcer_pattern_library_v2.0.json for all 16+1 risks",
+        "status": "pending"
+      },
+      {
+        "action_id": "REM-008",
+        "description": "Remove caddy_native, caddy, iis enforcer entries from enforcer_pattern_library_v2.0.json for all risks",
+        "status": "pending"
+      },
+      {
+        "action_id": "REM-009",
+        "description": "Delete RISK-123 and RISK-124 entirely from enforcer_pattern_library_v2.0.json",
+        "status": "pending"
+      },
+      {
+        "action_id": "REM-010",
+        "description": "Fix Apache_Legacy corruption in enforcer_pattern_library_v2.0.json (description, enforcer_key_map)",
+        "status": "pending"
+      },
+      {
+        "action_id": "REM-011",
+        "description": "Add LiteSpeed enforcer entries to enforcer_pattern_library_v2.0.json for applicable risks",
+        "status": "pending"
+      },
+      {
+        "action_id": "REM-012",
+        "description": "Remove fail2ban driver steps from vapt_driver_manifest_v2.0.json for all 16+1 risks",
+        "status": "pending"
+      },
+      {
+        "action_id": "REM-013",
+        "description": "Remove caddy/iis driver steps from vapt_driver_manifest_v2.0.json",
+        "status": "pending"
+      },
+      {
+        "action_id": "REM-014",
+        "description": "Delete RISK-123 and RISK-124 entirely from vapt_driver_manifest_v2.0.json",
+        "status": "pending"
+      },
+      {
+        "action_id": "REM-015",
+        "description": "Fix Apache_Legacy corruption in vapt_driver_manifest_v2.0.json",
+        "status": "pending"
+      },
+      {
+        "action_id": "REM-016",
+        "description": "Add LiteSpeed driver steps to vapt_driver_manifest_v2.0.json for applicable risks",
+        "status": "pending"
+      },
+      {
+        "action_id": "REM-017",
+        "description": "Remove fail2ban platform_implementations from interface_schema_v2.0.json for all 16+1 risks",
+        "status": "pending"
+      },
+      {
+        "action_id": "REM-018",
+        "description": "Remove caddy/iis platform_implementations from interface_schema_v2.0.json",
+        "status": "pending"
+      },
+      {
+        "action_id": "REM-019",
+        "description": "Delete RISK-123 and RISK-124 entirely from interface_schema_v2.0.json",
+        "status": "pending"
+      },
+      {
+        "action_id": "REM-020",
+        "description": "Fix Apache_Legacy corruption in interface_schema_v2.0.json",
+        "status": "pending"
+      },
+      {
+        "action_id": "REM-021",
+        "description": "Add LiteSpeed platform_implementations to interface_schema_v2.0.json for applicable risks",
+        "status": "pending"
+      },
+      {
+        "action_id": "REM-022",
+        "description": "Remove fail2ban comment from VAPT_Driver_Reference_v2.0.php resolve_path method",
+        "status": "pending"
+      },
+      {
+        "action_id": "REM-023",
+        "description": "Add LiteSpeed comment/note to VAPT_Driver_Reference_v2.0.php",
+        "status": "pending"
+      }
+    ]
+  },
+
+  "contract_enforcement": {
+    "loading_order": 1,
+    "read_before": ["ai_agent_instructions_v2.0.json"],
+    "agent_instruction_append": "BEFORE generating any output, load vapt_platform_contract_v3.0.json and validate ALL contract_validation_gates pass. If any CRITICAL gate fails, block delivery and report the violation. This contract supersedes any platform references in ai_agent_instructions_v2.0.json that conflict with it.",
+    "runtime_validation": "On every generate_full_risk_package or generate_enforcement_code task, the agent MUST: (1) verify the requested platform is in contract.platform_scope.allowed_platforms[], (2) verify the enforcer_key is NOT in contract.contract_validation_gates.gate_2_enforcer_keys.prohibited_enforcer_keys[], (3) verify the risk_id is NOT in contract.risk_deletions[].risk_id. If any check fails, refuse the generation and report the contract violation."
+  }
+}

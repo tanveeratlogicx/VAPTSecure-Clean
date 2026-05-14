@@ -1,0 +1,838 @@
+{
+  "schema_version": "1.0.0",
+  "contract_date": "2026-05-13",
+  "file_role": "autoheal_implementation_contract",
+  "contract_type": "AI_Agent_Executable",
+  "title": "VAPT Auto-Heal Implementation Contract v1.0",
+  "description": "Machine-readable contract governing the implementation of auto-heal capabilities across all VAPT bundle files. This contract defines the phased execution plan, per-phase actions, validation gates, and sign-off criteria to bring auto-heal coverage from 27.3% (117/429 steps) to near-complete. It is loaded by the AI Agent at runtime and enforced as a hard constraint on all auto-heal implementation tasks. This contract extends (not replaces) vapt_platform_contract_v3.0.json.",
+
+  "stakeholder_context": {
+    "project": "VAPT WordPress Plugin Builder",
+    "objective": "Implement a complete auto-heal mechanism where enabling a feature auto-injects protection into configuration files, and disabling it auto-removes that protection — reliably, idempotently, and with verification",
+    "auto_heal_definition": {
+      "enable_flow": "Feature ON → Check idempotency → Backup → Inject wrapped_code (with markers) at insertion_point → Verify injection → On failure, auto-rollback",
+      "disable_flow": "Feature OFF → Locate begin_marker in target_file → Regex-remove marker block → Verify removal → On failure, restore from backup",
+      "core_principle": "Every protection that can be injected MUST be removable by a corresponding, symmetric, marker-based operation — no orphaned code, no partial states"
+    },
+    "current_state": {
+      "total_steps": 429,
+      "steps_with_rollback": 117,
+      "steps_without_rollback": 312,
+      "rollback_coverage_pct": 27.3,
+      "enforcers_full_coverage": [".htaccess", "server_cron", "wordpress", "wordpress_core"],
+      "enforcers_partial_coverage": ["php_functions", "wp-config.php", "nginx", "apache"],
+      "enforcers_zero_coverage": ["cloudflare", "litespeed"]
+    },
+    "target_state": {
+      "rollback_coverage_pct": 99.5,
+      "remaining_gap": "Cloudflare API rollback requires new action type (design-only in this contract)"
+    }
+  },
+
+  "structural_preservation_rule": {
+    "inherits_from": "vapt_platform_contract_v3.0.json",
+    "description": "The JSON schema/structure of all existing bundle files is IMMUTABLE. Auto-heal implementation may only add key-value pairs within the existing structure — never change the structure itself.",
+    "rules": [
+      "Top-level keys must NEVER be renamed, removed, or reordered",
+      "The nesting hierarchy must remain identical — new fields are added as siblings at the appropriate level",
+      "Value types must be preserved — strings stay strings, objects stay objects, arrays stay arrays",
+      "New fields (e.g., disable_action, remove_operation, marker_begin, marker_end) must follow the naming conventions already established in each file",
+      "New rollback{} objects in driver manifest must follow the exact same key structure as existing rollback objects: {action, begin_marker, end_marker, target_file}",
+      "New disable actions in interface schema must follow the exact same key structure as existing enable actions: {action_id, type, label, confirmation_required, rest_endpoint}",
+      "The contract file (vapt_autoheal_contract_v1.0.json) is a NEW file with its own independent structure and is not bound by this rule",
+      "JSON formatting style (indentation, key ordering conventions) must match the source files"
+    ],
+    "severity": "CRITICAL",
+    "auto_enforce": true
+  },
+
+  "marker_system_reference": {
+    "description": "The marker system is the foundation of auto-heal. Every injected protection block is wrapped in platform-appropriate comment markers for reliable identification and removal.",
+    "marker_formats": {
+      "htaccess": { "begin": "# BEGIN VAPT RISK-XXX", "end": "# END VAPT RISK-XXX", "comment_style": "hash" },
+      "nginx": { "begin": "# BEGIN VAPT RISK-XXX", "end": "# END VAPT RISK-XXX", "comment_style": "hash" },
+      "apache": { "begin": "# BEGIN VAPT RISK-XXX", "end": "# END VAPT RISK-XXX", "comment_style": "hash" },
+      "litespeed": { "begin": "# BEGIN VAPT RISK-XXX", "end": "# END VAPT RISK-XXX", "comment_style": "hash" },
+      "server_cron": { "begin": "# BEGIN VAPT RISK-XXX", "end": "# END VAPT RISK-XXX", "comment_style": "hash" },
+      "wp-config.php": { "begin": "/* BEGIN VAPT RISK-XXX */", "end": "/* END VAPT RISK-XXX */", "comment_style": "c_block" },
+      "php_functions": { "begin": "// BEGIN VAPT RISK-XXX", "end": "// END VAPT RISK-XXX", "comment_style": "single_line" },
+      "wordpress": { "begin": "// BEGIN VAPT RISK-XXX", "end": "// END VAPT RISK-XXX", "comment_style": "single_line" },
+      "wordpress_core": { "begin": "// BEGIN VAPT RISK-XXX", "end": "// END VAPT RISK-XXX", "comment_style": "single_line" },
+      "cloudflare": { "begin": null, "end": null, "comment_style": "api_based", "note": "Cloudflare uses API-based rule management, not file markers. Rollback requires DELETE API call." }
+    },
+    "naming_convention": "XXX = zero-padded risk number (e.g., 002, 014, 129)",
+    "wordpress_convention_alignment": "Mirrors WordPress core # BEGIN WordPress / # END WordPress pattern"
+  },
+
+  "implementation_phases": {
+
+    "phase_1": {
+      "phase_id": "AH-P1",
+      "title": "Critical Bug Fix — LiteSpeed Rollback Action Missing",
+      "severity": "CRITICAL",
+      "description": "All 8 litespeed enforcer steps in vapt_driver_manifest_v2.0.json have rollback objects with begin_marker and end_marker, but the 'action' key is completely absent. This is a bug (likely from remediation) that prevents programmatic rollback execution. Fix: add action: 'remove_block' to all 8 rollback objects.",
+      "target_files": ["vapt_driver_manifest_v2.0.json"],
+      "affected_risks": ["RISK-010", "RISK-013", "RISK-020", "RISK-023", "RISK-024", "RISK-035", "RISK-116", "RISK-117"],
+      "actions": [
+        {
+          "action_id": "AH-P1-001",
+          "description": "For each of the 8 litespeed steps, locate the rollback object and add the missing 'action' key with value 'remove_block'",
+          "before": { "rollback": { "begin_marker": "# BEGIN VAPT RISK-XXX", "end_marker": "# END VAPT RISK-XXX", "target_file": "{ABSPATH}.htaccess" } },
+          "after": { "rollback": { "action": "remove_block", "begin_marker": "# BEGIN VAPT RISK-XXX", "end_marker": "# END VAPT RISK-XXX", "target_file": "{ABSPATH}.htaccess" } },
+          "position_rule": "Insert 'action' as the FIRST key in the rollback object (consistent with existing .htaccess rollback objects)"
+        },
+        {
+          "action_id": "AH-P1-002",
+          "description": "Verify that the same 8 litespeed steps in enforcer_pattern_library_v2.0.json have rollback fields (even if string-only). If missing, add rollback string.",
+          "check": "For each litespeed enforcer in pattern library, verify 'rollback' key exists. If missing, add string: 'Remove # BEGIN VAPT RISK-XXX ... # END VAPT RISK-XXX block from .htaccess'"
+        }
+      ],
+      "validation_gates": [
+        {
+          "gate_id": "AH-P1-V1",
+          "description": "All 8 litespeed rollback objects in driver manifest must have action='remove_block'",
+          "check": "For each risk in affected_risks, find litespeed step in vapt_driver_manifest and verify step.rollback.action === 'remove_block'",
+          "severity": "CRITICAL"
+        },
+        {
+          "gate_id": "AH-P1-V2",
+          "description": "No litespeed rollback object may have action=null or action missing",
+          "check": "For each litespeed step, verify step.rollback.action is not null and is not undefined",
+          "severity": "CRITICAL"
+        },
+        {
+          "gate_id": "AH-P1-V3",
+          "description": "All litespeed rollback begin_marker/end_marker values must match the step's own markers",
+          "check": "For each litespeed step, verify step.rollback.begin_marker === step.begin_marker AND step.rollback.end_marker === step.end_marker",
+          "severity": "HIGH"
+        }
+      ],
+      "estimated_steps_modified": 8,
+      "estimated_new_fields": 8,
+      "risk_level": "LOW — additive field only, no structural change"
+    },
+
+    "phase_2": {
+      "phase_id": "AH-P2",
+      "title": "Rollback Gap Closure — Generate 312 Missing Rollback Objects",
+      "severity": "HIGH",
+      "description": "312 driver manifest steps have begin_marker, end_marker, and target_file but are missing the rollback{} object. Since all infrastructure is present, rollback objects can be generated deterministically using a template. This phase brings rollback coverage from 27.3% (117/429) to 99.5% (429/429 excluding Cloudflare).",
+      "target_files": ["vapt_driver_manifest_v2.0.json"],
+      "enforcer_breakdown": {
+        "wp-config.php": { "total_steps": 133, "existing_rollback": 22, "missing_rollback": 111 },
+        "php_functions": { "total_steps": 100, "existing_rollback": 30, "missing_rollback": 70 },
+        "nginx": { "total_steps": 67, "existing_rollback": 8, "missing_rollback": 59 },
+        "apache": { "total_steps": 34, "existing_rollback": 2, "missing_rollback": 32 }
+      },
+      "rollback_template": {
+        "description": "Template for generating missing rollback objects. Values are derived from existing fields in the same step.",
+        "fields": {
+          "action": { "value": "remove_block", "source": "constant" },
+          "begin_marker": { "value": "{step.begin_marker}", "source": "derived_from_step" },
+          "end_marker": { "value": "{step.end_marker}", "source": "derived_from_step" },
+          "target_file": { "value": "{step.target_file}", "source": "derived_from_step" }
+        },
+        "example_output": {
+          "action": "remove_block",
+          "begin_marker": "/* BEGIN VAPT RISK-061 */",
+          "end_marker": "/* END VAPT RISK-061 */",
+          "target_file": "{ABSPATH}wp-config.php"
+        }
+      },
+      "actions": [
+        {
+          "action_id": "AH-P2-001",
+          "description": "Generate rollback objects for all 111 missing wp-config.php steps",
+          "template_key_mapping": {
+            "begin_marker_format": "/* BEGIN VAPT RISK-{nnn} */",
+            "end_marker_format": "/* END VAPT RISK-{nnn} */",
+            "target_file": "{ABSPATH}wp-config.php"
+          },
+          "position_rule": "Insert rollback object after verification object, before any closing brace of the step — matching the position of existing rollback objects in the same enforcer type"
+        },
+        {
+          "action_id": "AH-P2-002",
+          "description": "Generate rollback objects for all 70 missing PHP Functions steps",
+          "template_key_mapping": {
+            "begin_marker_format": "// BEGIN VAPT RISK-{nnn}",
+            "end_marker_format": "// END VAPT RISK-{nnn}",
+            "target_file": "{step.target_file}"
+          },
+          "position_rule": "Same as AH-P2-001"
+        },
+        {
+          "action_id": "AH-P2-003",
+          "description": "Generate rollback objects for all 59 missing Nginx steps",
+          "template_key_mapping": {
+            "begin_marker_format": "# BEGIN VAPT RISK-{nnn}",
+            "end_marker_format": "# END VAPT RISK-{nnn}",
+            "target_file": "{step.target_file}"
+          },
+          "position_rule": "Same as AH-P2-001"
+        },
+        {
+          "action_id": "AH-P2-004",
+          "description": "Generate rollback objects for all 32 missing Apache steps",
+          "template_key_mapping": {
+            "begin_marker_format": "# BEGIN VAPT RISK-{nnn}",
+            "end_marker_format": "# END VAPT RISK-{nnn}",
+            "target_file": "{step.target_file}"
+          },
+          "position_rule": "Same as AH-P2-001"
+        },
+        {
+          "action_id": "AH-P2-005",
+          "description": "For each step receiving a new rollback object, also verify that the corresponding enforcer_pattern_library entry has a rollback field (string). If missing, add it.",
+          "target_files_secondary": ["enforcer_pattern_library_v2.0.json"],
+          "rollback_string_template": "Remove {begin_marker} ... {end_marker} block from {target_file}",
+          "note": "The pattern library rollback field is a human-readable string, not a structured object. It provides context but is not machine-executable."
+        }
+      ],
+      "validation_gates": [
+        {
+          "gate_id": "AH-P2-V1",
+          "description": "Every driver manifest step for file-writing enforcers (htaccess, wp-config.php, php_functions, nginx, apache, litespeed, server_cron, wordpress, wordpress_core) must have a rollback object",
+          "check": "Count steps with rollback.action='remove_block' — must equal total file-writing steps (expected: 397)",
+          "severity": "CRITICAL"
+        },
+        {
+          "gate_id": "AH-P2-V2",
+          "description": "Every rollback object must have all 4 required keys: action, begin_marker, end_marker, target_file",
+          "check": "For each step with rollback, verify all 4 keys exist and are non-null",
+          "severity": "CRITICAL"
+        },
+        {
+          "gate_id": "AH-P2-V3",
+          "description": "Rollback marker values must match the step's own markers",
+          "check": "For each step, verify rollback.begin_marker === step.begin_marker AND rollback.end_marker === step.end_marker AND rollback.target_file === step.target_file",
+          "severity": "CRITICAL"
+        },
+        {
+          "gate_id": "AH-P2-V4",
+          "description": "Rollback coverage must be >= 99% for file-writing enforcers",
+          "check": "(steps_with_rollback / total_file_writing_steps) >= 0.99",
+          "severity": "HIGH"
+        },
+        {
+          "gate_id": "AH-P2-V5",
+          "description": "Pattern library entries for all modified risks must have rollback strings",
+          "check": "For each risk modified in AH-P2-001 through AH-P2-004, verify the corresponding enforcer_pattern_library entry has a rollback field (non-empty string)",
+          "severity": "HIGH"
+        }
+      ],
+      "estimated_steps_modified": 312,
+      "estimated_new_fields": 312,
+      "risk_level": "LOW — additive field only, template-driven, no structural change"
+    },
+
+    "phase_3": {
+      "phase_id": "AH-P3",
+      "title": "Interface Schema Enable/Disable Parity",
+      "severity": "HIGH",
+      "description": "The interface_schema currently defines 133 enable actions and ZERO disable actions. This makes the toggle UI a one-way street — it can turn protections ON but has no schema-defined path to turn them OFF. This phase adds a disable action for every risk and extends toggle components with on_enable/on_disable callback semantics.",
+      "target_files": ["interface_schema_v2.0.json"],
+      "actions": [
+        {
+          "action_id": "AH-P3-001",
+          "description": "Add a 'disable' action to every risk's actions[] array",
+          "template": {
+            "action_id": "ACTION-{NNN}-002",
+            "type": "disable",
+            "label": "Remove Protection",
+            "confirmation_required": true,
+            "rest_endpoint": "/wp-json/vapt/v1/risk-{nnn}",
+            "http_method": "DELETE",
+            "driver_method": "VAPT_Driver::rollback"
+          },
+          "position_rule": "Insert as the second element in the actions[] array, after the existing enable action",
+          "count": 133
+        },
+        {
+          "action_id": "AH-P3-002",
+          "description": "Extend every toggle component with on_enable and on_disable callback references",
+          "fields_to_add": {
+            "on_enable": "handleRISK{NNN}Enable",
+            "on_disable": "handleRISK{NNN}Disable"
+          },
+          "existing_field_to_preserve": "on_change: 'handleRISK{NNN}ToggleChange'",
+          "note": "The existing on_change handler remains for backward compatibility. The new on_enable/on_disable handlers provide explicit enable/disable callback paths. The plugin code should call on_enable when toggle transitions to true and on_disable when it transitions to false.",
+          "count": 133
+        },
+        {
+          "action_id": "AH-P3-003",
+          "description": "Add 'remove_operation' field to every platform_implementations entry",
+          "operation_mapping": {
+            "add_header": "remove_header",
+            "add_directive": "remove_directive",
+            "add_files_block": "remove_files_block",
+            "add_files_match_block": "remove_files_match_block",
+            "add_rewrite_rule": "remove_rewrite_rule",
+            "add_rewrite_cond": "remove_rewrite_cond",
+            "add_constant": "remove_constant",
+            "add_filter": "remove_filter",
+            "add_action_hook": "remove_action_hook",
+            "add_cron_entry": "remove_cron_entry",
+            "waf_custom_rule": "delete_waf_rule",
+            "transform_rule": "delete_transform_rule",
+            "notes_only": null
+          },
+          "position_rule": "Add immediately after the existing 'operation' field in each platform_implementations entry",
+          "count": "approximately 398 (one per platform_implementations entry)"
+        },
+        {
+          "action_id": "AH-P3-004",
+          "description": "Add 'marker_begin' and 'marker_end' fields to every platform_implementations entry (except cloudflare which is API-based)",
+          "template": {
+            "marker_begin": "{marker_system_reference marker format for this enforcer}",
+            "marker_end": "{marker_system_reference marker format for this enforcer}"
+          },
+          "enforcer_markers": {
+            ".htaccess": { "marker_begin": "# BEGIN VAPT RISK-{NNN}", "marker_end": "# END VAPT RISK-{NNN}" },
+            "nginx": { "marker_begin": "# BEGIN VAPT RISK-{NNN}", "marker_end": "# END VAPT RISK-{NNN}" },
+            "apache": { "marker_begin": "# BEGIN VAPT RISK-{NNN}", "marker_end": "# END VAPT RISK-{NNN}" },
+            "litespeed": { "marker_begin": "# BEGIN VAPT RISK-{NNN}", "marker_end": "# END VAPT RISK-{NNN}" },
+            "server_cron": { "marker_begin": "# BEGIN VAPT RISK-{NNN}", "marker_end": "# END VAPT RISK-{NNN}" },
+            "wp-config.php": { "marker_begin": "/* BEGIN VAPT RISK-{NNN} */", "marker_end": "/* END VAPT RISK-{NNN} */" },
+            "php_functions": { "marker_begin": "// BEGIN VAPT RISK-{NNN}", "marker_end": "// END VAPT RISK-{NNN}" },
+            "wordpress": { "marker_begin": "// BEGIN VAPT RISK-{NNN}", "marker_end": "// END VAPT RISK-{NNN}" },
+            "wordpress_core": { "marker_begin": "// BEGIN VAPT RISK-{NNN}", "marker_end": "// END VAPT RISK-{NNN}" },
+            "cloudflare": { "marker_begin": null, "marker_end": null, "note": "API-based, no file markers" }
+          },
+          "position_rule": "Add after remove_operation field in each platform_implementations entry",
+          "count": "approximately 397 (excluding cloudflare entries)"
+        },
+        {
+          "action_id": "AH-P3-005",
+          "description": "Add 'disable_driver_ref' field to every platform_implementations entry",
+          "template": "vapt_driver_manifest_v2.0.risks.RISK-{NNN}.steps[*enforcer={lib_key}].rollback",
+          "position_rule": "Add after driver_ref field",
+          "count": "approximately 398"
+        }
+      ],
+      "validation_gates": [
+        {
+          "gate_id": "AH-P3-V1",
+          "description": "Every risk must have exactly 2 actions: one enable and one disable",
+          "check": "For each risk_interface, verify actions array has length 2, with types ['enable', 'disable']",
+          "severity": "CRITICAL"
+        },
+        {
+          "gate_id": "AH-P3-V2",
+          "description": "Every disable action must have http_method='DELETE' and driver_method='VAPT_Driver::rollback'",
+          "check": "For each disable action, verify http_method === 'DELETE' and driver_method === 'VAPT_Driver::rollback'",
+          "severity": "CRITICAL"
+        },
+        {
+          "gate_id": "AH-P3-V3",
+          "description": "Every toggle component must have on_enable and on_disable fields",
+          "check": "For each risk_interface, find toggle component and verify on_enable and on_disable keys exist",
+          "severity": "HIGH"
+        },
+        {
+          "gate_id": "AH-P3-V4",
+          "description": "Every platform_implementations entry (except cloudflare and notes_only) must have remove_operation, marker_begin, marker_end, and disable_driver_ref",
+          "check": "For each platform_implementations entry, verify all 4 fields exist and are non-null (except cloudflare which may have null markers and notes_only which may have null remove_operation)",
+          "severity": "CRITICAL"
+        },
+        {
+          "gate_id": "AH-P3-V5",
+          "description": "remove_operation values must be valid and consistent with the add_operation",
+          "check": "For each entry, verify remove_operation follows the mapping in AH-P3-003",
+          "severity": "HIGH"
+        },
+        {
+          "gate_id": "AH-P3-V6",
+          "description": "Marker values must be consistent with the marker system reference",
+          "check": "For each platform_implementations entry, verify marker_begin and marker_end use the correct comment syntax for the enforcer type",
+          "severity": "CRITICAL"
+        }
+      ],
+      "estimated_entries_modified": 133,
+      "estimated_new_fields": "approximately 1330 (5 new fields per risk on average)",
+      "risk_level": "MEDIUM — large number of additions; must preserve existing structure exactly"
+    },
+
+    "phase_4": {
+      "phase_id": "AH-P4",
+      "title": "Pattern Library Rollback Structuring",
+      "severity": "MEDIUM",
+      "description": "The enforcer_pattern_library currently has rollback as a human-readable string (e.g., 'Remove # BEGIN VAPT RISK-002 ... # END VAPT RISK-002 block from .htaccess'). While the driver manifest has structured rollback objects, the pattern library's string-only rollback cannot be programmatically consumed. This phase adds a structured rollback_object alongside the existing string rollback (not replacing it — to preserve backward compatibility and the structural preservation rule).",
+      "target_files": ["enforcer_pattern_library_v2.0.json"],
+      "actions": [
+        {
+          "action_id": "AH-P4-001",
+          "description": "Add 'rollback_structured' object to every enforcer entry that has markers",
+          "template": {
+            "rollback_structured": {
+              "action": "remove_block",
+              "begin_marker": "{entry.begin_marker}",
+              "end_marker": "{entry.end_marker}",
+              "target_file": "{entry.target_file or entry.driver.target_file}"
+            }
+          },
+          "position_rule": "Add immediately after the existing 'rollback' string field",
+          "count": "approximately 398 (one per enforcer entry with markers)",
+          "note": "Cloudflare entries (no markers) get rollback_structured with action='delete_waf_rule' and null markers"
+        },
+        {
+          "action_id": "AH-P4-002",
+          "description": "Add 'remove_mode' field to every driver{} sub-object",
+          "template": {
+            "remove_mode": "marker_regex_remove",
+            "remove_block_delimiter": "{entry.begin_marker} through {entry.end_marker} inclusive"
+          },
+          "position_rule": "Add after 'if_found' field in the driver{} sub-object",
+          "count": "approximately 398",
+          "note": "This provides the driver with a symmetric remove instruction, complementing the existing write_mode"
+        }
+      ],
+      "validation_gates": [
+        {
+          "gate_id": "AH-P4-V1",
+          "description": "Every enforcer entry with markers must have rollback_structured object",
+          "check": "For each pattern entry, if begin_marker exists, verify rollback_structured exists",
+          "severity": "HIGH"
+        },
+        {
+          "gate_id": "AH-P4-V2",
+          "description": "Every rollback_structured object must have all 4 required keys",
+          "check": "action, begin_marker, end_marker, target_file must all exist and be non-null (except cloudflare markers)",
+          "severity": "HIGH"
+        },
+        {
+          "gate_id": "AH-P4-V3",
+          "description": "rollback_structured values must be consistent with entry's own markers",
+          "check": "rollback_structured.begin_marker === entry.begin_marker AND rollback_structured.end_marker === entry.end_marker",
+          "severity": "CRITICAL"
+        },
+        {
+          "gate_id": "AH-P4-V4",
+          "description": "Original rollback string field must be preserved (not replaced)",
+          "check": "Every entry that had a rollback string must still have it after modification",
+          "severity": "CRITICAL"
+        },
+        {
+          "gate_id": "AH-P4-V5",
+          "description": "Every driver{} sub-object must have remove_mode field",
+          "check": "For each pattern entry with driver{}, verify driver.remove_mode exists",
+          "severity": "HIGH"
+        }
+      ],
+      "estimated_entries_modified": 398,
+      "estimated_new_fields": 796,
+      "risk_level": "MEDIUM — additive fields, must not break existing rollback string references"
+    },
+
+    "phase_5": {
+      "phase_id": "AH-P5",
+      "title": "Post-Removal Verification",
+      "severity": "MEDIUM",
+      "description": "Currently, verification only exists for the ENABLE path (after injecting code). When a feature is DISABLED, there is no verification that the block was successfully removed. This phase adds 'disable_verification' fields to the driver manifest for every step, enabling the driver to confirm removal succeeded.",
+      "target_files": ["vapt_driver_manifest_v2.0.json"],
+      "actions": [
+        {
+          "action_id": "AH-P5-001",
+          "description": "Add 'disable_verification' object to every step that has a rollback object",
+          "template": {
+            "disable_verification": {
+              "check_type": "marker_absent",
+              "check_string": "{step.begin_marker}",
+              "expected_result": "not_found",
+              "fallback_verification": null
+            }
+          },
+          "description_of_fields": {
+            "check_type": "How to verify removal — 'marker_absent' means scan the file for the begin_marker; if not found, removal succeeded",
+            "check_string": "The string to search for — typically the begin_marker",
+            "expected_result": "What we expect — 'not_found' means the marker is absent from the file",
+            "fallback_verification": "Optional additional verification (e.g., check site still loads, check header is no longer present). Null for most entries; populated for header-related risks."
+          },
+          "position_rule": "Add immediately after the rollback object in each step",
+          "count": "approximately 429 (one per step, after Phase 2 ensures all have rollback)"
+        },
+        {
+          "action_id": "AH-P5-002",
+          "description": "For header-related risks (RISK-012 through RISK-022, RISK-024, RISK-031-033, RISK-134), add fallback_verification that confirms the header is no longer present",
+          "template": {
+            "disable_verification": {
+              "check_type": "marker_absent",
+              "check_string": "# BEGIN VAPT RISK-{NNN}",
+              "expected_result": "not_found",
+              "fallback_verification": {
+                "command": "curl -sI https://yoursite.com | grep -i '{Header-Name}'",
+                "expected": "No match (header not present)"
+              }
+            }
+          },
+          "count": "approximately 14 risks with header enforcers"
+        }
+      ],
+      "validation_gates": [
+        {
+          "gate_id": "AH-P5-V1",
+          "description": "Every step with rollback must have disable_verification",
+          "check": "For each step, verify disable_verification object exists",
+          "severity": "HIGH"
+        },
+        {
+          "gate_id": "AH-P5-V2",
+          "description": "disable_verification must have check_type, check_string, expected_result",
+          "check": "Verify all 3 required keys exist and are non-null",
+          "severity": "HIGH"
+        },
+        {
+          "gate_id": "AH-P5-V3",
+          "description": "check_string must match the step's begin_marker",
+          "check": "disable_verification.check_string === step.begin_marker",
+          "severity": "CRITICAL"
+        }
+      ],
+      "estimated_entries_modified": 429,
+      "estimated_new_fields": 429,
+      "risk_level": "LOW — additive field only"
+    },
+
+    "phase_6": {
+      "phase_id": "AH-P6",
+      "title": "Cloudflare API Rollback Design",
+      "severity": "DESIGN_ONLY",
+      "description": "Cloudflare is API-based (WAF custom rules, transform rules) and does not use file markers. Rollback requires a different mechanism — deleting the rule via Cloudflare API. This phase defines the schema for Cloudflare rollback but notes that actual implementation requires Cloudflare API credentials and rule IDs that are only available at runtime. The contract defines the structure; the PHP driver code would need to implement the API calls.",
+      "target_files": ["vapt_driver_manifest_v2.0.json", "enforcer_pattern_library_v2.0.json", "interface_schema_v2.0.json"],
+      "actions": [
+        {
+          "action_id": "AH-P6-001",
+          "description": "Add rollback objects to all 32 Cloudflare steps in driver manifest with API-based action type",
+          "template": {
+            "rollback": {
+              "action": "delete_waf_rule",
+              "rule_identifier": "{rule_id_from_step}",
+              "zone_id": "{CLOUDFLARE_ZONE_ID}",
+              "api_endpoint": "https://api.cloudflare.com/client/v4/zones/{zone_id}/rulesets/{ruleset_id}/rules/{rule_id}",
+              "api_method": "DELETE",
+              "auth_required": "CF_API_TOKEN"
+            }
+          },
+          "note": "rule_identifier must reference a field in the step that uniquely identifies the WAF rule. The zone_id and ruleset_id are runtime values. The contract defines the structure; actual values are populated at runtime by the PHP driver."
+        },
+        {
+          "action_id": "AH-P6-002",
+          "description": "Add rollback_structured objects to all 32 Cloudflare entries in enforcer pattern library",
+          "template": {
+            "rollback_structured": {
+              "action": "delete_waf_rule",
+              "rule_identifier": "{rule_id}",
+              "note": "Cloudflare rollback requires API call. File-marker-based removal does not apply."
+            }
+          }
+        },
+        {
+          "action_id": "AH-P6-003",
+          "description": "Add cloudflare-specific disable_verification to driver manifest",
+          "template": {
+            "disable_verification": {
+              "check_type": "api_rule_absent",
+              "api_lookup": "GET https://api.cloudflare.com/client/v4/zones/{zone_id}/rulesets/{ruleset_id}/rules",
+              "expected_result": "rule_id not in response",
+              "auth_required": "CF_API_TOKEN"
+            }
+          }
+        },
+        {
+          "action_id": "AH-P6-004",
+          "description": "Add cloudflare-specific fields to interface_schema platform_implementations",
+          "fields_to_add": {
+            "remove_operation": "delete_waf_rule",
+            "marker_begin": null,
+            "marker_end": null,
+            "rollback_type": "api_delete",
+            "api_auth_required": "CF_API_TOKEN"
+          }
+        }
+      ],
+      "validation_gates": [
+        {
+          "gate_id": "AH-P6-V1",
+          "description": "All 32 Cloudflare steps must have rollback objects with action='delete_waf_rule'",
+          "check": "For each cloudflare step, verify rollback.action === 'delete_waf_rule'",
+          "severity": "HIGH"
+        },
+        {
+          "gate_id": "AH-P6-V2",
+          "description": "Cloudflare rollback objects must have rule_identifier field",
+          "check": "For each cloudflare step, verify rollback.rule_identifier exists",
+          "severity": "HIGH"
+        },
+        {
+          "gate_id": "AH-P6-V3",
+          "description": "Cloudflare interface_schema entries must have rollback_type='api_delete'",
+          "check": "For each cloudflare platform_implementations entry, verify rollback_type === 'api_delete'",
+          "severity": "HIGH"
+        }
+      ],
+      "estimated_entries_modified": 96,
+      "estimated_new_fields": 160,
+      "risk_level": "MEDIUM — new action type; requires PHP driver implementation to be functional",
+      "runtime_dependency": "Cloudflare API credentials (CF_API_TOKEN, CLOUDFLARE_ZONE_ID) must be configured in WordPress options for this to work at runtime"
+    },
+
+    "phase_7": {
+      "phase_id": "AH-P7",
+      "title": "AI Agent Instructions Update",
+      "severity": "MEDIUM",
+      "description": "Update the AI agent instructions to understand the auto-heal mechanism, disable actions, and the new schema fields. The agent must know how to generate disable action schemas, rollback_structured objects, and remove_mode instructions.",
+      "target_files": ["ai_agent_instructions_v2.0.json"],
+      "actions": [
+        {
+          "action_id": "AH-P7-001",
+          "description": "Add auto-heal concept to system_prompt",
+          "addition": "You understand the auto-heal mechanism: every protection that can be injected MUST be removable via a symmetric, marker-based operation. When generating UI schemas, always include both enable and disable actions. When generating enforcement code, always include both write_mode and remove_mode in the driver sub-object."
+        },
+        {
+          "action_id": "AH-P7-002",
+          "description": "Add auto-heal self-check items to self_check_rubric",
+          "new_checks": [
+            {
+              "check_id": 20,
+              "weight": 2,
+              "check": "Every risk has both 'enable' and 'disable' actions in its actions array",
+              "contract_gate": "AH-P3-V1"
+            },
+            {
+              "check_id": 21,
+              "weight": 2,
+              "check": "Every platform_implementations entry has remove_operation and marker fields (except cloudflare which uses api_delete and notes_only which is exempt)",
+              "contract_gate": "AH-P3-V4"
+            },
+            {
+              "check_id": 22,
+              "weight": 1,
+              "check": "Every enforcer entry in pattern library has rollback_structured object consistent with its markers",
+              "contract_gate": "AH-P4-V1"
+            },
+            {
+              "check_id": 23,
+              "weight": 1,
+              "check": "Every driver manifest step has rollback object with action='remove_block' (or 'delete_waf_rule' for cloudflare)",
+              "contract_gate": "AH-P2-V1"
+            }
+          ],
+          "new_minimum_score": 22,
+          "new_maximum_score": 26
+        },
+        {
+          "action_id": "AH-P7-003",
+          "description": "Add auto-heal workflow to task_types",
+          "new_task_type": {
+            "task_type": "generate_disable_schema",
+            "description": "Generate the disable action, remove_operation, and rollback schema for a given risk",
+            "steps": [
+              "Read the risk's enable action and platform_implementations from interface_schema",
+              "Generate disable action with type='disable', http_method='DELETE', driver_method='VAPT_Driver::rollback'",
+              "Generate remove_operation for each platform_implementations entry",
+              "Generate marker_begin/marker_end for each platform_implementations entry",
+              "Verify rollback_structured exists in pattern library",
+              "Verify rollback object exists in driver manifest"
+            ]
+          }
+        },
+        {
+          "action_id": "AH-P7-004",
+          "description": "Update driver_layer_guide with auto-heal fields",
+          "additions": {
+            "rollback_structured": "Machine-executable rollback object: {action, begin_marker, end_marker, target_file}. Present in enforcer_pattern_library alongside the human-readable rollback string.",
+            "remove_mode": "Symmetric counterpart to write_mode in driver{} sub-object. Value: 'marker_regex_remove'. Defines how the driver removes an injected block.",
+            "disable_verification": "Post-removal verification object: {check_type, check_string, expected_result, fallback_verification}. Used to confirm removal succeeded."
+          }
+        }
+      ],
+      "validation_gates": [
+        {
+          "gate_id": "AH-P7-V1",
+          "description": "AI agent instructions must reference auto-heal mechanism",
+          "check": "Grep for 'auto-heal' or 'auto_heal' in ai_agent_instructions — must find at least 3 references",
+          "severity": "HIGH"
+        },
+        {
+          "gate_id": "AH-P7-V2",
+          "description": "Self-check rubric must include auto-heal checks (20-23)",
+          "check": "Verify check_ids 20, 21, 22, 23 exist in self_check_rubric",
+          "severity": "HIGH"
+        },
+        {
+          "gate_id": "AH-P7-V3",
+          "description": "generate_disable_schema task type must exist",
+          "check": "Verify task_type 'generate_disable_schema' exists in task_types",
+          "severity": "MEDIUM"
+        }
+      ],
+      "estimated_entries_modified": 4,
+      "estimated_new_fields": 30,
+      "risk_level": "LOW — additive content only"
+    },
+
+    "phase_8": {
+      "phase_id": "AH-P8",
+      "title": "Cross-File Consistency Validation & Bundle Rebuild",
+      "severity": "CRITICAL",
+      "description": "Final phase: validate that all changes across all files are consistent, no references are broken, and the ZIP bundle is rebuilt with all updated files.",
+      "target_files": ["ALL"],
+      "actions": [
+        {
+          "action_id": "AH-P8-001",
+          "description": "Cross-reference integrity check: every code_ref in interface_schema resolves to existing pattern library entry",
+          "check": "For each risk_interface.platform_implementations.{platform}.code_ref, verify the referenced path exists in enforcer_pattern_library"
+        },
+        {
+          "action_id": "AH-P8-002",
+          "description": "Cross-reference integrity check: every driver_ref in interface_schema resolves to existing driver manifest step",
+          "check": "For each risk_interface.platform_implementations.{platform}.driver_ref, verify the referenced path exists in vapt_driver_manifest"
+        },
+        {
+          "action_id": "AH-P8-003",
+          "description": "Cross-reference integrity check: every disable_driver_ref resolves to existing rollback object",
+          "check": "For each risk_interface.platform_implementations.{platform}.disable_driver_ref, verify the referenced rollback object exists in vapt_driver_manifest"
+        },
+        {
+          "action_id": "AH-P8-004",
+          "description": "Marker consistency check: markers in pattern library, driver manifest, and interface schema are identical for the same risk+enforcer pair",
+          "check": "For each risk+enforcer, verify begin_marker and end_marker match across all 3 files"
+        },
+        {
+          "action_id": "AH-P8-005",
+          "description": "Platform scope compliance: inherit and re-validate vapt_platform_contract_v3.0 gates",
+          "check": "Re-run all 7 validation gates from vapt_platform_contract_v3.0.json"
+        },
+        {
+          "action_id": "AH-P8-006",
+          "description": "Rebuild VAPT_Bundle ZIP with all updated files",
+          "output": "/home/z/my-project/download/VAPT_Bundle_v3.1_AutoHeal.zip",
+          "included_files": [
+            "vapt_autoheal_contract_v1.0.json",
+            "vapt_platform_contract_v3.0.json",
+            "ai_agent_instructions_v2.0.json",
+            "VAPT_AI_Agent_System_README_v2.0.md",
+            "enforcer_pattern_library_v2.0.json",
+            "vapt_driver_manifest_v2.0.json",
+            "interface_schema_v2.0.json",
+            "VAPT_Driver_Reference_v2.0.php",
+            "remediation_log.txt"
+          ]
+        }
+      ],
+      "validation_gates": [
+        {
+          "gate_id": "AH-P8-V1",
+          "description": "All previous phase validation gates pass",
+          "check": "Re-run AH-P1-V1 through AH-P7-V3 — all must pass",
+          "severity": "CRITICAL"
+        },
+        {
+          "gate_id": "AH-P8-V2",
+          "description": "Zero prohibited platform references remain",
+          "check": "Grep all bundle files for iis, caddy, fail2ban — zero hits in data fields",
+          "severity": "CRITICAL"
+        },
+        {
+          "gate_id": "AH-P8-V3",
+          "description": "Rollback coverage >= 99% for file-writing enforcers",
+          "check": "(steps_with_rollback / total_file_writing_steps) >= 0.99",
+          "severity": "CRITICAL"
+        },
+        {
+          "gate_id": "AH-P8-V4",
+          "description": "All 133 risks have both enable and disable actions",
+          "check": "For each risk_interface, actions.length === 2 and types are ['enable', 'disable']",
+          "severity": "CRITICAL"
+        },
+        {
+          "gate_id": "AH-P8-V5",
+          "description": "ZIP bundle exists and contains all 9 files",
+          "check": "Verify ZIP file exists and contains all listed files",
+          "severity": "HIGH"
+        }
+      ]
+    }
+  },
+
+  "global_validation_gates": {
+    "description": "These gates apply across ALL phases and must be checked after each phase completes.",
+    "gates": [
+      {
+        "gate_id": "GV-1",
+        "name": "Structural Preservation",
+        "description": "No existing top-level keys renamed, removed, or reordered. No nesting hierarchy changes. No value type changes.",
+        "severity": "CRITICAL",
+        "auto_enforce": true
+      },
+      {
+        "gate_id": "GV-2",
+        "name": "No Orphaned References",
+        "description": "Every new field that references another file must resolve to an existing entry.",
+        "severity": "CRITICAL",
+        "auto_enforce": true
+      },
+      {
+        "gate_id": "GV-3",
+        "name": "Platform Scope Compliance",
+        "description": "No IIS, Caddy, fail2ban references introduced or re-introduced by auto-heal additions.",
+        "severity": "CRITICAL",
+        "auto_enforce": true
+      },
+      {
+        "gate_id": "GV-4",
+        "name": "Marker Consistency",
+        "description": "Markers for the same risk+enforcer pair must be identical across all files that reference them.",
+        "severity": "HIGH",
+        "auto_enforce": true
+      },
+      {
+        "gate_id": "GV-5",
+        "name": "JSON Validity",
+        "description": "All modified files must be valid JSON (parseable without errors).",
+        "severity": "CRITICAL",
+        "auto_enforce": true
+      }
+    ]
+  },
+
+  "execution_order": {
+    "description": "Phases MUST be executed in order. Each phase's validation gates must pass before proceeding to the next phase.",
+    "order": ["AH-P1", "AH-P2", "AH-P3", "AH-P4", "AH-P5", "AH-P6", "AH-P7", "AH-P8"],
+    "parallel_allowed": false,
+    "rollback_on_failure": "If any phase fails validation, STOP execution. Do NOT proceed to the next phase. Report the failing gate and wait for human decision.",
+    "checkpoint_after_each_phase": true,
+    "checkpoint_action": "After each phase completes and passes validation, save a snapshot of all modified files to /home/z/my-project/download/checkpoints/phase_{N}/"
+  },
+
+  "sign_off_criteria": {
+    "description": "The auto-heal implementation is complete when ALL of the following are true:",
+    "criteria": [
+      "All 8 phases executed in order with all validation gates passing",
+      "Rollback coverage >= 99% for file-writing enforcers (429/429 for file-based, 32/32 for Cloudflare API)",
+      "All 133 risks have both enable and disable actions",
+      "All 429 driver manifest steps have rollback objects",
+      "All 398 enforcer pattern library entries have rollback_structured objects",
+      "All interface schema platform_implementations have remove_operation and marker fields",
+      "Zero prohibited platform references (IIS, Caddy, fail2ban) in any file",
+      "All cross-file references resolve correctly",
+      "ZIP bundle rebuilt and delivered"
+    ]
+  },
+
+  "contract_enforcement": {
+    "loading_order": 0,
+    "read_before": ["vapt_platform_contract_v3.0.json", "ai_agent_instructions_v2.0.json"],
+    "agent_instruction": "BEFORE implementing any auto-heal changes, load this contract AND vapt_platform_contract_v3.0.json. Execute phases strictly in order. After each phase, run that phase's validation gates AND the global validation gates. If any CRITICAL gate fails, STOP and report. Do not proceed to the next phase until all gates pass. This contract extends (not replaces) the platform contract — both must be satisfied simultaneously.",
+    "checkpoint_protocol": "After each phase, write a summary to /home/z/my-project/worklog.md with: phase_id, actions completed, validation results, any issues encountered. This provides a full audit trail."
+  },
+
+  "estimated_totals": {
+    "phases": 8,
+    "total_actions": 25,
+    "total_validation_gates": 28,
+    "estimated_entries_modified": 1600,
+    "estimated_new_fields": 3015,
+    "estimated_execution_time": "3-4 hours across all phases",
+    "highest_risk_phase": "AH-P3 (Interface Schema — large number of additions per risk)"
+  }
+}

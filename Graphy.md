@@ -2,12 +2,12 @@
 
 ## Project: VAPTSecure-Clean
 
-Generated: 2026-05-13 01:55:32
+Generated: 2026-05-14 07:13:35
 
 ### File Structure Summary
-- Total Files: 2373
-- Total Directories: 440
-- File Extensions: .rules: 25, .agrules: 20, .md: 220, .json: 397, .rar: 2, .php: 204, .ps1: 10, .zip: 21, .yml: 6, .css: 10, .js: 276, .jsx: 25, .clinerules: 5, .roorules: 5, .windsurfrules: 5, .mdc: 1, .cjs: 194, .cts: 194, .ts: 706, .graphify_python: 1, .txt: 3, .html: 1, .py: 10, .png: 2, .ftp: 1
+- Total Files: 2434
+- Total Directories: 444
+- File Extensions: .rules: 25, .agrules: 20, .md: 227, .json: 438, .php: 206, .ps1: 10, .zip: 29, .yml: 6, .css: 10, .js: 276, .jsx: 25, .clinerules: 5, .roorules: 5, .windsurfrules: 5, .mdc: 1, .cjs: 194, .cts: 194, .ts: 706, .txt: 5, .docx: 2, .graphify_python: 1, .html: 1, .py: 10, .png: 2, .ftp: 1, .rar: 1
 
 ### Directory Tree
 ├── .agent
@@ -43,22 +43,23 @@ Generated: 2026-05-13 01:55:32
             ├── ai_agent_instructions_v2.0.json
             ├── enforcer_pattern_library_v2.0.json
             ├── interface_schema_v2.0.json
-            ├── resources_backup.rar
             ├── schema-template.json
             ├── VAPT_AI_Agent_System_README_v2.0.md
+            ├── vapt_autoheal_contract_v2.0.json
             ├── vapt_driver_manifest_v2.0.json
             ├── VAPT_Driver_Reference_v2.0.php
+            ├── vapt_platform_contract_v3.0.json
             ├── VAPT_v2.0_changelog.md
          ├── scripts
             ├── Query-Risk.ps1
             ├── Validate-Schema.ps1
          ├── DEVELOPER_GUIDE.md
          ├── README.md
-         ├── Rebuild-VAPTSchema-Builder-Skill-20260311_1652.md
          ├── SKILL.md
          ├── USAGE_GUIDE.md
          ├── VISUAL_FLOW.md
-      ├── vapt-expert_Initial.zip
+      ├── vaptschema-builder-updated-artifacts.zip
+      ├── VAPTSchema-Builder-Updated.zip
    ├── workflows
       ├── 3-copy-design-prompt.md
       ├── bump-version.md
@@ -2465,6 +2466,7 @@ Generated: 2026-05-13 01:55:32
 ├── .windsurf
    ├── plans
       ├── BuildGenerator-14-Develop-Features-Gap-Plan-942692.md
+      ├── vapt-contract-v3-alignment-d411ad.md
 ├── admin
    ├── css
       ├── admin.css
@@ -2499,11 +2501,54 @@ Generated: 2026-05-13 01:55:32
       ├── client.js
       ├── workbench.js
 ├── data
-   ├── Addendum
+   ├── Enforcers
+      ├── apache-template.json
+      ├── cloudflare-template.json
+      ├── htaccess-template.json
+      ├── litespeed-template.json
+      ├── nginx-template.json
+      ├── php-functions-template.json
+      ├── server-cron-template.json
+      ├── wordpress-core-template.json
+      ├── wordpress-template.json
+      ├── wp-config-template.json
+   ├── ai_agent_instructions_v2.0.json
+   ├── Data_WIP.zip
+   ├── enforcer_pattern_library_v2.0.json
+   ├── interface_schema_v2.0.json
+   ├── VAPT_AI_Agent_System_README_v2.0.md
+   ├── vapt_autoheal_contract_v2.0.json
+   ├── VAPT_Bundle_v3.4_FullParity.zip
+   ├── vapt_driver_manifest_v2.0.json
+   ├── VAPT_Driver_Reference_v2.0.php
+   ├── vapt_platform_contract_v3.0.json
+   ├── VAPT_v2.0_changelog.md
+├── data_old
+   ├── AutoHeal
+      ├── Enforcers
+         ├── apache-template.json
+         ├── cloudflare-template.json
+         ├── htaccess-template.json
+         ├── litespeed-template.json
+         ├── nginx-template.json
+         ├── php-functions-template.json
+         ├── server-cron-template.json
+         ├── wordpress-core-template.json
+         ├── wordpress-template.json
+         ├── wp-config-template.json
+      ├── ai_agent_instructions_v2.0.json
+      ├── enforcer_pattern_library_v2.0.json
+      ├── interface_schema_v2.0.json
       ├── VAPT_AI_Agent_System_README_v2.0.md
+      ├── vapt_autoheal_contract_v2.0.json
+      ├── VAPT_Bundle_v3.0_Remediated.zip
+      ├── VAPT_Bundle_v3.1_AutoHeal.zip
+      ├── VAPT_Bundle_v3.2_ZeroMarkerCollision.zip
+      ├── VAPT_Bundle_v3.3_TemplateAligned.zip
+      ├── VAPT_Bundle_v3.4_FullParity.zip
+      ├── vapt_driver_manifest_v2.0.json
       ├── VAPT_Driver_Reference_v2.0.php
-   ├── Consolidated
-      ├── VAPT_v2.0_risk_consolidation_patch.zip
+      ├── vapt_platform_contract_v3.0.json
    ├── Enforcers
       ├── apache-template.json
       ├── fail2ban-template.json
@@ -2513,20 +2558,34 @@ Generated: 2026-05-13 01:55:32
       ├── server-cron-template.json
       ├── wordpress-template.json
       ├── wp-config-template.json
-   ├── Updated
-      ├── VAPT_AI_Agent_System_v2.0_metadata_fixed_bundle.zip
+   ├── Z_GLM5.1
+      ├── Self_Heal
+         ├── ai_agent_instructions_v2.0.json
+         ├── enforcer_pattern_library_v2.0.json
+         ├── interface_schema_v2.0.json
+         ├── remediation_log.txt
+         ├── VAPT_AI_Agent_System_README_v2.0.md
+         ├── vapt_autoheal_contract_v1.0.json
+         ├── VAPT_Bundle_v3.0_Remediated.zip
+         ├── VAPT_Bundle_v3.1_AutoHeal.zip
+         ├── VAPT_Data_Bundle_Remediation_Contract.docx
+         ├── vapt_driver_manifest_v2.0.json
+         ├── VAPT_Driver_Reference_v2.0.php
+         ├── vapt_platform_contract_v3.0.json
+      ├── Data-20260513_Clean.md
+      ├── VAPT_Bundle_v3.0_Remediated.zip
+      ├── VAPT_Data_Bundle_Remediation_Contract.docx
    ├── ai_agent_instructions_v2.0.json
-   ├── Babar12-Data.zip
+   ├── Data-20260513.zip
+   ├── Data-20260513_Clean.zip
    ├── enforcer_pattern_library_v2.0.json
    ├── interface_schema_v2.0.json
+   ├── remediation_log.txt
    ├── VAPT_AI_Agent_System_README_v2.0.md
    ├── vapt_driver_manifest_v2.0.json
    ├── VAPT_Driver_Reference_v2.0.php
-   ├── VAPT_Interface_Schema_V2.0.zip
+   ├── vapt_platform_contract_v3.0.json
    ├── VAPT_v2.0_changelog.md
-   ├── VAPT_v2.0_risk_consolidation_patch.zip
-   ├── VAPT_v2.0_risk_consolidation_patch_full_aligned.zip
-   ├── VAPT_v2.0_selective_client_risks_addendum_patch.zip
 ├── graphify-out
    ├── cache
       ├── ast
@@ -2790,12 +2849,17 @@ Generated: 2026-05-13 01:55:32
 ├── Plans
    ├── BuildGenerator-14-Develop-Features-Gap-Plan-942692.md
    ├── BuildGenerator-Plan.md
+   ├── vapt-contract-v3-alignment-d411ad copy.md
+   ├── vapt-contract-v3-alignment-d411ad.md
 ├── Reports
    ├── BuildGenerator-Issues-and-Fixes.md
    ├── BuildGenerator-Plan.md
    ├── BuildGenerator.md
    ├── ClientBuild-SSoT-Discrepancy-Map.md
    ├── Universal-Enforcement-Alignment-Report.md
+├── ZAi
+   ├── VAPT-Secure-Datafile-Adoption-Plan.md
+   ├── VAPTSecure-Clean_Zai.zip
 ├── .clinerules
 ├── .roorules
 ├── .rules
@@ -2821,6 +2885,7 @@ Generated: 2026-05-13 01:55:32
 ├── vapt-functions.php
 ├── VAPTSecure-Clean-VAPTSecure.rar
 ├── VAPTSecure-Clean.zip
+├── VAPTSecure-Clean_ForReview.zip
 ├── vaptsecure.php
 ├── verify_data_integrity.py
 
@@ -2845,10 +2910,10 @@ Generated: 2026-05-13 01:55:32
 - T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/rules/stay-in-planning-mode.md
 - T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/rules/transition-to-develop.agrules
 - T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/rules/workspace-focus.agrules
-- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vapt-expert_Initial.zip
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/VAPTSchema-Builder-Updated.zip
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder-updated-artifacts.zip
 - T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/DEVELOPER_GUIDE.md
 - T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/README.md
-- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/Rebuild-VAPTSchema-Builder-Skill-20260311_1652.md
 - T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/SKILL.md
 - T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/USAGE_GUIDE.md
 - T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/VISUAL_FLOW.md
@@ -2871,12 +2936,12 @@ Generated: 2026-05-13 01:55:32
 - T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/ai_agent_instructions_v2.0.json
 - T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/enforcer_pattern_library_v2.0.json
 - T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/interface_schema_v2.0.json
-- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/resources_backup.rar
 - T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/schema-template.json
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/vapt_autoheal_contract_v2.0.json
 - T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/vapt_driver_manifest_v2.0.json
-- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/scripts/Query-Risk.ps1
+- T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/vapt_platform_contract_v3.0.json
 
-... and 2323 more files
+... and 2384 more files
 
 ### Maintenance
 This file is auto-generated. To update it:

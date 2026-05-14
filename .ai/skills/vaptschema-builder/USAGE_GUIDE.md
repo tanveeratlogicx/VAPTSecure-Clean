@@ -13,7 +13,7 @@ When you prompt the skill to generate a schema for a specific risk, the Agent wi
 1. **Load Rulebook:** Consult `ai_agent_instructions_v2.0.json`.
 2. **Load Blueprint:** Consult `interface_schema_v2.0.json` for UI structure.
 3. **Load Enforcer Code:** Consult `enforcer_pattern_library_v2.0.json` for the exact code implementation.
-4. **Self-Check:** Grade its output against the 19-point rubric and only return output scoring ≥18/19.
+4. **Self-Check:** Grade its output against the 25-check rubric (31-point maximum) and only return output scoring ≥26/31.
 
 ## Reading the Output
 The standard output from the AI should be a raw, valid JSON object following the `schema-template.json` structure:

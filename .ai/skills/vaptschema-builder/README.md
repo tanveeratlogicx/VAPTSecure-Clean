@@ -15,7 +15,7 @@ By leveraging the v2.0 Unified Bundle architecture, this skill ensures zero AI h
 * `SKILL.md`: The core rulebook and instructions for the AI Agent.
 * `DEVELOPER_GUIDE.md`: In-depth documentation on the underlying driver layer and how to troubleshoot.
 * `USAGE_GUIDE.md`: Instructions on how to prompt the skill and what to expect as output.
-* `/resources`: Core 5-file architecture JSONs and markdown specs (`interface_schema_v2.0.json`, `enforcer_pattern_library_v2.0.json`, etc.)
+* `/resources`: Canonical 5-file execution bundle JSONs and markdown specs (`interface_schema_v2.0.json`, `enforcer_pattern_library_v2.0.json`, etc.) plus supporting contracts (`vapt_platform_contract_v3.0.json`, `vapt_autoheal_contract_v2.0.json`).
 * `/examples`: Concrete JSON implementation examples mapped to the 13 supported driver paradigms.
 * `/scripts`: Utility scripts used to validate and query the generated JSON outputs.
 

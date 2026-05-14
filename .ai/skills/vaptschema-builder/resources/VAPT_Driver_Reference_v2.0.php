@@ -4,6 +4,7 @@
  * Version: 2.0.0 | Bundle: 2026-02-21
  *
  * Reads vapt_driver_manifest_v2.0.json and executes each step:
+ * LiteSpeed enforcer steps write to .htaccess using <IfModule LiteSpeed> wrappers.
  *   resolve → idempotency check → backup → insert → write → verify → rollback on failure
  *
  * Usage:
@@ -141,7 +142,7 @@ class VAPT_Driver {
         if ( str_contains( $template, '{ABSPATH}' ) ) {
             return str_replace( '{ABSPATH}', $this->abspath, $template );
         }
-        return $template;  // absolute path (fail2ban, Nginx, etc.)
+        return $template;  // absolute path (Nginx, Apache, etc.)
     }
 }
 

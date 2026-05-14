@@ -1,0 +1,1881 @@
+{
+  "metadata": {
+    "schema_version": "3.4.0",
+    "plugin_name": "WordPress VAPT Protection Suite",
+    "plugin_slug": "vapt-protection-suite",
+    "generated_at": "2026-02-16T11:16:32.298513+00:00",
+    "total_risks": 6,
+    "ai_agent_compatible": true,
+    "ui_framework": "React/WordPress-Admin",
+    "source_version": "3.1.0",
+    "source_document": "VAPT-SixT-Risk-Catalog-12-U.json",
+    "source_generated_at": "2026-01-30",
+    "owasp_standard": "OWASP Top 10 2025",
+    "enforcer": "VAPT Protection Plugin",
+    "production_ready": true,
+    "compliance_enabled": true,
+    "validation_passed": true,
+    "validation_date": "2026-02-16T11:16:32.298525+00:00",
+    "phase": "3",
+    "quality_improvements_applied": true,
+    "enhanced_capabilities_applied": true,
+    "scaling_ready": true,
+    "enterprise_ready": true
+  },
+  "risk_catalog": [
+    {
+      "risk_id": "RISK-116",
+      "title": "Nginx Version Exposed",
+      "category": "Information Disclosure",
+      "severity": {
+        "level": "low",
+        "cvss_score": 3.7,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N",
+        "business_impact": "Risk of Information Disclosure compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "Nginx version in error pages.",
+        "detailed": "Version aids targeted exploits.",
+        "attack_scenario": "An attacker exploits this information disclosure to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-200"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "testing": {
+        "test_method": "Header inspection",
+        "difficulty": "easy",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test Nginx Version Exposed",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-116-test",
+            "expected_response": "403",
+            "description": "Test payload for Nginx Version Exposed",
+            "severity": "low",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "low",
+        "estimated_time": "1-4 hours",
+        "priority": 4,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for Nginx Version Exposed",
+              "file": "modify_server_tokens",
+              "code": "server_tokens off;",
+              "backup_required": true,
+              "enforcer": "Nginx",
+              "operation": "configtest_pass",
+              "verification_method": "http_block",
+              "insertion_point": "server_tokens"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "Nginx"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "Nginx",
+            "operation": "remove_pass",
+            "target": "modify_server_tokens",
+            "description": "Remove protection for Nginx Version Exposed",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-116-001",
+            "name": "Nginx Version Exposed Check",
+            "method": "endpoint-test",
+            "script": "check_116()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "Nginx Version Exposed vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-116-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-116-001",
+            "type": "toggle",
+            "label": "Enable Nginx Version Exposed Protection",
+            "description": "Activates protection against nginx version exposed",
+            "default_value": true,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK116ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "General",
+          "order": 216,
+          "collapsible": true,
+          "default_expanded": false
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-116-001",
+            "type": "enable",
+            "label": "Enable Protection",
+            "confirmation_required": false,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "Nginx Version Exposed protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for Nginx Version Exposed",
+          "code": "server_tokens off;",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-02-16T11:16:18.089163Z",
+        "updated_at": "2026-02-16T11:16:18.089166+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "information disclosure",
+          "low",
+          "116"
+        ],
+        "schema_version": "3.4.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Information Disclosure",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing Nginx Version Exposed protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "Low",
+        "integrity_impact": "Low",
+        "confidentiality_impact": "Medium",
+        "financial_risk": "Low",
+        "reputational_risk": "Low",
+        "operational_risk": "Low",
+        "compliance_risk": "Low",
+        "business_continuity_risk": "Low",
+        "impact_description": "Nginx Version Exposed poses security risks to WordPress installation"
+      }
+    },
+    {
+      "risk_id": "RISK-118",
+      "title": "Nginx Buffer Size Misconfigured",
+      "category": "Configuration",
+      "severity": {
+        "level": "medium",
+        "cvss_score": 5.3,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:L",
+        "business_impact": "Risk of Configuration compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "Buffer sizes not optimized.",
+        "detailed": "Buffer overflow attacks possible.",
+        "attack_scenario": "An attacker exploits this configuration to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-120"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "testing": {
+        "test_method": "Buffer test",
+        "difficulty": "medium",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test Nginx Buffer Size Misconfigured",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-118-test",
+            "expected_response": "403",
+            "description": "Test payload for Nginx Buffer Size Misconfigured",
+            "severity": "medium",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "medium",
+        "estimated_time": "1-4 hours",
+        "priority": 6,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for Nginx Buffer Size Misconfigured",
+              "file": "add_directive",
+              "code": "client_body_buffer_size 10M;\nclient_header_buffer_size 1k;\nlarge_client_header_buffers 4 8k;",
+              "backup_required": true,
+              "enforcer": "Nginx",
+              "operation": "configtest_pass",
+              "verification_method": "http_block",
+              "insertion_point": "buffer_size"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "Nginx"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "Nginx",
+            "operation": "remove_pass",
+            "target": "add_directive",
+            "description": "Remove protection for Nginx Buffer Size Misconfigured",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-118-001",
+            "name": "Nginx Buffer Size Misconfigured Check",
+            "method": "endpoint-test",
+            "script": "check_118()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "Nginx Buffer Size Misconfigured vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-118-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-118-001",
+            "type": "toggle",
+            "label": "Enable Nginx Buffer Size Misconfigured Protection",
+            "description": "Activates protection against nginx buffer size misconfigured",
+            "default_value": true,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK118ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "General",
+          "order": 218,
+          "collapsible": true,
+          "default_expanded": false
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-118-001",
+            "type": "enable",
+            "label": "Enable Protection",
+            "confirmation_required": false,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "Nginx Buffer Size Misconfigured protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for Nginx Buffer Size Misconfigured",
+          "code": "client_body_buffer_size 10M;\nclient_header_buffer_size 1k;\nlarge_client_header_buffers 4 8k;",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-02-16T11:16:18.089215Z",
+        "updated_at": "2026-02-16T11:16:18.089218+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "configuration",
+          "medium",
+          "118"
+        ],
+        "schema_version": "3.4.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Configuration",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing Nginx Buffer Size Misconfigured protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "Low",
+        "integrity_impact": "Low",
+        "confidentiality_impact": "Medium",
+        "financial_risk": "Low",
+        "reputational_risk": "Low",
+        "operational_risk": "Low",
+        "compliance_risk": "Low",
+        "business_continuity_risk": "Low",
+        "impact_description": "Nginx Buffer Size Misconfigured poses security risks to WordPress installation"
+      }
+    },
+    {
+      "risk_id": "RISK-119",
+      "title": "Nginx Timeout Not Configured",
+      "category": "Configuration",
+      "severity": {
+        "level": "medium",
+        "cvss_score": 5.3,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L",
+        "business_impact": "Risk of Configuration compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "Connection timeouts too long.",
+        "detailed": "Slowloris attacks possible.",
+        "attack_scenario": "An attacker exploits this configuration to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-400"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "testing": {
+        "test_method": "Timeout test",
+        "difficulty": "easy",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test Nginx Timeout Not Configured",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-119-test",
+            "expected_response": "403",
+            "description": "Test payload for Nginx Timeout Not Configured",
+            "severity": "medium",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "medium",
+        "estimated_time": "1-4 hours",
+        "priority": 6,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for Nginx Timeout Not Configured",
+              "file": "add_directive",
+              "code": "client_body_timeout 10s;\nclient_header_timeout 10s;\nkeepalive_timeout 30s;\nsend_timeout 10s;",
+              "backup_required": true,
+              "enforcer": "Nginx",
+              "operation": "configtest_pass",
+              "verification_method": "http_block",
+              "insertion_point": "timeout"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "Nginx"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "Nginx",
+            "operation": "remove_pass",
+            "target": "add_directive",
+            "description": "Remove protection for Nginx Timeout Not Configured",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-119-001",
+            "name": "Nginx Timeout Not Configured Check",
+            "method": "endpoint-test",
+            "script": "check_119()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "Nginx Timeout Not Configured vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-119-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-119-001",
+            "type": "toggle",
+            "label": "Enable Nginx Timeout Not Configured Protection",
+            "description": "Activates protection against nginx timeout not configured",
+            "default_value": true,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK119ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "General",
+          "order": 219,
+          "collapsible": true,
+          "default_expanded": false
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-119-001",
+            "type": "enable",
+            "label": "Enable Protection",
+            "confirmation_required": false,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "Nginx Timeout Not Configured protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for Nginx Timeout Not Configured",
+          "code": "client_body_timeout 10s;\nclient_header_timeout 10s;\nkeepalive_timeout 30s;\nsend_timeout 10s;",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-02-16T11:16:18.089239Z",
+        "updated_at": "2026-02-16T11:16:18.089242+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "configuration",
+          "medium",
+          "119"
+        ],
+        "schema_version": "3.4.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Configuration",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing Nginx Timeout Not Configured protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "Low",
+        "integrity_impact": "Low",
+        "confidentiality_impact": "Medium",
+        "financial_risk": "Low",
+        "reputational_risk": "Low",
+        "operational_risk": "Low",
+        "compliance_risk": "Low",
+        "business_continuity_risk": "Low",
+        "impact_description": "Nginx Timeout Not Configured poses security risks to WordPress installation"
+      }
+    },
+    {
+      "risk_id": "RISK-120",
+      "title": "Nginx Rate Limiting Not Configured",
+      "category": "Configuration",
+      "severity": {
+        "level": "high",
+        "cvss_score": 7.5,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+        "business_impact": "Risk of Configuration compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "No request rate limiting.",
+        "detailed": "DDoS attacks possible.",
+        "attack_scenario": "An attacker exploits this configuration to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-770"
+        ],
+        "owasp_top_10_2025": "A06:2025 - Insecure Design",
+        "owasp_top_10_2021_deprecated": "A04:2021 - Insecure Design"
+      },
+      "testing": {
+        "test_method": "Rate limit test",
+        "difficulty": "easy",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test Nginx Rate Limiting Not Configured",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-120-test",
+            "expected_response": "403",
+            "description": "Test payload for Nginx Rate Limiting Not Configured",
+            "severity": "high",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "medium",
+        "estimated_time": "1-2 days",
+        "priority": 8,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for Nginx Rate Limiting Not Configured",
+              "file": "add_directive",
+              "code": "limit_req_zone $binary_remote_addr zone=one:10m rate=1r/s;\nlimit_req zone=one burst=5 nodelay;",
+              "backup_required": true,
+              "enforcer": "Nginx",
+              "operation": "configtest_pass",
+              "verification_method": "http_block",
+              "insertion_point": "rate_limit"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "Nginx"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "Nginx",
+            "operation": "remove_pass",
+            "target": "add_directive",
+            "description": "Remove protection for Nginx Rate Limiting Not Configured",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-120-001",
+            "name": "Nginx Rate Limiting Not Configured Check",
+            "method": "endpoint-test",
+            "script": "check_120()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "Nginx Rate Limiting Not Configured vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-120-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-120-001",
+            "type": "toggle",
+            "label": "Enable Nginx Rate Limiting Not Configured Protection",
+            "description": "Activates protection against nginx rate limiting not configured",
+            "default_value": true,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK120ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "General",
+          "order": 220,
+          "collapsible": true,
+          "default_expanded": false
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-120-001",
+            "type": "enable",
+            "label": "Enable Protection",
+            "confirmation_required": true,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "Nginx Rate Limiting Not Configured protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for Nginx Rate Limiting Not Configured",
+          "code": "limit_req_zone $binary_remote_addr zone=one:10m rate=1r/s;\nlimit_req zone=one burst=5 nodelay;",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-02-16T11:16:18.089263Z",
+        "updated_at": "2026-02-16T11:16:18.089273+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "configuration",
+          "high",
+          "120"
+        ],
+        "schema_version": "3.4.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Configuration",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing Nginx Rate Limiting Not Configured protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "Medium",
+        "integrity_impact": "Medium",
+        "confidentiality_impact": "High",
+        "financial_risk": "Medium",
+        "reputational_risk": "Medium",
+        "operational_risk": "Medium",
+        "compliance_risk": "Medium",
+        "business_continuity_risk": "Low",
+        "impact_description": "Nginx Rate Limiting Not Configured poses security risks to WordPress installation"
+      }
+    },
+    {
+      "risk_id": "RISK-122",
+      "title": "Nginx Gzip Compression Not Configured",
+      "category": "Configuration",
+      "severity": {
+        "level": "low",
+        "cvss_score": 3.7,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:L",
+        "business_impact": "Risk of Configuration compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "Compression disabled.",
+        "detailed": "Performance impact.",
+        "attack_scenario": "An attacker exploits this configuration to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-400"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "testing": {
+        "test_method": "Compression check",
+        "difficulty": "easy",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test Nginx Gzip Compression Not Configured",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-122-test",
+            "expected_response": "403",
+            "description": "Test payload for Nginx Gzip Compression Not Configured",
+            "severity": "low",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "low",
+        "estimated_time": "1-4 hours",
+        "priority": 4,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for Nginx Gzip Compression Not Configured",
+              "file": "add_directive",
+              "code": "gzip on;\ngzip_types text/plain text/css application/json application/javascript;",
+              "backup_required": true,
+              "enforcer": "Nginx",
+              "operation": "configtest_pass",
+              "verification_method": "http_block",
+              "insertion_point": "gzip"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "Nginx"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "Nginx",
+            "operation": "remove_pass",
+            "target": "add_directive",
+            "description": "Remove protection for Nginx Gzip Compression Not Configured",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-122-001",
+            "name": "Nginx Gzip Compression Not Configured Check",
+            "method": "endpoint-test",
+            "script": "check_122()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "Nginx Gzip Compression Not Configured vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-122-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-122-001",
+            "type": "toggle",
+            "label": "Enable Nginx Gzip Compression Not Configured Protection",
+            "description": "Activates protection against nginx gzip compression not configured",
+            "default_value": true,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK122ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "General",
+          "order": 222,
+          "collapsible": true,
+          "default_expanded": false
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-122-001",
+            "type": "enable",
+            "label": "Enable Protection",
+            "confirmation_required": false,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "Nginx Gzip Compression Not Configured protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for Nginx Gzip Compression Not Configured",
+          "code": "gzip on;\ngzip_types text/plain text/css application/json application/javascript;",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-02-16T11:16:18.089320Z",
+        "updated_at": "2026-02-16T11:16:18.089324+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "configuration",
+          "low",
+          "122"
+        ],
+        "schema_version": "3.4.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Configuration",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing Nginx Gzip Compression Not Configured protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "Low",
+        "integrity_impact": "Low",
+        "confidentiality_impact": "Medium",
+        "financial_risk": "Low",
+        "reputational_risk": "Low",
+        "operational_risk": "Low",
+        "compliance_risk": "Low",
+        "business_continuity_risk": "Low",
+        "impact_description": "Nginx Gzip Compression Not Configured poses security risks to WordPress installation"
+      }
+    },
+    {
+      "risk_id": "RISK-125",
+      "title": "Nginx SSL Configuration Weak",
+      "category": "Configuration",
+      "severity": {
+        "level": "high",
+        "cvss_score": 7.5,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N",
+        "business_impact": "Risk of Configuration compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "Weak SSL protocols enabled.",
+        "detailed": "Man-in-the-middle attacks possible.",
+        "attack_scenario": "An attacker exploits this configuration to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-319"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "testing": {
+        "test_method": "SSL scan",
+        "difficulty": "easy",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test Nginx SSL Configuration Weak",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-125-test",
+            "expected_response": "403",
+            "description": "Test payload for Nginx SSL Configuration Weak",
+            "severity": "high",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "medium",
+        "estimated_time": "1-2 days",
+        "priority": 8,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for Nginx SSL Configuration Weak",
+              "file": "add_directive",
+              "code": "ssl_protocols TLSv1.2 TLSv1.3;\nssl_ciphers 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';\nssl_prefer_server_ciphers on;",
+              "backup_required": true,
+              "enforcer": "Nginx",
+              "operation": "configtest_pass",
+              "verification_method": "http_block",
+              "insertion_point": "ssl_config"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "Nginx"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "Nginx",
+            "operation": "remove_pass",
+            "target": "add_directive",
+            "description": "Remove protection for Nginx SSL Configuration Weak",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-125-001",
+            "name": "Nginx SSL Configuration Weak Check",
+            "method": "endpoint-test",
+            "script": "check_125()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "Nginx SSL Configuration Weak vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-125-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-125-001",
+            "type": "toggle",
+            "label": "Enable Nginx SSL Configuration Weak Protection",
+            "description": "Activates protection against nginx ssl configuration weak",
+            "default_value": true,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK125ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "General",
+          "order": 225,
+          "collapsible": true,
+          "default_expanded": false
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-125-001",
+            "type": "enable",
+            "label": "Enable Protection",
+            "confirmation_required": true,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "Nginx SSL Configuration Weak protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for Nginx SSL Configuration Weak",
+          "code": "ssl_protocols TLSv1.2 TLSv1.3;\nssl_ciphers 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';\nssl_prefer_server_ciphers on;",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-02-16T11:16:18.089417Z",
+        "updated_at": "2026-02-16T11:16:18.089420+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "configuration",
+          "high",
+          "125"
+        ],
+        "schema_version": "3.4.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Configuration",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing Nginx SSL Configuration Weak protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "Medium",
+        "integrity_impact": "Medium",
+        "confidentiality_impact": "High",
+        "financial_risk": "Medium",
+        "reputational_risk": "Medium",
+        "operational_risk": "Medium",
+        "compliance_risk": "Medium",
+        "business_continuity_risk": "Low",
+        "impact_description": "Nginx SSL Configuration Weak poses security risks to WordPress installation"
+      }
+    }
+  ]
+}

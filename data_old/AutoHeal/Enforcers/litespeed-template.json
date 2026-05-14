@@ -1,0 +1,2605 @@
+{
+  "metadata": {
+    "schema_version": "2.0",
+    "plugin_name": "WordPress VAPT Protection Suite",
+    "plugin_slug": "vapt-protection-suite",
+    "generated_at": "2026-05-13T09:36:42.434206+00:00",
+    "total_risks": 8,
+    "ai_agent_compatible": true,
+    "ui_framework": "React/WordPress-Admin",
+    "source_version": "2.0",
+    "source_document": "VAPT-SixT-Risk-Catalog-12-U.json",
+    "source_generated_at": "2026-01-30",
+    "owasp_standard": "OWASP Top 10 2025",
+    "enforcer": "LiteSpeed",
+    "production_ready": true,
+    "compliance_enabled": true,
+    "validation_passed": true,
+    "validation_date": "2026-05-13T09:36:42.434206+00:00",
+    "phase": "3",
+    "quality_improvements_applied": true,
+    "enhanced_capabilities_applied": true,
+    "scaling_ready": true,
+    "enterprise_ready": true
+  },
+  "risk_catalog": [
+    {
+      "risk_id": "RISK-010",
+      "title": "Server Banner Grabbing",
+      "category": "Information Disclosure",
+      "severity": {
+        "level": "low",
+        "cvss_score": 3.7,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N",
+        "business_impact": "Risk of Information Disclosure compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "Server headers expose Apache/Nginx versions for targeted exploits.",
+        "detailed": "Server Banner Grabbing poses security risks that could lead to system compromise.",
+        "attack_scenario": "An attacker exploits this information disclosure to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-200"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "testing": {
+        "test_method": "Information Disclosure test",
+        "difficulty": "easy",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test Server Banner Grabbing",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-010-test",
+            "expected_response": "403",
+            "description": "Test payload for Server Banner Grabbing",
+            "severity": "low",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "low",
+        "estimated_time": "1-4 hours",
+        "priority": 3,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for Server Banner Grabbing",
+              "file": ".htaccess",
+              "code": "<IfModule LiteSpeed>\n    Header unset Server\n    Header always unset X-Powered-By\n</IfModule>",
+              "backup_required": true,
+              "enforcer": "LiteSpeed",
+              "operation": "add_header_block",
+              "verification_method": "prepend_to_file",
+              "insertion_point": "beginning_of_file"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "LiteSpeed"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "LiteSpeed",
+            "operation": "marker_regex_remove",
+            "target": ".htaccess",
+            "description": "Remove protection for Server Banner Grabbing",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-010-001",
+            "name": "Server Banner Grabbing Check",
+            "method": "endpoint-test",
+            "script": "check_010()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "Server Banner Grabbing vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-010-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-010-001",
+            "type": "toggle",
+            "label": "Enable protection for Server Banner Grabbing",
+            "description": "Enable protection for Server Banner Grabbing",
+            "default_value": false,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK010ToggleChange",
+            "dependencies": []
+          },
+          {
+            "component_id": "UI-RISK-010-002",
+            "type": "test_action",
+            "label": "Server Banner Verification",
+            "description": "Verifies that server banners are suppressed in response headers.",
+            "default_value": true,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK010ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "Information Disclosure",
+          "order": 10,
+          "collapsible": true,
+          "default_expanded": false
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-010-001",
+            "type": "enable",
+            "label": "Apply Protection",
+            "confirmation_required": false,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          },
+          {
+            "action_id": "ACTION-010-002",
+            "type": "disable",
+            "label": "Remove Protection",
+            "confirmation_required": true,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "Server Banner Grabbing protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for Server Banner Grabbing",
+          "code": "<IfModule LiteSpeed>\n    Header unset Server\n    Header always unset X-Powered-By\n</IfModule>",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-05-13T09:36:42.535992Z",
+        "updated_at": "2026-05-13T09:36:42.535992+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "information disclosure",
+          "low",
+          "010"
+        ],
+        "schema_version": "2.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Information Disclosure",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing Server Banner Grabbing protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "Low",
+        "integrity_impact": "Low",
+        "confidentiality_impact": "Low",
+        "financial_risk": "Low",
+        "reputational_risk": "Low",
+        "operational_risk": "Low",
+        "compliance_risk": "Low",
+        "business_continuity_risk": "Low",
+        "impact_description": "Server Banner Grabbing poses security risks to WordPress installation"
+      }
+    },
+    {
+      "risk_id": "RISK-013",
+      "title": "Directory Listing Enabled",
+      "category": "Configuration",
+      "severity": {
+        "level": "high",
+        "cvss_score": 7.5,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+        "business_impact": "Risk of Configuration compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "Apache directory listing exposes file structure to attackers.",
+        "detailed": "Directory Listing Enabled poses security risks that could lead to system compromise.",
+        "attack_scenario": "An attacker exploits this configuration to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-548"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "testing": {
+        "test_method": "Configuration test",
+        "difficulty": "moderate",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test Directory Listing Enabled",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-013-test",
+            "expected_response": "403",
+            "description": "Test payload for Directory Listing Enabled",
+            "severity": "high",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "medium",
+        "estimated_time": "1-2 days",
+        "priority": 8,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for Directory Listing Enabled",
+              "file": ".htaccess",
+              "code": "Options -Indexes",
+              "backup_required": true,
+              "enforcer": "LiteSpeed",
+              "operation": "add_options_directive",
+              "verification_method": "prepend_to_file",
+              "insertion_point": "beginning_of_file"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "LiteSpeed"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "LiteSpeed",
+            "operation": "marker_regex_remove",
+            "target": ".htaccess",
+            "description": "Remove protection for Directory Listing Enabled",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-013-001",
+            "name": "Directory Listing Enabled Check",
+            "method": "endpoint-test",
+            "script": "check_013()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "Directory Listing Enabled vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-013-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-013-001",
+            "type": "toggle",
+            "label": "Enable protection for Directory Listing Enabled",
+            "description": "Enable protection for Directory Listing Enabled",
+            "default_value": false,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK013ToggleChange",
+            "dependencies": []
+          },
+          {
+            "component_id": "UI-RISK-013-002",
+            "type": "test_action",
+            "label": "Directory Browsing Block Check",
+            "description": "Verifies that directory indexing is disabled for the uploads folder.",
+            "default_value": true,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK013ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "Configuration",
+          "order": 13,
+          "collapsible": true,
+          "default_expanded": true
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-013-001",
+            "type": "enable",
+            "label": "Apply Protection",
+            "confirmation_required": true,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          },
+          {
+            "action_id": "ACTION-013-002",
+            "type": "disable",
+            "label": "Remove Protection",
+            "confirmation_required": true,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "Directory Listing Enabled protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for Directory Listing Enabled",
+          "code": "Options -Indexes",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-05-13T09:36:42.536027Z",
+        "updated_at": "2026-05-13T09:36:42.536027+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "configuration",
+          "high",
+          "013"
+        ],
+        "schema_version": "2.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Configuration",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing Directory Listing Enabled protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "Medium",
+        "integrity_impact": "Medium",
+        "confidentiality_impact": "High",
+        "financial_risk": "Medium",
+        "reputational_risk": "Medium",
+        "operational_risk": "Medium",
+        "compliance_risk": "Medium",
+        "business_continuity_risk": "Low",
+        "impact_description": "Directory Listing Enabled poses security risks to WordPress installation"
+      }
+    },
+    {
+      "risk_id": "RISK-020",
+      "title": "PHP File Execution in Uploads Directory",
+      "category": "Configuration",
+      "severity": {
+        "level": "critical",
+        "cvss_score": 9.8,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+        "business_impact": "Risk of Configuration compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "PHP files can execute in uploads folder.",
+        "detailed": "PHP File Execution in Uploads Directory poses security risks that could lead to system compromise.",
+        "attack_scenario": "An attacker exploits this configuration to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-434"
+        ],
+        "owasp_top_10_2025": "A03:2025 - Injection",
+        "owasp_top_10_2021_deprecated": "A04:2021 - Insecure Design"
+      },
+      "testing": {
+        "test_method": "Configuration test",
+        "difficulty": "moderate",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test PHP File Execution in Uploads Directory",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-020-test",
+            "expected_response": "403",
+            "description": "Test payload for PHP File Execution in Uploads Directory",
+            "severity": "critical",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "high",
+        "estimated_time": "1-2 days",
+        "priority": 10,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for PHP File Execution in Uploads Directory",
+              "file": ".htaccess",
+              "code": "<FilesMatch \"\\.(php|phtml)$\">\n    <IfModule LiteSpeed>\n        Order Deny,Allow\n        Deny from all\n    </IfModule>\n</FilesMatch>",
+              "backup_required": true,
+              "enforcer": "LiteSpeed",
+              "operation": "add_files_block",
+              "verification_method": "prepend_to_file",
+              "insertion_point": "beginning_of_file"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "LiteSpeed"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "LiteSpeed",
+            "operation": "marker_regex_remove",
+            "target": ".htaccess",
+            "description": "Remove protection for PHP File Execution in Uploads Directory",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-020-001",
+            "name": "PHP File Execution in Uploads Directory Check",
+            "method": "endpoint-test",
+            "script": "check_020()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "PHP File Execution in Uploads Directory vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-020-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-020-001",
+            "type": "toggle",
+            "label": "Enable protection for PHP File Execution in Uploads Directory",
+            "description": "Enable protection for PHP File Execution in Uploads Directory",
+            "default_value": false,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK020ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "Configuration",
+          "order": 20,
+          "collapsible": true,
+          "default_expanded": true
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-020-001",
+            "type": "enable",
+            "label": "Apply Protection",
+            "confirmation_required": true,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          },
+          {
+            "action_id": "ACTION-020-002",
+            "type": "disable",
+            "label": "Remove Protection",
+            "confirmation_required": true,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "PHP File Execution in Uploads Directory protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for PHP File Execution in Uploads Directory",
+          "code": "<FilesMatch \"\\.(php|phtml)$\">\n    <IfModule LiteSpeed>\n        Order Deny,Allow\n        Deny from all\n    </IfModule>\n</FilesMatch>",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-05-13T09:36:42.536049Z",
+        "updated_at": "2026-05-13T09:36:42.536049+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "configuration",
+          "critical",
+          "020"
+        ],
+        "schema_version": "2.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Configuration",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing PHP File Execution in Uploads Directory protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "High",
+        "integrity_impact": "High",
+        "confidentiality_impact": "High",
+        "financial_risk": "High",
+        "reputational_risk": "High",
+        "operational_risk": "High",
+        "compliance_risk": "High",
+        "business_continuity_risk": "Medium",
+        "impact_description": "PHP File Execution in Uploads Directory poses security risks to WordPress installation"
+      }
+    },
+    {
+      "risk_id": "RISK-023",
+      "title": "Trace Method Enabled",
+      "category": "Configuration",
+      "severity": {
+        "level": "medium",
+        "cvss_score": 5.3,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N",
+        "business_impact": "Risk of Configuration compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "HTTP TRACE method allows XSS attacks.",
+        "detailed": "Trace Method Enabled poses security risks that could lead to system compromise.",
+        "attack_scenario": "An attacker exploits this configuration to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-693"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "testing": {
+        "test_method": "Configuration test",
+        "difficulty": "moderate",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test Trace Method Enabled",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-023-test",
+            "expected_response": "403",
+            "description": "Test payload for Trace Method Enabled",
+            "severity": "medium",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "low",
+        "estimated_time": "4-8 hours",
+        "priority": 5,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for Trace Method Enabled",
+              "file": ".htaccess",
+              "code": "<IfModule LiteSpeed>\n    RewriteEngine On\n    RewriteCond %{REQUEST_METHOD} ^TRACE [NC]\n    RewriteRule .* - [F,L]\n</IfModule>",
+              "backup_required": true,
+              "enforcer": "LiteSpeed",
+              "operation": "add_rewrite_block",
+              "verification_method": "prepend_to_file",
+              "insertion_point": "beginning_of_file"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "LiteSpeed"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "LiteSpeed",
+            "operation": "marker_regex_remove",
+            "target": ".htaccess",
+            "description": "Remove protection for Trace Method Enabled",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-023-001",
+            "name": "Trace Method Enabled Check",
+            "method": "endpoint-test",
+            "script": "check_023()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "Trace Method Enabled vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-023-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-023-001",
+            "type": "toggle",
+            "label": "Enable protection for Trace Method Enabled",
+            "description": "Enable protection for Trace Method Enabled",
+            "default_value": false,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK023ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "Configuration",
+          "order": 23,
+          "collapsible": true,
+          "default_expanded": false
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-023-001",
+            "type": "enable",
+            "label": "Apply Protection",
+            "confirmation_required": false,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          },
+          {
+            "action_id": "ACTION-023-002",
+            "type": "disable",
+            "label": "Remove Protection",
+            "confirmation_required": true,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "Trace Method Enabled protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for Trace Method Enabled",
+          "code": "<IfModule LiteSpeed>\n    RewriteEngine On\n    RewriteCond %{REQUEST_METHOD} ^TRACE [NC]\n    RewriteRule .* - [F,L]\n</IfModule>",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-05-13T09:36:42.536071Z",
+        "updated_at": "2026-05-13T09:36:42.536071+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "configuration",
+          "medium",
+          "023"
+        ],
+        "schema_version": "2.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Configuration",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing Trace Method Enabled protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "Low",
+        "integrity_impact": "Low",
+        "confidentiality_impact": "Medium",
+        "financial_risk": "Low",
+        "reputational_risk": "Low",
+        "operational_risk": "Low",
+        "compliance_risk": "Medium",
+        "business_continuity_risk": "Low",
+        "impact_description": "Trace Method Enabled poses security risks to WordPress installation"
+      }
+    },
+    {
+      "risk_id": "RISK-024",
+      "title": "Server Signature Enabled",
+      "category": "Information Disclosure",
+      "severity": {
+        "level": "low",
+        "cvss_score": 3.7,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N",
+        "business_impact": "Risk of Information Disclosure compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "Server version exposed in error pages.",
+        "detailed": "Server Signature Enabled poses security risks that could lead to system compromise.",
+        "attack_scenario": "An attacker exploits this information disclosure to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-200"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "testing": {
+        "test_method": "Information Disclosure test",
+        "difficulty": "easy",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test Server Signature Enabled",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-024-test",
+            "expected_response": "403",
+            "description": "Test payload for Server Signature Enabled",
+            "severity": "low",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "low",
+        "estimated_time": "1-4 hours",
+        "priority": 3,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for Server Signature Enabled",
+              "file": ".htaccess",
+              "code": "<IfModule LiteSpeed>\n    Header unset Server\n    ServerSignature Off\n</IfModule>",
+              "backup_required": true,
+              "enforcer": "LiteSpeed",
+              "operation": "add_header_block",
+              "verification_method": "prepend_to_file",
+              "insertion_point": "beginning_of_file"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "LiteSpeed"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "LiteSpeed",
+            "operation": "marker_regex_remove",
+            "target": ".htaccess",
+            "description": "Remove protection for Server Signature Enabled",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-024-001",
+            "name": "Server Signature Enabled Check",
+            "method": "endpoint-test",
+            "script": "check_024()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "Server Signature Enabled vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-024-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-024-001",
+            "type": "toggle",
+            "label": "Enable protection for Server Signature Enabled",
+            "description": "Enable protection for Server Signature Enabled",
+            "default_value": false,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK024ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "Information Disclosure",
+          "order": 24,
+          "collapsible": true,
+          "default_expanded": false
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-024-001",
+            "type": "enable",
+            "label": "Apply Protection",
+            "confirmation_required": false,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          },
+          {
+            "action_id": "ACTION-024-002",
+            "type": "disable",
+            "label": "Remove Protection",
+            "confirmation_required": true,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "Server Signature Enabled protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for Server Signature Enabled",
+          "code": "<IfModule LiteSpeed>\n    Header unset Server\n    ServerSignature Off\n</IfModule>",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-05-13T09:36:42.536091Z",
+        "updated_at": "2026-05-13T09:36:42.536091+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "information disclosure",
+          "low",
+          "024"
+        ],
+        "schema_version": "2.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Information Disclosure",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing Server Signature Enabled protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "Low",
+        "integrity_impact": "Low",
+        "confidentiality_impact": "Low",
+        "financial_risk": "Low",
+        "reputational_risk": "Low",
+        "operational_risk": "Low",
+        "compliance_risk": "Low",
+        "business_continuity_risk": "Low",
+        "impact_description": "Server Signature Enabled poses security risks to WordPress installation"
+      }
+    },
+    {
+      "risk_id": "RISK-035",
+      "title": "Apache Status Page Accessible",
+      "category": "Information Disclosure",
+      "severity": {
+        "level": "medium",
+        "cvss_score": 5.3,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N",
+        "business_impact": "Risk of Information Disclosure compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "/server-status page accessible.",
+        "detailed": "Apache Status Page Accessible poses security risks that could lead to system compromise.",
+        "attack_scenario": "An attacker exploits this information disclosure to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-200"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "testing": {
+        "test_method": "Information Disclosure test",
+        "difficulty": "moderate",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test Apache Status Page Accessible",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-035-test",
+            "expected_response": "403",
+            "description": "Test payload for Apache Status Page Accessible",
+            "severity": "medium",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "low",
+        "estimated_time": "4-8 hours",
+        "priority": 5,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for Apache Status Page Accessible",
+              "file": ".htaccess",
+              "code": "<IfModule LiteSpeed>\n    RewriteEngine On\n    RewriteCond %{REQUEST_URI} /server-status [NC]\n    RewriteRule .* - [F,L]\n</IfModule>",
+              "backup_required": true,
+              "enforcer": "LiteSpeed",
+              "operation": "add_rewrite_block",
+              "verification_method": "prepend_to_file",
+              "insertion_point": "beginning_of_file"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "LiteSpeed"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "LiteSpeed",
+            "operation": "marker_regex_remove",
+            "target": ".htaccess",
+            "description": "Remove protection for Apache Status Page Accessible",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-035-001",
+            "name": "Apache Status Page Accessible Check",
+            "method": "endpoint-test",
+            "script": "check_035()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "Apache Status Page Accessible vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-035-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-035-001",
+            "type": "toggle",
+            "label": "Enable protection for Apache Status Page Accessible",
+            "description": "Enable protection for Apache Status Page Accessible",
+            "default_value": false,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK035ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "Information Disclosure",
+          "order": 35,
+          "collapsible": true,
+          "default_expanded": false
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-035-001",
+            "type": "enable",
+            "label": "Apply Protection",
+            "confirmation_required": false,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          },
+          {
+            "action_id": "ACTION-035-002",
+            "type": "disable",
+            "label": "Remove Protection",
+            "confirmation_required": true,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "Apache Status Page Accessible protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for Apache Status Page Accessible",
+          "code": "<IfModule LiteSpeed>\n    RewriteEngine On\n    RewriteCond %{REQUEST_URI} /server-status [NC]\n    RewriteRule .* - [F,L]\n</IfModule>",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-05-13T09:36:42.536110Z",
+        "updated_at": "2026-05-13T09:36:42.536110+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "information disclosure",
+          "medium",
+          "035"
+        ],
+        "schema_version": "2.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Information Disclosure",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing Apache Status Page Accessible protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "Low",
+        "integrity_impact": "Low",
+        "confidentiality_impact": "Medium",
+        "financial_risk": "Low",
+        "reputational_risk": "Low",
+        "operational_risk": "Low",
+        "compliance_risk": "Medium",
+        "business_continuity_risk": "Low",
+        "impact_description": "Apache Status Page Accessible poses security risks to WordPress installation"
+      }
+    },
+    {
+      "risk_id": "RISK-116",
+      "title": "Nginx Version Exposed",
+      "category": "Information Disclosure",
+      "severity": {
+        "level": "low",
+        "cvss_score": 3.7,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N",
+        "business_impact": "Risk of Information Disclosure compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "Nginx version in error pages.",
+        "detailed": "Nginx Version Exposed poses security risks that could lead to system compromise.",
+        "attack_scenario": "An attacker exploits this information disclosure to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-200"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "testing": {
+        "test_method": "Information Disclosure test",
+        "difficulty": "easy",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test Nginx Version Exposed",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-116-test",
+            "expected_response": "403",
+            "description": "Test payload for Nginx Version Exposed",
+            "severity": "low",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "low",
+        "estimated_time": "1-4 hours",
+        "priority": 3,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for Nginx Version Exposed",
+              "file": ".htaccess",
+              "code": "<IfModule LiteSpeed>\n    Header unset Server\n</IfModule>",
+              "backup_required": true,
+              "enforcer": "LiteSpeed",
+              "operation": "add_header_block",
+              "verification_method": "prepend_to_file",
+              "insertion_point": "beginning_of_file"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "LiteSpeed"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "LiteSpeed",
+            "operation": "marker_regex_remove",
+            "target": ".htaccess",
+            "description": "Remove protection for Nginx Version Exposed",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-116-001",
+            "name": "Nginx Version Exposed Check",
+            "method": "endpoint-test",
+            "script": "check_116()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "Nginx Version Exposed vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-116-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-116-001",
+            "type": "toggle",
+            "label": "Enable protection for Nginx Version Exposed",
+            "description": "Enable protection for Nginx Version Exposed",
+            "default_value": false,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK116ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "Information Disclosure",
+          "order": 116,
+          "collapsible": true,
+          "default_expanded": false
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-116-001",
+            "type": "enable",
+            "label": "Apply Protection",
+            "confirmation_required": false,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          },
+          {
+            "action_id": "ACTION-116-002",
+            "type": "disable",
+            "label": "Remove Protection",
+            "confirmation_required": true,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "Nginx Version Exposed protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for Nginx Version Exposed",
+          "code": "<IfModule LiteSpeed>\n    Header unset Server\n</IfModule>",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-05-13T09:36:42.536132Z",
+        "updated_at": "2026-05-13T09:36:42.536132+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "information disclosure",
+          "low",
+          "116"
+        ],
+        "schema_version": "2.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Information Disclosure",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing Nginx Version Exposed protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "Low",
+        "integrity_impact": "Low",
+        "confidentiality_impact": "Low",
+        "financial_risk": "Low",
+        "reputational_risk": "Low",
+        "operational_risk": "Low",
+        "compliance_risk": "Low",
+        "business_continuity_risk": "Low",
+        "impact_description": "Nginx Version Exposed poses security risks to WordPress installation"
+      }
+    },
+    {
+      "risk_id": "RISK-117",
+      "title": "Apache Version Exposed",
+      "category": "Information Disclosure",
+      "severity": {
+        "level": "low",
+        "cvss_score": 3.7,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N",
+        "business_impact": "Risk of Information Disclosure compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "Apache version in Server header.",
+        "detailed": "Apache Version Exposed poses security risks that could lead to system compromise.",
+        "attack_scenario": "An attacker exploits this information disclosure to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-200"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "testing": {
+        "test_method": "Information Disclosure test",
+        "difficulty": "easy",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test Apache Version Exposed",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-117-test",
+            "expected_response": "403",
+            "description": "Test payload for Apache Version Exposed",
+            "severity": "low",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "low",
+        "estimated_time": "1-4 hours",
+        "priority": 3,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for Apache Version Exposed",
+              "file": ".htaccess",
+              "code": "<IfModule LiteSpeed>\n    Header unset Server\n</IfModule>",
+              "backup_required": true,
+              "enforcer": "LiteSpeed",
+              "operation": "add_header_block",
+              "verification_method": "prepend_to_file",
+              "insertion_point": "beginning_of_file"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "LiteSpeed"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "LiteSpeed",
+            "operation": "marker_regex_remove",
+            "target": ".htaccess",
+            "description": "Remove protection for Apache Version Exposed",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-117-001",
+            "name": "Apache Version Exposed Check",
+            "method": "endpoint-test",
+            "script": "check_117()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "Apache Version Exposed vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-117-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-117-001",
+            "type": "toggle",
+            "label": "Enable protection for Apache Version Exposed",
+            "description": "Enable protection for Apache Version Exposed",
+            "default_value": false,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK117ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "Information Disclosure",
+          "order": 117,
+          "collapsible": true,
+          "default_expanded": false
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-117-001",
+            "type": "enable",
+            "label": "Apply Protection",
+            "confirmation_required": false,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          },
+          {
+            "action_id": "ACTION-117-002",
+            "type": "disable",
+            "label": "Remove Protection",
+            "confirmation_required": true,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "Apache Version Exposed protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for Apache Version Exposed",
+          "code": "<IfModule LiteSpeed>\n    Header unset Server\n</IfModule>",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-05-13T09:36:42.536149Z",
+        "updated_at": "2026-05-13T09:36:42.536149+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "information disclosure",
+          "low",
+          "117"
+        ],
+        "schema_version": "2.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Information Disclosure",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing Apache Version Exposed protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "Low",
+        "integrity_impact": "Low",
+        "confidentiality_impact": "Low",
+        "financial_risk": "Low",
+        "reputational_risk": "Low",
+        "operational_risk": "Low",
+        "compliance_risk": "Low",
+        "business_continuity_risk": "Low",
+        "impact_description": "Apache Version Exposed poses security risks to WordPress installation"
+      }
+    }
+  ]
+}

@@ -1,0 +1,3118 @@
+{
+  "metadata": {
+    "schema_version": "3.4.0",
+    "plugin_name": "WordPress VAPT Protection Suite",
+    "plugin_slug": "vapt-protection-suite",
+    "generated_at": "2026-02-16T11:16:32.286807+00:00",
+    "total_risks": 10,
+    "ai_agent_compatible": true,
+    "ui_framework": "React/WordPress-Admin",
+    "source_version": "3.1.0",
+    "source_document": "VAPT-SixT-Risk-Catalog-12-U.json",
+    "source_generated_at": "2026-01-30",
+    "owasp_standard": "OWASP Top 10 2025",
+    "enforcer": "VAPT Protection Plugin",
+    "production_ready": true,
+    "compliance_enabled": true,
+    "validation_passed": true,
+    "validation_date": "2026-02-16T11:16:32.286818+00:00",
+    "phase": "3",
+    "quality_improvements_applied": true,
+    "enhanced_capabilities_applied": true,
+    "scaling_ready": true,
+    "enterprise_ready": true
+  },
+  "risk_catalog": [
+    {
+      "risk_id": "RISK-096",
+      "title": "WordPress Cron Not Replaced with Server Cron",
+      "category": "Configuration",
+      "severity": {
+        "level": "high",
+        "cvss_score": 7.5,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+        "business_impact": "Risk of Configuration compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "wp-cron.php still handling scheduled tasks.",
+        "detailed": "Resource exhaustion DoS possible.",
+        "attack_scenario": "An attacker exploits this configuration to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-400"
+        ],
+        "owasp_top_10_2025": "A06:2025 - Insecure Design",
+        "owasp_top_10_2021_deprecated": "A04:2021 - Insecure Design"
+      },
+      "testing": {
+        "test_method": "Cron execution test",
+        "difficulty": "easy",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test WordPress Cron Not Replaced with Server Cron",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-096-test",
+            "expected_response": "403",
+            "description": "Test payload for WordPress Cron Not Replaced with Server Cron",
+            "severity": "high",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "medium",
+        "estimated_time": "1-2 days",
+        "priority": 8,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for WordPress Cron Not Replaced with Server Cron",
+              "file": "add_cron_job",
+              "code": "*/5 * * * * curl -s https://site.com/wp-cron.php?doing_wp_cron > /dev/null 2>&1",
+              "backup_required": true,
+              "enforcer": "Server Cron",
+              "operation": "cron_job_exists",
+              "verification_method": "crontab",
+              "insertion_point": "wp_cron"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "Server Cron",
+            "wp-config.php"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "Server Cron",
+            "operation": "remove_exists",
+            "target": "add_cron_job",
+            "description": "Remove protection for WordPress Cron Not Replaced with Server Cron",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-096-001",
+            "name": "WordPress Cron Not Replaced with Server Cron Check",
+            "method": "endpoint-test",
+            "script": "check_096()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "WordPress Cron Not Replaced with Server Cron vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-096-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-096-001",
+            "type": "toggle",
+            "label": "Enable WordPress Cron Not Replaced with Server Cron Protection",
+            "description": "Activates protection against wordpress cron not replaced with server cron",
+            "default_value": true,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK096ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "General",
+          "order": 196,
+          "collapsible": true,
+          "default_expanded": false
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-096-001",
+            "type": "enable",
+            "label": "Enable Protection",
+            "confirmation_required": true,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "WordPress Cron Not Replaced with Server Cron protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for WordPress Cron Not Replaced with Server Cron",
+          "code": "*/5 * * * * curl -s https://site.com/wp-cron.php?doing_wp_cron > /dev/null 2>&1",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-02-16T11:16:18.087476Z",
+        "updated_at": "2026-02-16T11:16:18.087479+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "configuration",
+          "high",
+          "096"
+        ],
+        "schema_version": "3.4.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Configuration",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing WordPress Cron Not Replaced with Server Cron protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "Medium",
+        "integrity_impact": "Medium",
+        "confidentiality_impact": "High",
+        "financial_risk": "Medium",
+        "reputational_risk": "Medium",
+        "operational_risk": "Medium",
+        "compliance_risk": "Medium",
+        "business_continuity_risk": "Low",
+        "impact_description": "WordPress Cron Not Replaced with Server Cron poses security risks to WordPress installation"
+      }
+    },
+    {
+      "risk_id": "RISK-097",
+      "title": "No Automated Backup Schedule",
+      "category": "Configuration",
+      "severity": {
+        "level": "high",
+        "cvss_score": 7.5,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+        "business_impact": "Risk of Configuration compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "No scheduled backups configured.",
+        "detailed": "Data loss on compromise.",
+        "attack_scenario": "An attacker exploits this configuration to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-693"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "testing": {
+        "test_method": "Backup check",
+        "difficulty": "easy",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test No Automated Backup Schedule",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-097-test",
+            "expected_response": "403",
+            "description": "Test payload for No Automated Backup Schedule",
+            "severity": "high",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "medium",
+        "estimated_time": "1-2 days",
+        "priority": 8,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for No Automated Backup Schedule",
+              "file": "add_cron_job",
+              "code": "0 2 * * * /usr/local/bin/wp-backup.sh > /var/log/wp-backup.log 2>&1",
+              "backup_required": true,
+              "enforcer": "Server Cron",
+              "operation": "cron_job_exists",
+              "verification_method": "crontab",
+              "insertion_point": "wp_backup"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "Server Cron"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "Server Cron",
+            "operation": "remove_exists",
+            "target": "add_cron_job",
+            "description": "Remove protection for No Automated Backup Schedule",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-097-001",
+            "name": "No Automated Backup Schedule Check",
+            "method": "endpoint-test",
+            "script": "check_097()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "No Automated Backup Schedule vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-097-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-097-001",
+            "type": "toggle",
+            "label": "Enable No Automated Backup Schedule Protection",
+            "description": "Activates protection against no automated backup schedule",
+            "default_value": true,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK097ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "General",
+          "order": 197,
+          "collapsible": true,
+          "default_expanded": false
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-097-001",
+            "type": "enable",
+            "label": "Enable Protection",
+            "confirmation_required": true,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "No Automated Backup Schedule protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for No Automated Backup Schedule",
+          "code": "0 2 * * * /usr/local/bin/wp-backup.sh > /var/log/wp-backup.log 2>&1",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-02-16T11:16:18.087502Z",
+        "updated_at": "2026-02-16T11:16:18.087505+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "configuration",
+          "high",
+          "097"
+        ],
+        "schema_version": "3.4.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Configuration",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing No Automated Backup Schedule protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "Medium",
+        "integrity_impact": "Medium",
+        "confidentiality_impact": "High",
+        "financial_risk": "Medium",
+        "reputational_risk": "Medium",
+        "operational_risk": "Medium",
+        "compliance_risk": "Medium",
+        "business_continuity_risk": "Low",
+        "impact_description": "No Automated Backup Schedule poses security risks to WordPress installation"
+      }
+    },
+    {
+      "risk_id": "RISK-098",
+      "title": "No Security Scan Schedule",
+      "category": "Configuration",
+      "severity": {
+        "level": "medium",
+        "cvss_score": 5.3,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N",
+        "business_impact": "Risk of Configuration compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "No automated security scans.",
+        "detailed": "Vulnerabilities go undetected.",
+        "attack_scenario": "An attacker exploits this configuration to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-693"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "testing": {
+        "test_method": "Scan schedule check",
+        "difficulty": "easy",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test No Security Scan Schedule",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-098-test",
+            "expected_response": "403",
+            "description": "Test payload for No Security Scan Schedule",
+            "severity": "medium",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "medium",
+        "estimated_time": "1-4 hours",
+        "priority": 6,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for No Security Scan Schedule",
+              "file": "add_cron_job",
+              "code": "0 3 * * 0 /usr/local/bin/wp-security-scan.sh > /var/log/wp-scan.log 2>&1",
+              "backup_required": true,
+              "enforcer": "Server Cron",
+              "operation": "cron_job_exists",
+              "verification_method": "crontab",
+              "insertion_point": "wp_security_scan"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "Server Cron"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "Server Cron",
+            "operation": "remove_exists",
+            "target": "add_cron_job",
+            "description": "Remove protection for No Security Scan Schedule",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-098-001",
+            "name": "No Security Scan Schedule Check",
+            "method": "endpoint-test",
+            "script": "check_098()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "No Security Scan Schedule vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-098-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-098-001",
+            "type": "toggle",
+            "label": "Enable No Security Scan Schedule Protection",
+            "description": "Activates protection against no security scan schedule",
+            "default_value": true,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK098ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "General",
+          "order": 198,
+          "collapsible": true,
+          "default_expanded": false
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-098-001",
+            "type": "enable",
+            "label": "Enable Protection",
+            "confirmation_required": false,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "No Security Scan Schedule protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for No Security Scan Schedule",
+          "code": "0 3 * * 0 /usr/local/bin/wp-security-scan.sh > /var/log/wp-scan.log 2>&1",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-02-16T11:16:18.087526Z",
+        "updated_at": "2026-02-16T11:16:18.087529+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "configuration",
+          "medium",
+          "098"
+        ],
+        "schema_version": "3.4.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Configuration",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing No Security Scan Schedule protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "Low",
+        "integrity_impact": "Low",
+        "confidentiality_impact": "Medium",
+        "financial_risk": "Low",
+        "reputational_risk": "Low",
+        "operational_risk": "Low",
+        "compliance_risk": "Low",
+        "business_continuity_risk": "Low",
+        "impact_description": "No Security Scan Schedule poses security risks to WordPress installation"
+      }
+    },
+    {
+      "risk_id": "RISK-099",
+      "title": "No Log Rotation Configured",
+      "category": "Configuration",
+      "severity": {
+        "level": "medium",
+        "cvss_score": 5.3,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:L",
+        "business_impact": "Risk of Configuration compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "WordPress logs not rotated.",
+        "detailed": "Disk space exhaustion possible.",
+        "attack_scenario": "An attacker exploits this configuration to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-770"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "testing": {
+        "test_method": "Log size check",
+        "difficulty": "easy",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test No Log Rotation Configured",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-099-test",
+            "expected_response": "403",
+            "description": "Test payload for No Log Rotation Configured",
+            "severity": "medium",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "medium",
+        "estimated_time": "1-4 hours",
+        "priority": 6,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for No Log Rotation Configured",
+              "file": "add_cron_job",
+              "code": "0 0 * * 0 /usr/sbin/logrotate -f /etc/logrotate.d/wordpress",
+              "backup_required": true,
+              "enforcer": "Server Cron",
+              "operation": "cron_job_exists",
+              "verification_method": "crontab",
+              "insertion_point": "wp_logrotate"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "Server Cron"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "Server Cron",
+            "operation": "remove_exists",
+            "target": "add_cron_job",
+            "description": "Remove protection for No Log Rotation Configured",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-099-001",
+            "name": "No Log Rotation Configured Check",
+            "method": "endpoint-test",
+            "script": "check_099()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "No Log Rotation Configured vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-099-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-099-001",
+            "type": "toggle",
+            "label": "Enable No Log Rotation Configured Protection",
+            "description": "Activates protection against no log rotation configured",
+            "default_value": true,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK099ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "General",
+          "order": 199,
+          "collapsible": true,
+          "default_expanded": false
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-099-001",
+            "type": "enable",
+            "label": "Enable Protection",
+            "confirmation_required": false,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "No Log Rotation Configured protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for No Log Rotation Configured",
+          "code": "0 0 * * 0 /usr/sbin/logrotate -f /etc/logrotate.d/wordpress",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-02-16T11:16:18.087549Z",
+        "updated_at": "2026-02-16T11:16:18.087552+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "configuration",
+          "medium",
+          "099"
+        ],
+        "schema_version": "3.4.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Configuration",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing No Log Rotation Configured protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "Low",
+        "integrity_impact": "Low",
+        "confidentiality_impact": "Medium",
+        "financial_risk": "Low",
+        "reputational_risk": "Low",
+        "operational_risk": "Low",
+        "compliance_risk": "Low",
+        "business_continuity_risk": "Low",
+        "impact_description": "No Log Rotation Configured poses security risks to WordPress installation"
+      }
+    },
+    {
+      "risk_id": "RISK-100",
+      "title": "No Plugin Update Schedule",
+      "category": "Configuration",
+      "severity": {
+        "level": "high",
+        "cvss_score": 7.5,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+        "business_impact": "Risk of Configuration compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "Plugins not auto-updated.",
+        "detailed": "Vulnerable plugins remain active.",
+        "attack_scenario": "An attacker exploits this configuration to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-1104"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "testing": {
+        "test_method": "Plugin version check",
+        "difficulty": "easy",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test No Plugin Update Schedule",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-100-test",
+            "expected_response": "403",
+            "description": "Test payload for No Plugin Update Schedule",
+            "severity": "high",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "medium",
+        "estimated_time": "1-2 days",
+        "priority": 8,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for No Plugin Update Schedule",
+              "file": "add_cron_job",
+              "code": "0 4 * * * cd /var/www/html && wp plugin update --all --allow-root > /var/log/wp-plugin-update.log 2>&1",
+              "backup_required": true,
+              "enforcer": "Server Cron",
+              "operation": "cron_job_exists",
+              "verification_method": "crontab",
+              "insertion_point": "wp_plugin_update"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "Server Cron"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "Server Cron",
+            "operation": "remove_exists",
+            "target": "add_cron_job",
+            "description": "Remove protection for No Plugin Update Schedule",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-100-001",
+            "name": "No Plugin Update Schedule Check",
+            "method": "endpoint-test",
+            "script": "check_100()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "No Plugin Update Schedule vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-100-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-100-001",
+            "type": "toggle",
+            "label": "Enable No Plugin Update Schedule Protection",
+            "description": "Activates protection against no plugin update schedule",
+            "default_value": true,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK100ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "General",
+          "order": 200,
+          "collapsible": true,
+          "default_expanded": false
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-100-001",
+            "type": "enable",
+            "label": "Enable Protection",
+            "confirmation_required": true,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "No Plugin Update Schedule protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for No Plugin Update Schedule",
+          "code": "0 4 * * * cd /var/www/html && wp plugin update --all --allow-root > /var/log/wp-plugin-update.log 2>&1",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-02-16T11:16:18.087573Z",
+        "updated_at": "2026-02-16T11:16:18.087577+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "configuration",
+          "high",
+          "100"
+        ],
+        "schema_version": "3.4.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Configuration",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing No Plugin Update Schedule protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "Medium",
+        "integrity_impact": "Medium",
+        "confidentiality_impact": "High",
+        "financial_risk": "Medium",
+        "reputational_risk": "Medium",
+        "operational_risk": "Medium",
+        "compliance_risk": "Medium",
+        "business_continuity_risk": "Low",
+        "impact_description": "No Plugin Update Schedule poses security risks to WordPress installation"
+      }
+    },
+    {
+      "risk_id": "RISK-101",
+      "title": "No Core Update Schedule",
+      "category": "Configuration",
+      "severity": {
+        "level": "high",
+        "cvss_score": 7.5,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+        "business_impact": "Risk of Configuration compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "WordPress core not auto-updated.",
+        "detailed": "Security patches not applied.",
+        "attack_scenario": "An attacker exploits this configuration to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-1104"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "testing": {
+        "test_method": "Core version check",
+        "difficulty": "easy",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test No Core Update Schedule",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-101-test",
+            "expected_response": "403",
+            "description": "Test payload for No Core Update Schedule",
+            "severity": "high",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "medium",
+        "estimated_time": "1-2 days",
+        "priority": 8,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for No Core Update Schedule",
+              "file": "add_cron_job",
+              "code": "0 5 * * * cd /var/www/html && wp core update --allow-root > /var/log/wp-core-update.log 2>&1",
+              "backup_required": true,
+              "enforcer": "Server Cron",
+              "operation": "cron_job_exists",
+              "verification_method": "crontab",
+              "insertion_point": "wp_core_update"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "Server Cron"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "Server Cron",
+            "operation": "remove_exists",
+            "target": "add_cron_job",
+            "description": "Remove protection for No Core Update Schedule",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-101-001",
+            "name": "No Core Update Schedule Check",
+            "method": "endpoint-test",
+            "script": "check_101()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "No Core Update Schedule vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-101-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-101-001",
+            "type": "toggle",
+            "label": "Enable No Core Update Schedule Protection",
+            "description": "Activates protection against no core update schedule",
+            "default_value": true,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK101ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "General",
+          "order": 201,
+          "collapsible": true,
+          "default_expanded": false
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-101-001",
+            "type": "enable",
+            "label": "Enable Protection",
+            "confirmation_required": true,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "No Core Update Schedule protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for No Core Update Schedule",
+          "code": "0 5 * * * cd /var/www/html && wp core update --allow-root > /var/log/wp-core-update.log 2>&1",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-02-16T11:16:18.087596Z",
+        "updated_at": "2026-02-16T11:16:18.087599+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "configuration",
+          "high",
+          "101"
+        ],
+        "schema_version": "3.4.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Configuration",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing No Core Update Schedule protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "Medium",
+        "integrity_impact": "Medium",
+        "confidentiality_impact": "High",
+        "financial_risk": "Medium",
+        "reputational_risk": "Medium",
+        "operational_risk": "Medium",
+        "compliance_risk": "Medium",
+        "business_continuity_risk": "Low",
+        "impact_description": "No Core Update Schedule poses security risks to WordPress installation"
+      }
+    },
+    {
+      "risk_id": "RISK-102",
+      "title": "No Database Optimization Schedule",
+      "category": "Configuration",
+      "severity": {
+        "level": "low",
+        "cvss_score": 3.7,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:L",
+        "business_impact": "Risk of Configuration compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "Database not regularly optimized.",
+        "detailed": "Performance degradation over time.",
+        "attack_scenario": "An attacker exploits this configuration to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-400"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "testing": {
+        "test_method": "Database size check",
+        "difficulty": "easy",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test No Database Optimization Schedule",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-102-test",
+            "expected_response": "403",
+            "description": "Test payload for No Database Optimization Schedule",
+            "severity": "low",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "low",
+        "estimated_time": "1-4 hours",
+        "priority": 4,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for No Database Optimization Schedule",
+              "file": "add_cron_job",
+              "code": "0 2 * * 0 cd /var/www/html && wp db optimize --allow-root > /var/log/wp-db-optimize.log 2>&1",
+              "backup_required": true,
+              "enforcer": "Server Cron",
+              "operation": "cron_job_exists",
+              "verification_method": "crontab",
+              "insertion_point": "wp_db_optimize"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "Server Cron"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "Server Cron",
+            "operation": "remove_exists",
+            "target": "add_cron_job",
+            "description": "Remove protection for No Database Optimization Schedule",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-102-001",
+            "name": "No Database Optimization Schedule Check",
+            "method": "endpoint-test",
+            "script": "check_102()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "No Database Optimization Schedule vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-102-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-102-001",
+            "type": "toggle",
+            "label": "Enable No Database Optimization Schedule Protection",
+            "description": "Activates protection against no database optimization schedule",
+            "default_value": true,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK102ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "General",
+          "order": 202,
+          "collapsible": true,
+          "default_expanded": false
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-102-001",
+            "type": "enable",
+            "label": "Enable Protection",
+            "confirmation_required": false,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "No Database Optimization Schedule protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for No Database Optimization Schedule",
+          "code": "0 2 * * 0 cd /var/www/html && wp db optimize --allow-root > /var/log/wp-db-optimize.log 2>&1",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-02-16T11:16:18.087624Z",
+        "updated_at": "2026-02-16T11:16:18.087628+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "configuration",
+          "low",
+          "102"
+        ],
+        "schema_version": "3.4.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Configuration",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing No Database Optimization Schedule protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "Low",
+        "integrity_impact": "Low",
+        "confidentiality_impact": "Medium",
+        "financial_risk": "Low",
+        "reputational_risk": "Low",
+        "operational_risk": "Low",
+        "compliance_risk": "Low",
+        "business_continuity_risk": "Low",
+        "impact_description": "No Database Optimization Schedule poses security risks to WordPress installation"
+      }
+    },
+    {
+      "risk_id": "RISK-103",
+      "title": "No Spam Cleanup Schedule",
+      "category": "Configuration",
+      "severity": {
+        "level": "low",
+        "cvss_score": 3.7,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:L",
+        "business_impact": "Risk of Configuration compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "Spam comments not auto-deleted.",
+        "detailed": "Database bloat with spam.",
+        "attack_scenario": "An attacker exploits this configuration to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-770"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "testing": {
+        "test_method": "Spam count check",
+        "difficulty": "easy",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test No Spam Cleanup Schedule",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-103-test",
+            "expected_response": "403",
+            "description": "Test payload for No Spam Cleanup Schedule",
+            "severity": "low",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "low",
+        "estimated_time": "1-4 hours",
+        "priority": 4,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for No Spam Cleanup Schedule",
+              "file": "add_cron_job",
+              "code": "0 1 * * * cd /var/www/html && wp comment delete --status=spam --allow-root > /var/log/wp-spam-cleanup.log 2>&1",
+              "backup_required": true,
+              "enforcer": "Server Cron",
+              "operation": "cron_job_exists",
+              "verification_method": "crontab",
+              "insertion_point": "wp_spam_cleanup"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "Server Cron"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "Server Cron",
+            "operation": "remove_exists",
+            "target": "add_cron_job",
+            "description": "Remove protection for No Spam Cleanup Schedule",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-103-001",
+            "name": "No Spam Cleanup Schedule Check",
+            "method": "endpoint-test",
+            "script": "check_103()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "No Spam Cleanup Schedule vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-103-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-103-001",
+            "type": "toggle",
+            "label": "Enable No Spam Cleanup Schedule Protection",
+            "description": "Activates protection against no spam cleanup schedule",
+            "default_value": true,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK103ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "General",
+          "order": 203,
+          "collapsible": true,
+          "default_expanded": false
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-103-001",
+            "type": "enable",
+            "label": "Enable Protection",
+            "confirmation_required": false,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "No Spam Cleanup Schedule protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for No Spam Cleanup Schedule",
+          "code": "0 1 * * * cd /var/www/html && wp comment delete --status=spam --allow-root > /var/log/wp-spam-cleanup.log 2>&1",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-02-16T11:16:18.087650Z",
+        "updated_at": "2026-02-16T11:16:18.087653+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "configuration",
+          "low",
+          "103"
+        ],
+        "schema_version": "3.4.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Configuration",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing No Spam Cleanup Schedule protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "Low",
+        "integrity_impact": "Low",
+        "confidentiality_impact": "Medium",
+        "financial_risk": "Low",
+        "reputational_risk": "Low",
+        "operational_risk": "Low",
+        "compliance_risk": "Low",
+        "business_continuity_risk": "Low",
+        "impact_description": "No Spam Cleanup Schedule poses security risks to WordPress installation"
+      }
+    },
+    {
+      "risk_id": "RISK-104",
+      "title": "No Failed Login Log Rotation",
+      "category": "Configuration",
+      "severity": {
+        "level": "low",
+        "cvss_score": 3.7,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:L",
+        "business_impact": "Risk of Configuration compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "Fail2ban logs not rotated.",
+        "detailed": "Log files grow indefinitely.",
+        "attack_scenario": "An attacker exploits this configuration to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-770"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "testing": {
+        "test_method": "Log size check",
+        "difficulty": "easy",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test No Failed Login Log Rotation",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-104-test",
+            "expected_response": "403",
+            "description": "Test payload for No Failed Login Log Rotation",
+            "severity": "low",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "low",
+        "estimated_time": "1-4 hours",
+        "priority": 4,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for No Failed Login Log Rotation",
+              "file": "add_cron_job",
+              "code": "0 0 * * 0 /usr/sbin/logrotate -f /etc/logrotate.d/fail2ban",
+              "backup_required": true,
+              "enforcer": "Server Cron",
+              "operation": "cron_job_exists",
+              "verification_method": "crontab",
+              "insertion_point": "fail2ban_logrotate"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "Server Cron"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "Server Cron",
+            "operation": "remove_exists",
+            "target": "add_cron_job",
+            "description": "Remove protection for No Failed Login Log Rotation",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-104-001",
+            "name": "No Failed Login Log Rotation Check",
+            "method": "endpoint-test",
+            "script": "check_104()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "No Failed Login Log Rotation vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-104-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-104-001",
+            "type": "toggle",
+            "label": "Enable No Failed Login Log Rotation Protection",
+            "description": "Activates protection against no failed login log rotation",
+            "default_value": true,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK104ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "General",
+          "order": 204,
+          "collapsible": true,
+          "default_expanded": false
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-104-001",
+            "type": "enable",
+            "label": "Enable Protection",
+            "confirmation_required": false,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "No Failed Login Log Rotation protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for No Failed Login Log Rotation",
+          "code": "0 0 * * 0 /usr/sbin/logrotate -f /etc/logrotate.d/fail2ban",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-02-16T11:16:18.087723Z",
+        "updated_at": "2026-02-16T11:16:18.087730+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "configuration",
+          "low",
+          "104"
+        ],
+        "schema_version": "3.4.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Configuration",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing No Failed Login Log Rotation protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "Low",
+        "integrity_impact": "Low",
+        "confidentiality_impact": "Medium",
+        "financial_risk": "Low",
+        "reputational_risk": "Low",
+        "operational_risk": "Low",
+        "compliance_risk": "Low",
+        "business_continuity_risk": "Low",
+        "impact_description": "No Failed Login Log Rotation poses security risks to WordPress installation"
+      }
+    },
+    {
+      "risk_id": "RISK-105",
+      "title": "No SSL Certificate Renewal",
+      "category": "Configuration",
+      "severity": {
+        "level": "high",
+        "cvss_score": 7.5,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N",
+        "business_impact": "Risk of Configuration compromise leading to data breach or system compromise"
+      },
+      "description": {
+        "summary": "SSL cert auto-renewal not configured.",
+        "detailed": "Certificate expiry causes downtime.",
+        "attack_scenario": "An attacker exploits this configuration to compromise system security",
+        "affected_components": [
+          "WordPress Core",
+          "Plugins",
+          "Themes",
+          "Custom Code"
+        ]
+      },
+      "owasp_mapping": {
+        "pci_dss": [
+          "Requirement-6.5"
+        ],
+        "gdpr": [
+          "Article-32"
+        ],
+        "nist_csf": [
+          "PR.DS-5"
+        ],
+        "cwe": [
+          "CWE-319"
+        ],
+        "owasp_top_10_2025": "A02:2025 - Security Misconfiguration",
+        "owasp_top_10_2021_deprecated": "A05:2021 - Security Misconfiguration"
+      },
+      "testing": {
+        "test_method": "Certificate expiry check",
+        "difficulty": "easy",
+        "tools_required": [
+          "Manual testing",
+          "Browser DevTools"
+        ],
+        "verification_steps": [
+          {
+            "step_number": 1,
+            "action": "1. Test No SSL Certificate Renewal",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 2,
+            "action": "2. Verify protection is active",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 3,
+            "action": "3. Check configuration",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          },
+          {
+            "step_number": 4,
+            "action": "4. Validate security controls",
+            "expected_result": "Should be protected/blocked",
+            "command": null,
+            "automated": false
+          }
+        ],
+        "test_payloads": [
+          {
+            "type": "http_request",
+            "method": "GET",
+            "url": "/risk-105-test",
+            "expected_response": "403",
+            "description": "Test payload for No SSL Certificate Renewal",
+            "severity": "high",
+            "automated": true
+          }
+        ]
+      },
+      "protection": {
+        "remediation_effort": "medium",
+        "estimated_time": "1-2 days",
+        "priority": 8,
+        "automated_protection": {
+          "available": true,
+          "method": "unified-plugin",
+          "implementation_steps": [
+            {
+              "step_number": 1,
+              "description": "Implement protection for No SSL Certificate Renewal",
+              "file": "add_cron_job",
+              "code": "0 0 1 * * /usr/bin/certbot renew --quiet --post-hook 'systemctl reload nginx'",
+              "backup_required": true,
+              "enforcer": "Server Cron",
+              "operation": "cron_job_exists",
+              "verification_method": "crontab",
+              "insertion_point": "ssl_renewal"
+            }
+          ],
+          "enforcer": "VAPT Protection Plugin",
+          "implementation_targets": [
+            "Server Cron"
+          ]
+        },
+        "manual_steps": [
+          {
+            "step_number": 1,
+            "description": "Review and test the protection",
+            "reason": "Requires validation in production environment",
+            "verification": "Perform security testing after implementation"
+          }
+        ],
+        "configuration_changes": {
+          "wp_config": {
+            "constants": {}
+          },
+          "htaccess_rules": [],
+          "php_ini": {}
+        },
+        "plugin_dependencies": [],
+        "rollback_steps": [
+          {
+            "step_number": 1,
+            "enforcer": "Server Cron",
+            "operation": "remove_exists",
+            "target": "add_cron_job",
+            "description": "Remove protection for No SSL Certificate Renewal",
+            "verification": "protection_removed",
+            "automatic": true
+          }
+        ]
+      },
+      "verification_engine": {
+        "automated_checks": [
+          {
+            "check_id": "CHECK-105-001",
+            "name": "No SSL Certificate Renewal Check",
+            "method": "endpoint-test",
+            "script": "check_105()",
+            "success_criteria": {
+              "condition": "equals",
+              "expected_value": "protected",
+              "actual_value_source": "security_scan"
+            },
+            "failure_message": "No SSL Certificate Renewal vulnerability detected",
+            "enforcer": "VAPT Protection Plugin"
+          }
+        ],
+        "manual_verification": [],
+        "continuous_monitoring": {
+          "enabled": true,
+          "frequency": "monthly",
+          "alert_on_failure": true,
+          "auto_remediate": false
+        },
+        "advanced_verification": {
+          "methods": [
+            {
+              "method": "curl_test",
+              "command": "curl -I http://site.com/risk-105-test",
+              "expected_result": "403 or 401",
+              "automated": true
+            }
+          ],
+          "automated_scanning": true,
+          "manual_verification": true,
+          "third_party_validation": false
+        }
+      },
+      "ui_configuration": {
+        "components": [
+          {
+            "component_id": "UI-RISK-105-001",
+            "type": "toggle",
+            "label": "Enable No SSL Certificate Renewal Protection",
+            "description": "Activates protection against no ssl certificate renewal",
+            "default_value": true,
+            "options": [],
+            "validation": {
+              "required": false
+            },
+            "on_change": "handleRISK105ToggleChange",
+            "dependencies": []
+          }
+        ],
+        "layout": {
+          "section": "General",
+          "order": 205,
+          "collapsible": true,
+          "default_expanded": false
+        },
+        "actions": [
+          {
+            "action_id": "ACTION-105-001",
+            "type": "enable",
+            "label": "Enable Protection",
+            "confirmation_required": true,
+            "confirmation_message": "This will enable protection. Continue?",
+            "processing_message": "Enabling protection...",
+            "success_message": "Protection enabled successfully",
+            "error_handler": "handleProtectionError"
+          }
+        ]
+      },
+      "reporting": {
+        "status_indicators": [
+          {
+            "indicator": "protected",
+            "display": "badge",
+            "message": "No SSL Certificate Renewal protection active"
+          }
+        ],
+        "export_formats": [
+          "pdf",
+          "json",
+          "csv"
+        ],
+        "share_capability": true
+      },
+      "code_examples": [
+        {
+          "language": "php",
+          "description": "Implementation for No SSL Certificate Renewal",
+          "code": "0 0 1 * * /usr/bin/certbot renew --quiet --post-hook 'systemctl reload nginx'",
+          "file_location": "functions.php or plugin file"
+        }
+      ],
+      "references": [
+        {
+          "title": "OWASP Security Guide",
+          "url": "https://owasp.org/",
+          "type": "documentation"
+        },
+        {
+          "title": "WordPress Security Best Practices",
+          "url": "https://wordpress.org/support/article/hardening-wordpress/",
+          "type": "documentation"
+        }
+      ],
+      "metadata": {
+        "created_at": "2026-02-16T11:16:18.088785Z",
+        "updated_at": "2026-02-16T11:16:18.088794+00:00",
+        "version": "2.0.0",
+        "author": "Security Team",
+        "review_status": "approved",
+        "tags": [
+          "configuration",
+          "high",
+          "105"
+        ],
+        "schema_version": "3.4.0",
+        "validation_passed": true,
+        "cwe_validated": true,
+        "dependencies_fixed": true,
+        "test_payloads_enhanced": true,
+        "rollback_steps_enhanced": true,
+        "enhanced_capabilities": true
+      },
+      "relationships": {
+        "related_risks": [],
+        "conflicts_with": [],
+        "requires": [],
+        "enables": [],
+        "risk_family": "Configuration",
+        "prerequisites": []
+      },
+      "evidence_requirements": {
+        "compliance_frameworks": [
+          "PCI-DSS",
+          "GDPR"
+        ],
+        "evidence_types": [
+          {
+            "type": "screenshot",
+            "description": "Configuration showing No SSL Certificate Renewal protection",
+            "required": true,
+            "retention_days": 365
+          }
+        ],
+        "audit_trail_required": true,
+        "pentest_verification": true
+      },
+      "performance_impact": {
+        "server_load": "neutral",
+        "response_time": "neutral",
+        "memory_usage": "neutral",
+        "cpu_usage": "neutral",
+        "estimated_performance_change": "No measurable performance impact",
+        "benchmark_notes": "Standard security hardening"
+      },
+      "business_impact": {
+        "availability_impact": "Medium",
+        "integrity_impact": "Medium",
+        "confidentiality_impact": "High",
+        "financial_risk": "Medium",
+        "reputational_risk": "Medium",
+        "operational_risk": "Medium",
+        "compliance_risk": "Medium",
+        "business_continuity_risk": "Low",
+        "impact_description": "No SSL Certificate Renewal poses security risks to WordPress installation"
+      }
+    }
+  ]
+}
