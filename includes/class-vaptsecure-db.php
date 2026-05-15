@@ -139,6 +139,68 @@ class VAPTSECURE_DB
     }
 
     /**
+     * Return the current live canonical bundle fingerprint.
+     */
+    public static function get_live_bundle_fingerprint()
+    {
+        if (!class_exists('VAPTSECURE_Bundle_Sync')) {
+            return '';
+        }
+
+        return (string) VAPTSECURE_Bundle_Sync::fingerprint();
+    }
+
+    /**
+     * Return the last stored canonical bundle fingerprint.
+     */
+    public static function get_stored_bundle_fingerprint()
+    {
+        if (!function_exists('get_option')) {
+            return '';
+        }
+
+        return (string) get_option('vaptsecure_bundle_fingerprint', '');
+    }
+
+    /**
+     * Persist the current bundle fingerprint.
+     */
+    public static function set_stored_bundle_fingerprint($fingerprint)
+    {
+        if (!function_exists('update_option')) {
+            return false;
+        }
+
+        return update_option('vaptsecure_bundle_fingerprint', trim((string) $fingerprint), false);
+    }
+
+    /**
+     * Detect whether the stored bundle fingerprint is stale.
+     */
+    public static function bundle_is_stale()
+    {
+        $stored = self::get_stored_bundle_fingerprint();
+        if ($stored === '') {
+            return true;
+        }
+
+        return !hash_equals($stored, self::get_live_bundle_fingerprint());
+    }
+
+    /**
+     * Sync the stored bundle fingerprint to the live canonical bundle.
+     */
+    public static function sync_bundle_fingerprint()
+    {
+        $current = self::get_live_bundle_fingerprint();
+        if ($current === '') {
+            return false;
+        }
+
+        return self::set_stored_bundle_fingerprint($current);
+    }
+
+    /**
      * Update feature metadata/toggles
      */
     public static function update_feature_meta($key, $data)

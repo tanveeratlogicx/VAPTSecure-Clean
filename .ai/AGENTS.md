@@ -20,6 +20,12 @@
 
 ## 🔄 Workflows
 
+## Canonical Data Sync
+
+- The `/data/` security bundle is the runtime source of truth for feature and platform mappings.
+- `.ai/` instruction files, workflows, and editor-specific stubs are derived artifacts and should be regenerated or refreshed when `/data/` changes.
+- Bundle-drift checks should autoheal stale cached state before agent workflows depend on it.
+
 ### Workflow: Reset to Draft
 
 **Purpose**: Handle "Confirm Reset (Wipe Data)" operation when reverting from Develop to Draft

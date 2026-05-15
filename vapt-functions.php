@@ -7,14 +7,7 @@
 if (!defined("ABSPATH")) {
     exit();
 }
-// BEGIN VAPT FEATURE: RISK-003
-add_action('init', function() {
-    if (strpos($_SERVER['REQUEST_URI'], '/wp-json/wp/v2/users') !== false) {
-        header('x-vapt-enforced: php-author-enum');
-        wp_die('Access Denied');
-    }
-});
-// END VAPT FEATURE: RISK-003
+
 // BEGIN VAPT FEATURE: RISK-008
 add_filter('login_errors', 'vapt_hide_login_errors');
 function vapt_hide_login_errors() {
@@ -26,16 +19,19 @@ add_action('send_headers', function() {
     }
 });
 // END VAPT FEATURE: RISK-008
+
 // BEGIN VAPT FEATURE: RISK-011
 add_action('init', function() {
     if (strpos($_SERVER['REQUEST_URI'], 'readme.html') !== false) { wp_die('Access Denied'); }
 });
 // END VAPT FEATURE: RISK-011
+
 // BEGIN VAPT FEATURE: RISK-126
 add_action('init', function() {
     if (strpos($_SERVER['REQUEST_URI'], 'RISK-126') !== false) { wp_die('Access Denied'); }
 });
 // END VAPT FEATURE: RISK-126
+
 // BEGIN VAPT FEATURE: RISK-127
 add_action('init', 'vapt_register_input_validation_guards');
 function vapt_register_input_validation_guards() {
@@ -54,37 +50,38 @@ function vapt_sanitize_comment_input($commentdata) {
     return $commentdata;
 }
 // END VAPT FEATURE: RISK-127
+
 // BEGIN VAPT FEATURE: RISK-129
 add_action('init', function() {
     if (strpos($_SERVER['REQUEST_URI'], 'RISK-129') !== false) { wp_die('Access Denied'); }
 });
 // END VAPT FEATURE: RISK-129
+
 // BEGIN VAPT FEATURE: RISK-130
 add_action('init', function() {
     if (strpos($_SERVER['REQUEST_URI'], 'RISK-130') !== false) { wp_die('Access Denied'); }
 });
 // END VAPT FEATURE: RISK-130
+
 // BEGIN VAPT FEATURE: RISK-131
 add_action('wp_enqueue_scripts', 'vapt_add_recaptcha_v3_risk131');
 function vapt_add_recaptcha_v3_risk131() {
     wp_enqueue_script('google-recaptcha', 'https://www.google.com/recaptcha/api.js?render=YOUR_SITE_KEY');
 }
 // END VAPT FEATURE: RISK-131
-// BEGIN VAPT FEATURE: RISK-132
-add_action('init', function() {
-    if (strpos($_SERVER['REQUEST_URI'], 'RISK-132') !== false) { wp_die('Access Denied'); }
-});
-// END VAPT FEATURE: RISK-132
+
 // BEGIN VAPT FEATURE: RISK-133
 add_action('init', function() {
     if (strpos($_SERVER['REQUEST_URI'], 'RISK-133') !== false) { wp_die('Access Denied'); }
 });
 // END VAPT FEATURE: RISK-133
+
 // BEGIN VAPT FEATURE: RISK-134
 add_action('send_headers', function() {
     header('X-Frame-Options: SAMEORIGIN');
 });
 // END VAPT FEATURE: RISK-134
+
 // BEGIN VAPT FEATURE: RISK-135
 add_action('init', function() {
     if (strpos($_SERVER['REQUEST_URI'], 'debug.log') !== false) { wp_die('Access Denied'); }

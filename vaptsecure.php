@@ -1046,6 +1046,7 @@ require_once VAPTSECURE_PATH . "includes/class-vaptsecure-workflow.php";
 require_once VAPTSECURE_PATH . "includes/class-vaptsecure-ai-config.php";
 require_once VAPTSECURE_PATH . "includes/class-vaptsecure-build.php";
 require_once VAPTSECURE_PATH . "includes/class-vaptsecure-config-cleaner.php"; // Shared utility for config cleaning
+require_once VAPTSECURE_PATH . "includes/class-vaptsecure-bundle-sync.php"; // Canonical bundle snapshot and fingerprint helper
 require_once VAPTSECURE_PATH . "includes/class-vaptsecure-enforcer.php";
 require_once VAPTSECURE_PATH . "includes/class-vaptsecure-admin.php";
 require_once VAPTSECURE_PATH . "includes/class-vaptsecure-license-manager.php";
@@ -1733,11 +1734,41 @@ function vaptsecure_activate_plugin()
     // Run manual DB fix to add missing columns
     vaptsecure_manual_db_fix();
 
+    if (class_exists("VAPTSECURE_DB")) {
+        VAPTSECURE_DB::sync_bundle_fingerprint();
+    }
+
     // Run Self-Check lifecycle instantiation
     if (class_exists("VAPT_Lifecycle")) {
         VAPT_Lifecycle::on_activate();
     }
 }
+
+/**
+ * Keep the stored bundle fingerprint aligned with the live canonical data.
+ * [SSoT v1.0] When drift is detected, trigger full meta rehydration instead of
+ * just syncing the fingerprint. This ensures stale generated_schema and
+ * implementation_data are refreshed from the live catalog.
+ *
+ * This is a lightweight autoheal trigger used by admin/runtime bootstrap.
+ */
+function vaptsecure_refresh_bundle_fingerprint()
+{
+    if (!class_exists("VAPTSECURE_DB")) {
+        return;
+    }
+
+    if (VAPTSECURE_DB::bundle_is_stale()) {
+        if (class_exists("VAPTSECURE_Enforcer")) {
+            VAPTSECURE_Enforcer::rehydrate_all_stale_meta();
+        } else {
+            VAPTSECURE_DB::sync_bundle_fingerprint();
+        }
+    }
+}
+
+add_action("admin_init", "vaptsecure_refresh_bundle_fingerprint", 5);
+add_action("init", "vaptsecure_refresh_bundle_fingerprint", 5);
 
 /**
  * Manual Database Fix / Migrations

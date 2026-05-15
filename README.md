@@ -3,7 +3,7 @@
 Production-ready WordPress security plugin with VAPT and OWASP protection.
 
 ## Version
-**3.7.14** - Deprecated IIS and Caddy drivers to focus on Apache/Cloudflare/PHP environments
+**3.7.14** - Focused the current release on Apache, LiteSpeed, Nginx, Cloudflare, and PHP enforcement paths
 
 ## Package Contents
 - vaptsecure.php - Main plugin file

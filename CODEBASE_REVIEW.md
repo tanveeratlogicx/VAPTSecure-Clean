@@ -9,14 +9,14 @@
 
 ## Executive Summary
 
-VAPTSecure Clean is a sophisticated WordPress security plugin designed for Vulnerability Assessment & Penetration Testing (VAPT) with OWASP compliance. It provides a comprehensive security hardening framework with multi-server support (Apache, Nginx, IIS, Caddy), AI-assisted configuration, and self-healing capabilities.
+VAPTSecure Clean is a sophisticated WordPress security plugin designed for Vulnerability Assessment & Penetration Testing (VAPT) with OWASP compliance. It provides a comprehensive security hardening framework with Apache, LiteSpeed, Nginx, Cloudflare, and PHP enforcement paths, AI-assisted configuration, and self-healing capabilities.
 
 ---
 
 ## Architecture Overview
 
 ### Core Philosophy
-- **Multi-Server Support:** Unified enforcement across Apache (.htaccess), Nginx, IIS (web.config), Caddy, and Cloudflare
+- **Multi-Server Support:** Unified enforcement across Apache (.htaccess), LiteSpeed, Nginx, Cloudflare, and PHP hooks
 - **Driver-Based Architecture:** Modular enforcer system with standardized interfaces
 - **Self-Healing System:** Automated integrity checks and auto-correction mechanisms
 - **License Management:** Domain-locked licensing with grace periods and auto-renewal
@@ -67,8 +67,7 @@ VAPTSecure-Clean/
 │   ├── enforcers/              # Driver implementations
 │   │   ├── class-vaptsecure-htaccess-driver.php    # Apache (591 lines)
 │   │   ├── class-vaptsecure-nginx-driver.php     # Nginx
-│   │   ├── class-vaptsecure-iis-driver.php       # IIS
-│   │   ├── class-vaptsecure-caddy-driver.php     # Caddy
+│   │   ├── class-vaptsecure-litespeed-driver.php # LiteSpeed
 │   │   ├── class-vaptsecure-config-driver.php    # wp-config.php
 │   │   ├── class-vaptsecure-php-driver.php       # PHP functions
 │   │   ├── class-vaptsecure-hook-driver.php      # WP Hooks (54KB)
@@ -130,7 +129,7 @@ function vaptsecure_get_superadmin_identity() {
 **Capabilities:**
 - Runtime hook-based enforcement (PHP actions/filters)
 - File-based rule deployment (.htaccess, nginx.conf, web.config)
-- Server auto-detection (Apache/Nginx/IIS/Caddy)
+- Server auto-detection (Apache/LiteSpeed/Nginx/Cloudflare)
 - Batch rule consolidation and optimization
 - Two-way deactivation (toggle OFF = rules removed)
 
@@ -139,8 +138,7 @@ function vaptsecure_get_superadmin_identity() {
 |--------|--------|----------|
 | htaccess | .htaccess | Apache shared hosting |
 | nginx | nginx.conf | Nginx servers |
-| iis | web.config | Windows/IIS servers |
-| caddy | Caddyfile | Caddy web server |
+| litespeed | .htaccess | LiteSpeed servers |
 | config | wp-config.php | WordPress constants |
 | php_functions | vapt-functions.php | Custom PHP rules |
 | hook | Runtime | WordPress actions/filters |
@@ -324,8 +322,7 @@ All deny rules automatically include whitelist conditions to prevent lockouts.
 - `auto_detect` - Server type auto-detection
 - `apache` - Force Apache/.htaccess
 - `nginx` - Force Nginx
-- `iis` - Force IIS
-- `caddy` - Force Caddy
+- `litespeed` - Prefer LiteSpeed-compatible `.htaccess` guidance
 
 ---
 
@@ -346,7 +343,7 @@ All deny rules automatically include whitelist conditions to prevent lockouts.
 
 ## Strengths
 
-1. **Comprehensive Server Support** - Apache, Nginx, IIS, Caddy unified interface
+1. **Comprehensive Server Support** - Apache, LiteSpeed, Nginx, Cloudflare unified interface
 2. **Self-Healing Architecture** - Automatic integrity checks and corrections
 3. **WordPress-Safe** - Guaranteed admin/REST API accessibility
 4. **License Resilience** - Grace periods with automatic restoration

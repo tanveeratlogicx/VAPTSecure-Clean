@@ -44,7 +44,7 @@ Patch purpose: incorporate 14 externally supplied WordPress/VAPT findings into t
 
 ## Subsequent Changes Since This Patch
 
-The 127-risk catalogue was later expanded to 133 risks with the addition of RISK-128 through RISK-135. RISK-123 and RISK-124 (Caddy-native risks) were deleted per the v3.0 platform scope contract (`vapt_platform_contract_v3.0.json`). The auto-heal consistency contract (`vapt_autoheal_contract_v2.0.json`) was added to document and remediate cross-file consistency gaps. All consolidated changes are now reflected in the canonical v2.0 bundle files.
+The 127-risk catalogue was later expanded to 133 risks with the addition of RISK-128 through RISK-135. RISK-123 and RISK-124 were deleted per the v3.0 platform scope contract (`vapt_platform_contract_v3.0.json`). The auto-heal consistency contract (`vapt_autoheal_contract_v2.0.json`) was added to document and remediate cross-file consistency gaps. All consolidated changes are now reflected in the canonical v2.0 bundle files.
 
 ## Scope Control
 

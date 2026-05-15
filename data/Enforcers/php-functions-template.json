@@ -1988,7 +1988,7 @@
         {
           "language": "php",
           "description": "Implementation for Lack of Rate Limiting on WordPress Login",
-          "code": "add_action('send_headers', function() {\n    if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'wp-login.php') !== false) {\n        header('x-vapt-enforced: php-rate-limit');\n    }\n});\nadd_action('wp_login_failed', function($username) {\n    $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '0.0.0.0';\n    $key = 'vapt_risk007_' . md5($ip);\n    $attempts = get_transient($key);\n    if ($attempts === false) {\n        set_transient($key, 1, 3600);\n    } else {\n        if ($attempts >= 5) {\n            header('x-vapt-enforced: php-rate-limit');\n            wp_die('Too many failed login attempts. Please try again later.');\n        }\n        set_transient($key, $attempts + 1, 3600);\n    }\n});",
+          "code": "add_action('send_headers', function() {\n    if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'wp-login.php') !== false) {\n        header('x-vapt-enforced: php-rate-limit');\n    }\n});\nadd_action('wp_login_failed', function($username) {\n    $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '0.0.0.0';\n    $key = 'vapt_risk007_' . md5($ip);\n    $attempts = get_transient($key);\n    if ($attempts === false) {\n        set_transient($key, 1, 3600);\n    } else {\n        if ($attempts >= 5) {\n            header('x-vapt-enforced: php-rate-limit');\n            wp_die('Too many failed login attempts. Please try again later.', '', array('response' => 429));\n        }\n        set_transient($key, $attempts + 1, 3600);\n    }\n});",
           "file_location": "functions.php or plugin file"
         }
       ],

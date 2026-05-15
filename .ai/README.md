@@ -12,6 +12,8 @@ This `.ai/` directory implements the **Universal AI Configuration Ruleset** — 
 
 The **single source of truth** is `.ai/SOUL.md`. Every supported editor and extension points to this file via a symlink or stub file, so updating SOUL.md propagates instantly everywhere.
 
+Runtime feature data is separate from agent behavior: the canonical security bundle lives in `/data/`, and the `.ai/` docs, workflows, and editor stubs are derived mirrors that must be refreshed whenever the bundle changes.
+
 ---
 
 ## 📋 Supported Editors & Extensions

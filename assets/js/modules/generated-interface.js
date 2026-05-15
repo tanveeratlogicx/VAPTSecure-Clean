@@ -15,7 +15,7 @@ var vaptLog = window.vaptLog || {
 };
 
 (function () {
-  const { createElement: el, useState, useEffect, useRef, useMemo } = wp.element;
+  const { createElement: el, createPortal, useState, useEffect, useRef, useMemo } = wp.element;
   const { Button, TextControl, ToggleControl, SelectControl, TextareaControl, Modal, Icon, Tooltip } = wp.components;
   const { __, sprintf } = wp.i18n;
   const apiFetch = wp.apiFetch;
@@ -352,6 +352,9 @@ var vaptLog = window.vaptLog || {
     if (blob.includes('/?author=1') || blob.includes('author query') || blob.includes('author archives') || blob.includes('author enumeration')) {
       return 'author_query';
     }
+    if (blob.includes('rate limit') || blob.includes('rate-limiting') || blob.includes('brute force') || blob.includes('bruteforce') || blob.includes('php-rate-limit')) {
+      return 'rate_limit';
+    }
     if (blob.includes('/wp-login.php') || blob.includes('login_errors') || blob.includes('invalid credentials')) {
       return 'login_error';
     }
@@ -395,48 +398,59 @@ var vaptLog = window.vaptLog || {
     return hints;
   };
 
-  const resolvePrimaryPlatform = (featureData = {}) => {
-    const hints = collectPlatformHints(featureData);
-    const priority = [
-      'htaccess',
-      'apache',
-      'nginx',
-      'caddy',
-      'iis',
-      'cloudflare',
-      'php-headers',
-      'php-functions',
-      'php-cron',
-      'wp-config',
-      'wpconfig',
-      'wordpress_core',
-      'server_cron',
-      'fail2ban'
-    ];
+  // [v4.0.x-SSoT-Fix] Remove stale enforcers - fail2ban/htaccess no longer canonical for any risk
+  // Canonical platforms are now defined in interface_schema_v2.0.json available_platforms
+  // [v4.0.x-SSoT] Canonical platforms for WordPress-only hosting: htaccess, nginx, cloudflare, php-functions, wp-config
+const resolvePrimaryPlatform = (featureData = {}) => {
+  const availablePlatforms = Array.isArray(featureData.available_platforms) ? featureData.available_platforms : [];
+  if (availablePlatforms.length > 0) {
+    return availablePlatforms[0];
+  }
 
-    for (const candidate of priority) {
-      if (hints.has(normalizeEnforcerValue(candidate))) {
-        return candidate;
-      }
+  const impls = featureData.platform_implementations && typeof featureData.platform_implementations === 'object'
+    ? Object.entries(featureData.platform_implementations)
+    : [];
+  if (impls.length > 0) {
+    const [platformName, implementation] = impls[0];
+    return implementation?.target_file || platformName || '';
+  }
+
+  const hints = collectPlatformHints(featureData);
+  const fallbackPriority = [
+    'php-functions',
+    'php-headers',
+    'php-cron',
+    'wp-config',
+    'nginx',
+    'cloudflare',
+    'litespeed',
+    'htaccess',
+    'apache',
+    'wordpress_core',
+    'server_cron'
+  ];
+
+  for (const candidate of fallbackPriority) {
+    if (hints.has(normalizeEnforcerValue(candidate))) {
+      return candidate;
     }
+  }
 
-    return '';
-  };
-
+  return '';
+};
   const resolveExpectedEnforcer = (primaryPlatform, operation = '') => {
     const platform = normalizeEnforcerValue(primaryPlatform);
     const op = normalizeEnforcerValue(operation);
 
     if (platform === 'htaccess' || platform === 'apache') return 'htaccess';
+    if (platform === 'litespeed') return 'litespeed';
     if (platform === 'nginx') return 'nginx';
-    if (platform === 'caddy') return 'caddy';
-    if (platform === 'iis') return 'iis';
     if (platform === 'cloudflare') return 'cloudflare';
-    if (platform === 'fail2ban' || op.includes('jail')) return 'fail2ban';
-    if (platform === 'wp-config' || platform === 'wpconfig' || op.includes('constant') || op.includes('config')) return 'wp-config';
-    if (platform === 'php-functions' || platform === 'php-headers' || op.includes('hook') || op.includes('wordpress')) return 'php-headers';
-    if (platform === 'php-cron' || platform === 'server-cron' || op.includes('cron')) return 'php-cron';
-    return platform || 'php-headers';
+    // Removed: caddy, iis, fail2ban — not applicable to WordPress hosting
+    if (platform === 'wp_config' || platform === 'wpconfig' || op.includes('constant') || op.includes('config')) return 'wp_config';
+    if (platform === 'php_functions' || platform === 'php-headers' || op.includes('hook') || op.includes('wordpress')) return 'php_functions';
+    if (platform === 'php_cron' || platform === 'server-cron' || op.includes('cron')) return 'php_cron';
+    return platform || 'php_functions';
   };
 
   const isWpLoginLoginErrorFeature = (featureData = {}, featureKey = '', control = {}) => {
@@ -461,31 +475,30 @@ var vaptLog = window.vaptLog || {
       return 'htaccess';
     }
     if (normalized === 'wp-config' || normalized === 'wp-config-php' || normalized === 'wpconfig' || normalized === 'config') {
-      return 'wp-config';
+      return 'wp_config';
     }
     if (normalized === 'php-functions' || normalized === 'php-functions-php' || normalized === 'hook' || normalized === 'wordpress' || normalized === 'wordpress-core' || normalized === 'wordpress_core') {
-      return 'php-functions';
+      return 'php_functions';
     }
     if (normalized === 'php-cron' || normalized === 'server-cron' || normalized === 'server_cron') {
-      return 'php-cron';
+      return 'php_cron';
     }
-    if (normalized === 'web-config' || normalized === 'webconfig') {
-      return 'iis';
-    }
+    // Removed: caddy, iis, fail2ban — not applicable to WordPress hosting environment
     return normalized;
   };
 
   const expectedEnforcerAliases = (expected) => {
     const normalized = normalizeEnforcerValue(expected);
+    // [v4.0.x-SSoT] Removed: caddy, iis, fail2ban — not applicable to WordPress hosting; nginx retained
     const aliasMap = {
       'htaccess': ['htaccess', 'apache', '.htaccess', 'apache-htaccess'],
       'apache': ['htaccess', 'apache', '.htaccess', 'apache-htaccess'],
+      'litespeed': ['litespeed', 'lscache'],
       'nginx': ['nginx', 'nginx-config'],
-      'caddy': ['caddy'],
-      'iis': ['iis', 'web-config', 'webconfig', 'web.config'],
       'cloudflare': ['cloudflare'],
       'wp-config': ['wp-config', 'wp_config', 'config'],
       'wpconfig': ['wp-config', 'wp_config', 'config'],
+      'wp_config': ['wp-config', 'wp_config', 'config'],
       'php-functions': ['php-headers', 'php-functions', 'hook', 'wordpress', 'wordpress-core'],
       'php_functions': ['php-headers', 'php-functions', 'hook', 'wordpress', 'wordpress-core'],
       'php-headers': ['php-headers', 'hook', 'wordpress', 'wordpress-core'],
@@ -497,9 +510,9 @@ var vaptLog = window.vaptLog || {
       'php-dir': ['php-dir'],
       'php-null-byte': ['php-null-byte'],
       'php-cron': ['php-cron'],
+      'php_cron': ['php-cron', 'server-cron'],
       'server-cron': ['php-cron', 'server-cron'],
       'server_cron': ['php-cron', 'server-cron'],
-      'fail2ban': ['fail2ban'],
       'hook': ['php-headers', 'hook', 'wordpress', 'wordpress-core']
     };
 
@@ -608,9 +621,10 @@ var vaptLog = window.vaptLog || {
         const expectedEnforcers = Array.isArray(control.test_config?.expected_enforcers)
           ? control.test_config.expected_enforcers.filter(Boolean)
           : (expectedEnforcer ? [expectedEnforcer] : []);
+        // [v4.0.x-SSoT] Valid enforcers aligned with canonical schema (interface_schema_v2.0.json)
         const validEnforcers = expectedEnforcers.length > 0
           ? expectedEnforcers
-          : ['htaccess', 'nginx', 'caddy', 'iis', 'cloudflare', 'wp-config', 'php-headers', 'php-rate-limit', 'php-xmlrpc', 'php-pingback', 'php-author-enum', 'php-dir', 'php-null-byte', 'php-cron', 'fail2ban'];
+          : ['htaccess', 'litespeed', 'nginx', 'cloudflare', 'wp-config', 'php-headers', 'php-functions', 'php-rate-limit', 'php-xmlrpc', 'php-pingback', 'php-author-enum', 'php-dir', 'php-null-byte', 'php-cron'];
         const isValidEnforcer = vaptEnforced && validEnforcers.some(e => matchesExpectedEnforcer(vaptEnforced, e));
         const isProtectionEnabled = isFeatureEnabled(featureData);
         const isPingbackFeature = (featureKey && (featureKey.toLowerCase().includes('xmlrpc') || featureKey.toLowerCase().includes('pingback')))
@@ -737,6 +751,10 @@ var vaptLog = window.vaptLog || {
     spam_requests: async (siteUrl, control, featureData, featureKey, onProgress) => {
       try {
         let rpm = parseInt(control.numTests || featureData['rpm'] || featureData['rate_limit'], 10);
+        const probeMethod = String(control?.test_config?.method || 'GET').toUpperCase();
+        const probeParams = control?.test_config?.params && typeof control.test_config.params === 'object'
+          ? control.test_config.params
+          : {};
 
         // Dynamic Context Detection (v3.3.40 / v3.6.24 expanded)
         let contextParam = '';
@@ -791,8 +809,37 @@ var vaptLog = window.vaptLog || {
             const probePath = inferProbePath(featureData, featureKey, control);
             const baseUrl = resolveUrl(probePath, control.config?.url, featureKey);
             const separator = baseUrl.includes('?') ? '&' : '?';
-            const url = baseUrl + separator + 'vaptsecure_test_spike=' + i + contextParam;
-            const r = await fetch(url, { cache: 'no-store' });
+            const url = probeMethod === 'POST'
+              ? baseUrl
+              : baseUrl + separator + 'vaptsecure_test_spike=' + i + contextParam;
+            const fetchOptions = probeMethod === 'POST'
+              ? (() => {
+                  const bodyParams = new URLSearchParams();
+                  Object.entries(probeParams).forEach(([key, value]) => {
+                    if (value !== undefined && value !== null) {
+                      bodyParams.set(key, String(value));
+                    }
+                  });
+                  if (!bodyParams.has('log')) bodyParams.set('log', 'vaptsecure_nonexistent_user');
+                  if (!bodyParams.has('pwd')) bodyParams.set('pwd', 'invalid-password');
+                  if (!bodyParams.has('wp-submit')) bodyParams.set('wp-submit', 'Log In');
+                  if (!bodyParams.has('redirect_to')) bodyParams.set('redirect_to', `${siteUrl}/wp-admin/`);
+                  if (!bodyParams.has('testcookie')) bodyParams.set('testcookie', '1');
+                  bodyParams.set('vaptsecure_test_spike', String(i));
+                  if (contextParam.includes('login')) {
+                    bodyParams.set('vaptsecure_test_context', 'login');
+                  }
+                  return {
+                    method: 'POST',
+                    cache: 'no-store',
+                    headers: {
+                      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                    },
+                    body: bodyParams.toString()
+                  };
+                })()
+              : { cache: 'no-store' };
+            const r = await fetch(url, fetchOptions);
             const respData = { status: r.status, headers: r.headers };
             responses.push(respData);
 
@@ -841,8 +888,8 @@ var vaptLog = window.vaptLog || {
         const platformHints = Array.isArray(featureData?.available_platforms)
           ? featureData.available_platforms.map(p => String(p || '').toLowerCase())
           : [];
-        const isExternalBlocking = (control?.test_config?.enforcement_mode || '').toLowerCase() === 'external'
-          || platformHints.includes('fail2ban');
+        const isExternalBlocking = (control?.test_config?.enforcement_mode || '').toLowerCase() === 'external';
+          // [v4.0.x-SSoT-Fix] removed platformHints.includes('fail2ban') - fail2ban not in canonical catalog
         
         vaptLog.log(`spam_requests result evaluation: blocked=${blocked}, hasVaptHeader=${hasVaptHeader}, isExternalBlocking=${isExternalBlocking}, isEnabled=${isEnabled}, featureKey=${featureKey}`);
         
@@ -1148,11 +1195,20 @@ var vaptLog = window.vaptLog || {
         const genericMessage = bodyLower.includes('invalid credentials') || bodyLower.includes('please try again');
         const leaksUsername = bodyLower.includes('is not registered') || bodyLower.includes('incorrect password') || bodyLower.includes('invalid username');
 
-        if (vaptEnforced === 'php-headers' || vaptEnforced === 'php-functions') {
+        if (vaptEnforced === 'php-headers' || vaptEnforced === 'php-functions' || vaptEnforced === 'php-rate-limit') {
           if (featureKey && enforcedFeature && enforcedFeature !== featureKey) {
             return { success: false, message: `Inconclusive: login error protection is attributed to another VAPT feature ('${enforcedFeature}').`, raw: `URL: ${loginUrl} | Status: ${response.status} | Enforcement: ${vaptEnforced}` };
           }
-          return { success: true, message: 'Plugin is actively normalizing wp-login.php error messages.', raw: `URL: ${loginUrl} | Status: ${response.status} | Enforcement: ${vaptEnforced}` };
+          if (vaptEnforced === 'php-rate-limit' && response.status !== 429 && response.status !== 403) {
+            return { success: false, message: `Inconclusive: login rate limiting is active but the response status was HTTP ${response.status} instead of a blocking status.`, raw: `URL: ${loginUrl} | Status: ${response.status} | Enforcement: ${vaptEnforced}` };
+          }
+          return {
+            success: true,
+            message: vaptEnforced === 'php-rate-limit'
+              ? 'Plugin is actively rate-limiting wp-login.php.'
+              : 'Plugin is actively normalizing wp-login.php error messages.',
+            raw: `URL: ${loginUrl} | Status: ${response.status} | Enforcement: ${vaptEnforced}`
+          };
         }
 
         if (!isEnabled) {
@@ -2368,6 +2424,13 @@ var vaptLog = window.vaptLog || {
       try { return JSON.parse(feature.implementation_data); } catch (e) { return {}; }
     });
 
+    // [v4.1.3] State for hover/copy tooltip visibility
+    const [showTooltip, setShowTooltip] = useState(false);
+    const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0, width: 380, maxHeight: 360 });
+    const [copySuccess, setCopySuccess] = useState(false);
+    const tooltipAnchorRef = useRef(null);
+    const tooltipCloseTimerRef = useRef(null);
+
     let schema = useMemo(() => {
       if (!feature.generated_schema) return {};
       if (typeof feature.generated_schema === 'object') return feature.generated_schema;
@@ -2408,16 +2471,43 @@ var vaptLog = window.vaptLog || {
       setLocalData(currentData);
     }, [currentData]);
 
-    const verificationFeatureData = useMemo(() => ({
-      ...feature,
-      ...localData,
-      available_platforms: Array.isArray(feature.available_platforms)
+    const verificationFeatureData = useMemo(() => {
+      const merged = {
+        ...localData,
+        ...feature
+      };
+
+      merged.available_platforms = Array.isArray(feature.available_platforms)
         ? feature.available_platforms
-        : (Array.isArray(localData.available_platforms) ? localData.available_platforms : []),
-      platform_implementations: feature.platform_implementations && typeof feature.platform_implementations === 'object'
+        : (Array.isArray(localData.available_platforms) ? localData.available_platforms : []);
+      merged.platform_implementations = feature.platform_implementations && typeof feature.platform_implementations === 'object'
         ? feature.platform_implementations
-        : (localData.platform_implementations && typeof localData.platform_implementations === 'object' ? localData.platform_implementations : {})
-    }), [feature, localData]);
+        : (localData.platform_implementations && typeof localData.platform_implementations === 'object' ? localData.platform_implementations : {});
+
+      return merged;
+    }, [feature, localData]);
+
+    const normalizePlatformName = (value) => String(value || '')
+      .toLowerCase()
+      .replace(/\.php$/i, '')
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '');
+
+    const platformMatches = (platformName, candidate) => {
+      const platform = normalizePlatformName(platformName);
+      const needle = normalizePlatformName(candidate);
+
+      if (!platform || !needle) {
+        return false;
+      }
+
+      return (
+        platform === needle ||
+        platform.includes(needle) ||
+        needle.includes(platform) ||
+        (needle === 'htaccess' && platform.includes('litespeed'))
+      );
+    };
 
     const normalizedControls = useMemo(() => {
       if (!schema || !Array.isArray(schema.controls)) {
@@ -2436,6 +2526,7 @@ var vaptLog = window.vaptLog || {
         JSON.stringify(verificationFeatureData?.available_platforms || [])
       ].filter(Boolean).join(' ').toLowerCase();
       const surfaceFamily = detectSurfaceFamily(verificationFeatureData, feature?.key || '', {});
+      const isRateLimitSurface = surfaceFamily === 'rate_limit' || /rate limit|rate-limiting|brute force|bruteforce|php-rate-limit/.test(featureBlob);
       const isLoginErrorSurface = surfaceFamily === 'login_error' || /wp-login\.php|login_errors|invalid credentials/.test(featureBlob);
       const isRestUsersSurface = surfaceFamily === 'rest_users' || /wp-json\/wp\/v2\/users|rest api|wordpress rest api/.test(featureBlob);
       const isAuthorQuerySurface = surfaceFamily === 'author_query' || /\?author=1|author query|author archives|author enumeration/.test(featureBlob);
@@ -2461,6 +2552,27 @@ var vaptLog = window.vaptLog || {
           expected_enforcer: control.test_config?.expected_enforcer || control.test_config?.expected_enforcers || ''
         },
         help: 'Verifies wp-login.php returns a generic login error message.'
+      });
+
+      const rateLimitControl = (control) => ({
+        ...control,
+        label: 'Brute Force Resistance Check',
+        key: 'verify_rate_resilience',
+        test_logic: 'spam_requests',
+        numTests: 5,
+        test_config: {
+          method: 'POST',
+          path: '/wp-login.php',
+          params: {
+            log: 'vaptsecure_nonexistent_user',
+            pwd: 'invalid-password',
+            'wp-submit': 'Log In',
+            redirect_to: `${window.location.origin}/wp-admin/`,
+            testcookie: '1'
+          },
+          expected_enforcer: 'php-rate-limit'
+        },
+        help: 'Verifies that the login endpoint is rate limited or blocked by the active php-rate-limit policy.'
       });
 
       const xmlRpcControl = (control) => ({
@@ -2494,7 +2606,23 @@ var vaptLog = window.vaptLog || {
 
         const label = String(nextControl.label || '').toLowerCase();
 
-        if (isLoginErrorSurface && control.type === 'test_action') {
+        if (isRateLimitSurface && control.type === 'test_action') {
+          const shouldNormalizeRate = (
+            label.includes('a+ header verification') ||
+            label.includes('implementation verification') ||
+            label.includes('active protection probe') ||
+            label.includes('login error consistency check') ||
+            control.test_logic === 'check_headers' ||
+            control.test_logic === 'universal_probe' ||
+            control.test_logic === 'verify_implementation' ||
+            controlPath.includes('/wp-login.php') ||
+            controlPath.includes('/?author=1')
+          ) && !label.includes('rate');
+
+          if (shouldNormalizeRate) {
+            nextControl = rateLimitControl(control);
+          }
+        } else if (isLoginErrorSurface && control.type === 'test_action') {
           const shouldNormalizeLogin = (
             label.includes('a+ header verification') ||
             label.includes('rest api protection check') ||
@@ -2740,266 +2868,378 @@ var vaptLog = window.vaptLog || {
           const isEnforced = toBool(value);
           const vSettings = window.vaptSecureSettings || {};
 
-          const getTooltipContent = () => {
-            const impls = verificationFeatureData.platform_implementations || {};
-            let addedCode = '';
-            let targetFile = '';
+       const getTooltipContent = () => {
+         const impls = verificationFeatureData.platform_implementations || {};
+         let addedCode = '';
+         let targetFile = '';
 
-            // [v4.0.x] Platforms with removed enforcers — skip stale data
-            const removedPlatforms = ['fail2ban', 'caddy', 'iis', 'nginx'];
-            const activeDriver = schema.enforcement?.driver || schema.client_deployment?.enforcement?.driver || 'hook';
-            const driverToPlatform = {
-              'htaccess': 'htaccess',
-              'apache': 'htaccess',
-              'wp_config': 'wp-config',
-              'php_functions': 'php_functions',
-              'hook': 'php_functions',
-              'universal': 'php_functions'
-            };
-            const preferredPlatform = driverToPlatform[activeDriver] || activeDriver;
+         // [v4.0.x-SSoT] Removed: fail2ban ? not applicable to WordPress hosting; caddy/iis filtered upstream
+         const removedPlatforms = ['fail2ban'];
+         const activeDriver = schema.enforcement?.driver || schema.client_deployment?.enforcement?.driver || 'hook';
+         const driverToPlatform = {
+           'htaccess': 'htaccess',
+           'apache': 'htaccess',
+           'litespeed': 'litespeed',
+           'wp_config': 'wp-config',
+           'php_functions': 'php_functions',
+           'hook': 'php_functions',
+           'universal': 'php_functions'
+         };
+         const catalogEntries = Array.isArray(verificationFeatureData.available_platforms) && verificationFeatureData.available_platforms.length > 0
+           ? verificationFeatureData.available_platforms
+           : Object.keys(impls);
+         const preferredPlatform = driverToPlatform[activeDriver] || activeDriver;
+         const canonicalPlatform = catalogEntries[0] || preferredPlatform;
 
-            const candidates = Object.entries(impls).filter(([plat, details]) => {
-              if (!details.code && !details.wrapped_code) return false;
-              const p = plat.toLowerCase().replace(/\s+/g, '_');
-              return !removedPlatforms.some(rp => p.includes(rp));
-            });
+         const candidates = Object.entries(impls).filter(([plat]) => {
+           const p = plat.toLowerCase().replace(/\s+/g, '_');
+           return !removedPlatforms.some(rp => p.includes(rp));
+         });
 
-            // [v4.0.x-source-of-truth] Use live audit label as source of truth for file path
-            const auditLabel = liveAudit?.audit_summary?.[0]?.label || '';
-            const labelToPlatform = {
-              './.htaccess': 'htaccess',
-              'uploads/.htaccess': 'htaccess',
-              './wp-config.php': 'wp-config',
-              'vapt-functions.php': 'php_functions',
-              'nginx.conf': 'nginx'
-            };
-            const auditPlatform = labelToPlatform[auditLabel] || '';
+         if (catalogEntries.length > 0) {
+           const canonicalMatch = candidates.find(([plat]) => platformMatches(plat, canonicalPlatform));
+           if (canonicalMatch) {
+             targetFile = canonicalMatch[1].target_file || canonicalMatch[0];
+           }
+         }
 
-            // targetFile is ALWAYS from live audit when available; never from stale schema
-            if (auditLabel) {
-              targetFile = auditLabel;
-            } else if (candidates.length > 0) {
-              // Live audit not loaded yet: use schema-declared platform for file path ONLY
-              for (const [plat, details] of candidates) {
-                const p = plat.toLowerCase().replace(/\s+/g, '_');
-                if (p === preferredPlatform || p.includes(preferredPlatform) || preferredPlatform.includes(p)) {
-                  targetFile = details.target_file || plat;
-                  break;
-                }
-              }
-              if (!targetFile) {
-                targetFile = candidates[0][1].target_file || candidates[0][0];
-              }
-            } else {
-              return null; // No data at all
-            }
+         if (!targetFile && candidates.length > 0) {
+           for (const [plat, details] of candidates) {
+             if (platformMatches(plat, preferredPlatform)) {
+               targetFile = details.target_file || plat;
+               break;
+             }
+           }
+           if (!targetFile) {
+             targetFile = candidates[0][1].target_file || candidates[0][0];
+           }
+         }
 
-            // 1. Try audit-matched platform for code snippet (ground truth)
-            if (auditPlatform) {
-              for (const [plat, details] of candidates) {
-                const p = plat.toLowerCase().replace(/\s+/g, '_');
-                if (p === auditPlatform || p.includes(auditPlatform) || auditPlatform.includes(p) || (auditPlatform === 'htaccess' && p.includes('litespeed'))) {
-                  addedCode = details.wrapped_code || details.code;
-                  break;
-                }
-              }
-            }
-            // 2. If live audit present but no matching platform, show generic message
-            //    instead of falling back to wrong platform code
-            if (!addedCode && auditLabel) {
-              addedCode = __('/* Rules are deployed to this file.\n   Code preview is not available for this platform in the current schema. */', 'vaptsecure');
-            }
-            // 3. Live audit not loaded: use schema-declared platform for code
-            if (!addedCode && !auditLabel) {
-              for (const [plat, details] of candidates) {
-                const p = plat.toLowerCase().replace(/\s+/g, '_');
-                if (p === preferredPlatform || p.includes(preferredPlatform) || preferredPlatform.includes(p)) {
-                  addedCode = details.wrapped_code || details.code;
-                  break;
-                }
-              }
-            }
-            // 4. Last resort: first valid candidate (only when no live audit)
-            if (!addedCode && !auditLabel && candidates.length > 0) {
-              addedCode = candidates[0][1].wrapped_code || candidates[0][1].code;
-            }
+         if (!targetFile) {
+           return null;
+         }
 
-            if (!addedCode) return null;
+         if (candidates.length > 0) {
+           const canonicalMatch = candidates.find(([plat]) => platformMatches(plat, canonicalPlatform));
+           if (canonicalMatch) {
+             addedCode = canonicalMatch[1].wrapped_code || canonicalMatch[1].code;
+           }
+         }
+         if (!addedCode && canonicalPlatform && candidates.length > 0) {
+           const matched = candidates.find(([plat]) => platformMatches(plat, canonicalPlatform));
+           const previewTarget = matched?.[1]?.code_ref || matched?.[1]?.target_file || matched?.[0] || targetFile;
+            addedCode = sprintf(__('/* Rules are deployed to %s.\n   Code preview is not available for this platform in the current schema. */', 'vaptsecure'), previewTarget);
+         }
+         if (!addedCode && candidates.length > 0) {
+           for (const [plat, details] of candidates) {
+             if (platformMatches(plat, preferredPlatform)) {
+               addedCode = details.wrapped_code || details.code;
+               break;
+             }
+           }
+         }
+         if (!addedCode && candidates.length > 0) {
+           addedCode = candidates[0][1].wrapped_code || candidates[0][1].code;
+         }
 
-            const isCurrentlyEnforced = toBool(value);
-            const shortPath = targetFile.startsWith('/') || targetFile.includes('\\')
-              ? getShortPath(targetFile)
-              : (targetFile.startsWith('./') ? targetFile : `./${targetFile}`);
+         if (!addedCode) return null;
 
-            // [v4.0.x] Determine display state from live audit + UI state
-            let displayStatus = isCurrentlyEnforced ? 'active' : 'inactive';
-            let displayLabel = isCurrentlyEnforced ? __('Status: Active & Injected', 'vaptsecure') : __('Status: Not Active', 'vaptsecure');
-            let statusColor = isCurrentlyEnforced ? '#166534' : '#991b1b';
-            let statusBg = isCurrentlyEnforced ? '#f0fdf4' : '#fef2f2';
-            let statusIcon = isCurrentlyEnforced ? 'yes' : 'no';
-            let borderColor = isCurrentlyEnforced ? '#22c55e' : '#94a3b8';
+         const isCurrentlyEnforced = toBool(value);
+          const shortPath = targetFile.startsWith('/') || targetFile.includes('\\')
+            ? getShortPath(targetFile)
+            : (targetFile.startsWith('./') ? targetFile : `./${targetFile}`);
 
-            // Check live audit data
-            const liveState = liveAudit?.audit_summary?.[0]?.live_state;
-            const isSelfHealed = liveAudit?.was_self_healed || liveAudit?.audit_summary?.[0]?.self_healed;
-            const isRemoving = statusMap[key]?.message === __('Removing...', 'vaptsecure');
-            const isCleaned = liveState === 'cleaned' || liveState === 'missing';
+         let displayStatus = isCurrentlyEnforced ? 'active' : 'inactive';
+         let displayLabel = isCurrentlyEnforced ? __('Status: Active & Injected', 'vaptsecure') : __('Status: Not Active', 'vaptsecure');
+         let statusColor = isCurrentlyEnforced ? '#166534' : '#991b1b';
+         let statusBg = isCurrentlyEnforced ? '#f0fdf4' : '#fef2f2';
+         let statusIcon = isCurrentlyEnforced ? 'yes' : 'no';
+         let borderColor = isCurrentlyEnforced ? '#22c55e' : '#94a3b8';
 
-            if (isRemoving) {
-              displayStatus = 'removing';
-              displayLabel = __('Status: Removing Rules...', 'vaptsecure');
-              statusColor = '#92400e';
-              statusBg = '#fef3c7';
-              statusIcon = 'update';
-              borderColor = '#f59e0b';
-            } else if (isSelfHealed) {
-              displayStatus = 'recovered';
-              displayLabel = __('Status: Auto-Recovered', 'vaptsecure');
-              statusColor = '#065f46';
-              statusBg = '#d1fae5';
-              statusIcon = 'update';
-              borderColor = '#10b981';
-            } else if (!isCurrentlyEnforced && isCleaned) {
-              displayStatus = 'cleaned';
-              displayLabel = __('Status: Cleaned', 'vaptsecure');
-              statusColor = '#166534';
-              statusBg = '#f0fdf4';
-              statusIcon = 'yes';
-              borderColor = '#22c55e';
-            } else if (isCurrentlyEnforced && liveState === 'present') {
-              displayStatus = 'active';
-              displayLabel = __('Status: Active & Injected', 'vaptsecure');
-              statusColor = '#166534';
-              statusBg = '#f0fdf4';
-              statusIcon = 'yes';
-              borderColor = '#22c55e';
-            }
+         const liveState = liveAudit?.audit_summary?.[0]?.live_state;
+         const isSelfHealed = liveAudit?.was_self_healed || liveAudit?.audit_summary?.[0]?.self_healed;
+         const isRemoving = statusMap[key]?.message === __('Removing...', 'vaptsecure');
+         const isCleaned = liveState === 'cleaned' || liveState === 'missing';
 
-            // Build live state line for technical trace
-            const liveStateLabel = liveState || (isCurrentlyEnforced ? 'present' : 'cleaned');
-            const liveStateDisplay = liveStateLabel.charAt(0).toUpperCase() + liveStateLabel.slice(1);
+         if (isRemoving) {
+           displayStatus = 'removing';
+           displayLabel = __('Status: Removing Rules...', 'vaptsecure');
+           statusColor = '#92400e';
+           statusBg = '#fef3c7';
+           statusIcon = 'update';
+           borderColor = '#f59e0b';
+         } else if (isSelfHealed) {
+           displayStatus = 'recovered';
+           displayLabel = __('Status: Auto-Recovered', 'vaptsecure');
+           statusColor = '#065f46';
+           statusBg = '#d1fae5';
+           statusIcon = 'update';
+           borderColor = '#10b981';
+         } else if (!isCurrentlyEnforced && isCleaned) {
+           displayStatus = 'cleaned';
+           displayLabel = __('Status: Cleaned', 'vaptsecure');
+           statusColor = '#166534';
+           statusBg = '#f0fdf4';
+           statusIcon = 'yes';
+           borderColor = '#22c55e';
+         } else if (isCurrentlyEnforced && liveState === 'present') {
+           displayStatus = 'active';
+           displayLabel = __('Status: Active & Injected', 'vaptsecure');
+           statusColor = '#166534';
+           statusBg = '#f0fdf4';
+           statusIcon = 'yes';
+           borderColor = '#22c55e';
+         }
 
-            return el('div', {
-              style: {
-                padding: '12px',
-                maxWidth: '350px',
-                background: '#1e293b',
-                borderRadius: '8px',
-                border: '1px solid #334155',
-                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
-              }
-            }, [
-              // Header
-              el('div', {
-                style: {
-                  fontSize: '10px',
-                  fontWeight: '800',
-                  color: '#94a3b8',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                  marginBottom: '10px',
-                  borderBottom: '1px solid #334155',
-                  paddingBottom: '6px'
-                }
-              }, __('Technical Trace & Enforcement', 'vaptsecure')),
+         const liveStateLabel = liveState || (isCurrentlyEnforced ? 'present' : 'cleaned');
+         const liveStateDisplay = liveStateLabel.charAt(0).toUpperCase() + liveStateLabel.slice(1);
 
-              // Status Badge
-              el('div', {
-                style: {
-                  background: statusBg,
-                  borderRadius: '6px',
-                  padding: '8px 12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  marginBottom: '12px'
-                }
-              }, [
-                el(Icon, {
-                  icon: statusIcon,
-                  size: 14,
-                  style: { color: statusColor }
-                }),
-                el('span', {
-                  style: {
-                    fontSize: '11px',
-                    fontWeight: '800',
-                    color: statusColor,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.025em'
-                  }
-                }, displayLabel)
-              ]),
+         return el('div', {
+           style: {
+             padding: '12px',
+             maxWidth: '350px',
+             background: '#1e293b',
+             borderRadius: '8px',
+             border: '1px solid #334155',
+             boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+           }
+         }, [
+           el('div', {
+             style: {
+               fontSize: '10px',
+               fontWeight: '800',
+               color: '#94a3b8',
+               textTransform: 'uppercase',
+               letterSpacing: '0.05em',
+               marginBottom: '10px',
+               borderBottom: '1px solid #334155',
+               paddingBottom: '6px'
+             }
+           }, __('Technical Trace & Enforcement', 'vaptsecure')),
+           el('div', {
+             style: {
+               background: statusBg,
+               borderRadius: '6px',
+               padding: '8px 12px',
+               display: 'flex',
+               alignItems: 'center',
+               gap: '8px',
+               marginBottom: '12px'
+             }
+           }, [
+             el(Icon, {
+               icon: statusIcon,
+               size: 14,
+               style: { color: statusColor }
+             }),
+             el('span', {
+               style: {
+                 fontSize: '11px',
+                 fontWeight: '800',
+                 color: statusColor,
+                 textTransform: 'uppercase',
+                 letterSpacing: '0.025em'
+               }
+             }, displayLabel)
+           ]),
+           el('div', {
+             style: {
+               fontSize: '10px',
+               fontWeight: '600',
+               color: '#94a3b8',
+               marginBottom: '8px',
+               display: 'flex',
+               justifyContent: 'space-between'
+             }
+           }, [
+             el('span', null, __('Live State:', 'vaptsecure')),
+             el('span', { style: { color: liveState === 'present' ? '#22c55e' : (liveState === 'recovered' ? '#10b981' : (liveState === 'missing' || liveState === 'cleaned' ? '#94a3b8' : '#f59e0b')) } }, liveStateDisplay)
+           ]),
+           el('div', {
+             title: targetFile,
+             style: {
+               fontSize: '12px',
+               fontWeight: '700',
+               color: '#38bdf8',
+               marginBottom: '8px',
+               fontFamily: 'monospace',
+               cursor: 'help'
+             }
+           }, shortPath),
+           el('div', {
+             style: {
+               position: 'relative',
+               background: '#0f172a',
+               borderRadius: '4px',
+               borderLeft: `4px solid ${borderColor}`,
+               overflow: 'hidden'
+             }
+           }, [
+             el('pre', {
+               style: {
+                 fontSize: '10px',
+                 padding: '10px',
+                 margin: 0,
+                 color: '#f8fafc',
+                 whiteSpace: 'pre-wrap',
+                 wordBreak: 'break-all',
+                 fontFamily: 'monospace',
+                 lineHeight: '1.4'
+               }
+             }, addedCode)
+           ])
+         ]);
+       };
 
-              // Live State Trace
-              el('div', {
-                style: {
-                  fontSize: '10px',
-                  fontWeight: '600',
-                  color: '#94a3b8',
-                  marginBottom: '8px',
-                  display: 'flex',
-                  justifyContent: 'space-between'
-                }
-              }, [
-                el('span', null, __('Live State:', 'vaptsecure')),
-                el('span', { style: { color: liveState === 'present' ? '#22c55e' : (liveState === 'recovered' ? '#10b981' : (liveState === 'missing' || liveState === 'cleaned' ? '#94a3b8' : '#f59e0b')) } }, liveStateDisplay)
-              ]),
+        const getPlainTooltipText = () => {
+          const impls = verificationFeatureData.platform_implementations || {};
+          const isCurrentlyEnforced = toBool(value);
+          const liveState = liveAudit?.audit_summary?.[0]?.live_state || (isCurrentlyEnforced ? 'present' : 'cleaned');
+          const catalogEntries = Array.isArray(verificationFeatureData.available_platforms) && verificationFeatureData.available_platforms.length > 0
+            ? verificationFeatureData.available_platforms
+            : Object.keys(impls);
+          const canonicalPlatform = catalogEntries[0] || 'Unknown';
+          const canonicalMatch = Object.entries(impls).find(([plat]) => platformMatches(plat, canonicalPlatform));
+          const implementationLabel = canonicalMatch?.[0] || canonicalPlatform || 'Unknown';
+          const targetLabel = canonicalMatch?.[1]?.target_file || implementationLabel;
+          // Simple target file display
+          const targetFile = /php functions/i.test(String(targetLabel))
+            ? 'vapt-functions.php'
+            : /wp-config/i.test(String(targetLabel))
+              ? 'wp-config.php'
+              : /htaccess|apache/i.test(String(targetLabel))
+                ? '.htaccess'
+                : String(targetLabel);
 
-              // Path
-              el('div', {
-                title: liveAudit?.audit_summary?.[0]?.path || targetFile,
-                style: {
-                  fontSize: '12px',
-                  fontWeight: '700',
-                  color: '#38bdf8',
-                  marginBottom: '8px',
-                  fontFamily: 'monospace',
-                  cursor: 'help'
-                }
-              }, shortPath),
+          // Simple text status - Injected (green) / Removed (red)
+          const statusText = isCurrentlyEnforced ? 'Injected' : 'Removed';
+          // Simple text Live State - Present (green), Removed/Missing (red), Cleaned (gray)
+          const liveStateText = liveState.charAt(0).toUpperCase() + liveState.slice(1);
 
-              // Code Preview
-              el('div', {
-                style: {
-                  position: 'relative',
-                  background: '#0f172a',
-                  borderRadius: '4px',
-                  borderLeft: `4px solid ${borderColor}`,
-                  overflow: 'hidden'
-                }
-              }, [
-                el('pre', {
-                  style: {
-                    fontSize: '10px',
-                    padding: '10px',
-                    margin: 0,
-                    color: '#f8fafc',
-                    whiteSpace: 'pre-wrap',
-                    wordBreak: 'break-all',
-                    fontFamily: 'monospace',
-                    lineHeight: '1.4'
-                  }
-                }, addedCode)
-              ])
-            ]);
+          // [v4.1.3] Show 10 lines of code
+          const snippetSource = canonicalMatch?.[1]?.wrapped_code || canonicalMatch?.[1]?.code || '';
+          const snippetPreview = String(snippetSource).trim();
+
+          return `Implementation: ${implementationLabel}\nTarget File: ${targetFile}\nStatus: ${statusText}\nLive State: ${liveStateText}\n\nCode Preview:\n${snippetPreview || '(no snippet available)'}`;
+        };
+
+       const tooltipContent = getTooltipContent();
+       const tooltipText = getPlainTooltipText(); // Used for clipboard copy
+        const updateTooltipPosition = () => {
+          const anchor = tooltipAnchorRef.current;
+          if (!anchor || typeof window === 'undefined') {
+            return;
+          }
+
+          const rect = anchor.getBoundingClientRect();
+          const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
+          const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+          const margin = 12;
+          const tooltipLines = String(tooltipText || '').split('\n');
+          const textLines = tooltipLines.length;
+          const longestLineLength = tooltipLines.reduce((max, line) => Math.max(max, String(line).length), 0);
+          const contentDrivenWidth = Math.round(longestLineLength * 7.2 + 72);
+          const viewportDrivenWidth = Math.round(viewportWidth * 0.28);
+          const desiredWidth = Math.max(
+            320,
+            Math.min(
+              420,
+              Math.max(340, contentDrivenWidth, viewportDrivenWidth)
+            )
+          );
+          const desiredHeight = Math.min(
+            Math.max(240, textLines * 18 + 112),
+            Math.max(240, viewportHeight - (margin * 2))
+          );
+
+          const availableRight = Math.max(0, viewportWidth - rect.right - margin);
+          const availableLeft = Math.max(0, rect.left - margin);
+          const availableBelow = Math.max(0, viewportHeight - rect.bottom - margin);
+          const availableAbove = Math.max(0, rect.top - margin);
+
+          let width = desiredWidth;
+          let left = rect.right + margin;
+
+          if (availableRight >= desiredWidth) {
+            width = desiredWidth;
+            left = rect.right + margin;
+          } else if (availableLeft >= desiredWidth) {
+            width = desiredWidth;
+            left = rect.left - desiredWidth - margin;
+          } else if (availableRight >= availableLeft && availableRight > 0) {
+            width = Math.max(280, Math.min(desiredWidth, availableRight));
+            left = Math.min(Math.max(margin, rect.right + margin), viewportWidth - width - margin);
+          } else if (availableLeft > 0) {
+            width = Math.max(280, Math.min(desiredWidth, availableLeft));
+            left = Math.max(margin, rect.left - width - margin);
+          } else {
+            width = Math.max(280, Math.min(desiredWidth, viewportWidth - (margin * 2)));
+            left = margin;
+          }
+
+          const maxHeight = Math.max(240, Math.min(desiredHeight, viewportHeight - (margin * 2)));
+          let top = rect.bottom + margin;
+
+          if (availableBelow >= maxHeight) {
+            top = rect.bottom + margin;
+          } else if (availableAbove >= maxHeight) {
+            top = rect.top - maxHeight - margin;
+          } else {
+            top = Math.max(margin, Math.min(rect.bottom + margin, viewportHeight - maxHeight - margin));
+          }
+
+          left = Math.max(margin, Math.min(left, viewportWidth - width - margin));
+          top = Math.max(margin, Math.min(top, viewportHeight - maxHeight - margin));
+
+          setTooltipPosition({ top, left, width, maxHeight });
+        };
+
+        const openTooltip = () => {
+          if (!tooltipText) return;
+          if (tooltipCloseTimerRef.current) {
+            clearTimeout(tooltipCloseTimerRef.current);
+            tooltipCloseTimerRef.current = null;
+          }
+          updateTooltipPosition();
+          setShowTooltip(true);
+        };
+
+        const scheduleCloseTooltip = () => {
+          if (tooltipCloseTimerRef.current) {
+            clearTimeout(tooltipCloseTimerRef.current);
+          }
+          tooltipCloseTimerRef.current = setTimeout(() => {
+            setShowTooltip(false);
+            tooltipCloseTimerRef.current = null;
+          }, 140);
+        };
+
+        const cancelCloseTooltip = () => {
+          if (tooltipCloseTimerRef.current) {
+            clearTimeout(tooltipCloseTimerRef.current);
+            tooltipCloseTimerRef.current = null;
+          }
+        };
+
+        useEffect(() => () => {
+          cancelCloseTooltip();
+        }, []);
+
+        useEffect(() => {
+          if (!showTooltip) {
+            return undefined;
+          }
+
+          const reposition = () => updateTooltipPosition();
+          reposition();
+          window.addEventListener('resize', reposition);
+          window.addEventListener('scroll', reposition, true);
+
+          return () => {
+            window.removeEventListener('resize', reposition);
+            window.removeEventListener('scroll', reposition, true);
           };
-
-          const getShortPath = (fullPath) => {
-            if (!fullPath) return '';
-            let pathStr = fullPath.replace(/\\/g, '/');
-            let absPath = (vSettings.abspath || '').replace(/\\/g, '/');
-            let pluginPath = (vSettings.pluginPath || '').replace(/\\/g, '/');
-
-            if (absPath && pathStr.toLowerCase().startsWith(absPath.toLowerCase())) {
-              return './' + pathStr.substring(absPath.length).replace(/^[\\\/]/, '');
-            }
-            if (pluginPath && pathStr.toLowerCase().startsWith(pluginPath.toLowerCase())) {
-              const pluginBase = pluginPath.split(/[\\\/]/).filter(Boolean).pop();
-              return pluginBase + '/' + pathStr.substring(pluginPath.length).replace(/^[\\\/]/, '');
-            }
-            return pathStr;
-          };
+        }, [showTooltip, tooltipText]);
 
           const statusHeader = isEnforced ?
             el('div', { style: { color: '#475569', background: '#f8fafc', padding: '6px 10px', borderRadius: '4px', fontWeight: '800', marginBottom: '10px', fontSize: '11px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', border: '1px solid #cbd5e1' } }, [
@@ -3010,108 +3250,167 @@ var vaptLog = window.vaptLog || {
               el('span', null, __('SNIPPET PREVIEW', 'vaptsecure')),
               el('span', { style: { fontSize: '10px', fontWeight: '600', color: '#64748b' } }, __('This is not file status. Verification uses a fresh file audit.', 'vaptsecure'))
             ]);
+return el('div', { id: control.id, key: uniqueKey, style: { marginBottom: isCompact ? '0' : '0' } }, [
+  el(ToggleControl, {
+    disabled: globalProtection === false,
+    label: isCompact ? '' : el('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } }, [
+      el('strong', { style: { fontSize: '12px', color: '#334155' } }, safeRender(label)),
+      // [v4.1.3] Clickable copyable tooltip - stopPropagation to prevent toggle trigger
+      tooltipText && el('div', {
+        ref: tooltipAnchorRef,
+        style: {
+          position: 'relative',
+          marginLeft: '6px',
+          display: 'inline-flex',
+          alignItems: 'center',
+          overflow: 'visible'
+        },
+        onMouseEnter: openTooltip,
+        onMouseLeave: scheduleCloseTooltip,
+        onFocus: openTooltip,
+        onBlur: scheduleCloseTooltip
+      }, [
+        el('span', {
+          onClick: (e) => {
+            e.stopPropagation();
+            if (showTooltip) {
+              setShowTooltip(false);
+              return;
+            }
+            openTooltip();
+          },
+          style: {
+            display: 'inline-flex',
+            alignItems: 'center',
+            lineHeight: 0,
+            cursor: 'help',
+            padding: '4px'
+          }
+        }, el(Icon, { icon: 'info-outline', size: 14, style: { color: '#94a3b8' } })),
+        showTooltip && createPortal(
+          el('div', {
+            onMouseEnter: cancelCloseTooltip,
+            onMouseLeave: scheduleCloseTooltip,
+            onClick: (e) => e.stopPropagation(),
+            role: 'tooltip',
+            style: {
+              position: 'fixed',
+              top: `${tooltipPosition.top}px`,
+              left: `${tooltipPosition.left}px`,
+              zIndex: 100000,
+              background: '#1e293b',
+              border: '1px solid #334155',
+              borderRadius: '8px',
+              padding: '12px',
+              width: `${tooltipPosition.width}px`,
+              maxWidth: 'calc(100vw - 24px)',
+              maxHeight: `${tooltipPosition.maxHeight}px`,
+              overflow: 'hidden',
+              pointerEvents: 'auto',
+              boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
+              fontFamily: 'monospace',
+              fontSize: '11px',
+              color: '#f8fafc',
+              whiteSpace: 'normal',
+              wordBreak: 'break-word'
+            }
+          }, [
+            el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', borderBottom: '1px solid #334155', paddingBottom: '8px' } }, [
+              el('span', { style: { fontSize: '10px', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase' } }, __('Hover Trace', 'vaptsecure')),
+              el(Button, {
+                isSmall: true,
+                isPrimary: copySuccess,
+                isSecondary: !copySuccess,
+                onClick: () => {
+                  navigator.clipboard.writeText(tooltipText);
+                  setCopySuccess(true);
+                  setTimeout(() => setCopySuccess(false), 2000);
+                },
+                style: { minWidth: '60px' }
+              }, copySuccess ? __('Copied!', 'vaptsecure') : __('Copy', 'vaptsecure'))
+            ]),
+            el('div', { style: { maxHeight: `${Math.max(160, tooltipPosition.maxHeight - 86)}px`, overflowY: 'auto' } }, tooltipContent)
+          ]),
+          document.body
+        )
+      ])
+    ]),
+    help: safeRender(control.description || help),
+    checked: toBool(value),
+    onChange: (val) => {
+      const isRemoval = toBool(value) && !val;
+      const progressMsg = isRemoval ? __('Removing...', 'vaptsecure') : __('Applying...', 'vaptsecure');
+      const successMsg = isRemoval ? __('Protection Disabled', 'vaptsecure') : __('Protection Enabled', 'vaptsecure');
+      if (statusTimersRef.current[key]) {
+        clearTimeout(statusTimersRef.current[key]);
+        delete statusTimersRef.current[key];
+      }
 
-          return el('div', { id: control.id, key: uniqueKey, style: { marginBottom: isCompact ? '0' : '0' } }, [
-            el(ToggleControl, {
-              disabled: globalProtection === false,
-              label: isCompact ? '' : el('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } }, [
-                el('strong', { style: { fontSize: '12px', color: '#334155' } }, safeRender(label)),
-                getTooltipContent() && el(Tooltip, { text: getTooltipContent() }, el(Icon, { icon: 'info-outline', size: 14, style: { color: '#94a3b8', cursor: 'help' } }))
-              ]),
-              help: safeRender(control.description || help),
-              checked: toBool(value),
-              onChange: (val) => {
-                const isRemoval = toBool(value) && !val;
-                const progressMsg = isRemoval ? __("Removing...", "vaptsecure") : __("Applying...", "vaptsecure");
-                const successMsg = isRemoval ? __("Protection Disabled", "vaptsecure") : __("Protection Enabled", "vaptsecure");
-                if (statusTimersRef.current[key]) {
-                  clearTimeout(statusTimersRef.current[key]);
-                  delete statusTimersRef.current[key];
-                }
+      setStatusMap(prev => ({
+        ...prev,
+        [key]: {
+          ...(prev[key] || {}),
+          message: progressMsg,
+          type: 'info'
+        }
+      }));
 
-                setStatusMap(prev => ({
-                  ...prev,
-                  [key]: {
-                    ...(prev[key] || {}),
-                    message: progressMsg,
-                    type: "info"
-                  }
-                }));
+      Promise.resolve(handleChange(key, val))
+        .then((response) => {
+          const auditSummary = Array.isArray(response?.audit_summary)
+            ? response.audit_summary
+            : Array.isArray(response?.cleanup_summary)
+              ? response.cleanup_summary
+              : [];
 
-                Promise.resolve(handleChange(key, val))
-                  .then((response) => {
-                    const auditSummary = Array.isArray(response?.audit_summary)
-                      ? response.audit_summary
-                      : Array.isArray(response?.cleanup_summary)
-                        ? response.cleanup_summary
-                        : [];
+          setStatusMap(prev => ({
+            ...prev,
+            [key]: {
+              message: successMsg,
+              type: 'success',
+              auditSummary
+            }
+          }));
 
+          const refreshLiveAudit = async () => {
+            if (!apiFetch || !feature?.key) {
+              return null;
+            }
+
+            try {
+              const resp = await apiFetch({
+                path: `vaptsecure/v1/features/${encodeURIComponent(feature.key)}/status`,
+                method: 'GET'
+              });
+
+              if (resp && Array.isArray(resp.audit_summary)) {
+                setLiveAudit(resp);
+              }
+
+              return resp;
+            } catch (e) {
+              vaptLog.warn('Live audit refresh failed:', e);
+              return null;
+            }
+          };
+
+          if (isRemoval && apiFetch && feature?.key) {
+            const doPoll = async (attempt = 0) => {
+              if (attempt > 10) return;
+              try {
+                const resp = await apiFetch({
+                  path: `vaptsecure/v1/features/${encodeURIComponent(feature.key)}/status`,
+                  method: 'GET'
+                });
+                if (resp && Array.isArray(resp.audit_summary)) {
+                  setLiveAudit(resp);
+                  const first = resp.audit_summary[0];
+                  if (first && (first.live_state === 'cleaned' || first.live_state === 'missing' || first.status === 'removed')) {
                     setStatusMap(prev => ({
                       ...prev,
                       [key]: {
-                        message: successMsg,
-                        type: "success",
-                        auditSummary
-                      }
-                    }));
-
-                    // [v4.0.x] Poll file status after removal until confirmed cleaned
-                    if (isRemoval && apiFetch && feature?.key) {
-                      const doPoll = async (attempt = 0) => {
-                        if (attempt > 10) return; // max ~20s polling
-                        try {
-                          const resp = await apiFetch({
-                            path: `vaptsecure/v1/features/${encodeURIComponent(feature.key)}/status`,
-                            method: 'GET'
-                          });
-                          if (resp && Array.isArray(resp.audit_summary)) {
-                            setLiveAudit(resp);
-                            const first = resp.audit_summary[0];
-                            if (first && (first.live_state === 'cleaned' || first.live_state === 'missing' || first.status === 'removed')) {
-                              setStatusMap(prev => ({
-                                ...prev,
-                                [key]: {
-                                  message: __('Removed Successfully', 'vaptsecure'),
-                                  type: 'success'
-                                }
-                              }));
-                              // Clear after showing success
-                              statusTimersRef.current[key] = setTimeout(() => {
-                                setStatusMap(prev => {
-                                  const next = { ...prev };
-                                  delete next[key];
-                                  return next;
-                                });
-                                delete statusTimersRef.current[key];
-                              }, 3000);
-                              return;
-                            }
-                          }
-                        } catch (e) {
-                          vaptLog.warn('Removal poll failed:', e);
-                        }
-                        pollTimersRef.current[key] = setTimeout(() => doPoll(attempt + 1), 2000);
-                      };
-                      doPoll(0);
-                    } else {
-                      statusTimersRef.current[key] = setTimeout(() => {
-                        setStatusMap(prev => {
-                          const next = { ...prev };
-                          delete next[key];
-                          return next;
-                        });
-                        delete statusTimersRef.current[key];
-                      }, 3000);
-                    }
-                  })
-                  .catch((error) => {
-                    const errMsg = error?.message || error?.data?.message || __('Save Failed', 'vaptsecure');
-                    setStatusMap(prev => ({
-                      ...prev,
-                      [key]: {
-                        message: errMsg,
-                        type: "error",
-                        auditSummary: []
+                        message: __('Removed Successfully', 'vaptsecure'),
+                        type: 'success'
                       }
                     }));
                     statusTimersRef.current[key] = setTimeout(() => {
@@ -3122,59 +3421,74 @@ var vaptLog = window.vaptLog || {
                       });
                       delete statusTimersRef.current[key];
                     }, 3000);
-                  });
+                    return;
+                  }
+                }
+              } catch (e) {
+                vaptLog.warn('Removal poll failed:', e);
               }
-            }),
-            // Status Indicator (v3.14.15 Refactored: Cleaner UI)
-            statusMap[key] && el('div', {
-              style: {
-                marginTop: '-4px',
-                marginBottom: '4px',
-                marginLeft: '35px',
-                display: 'flex'
-              }
-            }, el('span', {
-              style: {
-                fontSize: '10px',
-                fontWeight: '600',
-                padding: '1px 6px',
-                borderRadius: '4px',
-                background: statusMap[key].type === 'success' ? '#ecfdf5' : (isRemovalContext(key, value) ? '#fef2f2' : '#f0f9ff'),
-                color: statusMap[key].type === 'success' ? '#059669' : (isRemovalContext(key, value) ? '#b91c1c' : '#0369a1'),
-                border: `1px solid ${statusMap[key].type === 'success' ? '#10b981' : (isRemovalContext(key, value) ? '#f87171' : '#0ea5e9')}`,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px'
-              }
-            }, [
-              el(Icon, { icon: statusMap[key].type === 'success' ? 'yes' : 'update', size: 10 }),
-              statusMap[key].message
-            ])),
-            // 🛡️ Visual Indicator for Code Addition (v3.13.15 Enhanced: Removed for Cleaner UI)
-            null
-          ]);
-
-        case 'input':
-          return el('div', { id: control.id || `vapt-input-wrapper-${uniqueKey}`, key: uniqueKey, style: { marginBottom: '15px', padding: '10px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px' } }, [
-            el(TextControl, {
-              label: el('strong', null, safeRender(label)),
-              help: safeRender(help),
-              value: value ? value.toString() : '',
-              onChange: (val) => handleChange(key, val),
-              __nextHasNoMarginBottom: true,
-              __next40pxDefaultSize: true
-            })
-          ]);
-
-        case 'select':
-          return el(SelectControl, {
-            key: uniqueKey,
-            label: safeRender(label),
-            help: safeRender(help),
-            value: value,
-            options: (options || []).map(o => ({ label: safeRender(o.label || o), value: o.value !== undefined ? o.value : o })),
-            onChange: (val) => handleChange(key, val)
-          });
+              pollTimersRef.current[key] = setTimeout(() => doPoll(attempt + 1), 2000);
+            };
+            doPoll(0);
+          } else {
+            refreshLiveAudit();
+            statusTimersRef.current[key] = setTimeout(() => {
+              setStatusMap(prev => {
+                const next = { ...prev };
+                delete next[key];
+                return next;
+              });
+              delete statusTimersRef.current[key];
+            }, 3000);
+          }
+        })
+        .catch((error) => {
+          const errMsg = error?.message || error?.data?.message || __('Save Failed', 'vaptsecure');
+          setStatusMap(prev => ({
+            ...prev,
+            [key]: {
+              message: errMsg,
+              type: 'error',
+              auditSummary: []
+            }
+          }));
+          statusTimersRef.current[key] = setTimeout(() => {
+            setStatusMap(prev => {
+              const next = { ...prev };
+              delete next[key];
+              return next;
+            });
+            delete statusTimersRef.current[key];
+          }, 3000);
+        });
+    }
+  }),
+  statusMap[key] && el('div', {
+    style: {
+      marginTop: '-4px',
+      marginBottom: '4px',
+      marginLeft: '35px',
+      display: 'flex'
+    }
+  }, el('span', {
+    style: {
+      fontSize: '10px',
+      fontWeight: '600',
+      padding: '1px 6px',
+      borderRadius: '4px',
+      background: statusMap[key].type === 'success' ? '#ecfdf5' : (isRemovalContext(key, value) ? '#fef2f2' : '#f0f9ff'),
+      color: statusMap[key].type === 'success' ? '#059669' : (isRemovalContext(key, value) ? '#b91c1c' : '#0369a1'),
+      border: `1px solid ${statusMap[key].type === 'success' ? '#10b981' : (isRemovalContext(key, value) ? '#f87171' : '#0ea5e9')}`,
+      display: 'flex',
+      alignItems: 'center',
+      gap: '4px'
+    }
+  }, [
+    el(Icon, { icon: statusMap[key].type === 'success' ? 'yes' : 'update', size: 10 }),
+    statusMap[key].message
+  ])),
+  null
+]);
 
         case 'textarea':
         case 'code':

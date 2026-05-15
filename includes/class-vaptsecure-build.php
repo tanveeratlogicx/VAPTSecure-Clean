@@ -338,9 +338,10 @@ class VAPTSECURE_Build
             'wp_config_php' => 'wp-config',
             'wpconfigphp' => 'wp-config',
             'config' => 'wp-config',
+            'litespeed' => 'litespeed',
             'nginx' => 'nginx',
             'cloudflare' => 'cloudflare',
-            'fail2ban' => 'fail2ban',
+            // [v4.0.x-SSoT] fail2ban removed - not applicable to WordPress hosting
             'php_functions' => 'php-headers',
             'phpfunctions' => 'php-headers',
             'php_headers' => 'php-headers',
@@ -414,6 +415,10 @@ class VAPTSECURE_Build
             return 'author_query';
         }
 
+        if (strpos($blob, 'rate limit') !== false || strpos($blob, 'rate-limiting') !== false || strpos($blob, 'brute force') !== false || strpos($blob, 'bruteforce') !== false || strpos($blob, 'php-rate-limit') !== false) {
+            return 'rate_limit';
+        }
+
         if (strpos($blob, '/wp-login.php') !== false || strpos($blob, 'login_errors') !== false || strpos($blob, 'invalid credentials') !== false) {
             return 'login_error';
         }
@@ -439,6 +444,7 @@ class VAPTSECURE_Build
         $surface_family = self::detect_catalog_surface_family($schema, $feature_meta);
         $is_rest_users_risk = ($surface_family === 'rest_users');
         $is_author_query_risk = ($surface_family === 'author_query');
+        $is_rate_limit_risk = ($surface_family === 'rate_limit');
         $is_login_error_risk = ($surface_family === 'login_error');
 
         $blob_parts = array(
@@ -455,6 +461,7 @@ class VAPTSECURE_Build
             !empty($feature_meta) ? wp_json_encode($feature_meta) : '',
         );
         $feature_blob = strtolower(implode(' ', array_filter(array_map('strval', $blob_parts))));
+        $is_rate_limit_surface = $is_rate_limit_risk || (bool) preg_match('/rate limit|rate-limiting|brute force|bruteforce|php-rate-limit/i', $feature_blob);
         $is_rest_users_surface = $is_rest_users_risk || (bool) preg_match('/rest api|wp-json\/wp\/v2\/users|wordpress rest api/i', $feature_blob);
         $is_author_query_surface = $is_author_query_risk || (bool) preg_match('/author query|author archives|author enumeration|\?author=1/i', $feature_blob);
         $is_login_error_surface = $is_login_error_risk || (bool) preg_match('/wp-login\.php|login_errors|invalid credentials/i', $feature_blob);
@@ -482,6 +489,27 @@ class VAPTSECURE_Build
                     : 'php-headers',
             );
             $control['help'] = 'Verifies wp-login.php returns a generic login error message.';
+            return $control;
+        };
+
+        $normalize_rate_limit_control = function (array $control) {
+            $control['label'] = 'Brute Force Resistance Check';
+            $control['key'] = 'verify_rate_resilience';
+            $control['test_logic'] = 'spam_requests';
+            $control['numTests'] = 5;
+            $control['test_config'] = array(
+                'method' => 'POST',
+                'path' => '/wp-login.php',
+                'params' => array(
+                    'log' => 'vaptsecure_nonexistent_user',
+                    'pwd' => 'invalid-password',
+                    'wp-submit' => 'Log In',
+                    'redirect_to' => home_url('/wp-admin/'),
+                    'testcookie' => '1',
+                ),
+                'expected_enforcer' => 'php-rate-limit',
+            );
+            $control['help'] = 'Verifies that the login endpoint is rate limited or blocked by the active php-rate-limit policy.';
             return $control;
         };
 
@@ -546,6 +574,12 @@ class VAPTSECURE_Build
             // [FIX v4.1.5] Skip normalization if an explicit non-root path is already defined
             $has_explicit_path = !empty($control['test_config']['path']) && $control['test_config']['path'] !== '/' && $control['test_config']['path'] !== '/index.php';
 
+            $is_rate_limit_candidate = !$has_explicit_path && $is_rate_limit_surface && $is_test && (
+                strpos($label, 'brute force resistance check') !== false ||
+                strpos($label, 'active protection probe') !== false ||
+                $test_logic === 'spam_requests' ||
+                strpos($test_path, '/wp-login.php') !== false
+            );
             $is_login_candidate = !$has_explicit_path && $is_login_error_surface && $is_test && (
                 strpos($label, 'a+ header verification') !== false ||
                 strpos($label, 'rest api protection check') !== false ||
@@ -590,7 +624,9 @@ class VAPTSECURE_Build
                 strpos($test_path, 'wp-cron.php') !== false
             );
 
-            if ($is_login_candidate) {
+            if ($is_rate_limit_candidate) {
+                $control = $normalize_rate_limit_control($control);
+            } elseif ($is_login_candidate) {
                 $control = $normalize_login_control($control);
             } elseif ($is_rest_candidate) {
                 $control = $normalize_rest_users_control($control);
@@ -701,12 +737,13 @@ class VAPTSECURE_Build
     {
         $canonical_platforms = array(
             'htaccess' => true,
-            'nginx' => true,
             'php_functions' => true,
             'wp_config' => true,
             'apache' => true,
+            'litespeed' => true,
+            'nginx' => true,
             'cloudflare' => true,
-            'fail2ban' => true,
+            // [v4.0.x-SSoT] fail2ban removed - not applicable to WordPress hosting
             'server_cron' => true,
             'wordpress_core' => true,
         );

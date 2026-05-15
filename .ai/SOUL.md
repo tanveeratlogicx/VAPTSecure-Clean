@@ -38,6 +38,79 @@ Your primary role is to:
 5. **Execute self-check automations** on all critical system lifecycle events
 6. **Never hardcode domain names** — always use `{domain}` placeholder resolved at runtime
 
+### Source of Truth Hierarchy
+
+- `/data/` is the canonical runtime bundle for security features, platform mappings, and generated artifacts.
+- `.ai/` docs, rules, workflows, and IDE/extension stubs are derived outputs and must stay synchronized with `data/`.
+- When `data/` changes, refresh or regenerate the derived `.ai` artifacts before treating cached editor/runtime state as current.
+
+---
+
+## 📋 DATA-DRIVEN ARCHITECTURE RULES (SSoT)
+
+**This section is the Single Source of Truth for all AI behavior in this codebase.**
+
+### Core Principle: Data Files Take Precedence
+
+> **CRITICAL**: This is a **data-aware and data-driven product**. The JSON/PHP files under `/data/` folder are the **primary drivers** and must **always take precedence** over other code artifacts. When gaps exist, implementors must adopt/autoheal themselves to align with data files.
+
+### Data File Registry (Source of Truth)
+
+| File | Role | Priority |
+|------|------|----------|
+| `data/vapt_platform_contract_v3.0.json` | Platform scope (allowed/prohibited platforms, risk deletions) | **SUPREME** |
+| `data/vapt_driver_manifest_v2.0.json` | Machine-executable driver instructions (133 risks) | **SUPREME** |
+| `data/enforcer_pattern_library_v2.0.json` | 133 risk patterns with all enforcer implementations | **SUPREME** |
+| `data/vapt_autoheal_contract_v2.0.json` | Auto-correction rules | **SUPREME** |
+| `data/VAPT_Driver_Reference_v2.0.php` | PHP reference implementation of driver execution | **HIGH** |
+| `data/interface_schema_v2.0.json` | Feature interface definitions | HIGH |
+
+### Platform Scope Rules
+
+| Platform | Status | Notes |
+|----------|--------|-------|
+| **Apache** | ✅ Allowed | Primary via `.htaccess` |
+| **LiteSpeed** | ✅ Allowed | Full `.htaccess` compatibility |
+| **Nginx** | ✅ Allowed | Server-level (`/etc/nginx/conf.d/`) |
+| **Cloudflare** | ✅ Allowed | WAF rules via API/Dashboard |
+| **IIS** | ❌ Prohibited | Removed per platform contract |
+| **Caddy** | ❌ Prohibited | Removed per platform contract |
+| **fail2ban** | ❌ Prohibited | Replaced with PHP/Cloudflare/Nginx rate limiting |
+
+### Driver Interface Pattern
+
+All enforcement drivers must implement `VAPTSECURE_Driver_Interface`:
+
+```
+includes/interfaces/interface-vaptsecure-driver.php
+├── generate_rules($impl_data, $schema) → array
+├── write_batch($rules, $target) → bool
+└── clean($target) → bool
+```
+
+**Implemented Drivers:**
+- `class-vaptsecure-htaccess-driver.php` — `.htaccess` rules
+- `class-vaptsecure-php-driver.php` — PHP function hooks
+- `class-vaptsecure-nginx-driver.php` — Nginx directives
+- `class-vaptsecure-hook-driver.php` — WordPress hooks
+- `class-vaptsecure-apache-deployer.php` — Apache server config
+- `class-vaptsecure-config-driver.php` — Generic config files
+
+### Code Behavior Rules
+
+1. **Schema Validator** (`class-vaptsecure-schema-validator.php`) must analyze enforcement strategy and auto-correct driver selection when physical file targets are detected
+2. **Build Generator** (`class-vaptsecure-build.php`) filters data files by: allowed feature keys + Release status + package policy
+3. **Enforcer** (`class-vaptsecure-enforcer.php`) acts as dispatcher, routing requests to drivers based on feature schema
+4. **Self-Check** (`includes/self-check/`) validates state on lifecycle events (activate, deactivate, feature enable/disable, etc.)
+
+### Data Precedence Enforcement
+
+When implementing features:
+1. First consult `/data/` files for the canonical definition
+2. If code contradicts data, **code must be corrected** to match data
+3. Schema validator's `analyze_enforcement_strategy()` provides fallback resolution via `client_deployment` block
+4. Auto-correct system aligns code with data contracts automatically
+
 ---
 
 ## 🏗️ Project Context
@@ -215,6 +288,7 @@ $rules = str_replace('{domain}', wp_parse_url($domain, PHP_URL_HOST), $rules);
 | **Feature Disabled** | `vapt_feature_disable($id)` | HIGH | Yes |
 | **`.htaccess` Rule Added** | `vapt_htaccess_write()` | MEDIUM | Yes |
 | **`.htaccess` Rule Removed** | `vapt_htaccess_remove()` | MEDIUM | Yes |
+| **Bundle Drift Detected** | `vapt_bundle_drift_check` WP-Cron | HIGH | Yes |
 | **Config File Updated** | `vapt_config_save()` | MEDIUM | Yes |
 | **Daily Health Check** | `vapt_daily_self_check` WP-Cron | LOW | Yes |
 | **Manual Diagnostics** | Admin "Run Diagnostics" button | ON-DEMAND | Optional |

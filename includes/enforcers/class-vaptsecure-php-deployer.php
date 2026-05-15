@@ -72,10 +72,11 @@ class VAPTSECURE_PHP_Deployer implements VAPTSECURE_Driver_Interface
                 error_log("[VAPTSecure Clean] PHP deployer rejected corrupted rules for {$feature_key}: contains bare tokens.");
                 return new WP_Error('vapt_php_corrupted_rules', 'Rejected corrupted PHP rules for ' . $feature_key);
             }
-            $new_block = "\n" . $start_marker . "\n" . $rules . "\n" . $end_marker . "\n";
+            $new_block = "\n\n" . $start_marker . "\n" . $rules . "\n" . $end_marker . "\n";
             $content = rtrim($content) . $new_block;
         }
 
+        $content = preg_replace('/([^\n])\n(\/\/ BEGIN VAPT FEATURE:)/', "$1\n\n$2", $content);
         $content = preg_replace("/(\r?\n){3,}/", "$1$1", $content);
         @file_put_contents($path, $content);
 
@@ -97,6 +98,7 @@ class VAPTSECURE_PHP_Deployer implements VAPTSECURE_Driver_Interface
         $new_content = preg_replace($pattern, '', $content);
 
         if ($new_content !== $content) {
+            $new_content = preg_replace('/([^\n])\n(\/\/ BEGIN VAPT FEATURE:)/', "$1\n\n$2", $new_content);
             $new_content = preg_replace("/(\r?\n){3,}/", "$1$1", $new_content);
             @file_put_contents($path, $new_content);
             // error_log("VAPT PHP DEPLOYER: Removed block for {$feature_key} from vapt-functions.php");

@@ -205,7 +205,7 @@ Before emitting **any** `.htaccess` code, check every directive against these ru
 | 12 | `mod_headers` requirement noted for all `Header` directives | 1 |
 | 13 | `AllowOverride` requirement noted for `Options` directives | 1 |
 | 14 | RISK-020 `target_file` = `wp-content/uploads/.htaccess` | 1 |
-| 15 | All platforms within contract allowed_platforms — no IIS, Caddy, fail2ban | 2 |
+| 15 | All platforms within contract allowed_platforms — no prohibited platform references | 2 |
 | 16 | LiteSpeed enforcer key present for applicable risks — htaccess LiteSpeed-compatible | 1 |
 | 17 | `code_ref` uses correct `lib_key` (e.g. `htaccess`, not `_htaccess`) | 1 |
 | 18 | `driver_ref` points to `vapt_driver_manifest_v2.0` | 1 |
@@ -464,11 +464,11 @@ All five files generated together from source in a single build pass. Prior vers
 
 This addendum avoids duplicating client-reported titles that already exist exactly in the original catalogue. Exact-title matches remain on their existing RiskIDs. Only non-exact client-reported titles were added as independent risk entities.
 
-- Total risk entries after this addendum: **133** (RISK-123 and RISK-124 removed — Caddy-native risks deleted per platform scope contract).
+- Total risk entries after this addendum: **133** (RISK-123 and RISK-124 removed per platform scope contract).
 - Newly added independent risks: **8**.
 - JSON files updated: interface schema, enforcer pattern library, driver manifest, and AI agent instructions.
 - Prior integrity fixes are retained: normalized settings keys, corrected RISK-010 Nginx syntax, and corrected append-only write_mode semantics.
-- v3.0 remediation: Removed IIS, Caddy, fail2ban enforcers; added LiteSpeed enforcer; deleted RISK-123/RISK-124 (Caddy-native risks with corrupted data); resolved find-and-replace corruption in description and enforcer_key_map fields.
+- v3.0 remediation: Removed prohibited-platform enforcers; added LiteSpeed enforcer; deleted RISK-123/RISK-124; resolved find-and-replace corruption in description and enforcer_key_map fields.
 
 ### Existing exact-title matches retained
 
@@ -493,4 +493,3 @@ This addendum avoids duplicating client-reported titles that already exist exact
 | RISK-133 | Unauthenticated Exposure of WordPress REST API Endpoints | RISK-006 |
 | RISK-134 | Clickjacking | RISK-014 |
 | RISK-135 | Public Exposure of Debug Log File | RISK-034 |
-

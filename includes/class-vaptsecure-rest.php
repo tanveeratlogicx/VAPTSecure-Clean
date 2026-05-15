@@ -151,6 +151,16 @@ class VAPTSECURE_REST
             )
         );
 
+        if (! $is_client_build) {
+            register_rest_route(
+                'vaptsecure/v1', '/features/refresh-from-live', array(
+                'methods'             => 'POST',
+                'callback'            => array($this, 'refresh_from_live'),
+                'permission_callback' => array($this, 'check_permission'),
+                )
+            );
+        }
+
         register_rest_route(
             'vaptsecure/v1', '/features/(?P<key>[a-zA-Z0-9_-]+)/status', array(
             'methods'             => 'GET',
@@ -527,54 +537,23 @@ class VAPTSECURE_REST
             $meta = array('feature_key' => $key);
         }
 
-        // [v4.1.0] Correctly Resolve Status and Schema
+        // [SSoT v1.0] Use centralized enforcer resolvers for schema + impl resolution
         $status_row = VAPTSECURE_DB::get_feature($key);
         $status = $status_row ? strtolower((string) $status_row->status) : 'draft';
-        
-        // Use the generic enforcer's resolver to get a complete schema (catalog fallback + self-heal)
+
+        if (!isset($meta['status'])) {
+            $meta['status'] = $status;
+        }
+
         if (class_exists('VAPTSECURE_Enforcer')) {
-            // Temporarily inject status into meta for resolution logic if missing
-            if (!isset($meta['status'])) {
-                $meta['status'] = $status;
-            }
-            // Use reflection or make it public if needed? resolve_schema is private.
-            // Let's stick to the local resolution but improve it to match VAPTSECURE_Enforcer logic.
+            $schema = VAPTSECURE_Enforcer::resolve_schema($meta);
+            $implementation_data = VAPTSECURE_Enforcer::resolve_impl($meta);
+        } else {
+            // Fallback: local resolution if enforcer class is unavailable
+            $schema = array();
+            $implementation_data = array();
         }
 
-        $raw_schema = ($status === 'test' && !empty($meta['override_schema'])) ? $meta['override_schema'] : ($meta['generated_schema'] ?? null);
-        $schema = $raw_schema ? json_decode($raw_schema, true) : array();
-        
-        // Fallback to Catalog if schema is empty or incomplete
-        if (empty($schema) || empty($schema['platform_implementations'])) {
-            $data_file = defined('VAPTSECURE_ACTIVE_DATA_FILE') ? VAPTSECURE_ACTIVE_DATA_FILE : 'interface_schema_v2.0.json';
-            $data_path = VAPTSECURE_PATH . 'data/' . $data_file;
-            
-            if (file_exists($data_path)) {
-                $all_data = json_decode(file_get_contents($data_path), true);
-                $feature_key_upper = strtoupper($key);
-                
-                // Check in risk_interfaces first (v2.0 standard)
-                if (isset($all_data['risk_interfaces'][$feature_key_upper])) {
-                    $schema = $all_data['risk_interfaces'][$feature_key_upper];
-                } elseif (isset($all_data[$key])) {
-                    $schema = $all_data[$key];
-                } else {
-                    // Manual search for non-standard keys or risk_id match
-                    if (isset($all_data['risk_interfaces']) && is_array($all_data['risk_interfaces'])) {
-                        foreach ($all_data['risk_interfaces'] as $item) {
-                            if (isset($item['risk_id']) && strcasecmp($item['risk_id'], $key) === 0) {
-                                $schema = $item;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        $raw_impl = ($status === 'test' && !empty($meta['override_implementation_data'])) ? $meta['override_implementation_data'] : ($meta['implementation_data'] ?? null);
-        $implementation_data = $raw_impl ? json_decode($raw_impl, true) : array();
-        
         if (!is_array($implementation_data)) {
             $implementation_data = array();
         }
@@ -655,13 +634,13 @@ $runtime_verified = false;
                 return 'htaccess';
             }
             if ($value === 'wp-config' || $value === 'wp-config-php' || $value === 'wpconfig' || $value === 'config') {
-                return 'wp-config';
+                return 'wp_config';
             }
             if ($value === 'php-functions' || $value === 'phpfunctions' || $value === 'php-headers' || $value === 'phpheaders' || $value === 'hook' || $value === 'wordpress' || $value === 'wordpress-core' || $value === 'wordpress_core') {
-                return 'php-headers';
+                return 'php_functions';
             }
             if ($value === 'server-cron' || $value === 'server_cron' || $value === 'php-cron' || $value === 'phpcron') {
-                return 'php-cron';
+                return 'php_cron';
             }
             return $value;
         };
@@ -701,6 +680,9 @@ $runtime_verified = false;
             $platform = $normalize_platform($platform);
             $operation = strtolower(trim((string) $operation));
 
+            if ($platform === 'php_rate_limit' || strpos($operation, 'rate') !== false || strpos($operation, 'brute') !== false || strpos($operation, 'jail') !== false) {
+                return 'php-rate-limit';
+            }
             if ($platform === 'htaccess' || $platform === 'apache') {
                 return 'htaccess';
             }
@@ -710,25 +692,43 @@ $runtime_verified = false;
             if ($platform === 'cloudflare') {
                 return 'cloudflare';
             }
-            if ($platform === 'wp-config' || strpos($operation, 'constant') !== false || strpos($operation, 'config') !== false) {
-                return 'wp-config';
+            if ($platform === 'wp_config' || strpos($operation, 'constant') !== false || strpos($operation, 'config') !== false) {
+                return 'wp_config';
             }
-            if ($platform === 'php-functions' || $platform === 'php-headers' || strpos($operation, 'hook') !== false || strpos($operation, 'php') !== false || strpos($operation, 'wordpress') !== false) {
-                return 'php-headers';
+            if ($platform === 'php_functions' || $platform === 'php-headers' || strpos($operation, 'hook') !== false || strpos($operation, 'php') !== false || strpos($operation, 'wordpress') !== false) {
+                return 'php_functions';
             }
-            if ($platform === 'server-cron' || $platform === 'php-cron' || strpos($operation, 'cron') !== false) {
-                return 'php-cron';
+            if ($platform === 'php_cron' || $platform === 'server-cron' || strpos($operation, 'cron') !== false) {
+                return 'php_cron';
             }
-            return $platform !== '' ? $platform : 'php-headers';
+            return $platform !== '' ? $platform : 'php_functions';
         };
 
         $platform_hints = $collect_platform_hints($schema);
-        $platform_priority = array('htaccess', 'nginx', 'cloudflare', 'php-headers', 'php-cron', 'wp-config');
         $primary_platform = '';
-        foreach ($platform_priority as $candidate) {
-            if (in_array($candidate, $platform_hints, true)) {
-                $primary_platform = $candidate;
-                break;
+        if (!empty($schema['available_platforms']) && is_array($schema['available_platforms'])) {
+            foreach ($schema['available_platforms'] as $candidate) {
+                $candidate = $normalize_platform($candidate);
+                if ($candidate !== '') {
+                    $primary_platform = $candidate;
+                    break;
+                }
+            }
+        }
+        if ($primary_platform === '' && !empty($schema['platform_implementations']) && is_array($schema['platform_implementations'])) {
+            foreach ($schema['platform_implementations'] as $platform_name => $platform_impl) {
+                $candidate = $normalize_platform($platform_name);
+                if ($candidate !== '') {
+                    $primary_platform = $candidate;
+                    break;
+                }
+                if (is_array($platform_impl) && !empty($platform_impl['target_file'])) {
+                    $candidate = $normalize_platform($platform_impl['target_file']);
+                    if ($candidate !== '') {
+                        $primary_platform = $candidate;
+                        break;
+                    }
+                }
             }
         }
         if ($primary_platform === '' && !empty($platform_hints)) {
@@ -758,15 +758,15 @@ $runtime_verified = false;
             $probe['expected_enforcer'] = $expected_enforcer;
         }
 
-        if ($primary_operation === 'add_constant' || $primary_platform === 'wp-config') {
+        if ($primary_operation === 'add_constant' || $primary_platform === 'wp_config') {
             $probe['path'] = '/wp-config.php';
             $probe['method'] = 'GET';
             $probe['expected_statuses'] = array(200);
-            $probe['expected_enforcer'] = $expected_enforcer ?: 'wp-config';
+            $probe['expected_enforcer'] = $expected_enforcer ?: 'wp_config';
         } elseif (strpos($blob, 'cron') !== false) {
             $probe['path'] = '/wp-cron.php';
             $probe['expected_statuses'] = array(403);
-            $probe['expected_enforcer'] = $expected_enforcer ?: 'php-cron';
+            $probe['expected_enforcer'] = $expected_enforcer ?: 'php_cron';
         } elseif (strpos($blob, 'xmlrpc') !== false || strpos($blob, 'xml-rpc') !== false || strpos($blob, 'pingback') !== false) {
             $probe['path'] = '/xmlrpc.php';
             $probe['method'] = 'POST';
@@ -789,7 +789,9 @@ $runtime_verified = false;
         ) {
             $probe['path'] = '/wp-login.php';
             $probe['expected_statuses'] = array(401, 403, 404, 405, 429);
-            $probe['expected_enforcer'] = $expected_enforcer ?: 'php-headers';
+            $probe['expected_enforcer'] = (strpos($blob, 'rate limiting') !== false || strpos($blob, 'brute') !== false || strpos($blob, 'login') !== false)
+                ? ($expected_enforcer ?: 'php-rate-limit')
+                : ($expected_enforcer ?: 'php_functions');
         } elseif (strpos($blob, 'directory') !== false 
             || strpos($blob, 'indexing') !== false 
             || strpos($blob, 'uploads') !== false
@@ -840,8 +842,11 @@ $runtime_verified = false;
             $response_data['config_trace'] = $config_trace;
         }
         
+        // [SSoT v1.0] Include bundle state so UI can show drift alerts
+        $response_data['bundle_stale'] = class_exists('VAPTSECURE_DB') ? VAPTSECURE_DB::bundle_is_stale() : false;
+        $response_data['bundle_fingerprint'] = class_exists('VAPTSECURE_DB') ? VAPTSECURE_DB::get_live_bundle_fingerprint() : '';
+
         // Always include debug info for now to diagnose verification issues
-        // TODO: Remove or condition on VAPTSECURE_DEBUG in production
         $response_data['debug'] = defined('VAPTSECURE_BUILD_PROFILE') ? array(
             'build_profile' => VAPTSECURE_BUILD_PROFILE,
             'is_client' => VAPTSECURE_BUILD_PROFILE === 'client',
@@ -883,12 +888,16 @@ $runtime_verified = false;
             }
         }
 
+        // [SSoT v1.0] Include bundle state
+        $bundle_stale = class_exists('VAPTSECURE_DB') ? VAPTSECURE_DB::bundle_is_stale() : false;
+
         return new WP_REST_Response(
             array(
             'key' => $key,
             'is_enabled' => $is_enabled,
             'audit_summary' => $audit_summary,
             'was_self_healed' => $was_healed,
+            'bundle_stale' => $bundle_stale,
             ), 200
         );
     }
@@ -1297,6 +1306,9 @@ $runtime_verified = false;
                 $response_data['active_catalog'] = $requested_file;
                 $response_data['total_features'] = count($features);
             }
+            // [SSoT v1.0] Expose bundle drift state to frontend
+            $response_data['bundle_stale'] = class_exists('VAPTSECURE_DB') ? VAPTSECURE_DB::bundle_is_stale() : false;
+            $response_data['bundle_fingerprint'] = class_exists('VAPTSECURE_DB') ? VAPTSECURE_DB::get_live_bundle_fingerprint() : '';
             return new WP_REST_Response($response_data, 200);
         } catch (\Throwable $e) {
             error_log('[VAPT REST Error] get_features: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
@@ -1523,7 +1535,20 @@ $runtime_verified = false;
         }
 
         $active_enforcer = $request->get_param('active_enforcer');
-        if ($active_enforcer !== null) { $meta_updates['active_enforcer'] = $active_enforcer;
+        if ($active_enforcer !== null) {
+            $normalized_active_enforcer = strtolower(trim((string) $active_enforcer));
+            $normalized_active_enforcer = preg_replace('/[^a-z0-9]+/', '_', $normalized_active_enforcer);
+            $normalized_active_enforcer = trim($normalized_active_enforcer, '_');
+            if ($normalized_active_enforcer === 'php_headers' || $normalized_active_enforcer === 'php_functions' || $normalized_active_enforcer === 'phpfunctions' || $normalized_active_enforcer === 'hook' || $normalized_active_enforcer === 'wordpress' || $normalized_active_enforcer === 'wordpress_core') {
+                $normalized_active_enforcer = 'php_functions';
+            } elseif ($normalized_active_enforcer === 'wp_config' || $normalized_active_enforcer === 'wpconfig' || $normalized_active_enforcer === 'config' || $normalized_active_enforcer === 'wp_config_php') {
+                $normalized_active_enforcer = 'wp_config';
+            } elseif ($normalized_active_enforcer === 'php_cron' || $normalized_active_enforcer === 'server_cron') {
+                $normalized_active_enforcer = 'php_cron';
+            } elseif ($normalized_active_enforcer === 'apache' || $normalized_active_enforcer === 'apache_htaccess' || $normalized_active_enforcer === 'htaccess') {
+                $normalized_active_enforcer = 'htaccess';
+            }
+            $meta_updates['active_enforcer'] = $normalized_active_enforcer;
         }
 
         $dev_instruct = $request->get_param('dev_instruct');
@@ -2673,6 +2698,25 @@ $runtime_verified = false;
     private static function validate_schema($schema)
     {
         return VAPTSECURE_Schema_Validator::validate_schema($schema);
+    }
+
+    /**
+     * [SSoT v1.0] POST /features/refresh-from-live
+     * Manual trigger to force-rehydrate all stale feature meta from the live catalog bundle.
+     */
+    public function refresh_from_live($request)
+    {
+        if (!class_exists('VAPTSECURE_Enforcer')) {
+            return new WP_REST_Response(array('error' => 'Enforcer not available'), 500);
+        }
+
+        $count = VAPTSECURE_Enforcer::rehydrate_all_stale_meta();
+
+        return new WP_REST_Response(array(
+            'success' => true,
+            'features_rehydrated' => $count,
+            'bundle_fingerprint' => class_exists('VAPTSECURE_DB') ? VAPTSECURE_DB::get_live_bundle_fingerprint() : '',
+        ), 200);
     }
 
     /**

@@ -1242,10 +1242,16 @@
           "label": "Verify Login Rate Limiting",
           "test_logic": "spam_requests",
           "test_config": {
-            "method": "GET",
+            "method": "POST",
             "path": "/wp-login.php",
+            "params": {
+              "log": "vaptsecure_nonexistent_user",
+              "pwd": "invalid-password",
+              "wp-submit": "Log In",
+              "redirect_to": "/wp-admin/",
+              "testcookie": "1"
+            },
             "expected_status": [
-              403,
               429
             ],
             "expected_enforcer": "php-rate-limit"

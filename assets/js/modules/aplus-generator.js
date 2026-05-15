@@ -160,9 +160,9 @@
               for (const [key, details] of Object.entries(feature.platform_implementations)) {
                 let isRelevant = true;
 
-                // [CLEAN] Exclude IIS and Caddy platforms
+                // [v4.0.x-SSoT] Removed: iis, caddy, fail2ban — not applicable to WordPress hosting
                 const normalizedKey = normalizeEnforcerName(key);
-                if (['iis', 'caddy', 'caddyfile', 'webconfig', 'web-config'].includes(normalizedKey) || 
+                if (['iis', 'caddy', 'caddyfile', 'webconfig', 'web-config'].includes(normalizedKey) ||
                     (details.lib_key && ['iis', 'caddy'].includes(details.lib_key.toLowerCase())) ||
                     (details.target_file && ['web.config', 'Caddyfile'].includes(details.target_file))) {
                   continue;
@@ -410,6 +410,7 @@
 
         if (blob.includes('/wp-json/wp/v2/users') || blob.includes('wordpress rest api') || blob.includes('rest api')) return 'rest_users';
         if (blob.includes('/?author=1') || blob.includes('author query') || blob.includes('author archives') || blob.includes('author enumeration')) return 'author_query';
+        if (blob.includes('rate limit') || blob.includes('rate-limiting') || blob.includes('brute force') || blob.includes('bruteforce') || blob.includes('php-rate-limit')) return 'rate_limit';
         if (blob.includes('/wp-login.php') || blob.includes('login_errors') || blob.includes('invalid credentials')) return 'login_error';
         if (blob.includes('pingback') || blob.includes('xmlrpc') || blob.includes('xml-rpc')) return 'xmlrpc';
         if (blob.includes('cron') || blob.includes('wp-cron')) return 'cron';
@@ -443,9 +444,23 @@
         return hints;
       };
 
+      // [v4.0.x-SSoT] Catalog-first platform selection; use declared order before fallbacks
       const resolvePrimaryPlatform = (featureData = {}) => {
+        const availablePlatforms = Array.isArray(featureData.available_platforms) ? featureData.available_platforms : [];
+        if (availablePlatforms.length > 0) {
+          return availablePlatforms[0];
+        }
+
+        const impls = featureData.platform_implementations && typeof featureData.platform_implementations === 'object'
+          ? Object.entries(featureData.platform_implementations)
+          : [];
+        if (impls.length > 0) {
+          const [platformName, implementation] = impls[0];
+          return implementation?.target_file || platformName || '';
+        }
+
         const hints = collectPlatformHints(featureData);
-        const priority = ['htaccess', 'apache', 'nginx', 'cloudflare', 'php-headers', 'php-functions', 'php-cron', 'wp-config', 'wpconfig', 'server-cron', 'fail2ban'];
+        const priority = ['php-functions', 'php-headers', 'php-cron', 'wp-config', 'nginx', 'cloudflare', 'litespeed', 'htaccess', 'apache', 'server-cron'];
         for (const candidate of priority) {
           if (hints.has(normalizePlatformName(candidate))) {
             return candidate;
@@ -458,10 +473,12 @@
         const platform = normalizePlatformName(primaryPlatform);
         const op = normalizePlatformName(operation);
 
+        if (platform === 'php-rate-limit' || op.includes('rate') || op.includes('brute') || op.includes('jail')) return 'php-rate-limit';
         if (platform === 'htaccess' || platform === 'apache') return 'htaccess';
+        if (platform === 'litespeed') return 'litespeed';
         if (platform === 'nginx') return 'nginx';
         if (platform === 'cloudflare') return 'cloudflare';
-        if (platform === 'fail2ban' || op.includes('jail')) return 'fail2ban';
+        // Removed: caddy, iis, fail2ban — not applicable to WordPress hosting
         if (platform === 'wp-config' || platform === 'wpconfig' || op.includes('constant') || op.includes('config')) return 'wp-config';
         if (platform === 'php-functions' || platform === 'php-headers' || op.includes('hook') || op.includes('wordpress')) return 'php-headers';
         if (platform === 'php-cron' || platform === 'server-cron' || op.includes('cron')) return (platform === 'server-cron') ? 'server-cron' : 'php-cron';
@@ -502,7 +519,8 @@
         ''
       ).toLowerCase();
       const expectedEnforcer = resolveExpectedEnforcer(primaryPlatform, primaryOperation);
-      const isRateLimitFlow = primaryPlatform === 'fail2ban' || primaryOperation.includes('jail') || /rate limit|brute|login/i.test(featureKey + ' ' + (feature.label || feature.title || feature.name || '') + ' ' + (feature.summary || feature.description || ''));
+      // [v4.0.x-SSoT] fail2ban removed — use heuristic detection for rate-limit flows
+      const isRateLimitFlow = primaryOperation.includes('jail') || /rate limit|brute|login/i.test(featureKey + ' ' + (feature.label || feature.title || feature.name || '') + ' ' + (feature.summary || feature.description || ''));
       const isHeaderFlow = /header/.test(primaryOperation) || (['htaccess', 'apache', 'nginx', 'cloudflare'].includes(normalizePlatformName(primaryPlatform)) && !/rewrite|block|respond|transform/.test(primaryOperation));
       const isConfigFlow = primaryPlatform === 'wp-config' || primaryPlatform === 'wpconfig' || /constant|config/.test(primaryOperation);
       const isRewriteFlow = /rewrite|block|respond|transform|url_rewrite/.test(primaryOperation);
@@ -518,6 +536,7 @@
       const tests = [];
 
       if (isRateLimitFlow) {
+        const rateLimitEnforcer = 'php-rate-limit';
         tests.push({
           type: 'test_action',
           id: `vapt-test-rate-${riskId}`,
@@ -527,10 +546,18 @@
           numTests: 5,
 test_config: {
              enforcement_mode: 'external',
+             method: 'POST',
              path: inferredPath,
-             expected_enforcer: expectedEnforcer
+             params: {
+               log: 'vaptsecure_nonexistent_user',
+               pwd: 'invalid-password',
+               'wp-submit': 'Log In',
+               redirect_to: `${window.location.origin}/wp-admin/`,
+               testcookie: '1'
+             },
+             expected_enforcer: rateLimitEnforcer
            },
-          help: `Verifies that the login endpoint is rate limited or blocked by the active ${expectedEnforcer || 'platform'} policy for ${inferredPath}.`
+          help: `Verifies that the login endpoint is rate limited or blocked by the active ${rateLimitEnforcer} policy for ${inferredPath}.`
         });
       } else if (isConfigFlow) {
         tests.push({
@@ -668,7 +695,8 @@ test_config: {
           help: 'Attempts to list the /wp-content/uploads/ directory.'
         });
       } else {
-        if (primaryPlatform === 'fail2ban') {
+        // [v4.0.x-SSoT] fail2ban removed - not applicable to WordPress hosting
+        if (isRateLimitFlow) {
           tests.push({
             type: 'test_action',
             id: `vapt-test-active-${riskId}`,
@@ -677,11 +705,10 @@ test_config: {
             test_logic: 'spam_requests',
             numTests: 5,
             test_config: {
-              enforcement_mode: 'external',
               path: '/wp-login.php',
               expected_enforcer: expectedEnforcer
             },
-            help: 'Runs a brute-force probe to verify the fail2ban-backed login protection.'
+            help: 'Runs a brute-force probe to verify the rate-limiting protection.'
           });
         } else if (isHeaderFlow) {
           tests.push({

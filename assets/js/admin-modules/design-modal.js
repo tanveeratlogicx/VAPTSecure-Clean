@@ -572,8 +572,18 @@
         feature.protection?.automated_protection?.implementation_targets ||
         feature.available_platforms ||
         [];
+      const normalizedTargets = Array.isArray(targets)
+        ? targets.map((target) => String(target || '').toLowerCase()).filter(Boolean)
+        : [];
+      const targetHas = (...terms) => normalizedTargets.some((target) => terms.some((term) => target.includes(term)));
 
-      if (selection) {
+      if (normalizedTargets.length > 0) {
+        if (targetHas('wp-config', 'wpconfig')) prioritizedDriver = 'wp-config';
+        else if (targetHas('functions', 'hook', 'wordpress', 'php')) prioritizedDriver = 'hook';
+        else if (targetHas('nginx')) prioritizedDriver = 'nginx';
+        else if (targetHas('cloudflare')) prioritizedDriver = 'cloudflare';
+        else if (targetHas('.htaccess', 'htaccess', 'apache', 'litespeed')) prioritizedDriver = 'htaccess';
+      } else if (selection) {
         const selLower = selection.toLowerCase();
         if (
           selLower.includes("htaccess") ||
@@ -590,11 +600,9 @@
           prioritizedDriver = "hook";
         else if (selLower.includes("wp-config"))
           prioritizedDriver = "wp-config";
-        else if (selLower === "fail2ban") prioritizedDriver = "fail2ban";
+        // [v4.0.x-SSoT] fail2ban, iis, caddy removed - not applicable to WordPress hosting
         else if (selLower === "nginx") prioritizedDriver = "nginx";
         else if (selLower === "cloudflare") prioritizedDriver = "cloudflare";
-        else if (selLower === "iis") prioritizedDriver = "iis";
-        else if (selLower === "caddy") prioritizedDriver = "caddy";
       } else if (Array.isArray(targets) && targets.length > 0) {
         if (targets.includes(".htaccess")) prioritizedDriver = "htaccess";
         else if (
@@ -606,12 +614,9 @@
           prioritizedDriver = "hook";
         else if (targets.includes("wp-config.php"))
           prioritizedDriver = "wp-config";
-        else if (targets.includes("fail2ban")) prioritizedDriver = "fail2ban";
         else if (targets.includes("Nginx")) prioritizedDriver = "nginx";
         else if (targets.includes("Cloudflare"))
           prioritizedDriver = "cloudflare";
-        else if (targets.includes("IIS")) prioritizedDriver = "iis";
-        else if (targets.includes("Caddy")) prioritizedDriver = "caddy";
         else if (targets.includes("Litespeed")) prioritizedDriver = "htaccess";
       } else {
         const dsLower = (selectedFile || "").toLowerCase();
@@ -620,7 +625,6 @@
           prioritizedDriver = "hook";
         else if (dsLower.includes("wp-config")) prioritizedDriver = "wp-config";
         else if (dsLower.includes("nginx")) prioritizedDriver = "nginx";
-        else if (dsLower.includes("fail2ban")) prioritizedDriver = "fail2ban";
       }
 
       if (designPromptConfig) {
@@ -1067,7 +1071,7 @@
         ? '**Multi-Platform Parallel Strategy**: You MUST generate a "platform_matrix" including implementations for Apache (.htaccess), Nginx, IIS, Caddy, Cloudflare, and PHP Fallback.'
         : "**Single Enforcer Strategy**: Target ONLY the **" +
           prioritizedDriver +
-          "** driver. Valid: hook, htaccess, wp-config, nginx, fail2ban, cloudflare, iis, caddy.";
+          "** driver. Valid: hook, htaccess, wp-config, nginx, cloudflare.";
 
       const finalPrompt = `
       --- ROLE & OBJECTIVE ---

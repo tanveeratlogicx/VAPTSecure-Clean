@@ -19,6 +19,7 @@
 8. [Validation Gates](#8-validation-gates)
 9. [Risks and Non-Goals](#9-risks-and-non-goals)
 10. [Deliverables](#10-deliverables)
+11. [Recommended Execution Order](#11-recommended-execution-order)
 
 ---
 
@@ -33,8 +34,11 @@ The goal of this work is to:
 - Keep a derived mirror layer for platform/resource views.
 - Support a `data/Resources/` target if we decide to introduce it, without breaking the existing `data/Enforcers/` workflow.
 - Update the plugin's loaders, validators, admin screens, and build/deploy flow so they read the updated bundle consistently.
+- Drive the `.ai` folder, SSoT framework, and IDE/extension artifacts from the same canonical bundle so they cannot drift independently.
 
 This plan intentionally avoids rewriting the project into a different framework. It keeps the current WordPress plugin architecture and upgrades the data adoption path inside that boundary.
+
+This does require a bounded architecture refactor in how the plugin resolves source-of-truth data, invalidates cache, and regenerates derived artifacts. It is not a full rewrite of the plugin shell or admin UX.
 
 ---
 
@@ -63,6 +67,18 @@ The repository already contains:
 - The build and REST layers already contain explicit references to the v2.0 JSON bundle.
 
 This means the adoption task is an in-place migration of the bundle and its consumers, not a greenfield import.
+
+### Global Artifact Chain
+
+The canonical `data/` bundle must also drive:
+
+- `.ai/` workflow and rule files
+- `.ai/skills/vaptschema-builder/resources/` mirrored resources
+- SSoT framework docs and prompts
+- IDE-specific rule and adapter files
+- extension-specific prompt or template artifacts
+
+These outputs are derived artifacts only. They must not become alternate sources of truth.
 
 ---
 
@@ -136,6 +152,8 @@ The updated bundle should support a derived resource mirror layer. The plan shou
 5. Validate before render, and validate before export.
 6. Treat `data_old/` as reference only.
 7. Do not let the resource mirror become a second source of truth.
+8. Do not let `.ai`, SSoT, IDE, or extension artifacts diverge from the canonical bundle.
+9. Prefer pointer-only or generated downstream artifacts where duplication would otherwise create drift.
 
 ---
 
@@ -185,7 +203,18 @@ Tasks:
 - Update REST endpoints and validators so they resolve the same normalized data model.
 - Keep the UI aligned with the updated bundle without inventing new data shapes.
 
-### Phase E: Validation and Export
+### Phase E: SSoT, AI, and IDE Artifact Sync
+
+Goal: propagate the canonical bundle into all downstream instruction and workflow artifacts.
+
+Tasks:
+
+- Update `.ai/` workflow files to reference the live canonical bundle.
+- Refresh SSoT framework documents and prompts from the same source of truth.
+- Keep IDE-specific and extension-specific files pointer-only or generated from canonical artifacts.
+- Verify any mirrored skill resources remain aligned with the active bundle.
+
+### Phase F: Validation and Export
 
 Goal: ensure the updated bundle is safe to consume and safe to export.
 
@@ -230,6 +259,7 @@ The adoption should not be considered complete until these gates pass:
 5. The admin UI can browse and select the updated data correctly.
 6. No deprecated or prohibited platform references re-enter the active bundle.
 7. Exported output remains deterministic and version-consistent.
+8. `.ai`, SSoT, IDE, and extension artifacts stay synchronized with the canonical bundle.
 
 If `data/Resources/` is introduced, it must also pass mirror parity checks against the canonical data.
 
@@ -260,7 +290,21 @@ At the end of this adoption slice, the repo should have:
 - A defined mirror strategy for `data/Enforcers/` and, if adopted, `data/Resources/`.
 - Loader and validator updates that understand the current bundle layout.
 - A clear sync rule for canonical -> derived data flow.
+- A clear sync rule for canonical -> `.ai` / SSoT / IDE / extension downstream artifacts.
 - Validation evidence that the updated bundle is usable by the plugin without manual patching.
+
+---
+
+## 11. Recommended Execution Order
+
+1. Canonical bundle reconciliation
+2. Loader normalization
+3. Runtime drift detection and autoheal
+4. Plugin consumer updates
+5. SSoT / AI / IDE artifact sync
+6. Validation and export
+
+This order keeps the canonical `data/` bundle first, the runtime second, and all downstream documentation/tooling surfaces synchronized last so they cannot become a competing source of truth.
 
 ---
 

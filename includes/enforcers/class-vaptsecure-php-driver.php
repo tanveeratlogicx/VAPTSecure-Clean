@@ -41,6 +41,7 @@ class VAPTSECURE_PHP_Driver implements VAPTSECURE_Driver_Interface
         }
 
         $feature_key = $schema['feature_key'] ?? 'unknown';
+        $risk_id = $schema['risk_id'] ?? $schema['id'] ?? $feature_key;
 
         // 1. Try to find the actual code from schema/mappings or implementation data
         $resolved_code = '';
@@ -60,11 +61,6 @@ class VAPTSECURE_PHP_Driver implements VAPTSECURE_Driver_Interface
             }
         }
 
-        // Skip multi-platform features that have no PHP Functions implementation
-        if (empty($resolved_code) && !empty($schema['platform_implementations']) && is_array($schema['platform_implementations'])) {
-            return [];
-        }
-
         // Fallback to mappings
         if (empty($resolved_code) || $resolved_code === '/* Managed via PHP hooks */') {
             foreach ($mappings as $key => $m_data) {
@@ -81,6 +77,27 @@ class VAPTSECURE_PHP_Driver implements VAPTSECURE_Driver_Interface
         // Final Fallback: Direct lookup by feature key if we still have nothing or just the placeholder
         if (empty($resolved_code) || $resolved_code === '/* Managed via PHP hooks */' || $resolved_code === '// Managed via PHP hooks') {
             $resolved_code = self::resolve_pattern_code($feature_key, 'php_functions');
+        }
+
+        if ((empty($resolved_code) || $resolved_code === '/* Managed via PHP hooks */' || $resolved_code === '// Managed via PHP hooks')
+            && !empty($risk_id) && $risk_id !== $feature_key) {
+            $resolved_code = self::resolve_pattern_code($risk_id, 'php_functions');
+        }
+
+        if ((empty($resolved_code) || $resolved_code === '/* Managed via PHP hooks */' || $resolved_code === '// Managed via PHP hooks')
+            && !empty($schema['title'])) {
+            $title_ref = preg_replace('/[^A-Za-z0-9]+/', '-', strtoupper(trim((string) $schema['title'])));
+            $title_ref = trim($title_ref, '-');
+            if ($title_ref !== '') {
+                $resolved_code = self::resolve_pattern_code($title_ref, 'php_functions');
+            }
+        }
+
+        // If the feature is still unresolved and has explicit platform implementations,
+        // do not emit an empty block.
+        if ((empty($resolved_code) || $resolved_code === '/* Managed via PHP hooks */' || $resolved_code === '// Managed via PHP hooks')
+            && !empty($schema['platform_implementations']) && is_array($schema['platform_implementations'])) {
+            return [];
         }
 
         // Apply placeholder replacements (v4.1.0)
@@ -184,6 +201,7 @@ class VAPTSECURE_PHP_Driver implements VAPTSECURE_Driver_Interface
             $content = rtrim($content) . "\n\n" . $vapt_block . "\n";
         }
 
+        $content = preg_replace('/([^\n])\n(\/\/ BEGIN VAPT FEATURE:)/', "$1\n\n$2", $content);
         $content = preg_replace("/(\r?\n){3,}/", "$1$1", $content);
         @file_put_contents($path, $content);
 

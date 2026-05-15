@@ -118,4 +118,62 @@ class VAPTSECURE_AI_Config
 
         return 'failed';
     }
+
+    /**
+     * [SSoT v1.0] Regenerate derived .ai artifacts from the canonical data bundle.
+     * Updates the SOUL.md metadata header and ensures all symlinks are valid.
+     * Call this when the bundle fingerprint changes to keep .ai/ in sync with data/.
+     *
+     * @return array Results with 'soul_updated', 'fingerprint_stamped', 'symlinks_repaired'
+     */
+    public static function regenerate_from_bundle()
+    {
+        $root = VAPTSECURE_PATH;
+        $soul_path = $root . '.ai/SOUL.md';
+        $results = array(
+            'soul_updated' => false,
+            'fingerprint_stamped' => '',
+            'symlinks_repaired' => false,
+        );
+
+        // 1. Get current bundle fingerprint and feature count
+        $fingerprint = '';
+        $feature_count = 0;
+        if (class_exists('VAPTSECURE_Bundle_Sync')) {
+            $fingerprint = VAPTSECURE_Bundle_Sync::fingerprint();
+        }
+        if (class_exists('VAPTSECURE_Enforcer')) {
+            $schema_path = $root . 'data/interface_schema_v2.0.json';
+            if (file_exists($schema_path)) {
+                $schema = json_decode((string) file_get_contents($schema_path), true);
+                if (is_array($schema) && !empty($schema['risk_interfaces'])) {
+                    $feature_count = count($schema['risk_interfaces']);
+                }
+            }
+        }
+
+        // 2. Stamp fingerprint into SOUL.md if it exists
+        if (file_exists($soul_path)) {
+            $content = (string) file_get_contents($soul_path);
+            $timestamp = current_time('mysql');
+
+            // Update or insert the bundle metadata block
+            $meta_block = "<!-- SSoT Bundle: fingerprint={$fingerprint} features={$feature_count} synced={$timestamp} -->\n";
+            if (preg_match('/<!-- SSoT Bundle:.*-->/', $content)) {
+                $content = preg_replace('/<!-- SSoT Bundle:.*-->/', trim($meta_block), $content);
+            } else {
+                // Insert after the first heading
+                $content = preg_replace('/^(.+?)\n/', "$1\n" . $meta_block, $content);
+            }
+            file_put_contents($soul_path, $content);
+            $results['soul_updated'] = true;
+            $results['fingerprint_stamped'] = $fingerprint;
+        }
+
+        // 3. Repair symlinks to propagate to all IDE/extension surfaces
+        $symlink_results = self::verify_and_repair();
+        $results['symlinks_repaired'] = is_array($symlink_results);
+
+        return $results;
+    }
 }

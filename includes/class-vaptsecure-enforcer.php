@@ -79,14 +79,9 @@ class VAPTSECURE_Enforcer
 
             $status = isset($meta['status']) ? strtolower($meta['status']) : 'draft';
 
-            // Override Logic
-            $use_override_schema = in_array($status, ['test', 'release']) && !empty($meta['override_schema']);
-            $raw_schema = $use_override_schema ? $meta['override_schema'] : $meta['generated_schema'];
-            $schema = !empty($raw_schema) ? json_decode($raw_schema, true) : array();
-
-            $use_override_impl = in_array($status, ['test', 'release']) && !empty($meta['override_implementation_data']);
-            $raw_impl = $use_override_impl ? $meta['override_implementation_data'] : $meta['implementation_data'];
-            $impl_data = !empty($raw_impl) ? json_decode($raw_impl, true) : array();
+            // [SSoT v1.0] Use centralized resolvers for schema + impl resolution
+            $schema = self::resolve_schema($meta);
+            $impl_data = self::resolve_impl($meta);
 
             $driver = isset($schema['enforcement']['driver']) ? $schema['enforcement']['driver'] : '';
 
@@ -400,11 +395,12 @@ class VAPTSECURE_Enforcer
     }
 
     // Helpers for Schema/Impl Resolution
-    private static function resolve_schema($meta)
+    public static function resolve_schema($meta)
     {
         $status = $meta['status'] ?? 'draft';
         $raw = (in_array($status, ['test', 'release']) && !empty($meta['override_schema'])) ? $meta['override_schema'] : $meta['generated_schema'];
         $schema = $raw ? json_decode($raw, true) : [];
+        $bundle_is_stale = class_exists('VAPTSECURE_DB') ? VAPTSECURE_DB::bundle_is_stale() : false;
 
         // [v4.0.0] Adaptive Schema Resolution
         // Prefer the catalog enforcement definition whenever the saved schema is missing
@@ -420,39 +416,81 @@ class VAPTSECURE_Enforcer
             $schema['feature_key'] = $meta['feature_key'];
         }
 
+        // [SSoT v1.0] Catalog-first resolution: always load catalog as base, overlay DB fields
         $catalog_schema = self::load_catalog_feature_schema($schema['feature_key'] ?? ($meta['feature_key'] ?? ''));
-        if (is_array($catalog_schema)) {
-            $schema_key = $schema['feature_key'] ?? ($meta['feature_key'] ?? '');
-            if (empty($schema['platform_implementations']) && !empty($catalog_schema['platform_implementations'])) {
-                $schema['platform_implementations'] = $catalog_schema['platform_implementations'];
+        $schema_key = $schema['feature_key'] ?? ($meta['feature_key'] ?? '');
+        
+        if (is_array($catalog_schema) && !empty($catalog_schema)) {
+            if ($bundle_is_stale) {
+                // [SSoT v1.1] Client Build: bulk rehydrate ALL enabled Release features
+                // Master Build: per-feature rehydration (lazy, one at a time)
+                $is_client_build = defined('VAPTSECURE_BUILD_PROFILE') && VAPTSECURE_BUILD_PROFILE === 'client';
+
+                if ($is_client_build) {
+                    // Client build: bulk update ALL enabled features in Release state
+                    $rehydrated_count = self::rehydrate_all_stale_meta(true, 'release');
+                    error_log("VAPT SSoT: Client build bulk rehydrated {$rehydrated_count} stale features");
+
+                    // Re-fetch fresh data from DB after bulk update
+                    $meta_fresh = VAPTSECURE_DB::get_feature_meta($schema_key);
+                    $raw = ($meta_fresh['override_schema']) ?: ($meta_fresh['generated_schema'] ?? '');
+                    $schema = $raw ? json_decode($raw, true) : [];
+                    if (empty($schema)) {
+                        $schema = $catalog_schema;
+                    }
+                } else {
+                    // Master build: per-feature rehydration (lazy, only this feature)
+                    $schema = $catalog_schema;
+                    if (class_exists('VAPTSECURE_DB')) {
+                        $fresh_impl = self::derive_impl_from_catalog($catalog_schema, $schema_key);
+                        VAPTSECURE_DB::update_feature_meta($schema_key, array(
+                            'generated_schema' => json_encode($catalog_schema),
+                            'implementation_data' => json_encode($fresh_impl),
+                        ));
+                        VAPTSECURE_DB::sync_bundle_fingerprint();
+                    }
+                }
+            } else {
+                // Catalog is current — use it as base, overlay DB user fields
+                $db_overlay = $schema;
+                $schema = $catalog_schema;
+                // Only overlay user-editable display fields from DB (never platform_implementations)
+                foreach (array('title', 'summary', 'description') as $overlayable) {
+                    if (!empty($db_overlay[$overlayable])) {
+                        $schema[$overlayable] = $db_overlay[$overlayable];
+                    }
+                }
+                // enforcement: prefer catalog, fall back to DB-derived
+                if (empty($schema['enforcement']) || empty($schema['enforcement']['mappings'])) {
+                    if (!empty($db_overlay['enforcement'])) {
+                        $schema['enforcement'] = $db_overlay['enforcement'];
+                    }
+                }
+                // Fill platform_implementations from catalog if DB had none
+                if (empty($schema['platform_implementations'])) {
+                    // [v4.1.2] Load platform implementations from enforcer pattern library
+                    $schema['platform_implementations'] = self::load_platform_implementations_from_patterns($schema_key);
+                }
             }
-            if (empty($schema['client_deployment']) && !empty($catalog_schema['client_deployment'])) {
-                $schema['client_deployment'] = $catalog_schema['client_deployment'];
-            }
-            if ((empty($schema['enforcement']) || empty($schema['enforcement']['mappings'])) && !empty($catalog_schema['client_deployment']['enforcement'])) {
-                $schema['enforcement'] = $catalog_schema['client_deployment']['enforcement'];
-            }
-            if ((empty($schema['enforcement']) || empty($schema['enforcement']['mappings'])) && !empty($catalog_schema['platform_implementations']) && is_array($catalog_schema['platform_implementations'])) {
-                $platform_code = self::resolve_pattern_code_ref(
-                    $catalog_schema['platform_implementations']['.htaccess']['code_ref'] ?? ($catalog_schema['platform_implementations']['htaccess']['code_ref'] ?? ''),
-                    'htaccess'
-                );
-                $schema['enforcement'] = array(
-                'driver' => 'htaccess',
-                'target' => 'root',
-                'mappings' => self::build_toggle_alias_mappings($schema_key, $platform_code)
-                );
-            }
+        }
+
+        // [v4.1.3] Filter platform implementations by detected web server
+        // Remove platforms that don't match the current server (e.g., nginx on apache)
+        if (!empty($schema['platform_implementations']) && is_array($schema['platform_implementations'])) {
+            $schema['platform_implementations'] = self::filter_platforms_by_environment($schema['platform_implementations']);
         }
 
         // [v4.0.2] Schema self-heal: derive an enforcement block from platform implementations
         // when older saved schemas only contain the UI catalog data.
+        // [SSoT v1.0] Use catalog available_platforms order instead of hardcoded htaccess-first.
         if ((empty($schema['enforcement']) || empty($schema['enforcement']['mappings'])) && !empty($schema['platform_implementations']) && is_array($schema['platform_implementations'])) {
             $risk_key = $schema['risk_id'] ?? $schema['feature_key'] ?? ($meta['feature_key'] ?? '');
             $risk_suffix = str_replace('-', '_', strtolower((string) $risk_key));
             $auto_key = "vapt_risk_{$risk_suffix}_enabled";
 
-            $platform_order = array('.htaccess', 'htaccess', 'cloudflare');
+            $platform_order = !empty($catalog_schema['available_platforms']) && is_array($catalog_schema['available_platforms'])
+                ? $catalog_schema['available_platforms']
+                : array('.htaccess', 'htaccess', 'cloudflare');
             $selected_platform = null;
             foreach ($platform_order as $candidate) {
                 foreach ($schema['platform_implementations'] as $platform_name => $platform_impl) {
@@ -481,8 +519,18 @@ class VAPTSECURE_Enforcer
                 }
 
                 if (!empty($platform_code)) {
+                    // [v4.1.2] Proper driver detection for PHP Functions
+                    $driver = 'htaccess';
+                    $platform_lower = strtolower($selected_platform);
+                    if (stripos($platform_lower, 'cloudflare') !== false) {
+                        $driver = 'cloudflare';
+                    } elseif (stripos($platform_lower, 'php') !== false || stripos($platform_lower, 'hook') !== false || $platform_lower === 'php functions') {
+                        $driver = 'php_functions';
+                    } elseif (stripos($platform_lower, 'wp-config') !== false || stripos($platform_lower, 'wp_config') !== false) {
+                        $driver = 'wp_config';
+                    }
                     $schema['enforcement'] = array(
-                    'driver' => ((stripos($selected_platform, 'cloudflare') !== false) ? 'cloudflare' : 'htaccess'),
+                    'driver' => $driver,
                     'target' => (stripos($selected_platform, 'uploads') !== false) ? 'uploads' : 'root',
                     'mappings' => self::build_toggle_alias_mappings($schema['feature_key'] ?? ($meta['feature_key'] ?? ''), $platform_code)
                     );
@@ -644,7 +692,7 @@ class VAPTSECURE_Enforcer
         );
     }
 
-    private static function resolve_impl($meta)
+    public static function resolve_impl($meta)
     {
         $status = $meta['status'] ?? 'draft';
         $raw = (in_array($status, ['test', 'release']) && !empty($meta['override_implementation_data'])) ? $meta['override_implementation_data'] : $meta['implementation_data'];
@@ -683,6 +731,250 @@ class VAPTSECURE_Enforcer
         }
 
         return $resolved;
+    }
+
+    /**
+     * [SSoT v1.0] Derive a fresh implementation_data payload from the catalog schema.
+     * Used when rehydrating stale meta rows after a bundle change.
+     *
+     * @param array  $catalog_schema  The canonical feature definition from the live catalog.
+     * @param string $feature_key     The feature identifier.
+     * @return array  Fresh implementation data with defaults from catalog.
+     */
+    private static function derive_impl_from_catalog($catalog_schema, $feature_key)
+    {
+        $impl = array(
+            'enabled' => false,
+            'feat_enabled' => false,
+            'prot_enabled' => false,
+        );
+
+        // Set a default enforcer from the catalog's first available platform
+        if (!empty($catalog_schema['available_platforms']) && is_array($catalog_schema['available_platforms'])) {
+            $first = reset($catalog_schema['available_platforms']);
+            if (is_string($first) && $first !== '') {
+                $impl['active_enforcer'] = $first;
+            }
+        }
+
+        // Auto-keyed toggle for backward compat
+        $risk_suffix = str_replace('-', '_', strtolower((string) $feature_key));
+        $auto_key = "vapt_risk_{$risk_suffix}_enabled";
+        $impl[$auto_key] = false;
+
+        return $impl;
+    }
+
+    /**
+     * [v4.1.2] Load platform implementations from the enforcer pattern library
+     * when the interface schema doesn't have them (common for PHP-based features).
+     *
+     * @param string $feature_key  The feature identifier (e.g., RISK-007)
+     * @return array  Platform implementations keyed by platform name
+     */
+    private static function load_platform_implementations_from_patterns($feature_key)
+    {
+        static $pattern_library = null;
+
+        if ($pattern_library === null) {
+            $path = VAPTSECURE_PATH . 'data/enforcer_pattern_library_v2.0.json';
+            if (file_exists($path)) {
+                $data = json_decode(file_get_contents($path), true);
+                $pattern_library = $data['patterns'] ?? [];
+            } else {
+                $pattern_library = [];
+            }
+        }
+
+        if (empty($pattern_library) || empty($pattern_library[$feature_key])) {
+            return [];
+        }
+
+        $feature_patterns = $pattern_library[$feature_key];
+        $implementations = [];
+
+        // Normalize platform names
+        $platform_map = [
+            'php_functions' => 'PHP Functions',
+            'php-functions' => 'PHP Functions',
+            'phpfunctions' => 'PHP Functions',
+            'hook' => 'PHP Functions',
+            'wp_config' => 'wp-config',
+            'wp-config' => 'wp-config',
+            'wpconfig' => 'wp-config',
+            'htaccess' => 'htaccess',
+            'apache' => 'htaccess',
+            'apache-htaccess' => 'htaccess',
+        ];
+
+        foreach ($feature_patterns as $platform_key => $platform_data) {
+            if (!is_array($platform_data) || empty($platform_data['code'])) {
+                continue;
+            }
+
+            // Normalize platform key
+            $normalized = $platform_map[strtolower($platform_key)] ?? ucfirst($platform_key);
+
+            $implementations[$normalized] = [
+                'enforcer' => $platform_data['enforcer'] ?? $platform_key,
+                'operation' => $platform_data['operation'] ?? 'insert',
+                'target_file' => $platform_data['target_file'] ?? $normalized,
+                'code' => $platform_data['code'] ?? '',
+                'wrapped_code' => $platform_data['wrapped_code'] ?? '',
+                'begin_marker' => $platform_data['begin_marker'] ?? '',
+                'end_marker' => $platform_data['end_marker'] ?? '',
+                'verification' => $platform_data['verification'] ?? [],
+                'rollback' => $platform_data['rollback'] ?? '',
+            ];
+        }
+
+        return $implementations;
+    }
+
+    /**
+     * [v4.1.3] Filter platform implementations by detected web server environment.
+     * Removes incompatible platforms (e.g., nginx config on Apache server).
+     *
+     * @param array $platforms  Platform implementations from pattern library
+     * @return array  Filtered platforms matching the detected environment
+     */
+    private static function filter_platforms_by_environment($platforms)
+    {
+        // Detect current web server
+        $server_software = isset($_SERVER['SERVER_SOFTWARE']) ? strtolower($_SERVER['SERVER_SOFTWARE']) : '';
+        $detected_server = 'unknown';
+
+        if (strpos($server_software, 'nginx') !== false) {
+            $detected_server = 'nginx';
+        } elseif (strpos($server_software, 'litespeed') !== false) {
+            $detected_server = 'litespeed';
+        } elseif (strpos($server_software, 'apache') !== false) {
+            $detected_server = 'apache';
+        }
+
+        // If server detected as nginx but feature only has nginx -> keep it
+        // If server detected as apache/litespeed but feature has nginx -> remove nginx
+        // If feature has htaccess/apache -> keep those for apache/litespeed
+
+        $filtered = [];
+        $platform_map = [
+            'nginx' => ['nginx', 'Nginx'],
+            'apache' => ['htaccess', 'Htaccess', 'apache', 'Apache', '.htaccess'],
+            'litespeed' => ['htaccess', 'Htaccess', 'litespeed', 'Litespeed', '.htaccess'],
+            'wp-config' => ['wp-config', 'wp_config', 'wpconfig', 'Wp-config'],
+            'php functions' => ['php functions', 'php_functions', 'PHP Functions', 'hook', 'Hook']
+        ];
+
+        // What to keep for each detected server
+        $keep_for = [
+            'nginx' => ['nginx', 'Nginx', 'php functions', 'php_functions', 'PHP Functions', 'hook', 'wp-config', 'wp_config', 'Wp-config'],
+            'apache' => ['htaccess', 'Htaccess', 'apache', 'Apache', '.htaccess', 'php functions', 'php_functions', 'PHP Functions', 'hook', 'wp-config', 'wp_config', 'Wp-config'],
+            'litespeed' => ['htaccess', 'Htaccess', 'litespeed', 'Litespeed', '.htaccess', 'php functions', 'php_functions', 'PHP Functions', 'hook', 'wp-config', 'wp_config', 'Wp-config'],
+            'unknown' => [] // Keep all if we can't detect - let user decide
+        ];
+
+        $allowed = $keep_for[$detected_server] ?? $keep_for['unknown'];
+
+        foreach ($platforms as $platform_name => $platform_data) {
+            $normalized = strtolower(trim((string) $platform_name));
+            if (in_array($normalized, array_map('strtolower', $allowed))) {
+                $filtered[$platform_name] = $platform_data;
+            }
+        }
+
+        // If we filtered everything out but there were platforms originally,
+        // check if this is because the feature ONLY has nginx and we're on apache
+        // In this case, fall back to PHP Functions as universal fallback
+        if (empty($filtered) && !empty($platforms) && $detected_server !== 'nginx' && $detected_server !== 'unknown') {
+            // Check if PHP Functions is available
+            foreach ($platforms as $pn => $pd) {
+                $pn_lower = strtolower($pn);
+                if (strpos($pn_lower, 'php') !== false || $pn_lower === 'hook') {
+                    $filtered[$pn] = $pd;
+                    break;
+                }
+            }
+        }
+
+        return $filtered;
+    }
+
+    /**
+     * [SSoT v1.1] Rehydrate all stale feature meta rows from the live catalog.
+     * Iterates every feature in the DB, checks if bundle is stale, and refreshes
+     * generated_schema, implementation_data, and clears stale overrides.
+     *
+     * @param bool   $enabled_only   If true, only rehydrate features that are enabled
+     * @param string $status_filter  Filter by status (e.g., 'release', 'test'). Empty = all.
+     * @return int  Number of features rehydrated.
+     */
+    public static function rehydrate_all_stale_meta($enabled_only = false, $status_filter = '')
+    {
+        if (!class_exists('VAPTSECURE_DB')) {
+            return 0;
+        }
+
+        if (!VAPTSECURE_DB::bundle_is_stale()) {
+            return 0;
+        }
+
+        global $wpdb;
+        $table = $wpdb->prefix . 'vaptsecure_feature_meta';
+
+        // Build query with optional filters
+        $query = "SELECT feature_key FROM $table WHERE 1=1";
+        $params = array();
+
+        if ($enabled_only) {
+            $query .= " AND (is_enabled = 1 OR is_enforced = 1)";
+        }
+
+        if (!empty($status_filter)) {
+            $query .= " AND status = %s";
+            $params[] = $status_filter;
+        }
+
+        $features = $params
+            ? $wpdb->get_results($wpdb->prepare($query, $params), ARRAY_A)
+            : $wpdb->get_results($query, ARRAY_A);
+
+        if (empty($features)) {
+            VAPTSECURE_DB::sync_bundle_fingerprint();
+            return 0;
+        }
+
+        $rehydrated = 0;
+        foreach ($features as $row) {
+            $feature_key = $row['feature_key'];
+            $catalog_schema = self::load_catalog_feature_schema($feature_key);
+            if (empty($catalog_schema)) {
+                continue; // Feature not in catalog — skip
+            }
+
+            $fresh_impl = self::derive_impl_from_catalog($catalog_schema, $feature_key);
+
+            VAPTSECURE_DB::update_feature_meta($feature_key, array(
+                'generated_schema' => json_encode($catalog_schema),
+                'implementation_data' => json_encode($fresh_impl),
+                'override_schema' => null,
+                'override_implementation_data' => null,
+            ));
+
+            $rehydrated++;
+        }
+
+        // Persist the now-current fingerprint so subsequent checks are clean
+        VAPTSECURE_DB::sync_bundle_fingerprint();
+
+        // Clear enforcement cache so next request picks up fresh data
+        delete_transient('vaptsecure_active_enforcements');
+
+        // [SSoT v1.0] Regenerate .ai derived artifacts so IDE/extension surfaces stay in sync
+        if (class_exists('VAPTSECURE_AI_Config')) {
+            VAPTSECURE_AI_Config::regenerate_from_bundle();
+        }
+
+        return $rehydrated;
     }
 
     /**
@@ -800,6 +1092,11 @@ class VAPTSECURE_Enforcer
         // [v4.0.1] Always purge the enforcement cache FIRST so get_enforced_features()
         // reads fresh DB data — especially critical when called from transition_feature on reset.
         delete_transient('vaptsecure_active_enforcements');
+    
+        // [SSoT v1.0] Rehydrate stale meta before rebuilding so all resolvers read fresh data
+        if (class_exists('VAPTSECURE_DB') && VAPTSECURE_DB::bundle_is_stale()) {
+            self::rehydrate_all_stale_meta();
+        }
     
         if ($remove_only) {
             // Remove all VAPT rules from configuration files
@@ -939,7 +1236,7 @@ class VAPTSECURE_Enforcer
             $has_marker = false;
 
             if ($content !== false && $content !== '') {
-                // [v4.1.0] Comprehensive Marker Detection
+                // [v4.1.1] Comprehensive Marker Detection - fixed format for PHP Functions
                 $marker_formats = [
                     "VAPT PROTECTION: {$feature_key}",
                     "VAPT-RISK: {$feature_key}",
@@ -948,6 +1245,7 @@ class VAPTSECURE_Enforcer
                     "BEGIN VAPT {$feature_key}",
                     "/* BEGIN VAPT {$feature_key}",
                     "// BEGIN VAPT {$feature_key}",
+                    "// BEGIN VAPT FEATURE: {$feature_key}",  // PHP Functions format
                     "# BEGIN VAPT {$feature_key}"
                 ];
 

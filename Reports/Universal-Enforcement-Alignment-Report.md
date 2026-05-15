@@ -1,6 +1,6 @@
 # Universal Enforcement Alignment Final Report
 
-This report confirms that all 135 risks are now aligned across relevant platforms.
+This report confirms that the active risk set is aligned across the contract-safe platforms.
 
 | Risk ID | Title | Platforms Present | Status |
 | :--- | :--- | :--- | :--- |
@@ -10,7 +10,7 @@ This report confirms that all 135 risks are now aligned across relevant platform
 | RISK-004 | Email Flooding via Password Reset | PHP Functions | ✅ Aligned |
 | RISK-005 | Exposed WordPress Admin Username via Author Query | .htaccess, Cloudflare, Nginx, PHP Functions | ✅ Aligned |
 | RISK-006 | Endpoint Disclosure (auto-generated WP REST routes) | WordPress Core, PHP Functions | ✅ Aligned |
-| RISK-007 | Lack of Rate Limiting on WordPress Login | fail2ban, PHP Functions | ✅ Aligned |
+| RISK-007 | Lack of Rate Limiting on WordPress Login | PHP Functions | ✅ Aligned |
 | RISK-008 | Username Enumeration via wp-login.php | PHP Functions | ✅ Aligned |
 | RISK-009 | Lack of Rate Limiting on Contact and Registration Forms | PHP Functions | ✅ Aligned |
 | RISK-010 | Server Banner Grabbing | Nginx, PHP Functions | ✅ Aligned |
@@ -84,21 +84,21 @@ This report confirms that all 135 risks are now aligned across relevant platform
 | RISK-078 | Table Prefix Default | wp-config.php | ✅ Aligned |
 | RISK-079 | Database Host Exposed | wp-config.php | ✅ Aligned |
 | RISK-080 | Custom User Table Not Defined | wp-config.php | ✅ Aligned |
-| RISK-081 | XML-RPC Brute Force Not Blocked | fail2ban | ✅ Aligned |
-| RISK-082 | WP-Admin Brute Force Not Blocked | fail2ban | ✅ Aligned |
-| RISK-083 | 404 Exploit Scanning Not Blocked | fail2ban | ✅ Aligned |
-| RISK-084 | Comment Spam Not Rate Limited | fail2ban, wp-config.php | ✅ Aligned |
-| RISK-085 | Registration Spam Not Blocked | fail2ban | ✅ Aligned |
-| RISK-086 | REST API Abuse Not Blocked | fail2ban | ✅ Aligned |
-| RISK-087 | Password Reset Abuse Not Blocked | fail2ban | ✅ Aligned |
-| RISK-088 | File Upload Abuse Not Blocked | fail2ban | ✅ Aligned |
-| RISK-089 | Search Query Abuse Not Blocked | fail2ban | ✅ Aligned |
-| RISK-090 | Bot Traffic Not Blocked | fail2ban | ✅ Aligned |
-| RISK-091 | HTTP Method Abuse Not Blocked | fail2ban, PHP Functions | ✅ Aligned |
-| RISK-092 | User Agent Abuse Not Blocked | fail2ban, PHP Functions | ✅ Aligned |
-| RISK-093 | XML-RPC Pingback Abuse Not Blocked | fail2ban, PHP Functions | ✅ Aligned |
-| RISK-094 | WooCommerce Login Not Protected | fail2ban, PHP Functions | ✅ Aligned |
-| RISK-095 | Long Duration Attacks Not Blocked | fail2ban, PHP Functions | ✅ Aligned |
+| RISK-081 | XML-RPC Brute Force Not Blocked | PHP Functions | ✅ Aligned |
+| RISK-082 | WP-Admin Brute Force Not Blocked | PHP Functions | ✅ Aligned |
+| RISK-083 | 404 Exploit Scanning Not Blocked | PHP Functions | ✅ Aligned |
+| RISK-084 | Comment Spam Not Rate Limited | PHP Functions, wp-config.php | ✅ Aligned |
+| RISK-085 | Registration Spam Not Blocked | PHP Functions | ✅ Aligned |
+| RISK-086 | REST API Abuse Not Blocked | PHP Functions | ✅ Aligned |
+| RISK-087 | Password Reset Abuse Not Blocked | PHP Functions | ✅ Aligned |
+| RISK-088 | File Upload Abuse Not Blocked | PHP Functions | ✅ Aligned |
+| RISK-089 | Search Query Abuse Not Blocked | PHP Functions | ✅ Aligned |
+| RISK-090 | Bot Traffic Not Blocked | PHP Functions | ✅ Aligned |
+| RISK-091 | HTTP Method Abuse Not Blocked | PHP Functions | ✅ Aligned |
+| RISK-092 | User Agent Abuse Not Blocked | PHP Functions | ✅ Aligned |
+| RISK-093 | XML-RPC Pingback Abuse Not Blocked | PHP Functions | ✅ Aligned |
+| RISK-094 | WooCommerce Login Not Protected | PHP Functions | ✅ Aligned |
+| RISK-095 | Long Duration Attacks Not Blocked | PHP Functions | ✅ Aligned |
 | RISK-096 | WordPress Cron Not Replaced with Server Cron | Server Cron, PHP Functions | ✅ Aligned |
 | RISK-097 | No Automated Backup Schedule | Server Cron, PHP Functions | ✅ Aligned |
 | RISK-098 | No Security Scan Schedule | Server Cron, PHP Functions | ✅ Aligned |
@@ -126,8 +126,8 @@ This report confirms that all 135 risks are now aligned across relevant platform
 | RISK-120 | Nginx Rate Limiting Not Configured | Nginx, PHP Functions | ✅ Aligned |
 | RISK-121 | Apache ModSecurity Not Enabled | Apache, PHP Functions | ✅ Aligned |
 | RISK-122 | Nginx Gzip Compression Not Configured | Nginx, PHP Functions | ✅ Aligned |
-| RISK-123 | Caddy Server Version Exposed | PHP Functions | ✅ Aligned |
-| RISK-124 | Caddy Admin Interface Exposed | PHP Functions | ✅ Aligned |
+| RISK-123 | Legacy Platform Version Exposed | PHP Functions | ✅ Aligned |
+| RISK-124 | Legacy Platform Admin Interface Exposed | PHP Functions | ✅ Aligned |
 | RISK-125 | Nginx SSL Configuration Weak | Nginx, PHP Functions | ✅ Aligned |
 | RISK-126 | Outdated and Vulnerable WordPress Plugins | WordPress Core, PHP Functions | ✅ Aligned |
 | RISK-127 | No Input Validation | PHP Functions, Nginx | ✅ Aligned |

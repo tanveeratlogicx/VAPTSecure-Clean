@@ -1961,6 +1961,11 @@ var vaptLog = window.vaptLog || {
     const mappedComponents = getMappedContent(f, 'components', 'components', fieldMapping);
     const mappedActions = getMappedContent(f, 'actions', 'actions', fieldMapping);
     const mappedAvailablePlatforms = getMappedContent(f, 'available_platforms', 'available_platforms', fieldMapping);
+    const catalogPlatforms = Array.isArray(mappedAvailablePlatforms) ? mappedAvailablePlatforms : [];
+    const normalizedCatalogPlatforms = catalogPlatforms
+      .map(platform => String(platform || '').toLowerCase())
+      .filter(Boolean);
+    const catalogHas = (...terms) => normalizedCatalogPlatforms.some(platform => terms.some(term => platform.includes(term)));
 
     // Driver Detection (Skill Alignment)
     const targets = f.protection?.automated_protection?.implementation_targets || f.available_platforms || [];
@@ -1971,18 +1976,70 @@ var vaptLog = window.vaptLog || {
 
     const selection = f.active_enforcer;
 
-    if (selection) {
-      const selLower = selection.toLowerCase();
-      if (selLower.includes('htaccess') || selLower === 'apache' || selLower === 'litespeed') {
-        detectedDriver = '.htaccess (Apache Core)';
-        driverKey = 'htaccess';
+    if (normalizedCatalogPlatforms.length > 0) {
+      if (catalogHas('wp-config', 'wpconfig')) {
+        detectedDriver = 'wp-config.php Constants';
+        driverKey = 'wp_config';
+        targetFiles = ['{ABSPATH}wp-config.php'];
+        safetyRules = [
+          'Always use `/* BEGIN VAPT {ID} */` and `/* END VAPT {ID} */` markers.',
+          'Place constants BEFORE the `/* That\'s all, stop editing! */` line (before_wp_settings).',
+          'Check if constant is already defined before defining it.',
+          'Use correct boolean or string values as required by WP core.'
+        ];
+      }
+      else if (catalogHas('php-functions', 'phpfunctions', 'wordpress core', 'wordpress', 'hook')) {
+        detectedDriver = 'WordPress / PHP Hook';
+        driverKey = 'php_functions';
+        targetFiles = ['{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php'];
+        safetyRules = [
+          'Always use `// BEGIN VAPT {ID}` and `// END VAPT {ID}` markers.',
+          'Use specific WordPress action or filter hooks.',
+          'Prefix all functions with `vapt_` (e.g. `vapt_disable_xmlrpc`).',
+          'Insert at the end of the file (`functions_php`).'
+        ];
+      }
+      else if (catalogHas('nginx')) {
+        detectedDriver = 'Nginx Conf';
+        driverKey = 'nginx';
+        targetFiles = ['/etc/nginx/conf.d/vapt-security.conf'];
+        safetyRules = ['Use `# BEGIN VAPT {ID}` markers.', 'Ensure insertion is after `http {` loop.', 'Include `nginx -t` validation.'];
+      }
+      else if (catalogHas('cloudflare')) {
+        detectedDriver = 'Cloudflare (Pattern 4)';
+        driverKey = 'cloudflare';
+        targetFiles = ['Cloudflare Dashboard / API via WAF Rules'];
+      }
+      else if (catalogHas('htaccess', 'apache', 'litespeed')) {
+        detectedDriver = catalogHas('litespeed') ? 'LiteSpeed / .htaccess Compatibility' : '.htaccess (Apache Core)';
+        driverKey = catalogHas('litespeed') ? 'litespeed' : 'htaccess';
         targetFiles = ['{ABSPATH}.htaccess'];
         safetyRules = [
-          'Always use `# BEGIN VAPT {ID}` and `# END VAPT {ID}` markers.',
+          catalogHas('litespeed')
+            ? 'Always use `# BEGIN VAPT LS RISK-XXX` and `# END VAPT LS RISK-XXX` markers for LiteSpeed-specific blocks.'
+            : 'Always use `# BEGIN VAPT {ID}` and `# END VAPT {ID}` markers.',
           'Place RewriteRules BEFORE the `# BEGIN WordPress` block to ensure they execute.',
           'Use `[L,F]` for blocking rules.',
           'No forbidden directives (`TraceEnable`, `ServerSignature`, `<Directory>`).',
-          'Wrap rewrites in `<IfModule mod_rewrite.c>` with `RewriteEngine On`.'
+          'Wrap rewrites in `<IfModule mod_rewrite.c>` with `RewriteEngine On`.',
+          ...(catalogHas('litespeed') ? ['Keep LiteSpeed guidance aligned with the `.htaccess` baseline and emit only LiteSpeed-compatible additions.'] : [])
+        ];
+      }
+    } else if (selection) {
+      const selLower = selection.toLowerCase();
+      if (selLower.includes('htaccess') || selLower === 'apache' || selLower === 'litespeed') {
+        detectedDriver = selLower === 'litespeed' ? 'LiteSpeed / .htaccess Compatibility' : '.htaccess (Apache Core)';
+        driverKey = selLower === 'litespeed' ? 'litespeed' : 'htaccess';
+        targetFiles = ['{ABSPATH}.htaccess'];
+        safetyRules = [
+          selLower === 'litespeed'
+            ? 'Always use `# BEGIN VAPT LS RISK-XXX` and `# END VAPT LS RISK-XXX` markers for LiteSpeed-specific blocks.'
+            : 'Always use `# BEGIN VAPT {ID}` and `# END VAPT {ID}` markers.',
+          'Place RewriteRules BEFORE the `# BEGIN WordPress` block to ensure they execute.',
+          'Use `[L,F]` for blocking rules.',
+          'No forbidden directives (`TraceEnable`, `ServerSignature`, `<Directory>`).',
+          'Wrap rewrites in `<IfModule mod_rewrite.c>` with `RewriteEngine On`.',
+          ...(selLower === 'litespeed' ? ['Keep LiteSpeed guidance aligned with the `.htaccess` baseline and emit only LiteSpeed-compatible additions.'] : [])
         ];
       }
       else if (selLower.includes('wp-config')) {
@@ -2007,12 +2064,6 @@ var vaptLog = window.vaptLog || {
           'Insert at the end of the file (`functions_php`).'
         ];
       }
-      else if (selLower === 'fail2ban') {
-        detectedDriver = 'Fail2Ban Jail';
-        driverKey = 'fail2ban';
-        targetFiles = ['/etc/fail2ban/jail.local', '/etc/fail2ban/filter.d/...'];
-        safetyRules = ['Use `# BEGIN VAPT {ID}` markers.', 'Always include `fail2ban-client reload` in verification.'];
-      }
       else if (selLower === 'nginx') {
         detectedDriver = 'Nginx Conf';
         driverKey = 'nginx';
@@ -2024,28 +2075,19 @@ var vaptLog = window.vaptLog || {
         driverKey = 'cloudflare';
         targetFiles = ['Cloudflare Dashboard / API via WAF Rules'];
       }
-      else if (selLower === 'iis') {
-        detectedDriver = 'IIS / web.config (Pattern 5)';
-        driverKey = 'iis';
-        targetFiles = ['{ABSPATH}web.config'];
-        safetyRules = ['Use `<rule>` formatting inside `<rewrite>`.', 'Ensure URL Rewrite module exists.'];
-      }
-      else if (selLower === 'caddy') {
-        detectedDriver = 'Caddy (Pattern 6)';
-        driverKey = 'caddy';
-        targetFiles = ['/etc/caddy/Caddyfile'];
-        safetyRules = ['Use Caddy v2 syntax.', 'Ensure `caddy reload` is included in verification.'];
-      }
     } else if (targets.includes('.htaccess')) {
-      detectedDriver = '.htaccess (Apache Core)';
-      driverKey = 'htaccess';
+      detectedDriver = targets.includes('litespeed') ? 'LiteSpeed / .htaccess Compatibility' : '.htaccess (Apache Core)';
+      driverKey = targets.includes('litespeed') ? 'litespeed' : 'htaccess';
       targetFiles = ['{ABSPATH}.htaccess'];
       safetyRules = [
-        'Always use `# BEGIN VAPT {ID}` and `# END VAPT {ID}` markers.',
+        targets.includes('litespeed')
+          ? 'Always use `# BEGIN VAPT LS RISK-XXX` and `# END VAPT LS RISK-XXX` markers for LiteSpeed-specific blocks.'
+          : 'Always use `# BEGIN VAPT {ID}` and `# END VAPT {ID}` markers.',
         'Place RewriteRules BEFORE the `# BEGIN WordPress` block to ensure they execute.',
         'Use `[L,F]` for blocking rules.',
         'No forbidden directives (`TraceEnable`, `ServerSignature`, `<Directory>`).',
-        'Wrap rewrites in `<IfModule mod_rewrite.c>` with `RewriteEngine On`.'
+        'Wrap rewrites in `<IfModule mod_rewrite.c>` with `RewriteEngine On`.',
+        ...(targets.includes('litespeed') ? ['Keep LiteSpeed guidance aligned with the `.htaccess` baseline and emit only LiteSpeed-compatible additions.'] : [])
       ];
     }
     else if (targets.includes('wp-config.php')) {
@@ -2070,12 +2112,6 @@ var vaptLog = window.vaptLog || {
         'Insert at the end of the file (`functions_php`).'
       ];
     }
-    else if (targets.includes('fail2ban')) {
-      detectedDriver = 'Fail2Ban Jail';
-      driverKey = 'fail2ban';
-      targetFiles = ['/etc/fail2ban/jail.local', '/etc/fail2ban/filter.d/...'];
-      safetyRules = ['Use `# BEGIN VAPT {ID}` markers.', 'Always include `fail2ban-client reload` in verification.'];
-    }
     else if (targets.includes('Nginx')) {
       detectedDriver = 'Nginx Conf';
       driverKey = 'nginx';
@@ -2086,15 +2122,15 @@ var vaptLog = window.vaptLog || {
       detectedDriver = 'Cloudflare (Pattern 4)';
       targetFiles = ['Cloudflare Dashboard / API via WAF Rules'];
     }
-    else if (targets.includes('IIS')) {
-      detectedDriver = 'IIS / web.config (Pattern 5)';
-      targetFiles = ['{ABSPATH}web.config'];
-      safetyRules = ['Use `<rule>` formatting inside `<rewrite>`.', 'Ensure URL Rewrite module exists.'];
-    }
-    else if (targets.includes('Caddy')) {
-      detectedDriver = 'Caddy (Pattern 6)';
-      targetFiles = ['/etc/caddy/Caddyfile'];
-      safetyRules = ['Use Caddy v2 syntax.', 'Ensure `caddy reload` is included in verification.'];
+    else if (targets.includes('litespeed')) {
+      detectedDriver = 'LiteSpeed / .htaccess Compatibility';
+      driverKey = 'litespeed';
+      targetFiles = ['{ABSPATH}.htaccess'];
+      safetyRules = [
+        'Always use `# BEGIN VAPT LS RISK-XXX` and `# END VAPT LS RISK-XXX` markers for LiteSpeed-specific blocks.',
+        'Treat `.htaccess` as the shared baseline and add only LiteSpeed-compatible enhancements.',
+        'Avoid prohibited platform guidance; keep the brief WordPress-hosting scoped.'
+      ];
     }
 
     const hasMappingRules = mappedUiLayout || mappedComponents || mappedActions;
@@ -2115,6 +2151,7 @@ var vaptLog = window.vaptLog || {
       `- **Goal**: ${summary}`,
       `- **Primary Driver**: ${detectedDriver}`,
       `- **Rulebook**: Ingest \`ai_agent_instructions_v2.0.json\`.`,
+      `- **Contract**: Ingest \`vapt_platform_contract_v3.0.json\` and validate all contract gates before generation.`,
       `- **Blueprint**: Look up \`${id}\` in \`interface_schema_v2.0.json\`.`,
       `- **Pattern matching**: Map \`lib_key\` to \`enforcer_pattern_library_v2.0.json\`.`,
       ``,
@@ -2142,11 +2179,11 @@ var vaptLog = window.vaptLog || {
       ...(safetyRules.length > 0 ? safetyRules.map(rule => `- ${rule}`) : [`- Follow standard WordPress security best practices.`]),
       ``,
       `## 📋 Self-Check & Rubric (Completion Standards)`,
-      `- **Develop Phase**: Minimum Score **16/19**.`,
+      `- **Develop Phase**: Minimum Score **18/19**.`,
       `- **Deploy Phase**: Minimum Score **18/19** (Governed by \`/develop-to-deploy\` workflow).`,
       ``,
       `> [!IMPORTANT]`,
-      `> This brief follows the **VAPT v2.0 Schema First Architecture**. You MUST prioritize **Whitelisting** and follow the **Transition to Develop** sequence.`
+      `> This brief follows the **VAPT platform contract** and the **Transition to Develop** sequence. You MUST prioritize **Whitelisting** and respect allowed platforms.`
     ];
 
     // Overlay custom user instructions if any existed previously
@@ -2384,8 +2421,7 @@ var vaptLog = window.vaptLog || {
         apache: true,
         nginx: true,
         cloudflare_proxy: true,
-        iis: true,
-        caddy: true,
+        litespeed: true,
         wordpress: true,
         mod_rewrite: true,
         allowoverride: true
@@ -2395,19 +2431,19 @@ var vaptLog = window.vaptLog || {
       // Includes ALL platform names found in interface_schema_v2.0.json
       const compatibilityMap = {
         'apache_htaccess': {
-          enforcers: ['.htaccess', 'Apache', 'Litespeed', 'OpenLiteSpeed'],
+          enforcers: ['.htaccess', 'Apache', 'Litespeed', 'LiteSpeed', 'OpenLiteSpeed'],
           priority: 90, // High priority - most effective
+          requirements: ['mod_rewrite', 'AllowOverride']
+        },
+        'litespeed': {
+          enforcers: ['Litespeed', 'LiteSpeed', 'OpenLiteSpeed'],
+          priority: 88, // High priority - shared .htaccess baseline with LiteSpeed enhancements
           requirements: ['mod_rewrite', 'AllowOverride']
         },
         'nginx_config': {
           enforcers: ['Nginx', 'Nginx'],
           priority: 85, // High priority - excellent performance
           requirements: ['nginx.conf writable']
-        },
-        'iis_config': {
-          enforcers: ['IIS', 'IIS'],
-          priority: 80, // Medium priority - good for Windows hosting
-          requirements: ['web.config writable']
         },
         'php_functions': {
           enforcers: ['PHP Functions', 'WordPress', 'WordPress Core', 'wp-config.php'],
@@ -2423,16 +2459,6 @@ var vaptLog = window.vaptLog || {
           enforcers: ['Server Cron', 'Server Cron'],
           priority: 60, // Low priority - background tasks only
           requirements: ['crontab access']
-        },
-        'caddy_native': {
-          enforcers: ['Caddy', 'Caddy'],
-          priority: 85, // High priority - modern server
-          requirements: ['Caddyfile writable']
-        },
-        'fail2ban': {
-          enforcers: ['fail2ban', 'fail2ban'],
-          priority: 75, // Medium priority - IP blocking
-          requirements: ['jail.local writable']
         }
       };
 
@@ -2477,20 +2503,17 @@ var vaptLog = window.vaptLog || {
         'apache': 'apache_htaccess',
         'nginx': 'nginx_config',
         'cloudflare_proxy': 'cloudflare_edge',
-        'iis': 'iis_config',
-        'caddy': 'caddy_native',
+        'litespeed': 'litespeed',
         'wordpress': 'php_functions',
         'mod_rewrite': 'apache_htaccess',
         'allowoverride': 'apache_htaccess',
         // Add fallback mappings for all platform names
         'nginx_config': 'nginx_config',
         'apache_htaccess': 'apache_htaccess',
-        'iis_config': 'iis_config',
+        'litespeed': 'litespeed',
         'php_functions': 'php_functions',
         'cloudflare_edge': 'cloudflare_edge',
-        'server_cron': 'server_cron',
-        'caddy_native': 'caddy_native',
-        'fail2ban': 'fail2ban'
+        'server_cron': 'server_cron'
       };
 
       const compatibleEnforcers = Array.from(availableEnforcers).filter(enf => {
@@ -2557,11 +2580,9 @@ var vaptLog = window.vaptLog || {
         'cloudflare_edge': 'cloudflare_edge',
         'nginx_config': 'nginx_config',
         'apache_htaccess': 'apache_htaccess',
-        'iis_config': 'iis_config',
-        'caddy_native': 'caddy_native',
+        'litespeed': 'litespeed',
         'php_functions': 'php_functions',
-        'server_cron': 'server_cron',
-        'fail2ban': 'fail2ban'
+        'server_cron': 'server_cron'
       };
 
       const targetCapability = platformToCapability[optimalPlatform];

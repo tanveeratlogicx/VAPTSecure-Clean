@@ -138,7 +138,7 @@ class VAPTSECURE_AI_Validator {
         'htaccess' => array('begin' => '# BEGIN VAPT', 'end' => '# END VAPT'),
         'nginx' => array('begin' => '# BEGIN VAPT', 'end' => '# END VAPT'),
         'apache' => array('begin' => '# BEGIN VAPT', 'end' => '# END VAPT'),
-        'fail2ban' => array('begin' => '# BEGIN VAPT', 'end' => '# END VAPT'),
+        // [v4.0.x-SSoT] fail2ban removed - not applicable to WordPress hosting
         'server_cron' => array('begin' => '# BEGIN VAPT', 'end' => '# END VAPT'),
         'wp_config' => array('begin' => '/* BEGIN VAPT', 'end' => '/* END VAPT'),
         'php_functions' => array('begin' => '// BEGIN VAPT', 'end' => '// END VAPT'),

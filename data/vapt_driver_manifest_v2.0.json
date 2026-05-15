@@ -1029,12 +1029,12 @@
             "anchor_position": "append",
             "fallback": null
           },
-          "write_block": "// BEGIN VAPT RISK-007\nadd_action('send_headers', function() {\n    if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'wp-login.php') !== false) {\n        header('x-vapt-enforced: php-rate-limit');\n    }\n});\nadd_action('wp_login_failed', function($username) {\n    $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '0.0.0.0';\n    $key = 'vapt_risk007_' . md5($ip);\n    $attempts = get_transient($key);\n    if ($attempts === false) {\n        set_transient($key, 1, 3600);\n    } else {\n        if ($attempts >= 5) {\n            header('x-vapt-enforced: php-rate-limit');\n            wp_die('Too many failed login attempts. Please try again later.');\n        }\n        set_transient($key, $attempts + 1, 3600);\n    }\n});\n// END VAPT RISK-007",
+          "write_block": "// BEGIN VAPT RISK-007\nadd_action('send_headers', function() {\n    if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'wp-login.php') !== false) {\n        header('x-vapt-enforced: php-rate-limit');\n    }\n});\nadd_action('wp_login_failed', function($username) {\n    $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '0.0.0.0';\n    $key = 'vapt_risk007_' . md5($ip);\n    $attempts = get_transient($key);\n    if ($attempts === false) {\n        set_transient($key, 1, 3600);\n    } else {\n        if ($attempts >= 5) {\n            header('x-vapt-enforced: php-rate-limit');\n            wp_die('Too many failed login attempts. Please try again later.', '', array('response' => 429));\n        }\n        set_transient($key, $attempts + 1, 3600);\n    }\n});\n// END VAPT RISK-007",
           "begin_marker": "// BEGIN VAPT RISK-007",
           "end_marker": "// END VAPT RISK-007",
           "verification": {
-            "command": "wp eval \"do_action('wp_login_failed', 'test');\" ",
-            "expected": "No errors"
+            "command": "curl -s -o /dev/null -w \"%{http_code}\" -X POST -d \"log=vaptsecure_nonexistent_user&pwd=invalid-password&wp-submit=Log+In&redirect_to=/wp-admin/&testcookie=1\" /wp-login.php",
+            "expected": "429"
           },
           "rollback": {
             "action": "remove_block",

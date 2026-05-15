@@ -78,7 +78,14 @@ class VAPT_Self_Check {
                 $results->add( $this->check_file_permissions()  );
                 break;
 
+            case 'bundle_drift_check':
+                $results->add( $this->check_bundle_drift() );
+                $results->add( $this->check_catalog_alignment() );
+                break;
+
             case 'daily_health_check':
+                $results->add( $this->check_bundle_drift() );
+                $results->add( $this->check_catalog_alignment() );
                 $results->add( $this->check_feature_consistency()       );
                 $results->add( $this->check_htaccess_integrity()        );
                 $results->add( $this->check_wordpress_whitelist_rules() );
@@ -91,6 +98,8 @@ class VAPT_Self_Check {
                 $results->add( $this->check_database_tables()   );
                 $results->add( $this->check_license_degradation()  );
                 $results->add( $this->check_feature_deactivation() );
+                $results->add( $this->check_bundle_drift() );
+                $results->add( $this->check_catalog_alignment() );
                 $results->add( $this->check_feature_consistency()   );
                 $results->add( $this->check_rule_block_format()     );
                 $results->add( $this->check_rewrite_syntax()            );
@@ -110,6 +119,149 @@ class VAPT_Self_Check {
         }
 
         return $results;
+    }
+
+    public function check_bundle_drift(): VAPT_Check_Item {
+        if ( ! class_exists( 'VAPTSECURE_DB' ) ) {
+            return new VAPT_Check_Item(
+                'bundle_drift',
+                'warning',
+                'Bundle drift check unavailable in this runtime context'
+            );
+        }
+
+        if ( VAPTSECURE_DB::bundle_is_stale() ) {
+            return new VAPT_Check_Item(
+                'bundle_drift',
+                'warning',
+                'Canonical data bundle changed; runtime cache needs refresh',
+                [
+                    [
+                        'type'        => 'rehydrate_stale_meta',
+                        'description' => 'Rehydrate all stale feature meta from the live data bundle',
+                    ],
+                ]
+            );
+        }
+
+        return new VAPT_Check_Item(
+            'bundle_drift',
+            'pass',
+            'Bundle fingerprint is current'
+        );
+    }
+
+    public function check_catalog_alignment(): VAPT_Check_Item {
+        if ( ! class_exists( 'VAPTSECURE_DB' ) ) {
+            return new VAPT_Check_Item(
+                'catalog_alignment',
+                'warning',
+                'Catalog alignment unavailable in this runtime context'
+            );
+        }
+
+        $schema_path = defined( 'VAPTSECURE_PATH' ) ? VAPTSECURE_PATH . 'data/interface_schema_v2.0.json' : '';
+        if ( ! $schema_path || ! file_exists( $schema_path ) ) {
+            return new VAPT_Check_Item(
+                'catalog_alignment',
+                'warning',
+                'Live interface schema is unavailable for catalog alignment checks'
+            );
+        }
+
+        $schema = json_decode( (string) file_get_contents( $schema_path ), true );
+        if ( ! is_array( $schema ) ) {
+            return new VAPT_Check_Item(
+                'catalog_alignment',
+                'warning',
+                'Live interface schema could not be parsed'
+            );
+        }
+
+        $active_features = get_option( 'vapt_active_features', [] );
+        if ( ! is_array( $active_features ) || empty( $active_features ) ) {
+            return new VAPT_Check_Item(
+                'catalog_alignment',
+                'pass',
+                'No active features to validate against the live catalog'
+            );
+        }
+
+        $issues = [];
+        $corrections = [];
+
+        foreach ( $active_features as $feature_key ) {
+            $feature_key = trim( (string) $feature_key );
+            if ( $feature_key === '' || ! isset( $schema[ $feature_key ] ) ) {
+                continue;
+            }
+
+            $meta = VAPTSECURE_DB::get_feature_meta( $feature_key );
+            if ( ! is_array( $meta ) || empty( $meta ) ) {
+                continue;
+            }
+
+            $stored_schema = null;
+            foreach ( [ 'generated_schema', 'override_schema' ] as $schema_source ) {
+                if ( empty( $meta[ $schema_source ] ) || ! is_string( $meta[ $schema_source ] ) ) {
+                    continue;
+                }
+
+                $decoded = json_decode( $meta[ $schema_source ], true );
+                if ( is_array( $decoded ) ) {
+                    $stored_schema = $decoded;
+                    break;
+                }
+            }
+
+            if ( ! is_array( $stored_schema ) ) {
+                continue;
+            }
+
+            $normalize = static function ( $value ): string {
+                return strtolower( trim( str_replace( [ ' ', '.', '/', '\\' ], '-', (string) $value ) ) );
+            };
+
+            $live_platforms = array_map( $normalize, $schema[ $feature_key ]['available_platforms'] ?? [] );
+            $stored_platforms = array_map( $normalize, $stored_schema['available_platforms'] ?? [] );
+
+            $live_impls = array_map( $normalize, array_keys( $schema[ $feature_key ]['platform_implementations'] ?? [] ) );
+            $stored_impls = array_map( $normalize, array_keys( $stored_schema['platform_implementations'] ?? [] ) );
+
+            $platform_diff = array_unique( array_merge(
+                array_diff( $stored_platforms, $live_platforms ),
+                array_diff( $live_platforms, $stored_platforms ),
+                array_diff( $stored_impls, $live_impls ),
+                array_diff( $live_impls, $stored_impls )
+            ) );
+
+            if ( ! empty( $platform_diff ) ) {
+                $issues[] = sprintf(
+                    '%s: stored platform set differs from live catalog (%s)',
+                    $feature_key,
+                    implode( ', ', $platform_diff )
+                );
+                $corrections[] = [
+                    'type'        => 'sync_bundle_fingerprint',
+                    'description' => sprintf( 'Refresh runtime bundle state for %s from the live catalog', $feature_key ),
+                ];
+            }
+        }
+
+        if ( empty( $issues ) ) {
+            return new VAPT_Check_Item(
+                'catalog_alignment',
+                'pass',
+                'Active feature metadata matches the live catalog'
+            );
+        }
+
+        return new VAPT_Check_Item(
+            'catalog_alignment',
+            'warning',
+            implode( '; ', $issues ),
+            $corrections
+        );
     }
 
     public function check_htaccess_integrity(): VAPT_Check_Item {

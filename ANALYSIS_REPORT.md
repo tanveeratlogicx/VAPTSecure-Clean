@@ -51,8 +51,7 @@ Located in `/includes/enforcers/`:
 - `class-vaptsecure-hook-driver.php` - WordPress PHP hooks
 - `class-vaptsecure-php-driver.php` - PHP function injection
 - `class-vaptsecure-config-driver.php` - wp-config.php rules
-- `class-vaptsecure-iis-driver.php` - IIS configuration
-- `class-vaptsecure-caddy-driver.php` - Caddy web server
+- `class-vaptsecure-litespeed-driver.php` - LiteSpeed configuration
 
 ---
 
@@ -74,7 +73,6 @@ Located in `/data/Enforcers/`:
 - `apache-template.json`
 - `nginx-template.json`
 - `htaccess-template.json`
-- `fail2ban-template.json`
 - `php-functions-template.json`
 - `wp-config-template.json`
 - `wordpress-template.json`
@@ -213,7 +211,7 @@ Located in `/.ai/`:
 
 This is a **production-grade WordPress security plugin** with:
 - 125 vulnerability protection features
-- Multiple server enforcer support (Apache, Nginx, IIS, Caddy, PHP)
+- Multiple server enforcer support (Apache, LiteSpeed, Nginx, Cloudflare, PHP)
 - White-label client build generator
 - Domain-locked licensing with wildcard support
 - Self-check automation engine

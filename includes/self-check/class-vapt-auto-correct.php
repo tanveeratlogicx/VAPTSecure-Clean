@@ -50,6 +50,12 @@ class VAPT_Auto_Correct {
                     case 'sync_from_options':
                         $results[] = $this->sync_feature_state( $correction );
                         break;
+                    case 'sync_bundle_fingerprint':
+                        $results[] = $this->sync_bundle_fingerprint( $correction );
+                        break;
+                    case 'rehydrate_stale_meta':
+                        $results[] = $this->rehydrate_stale_meta( $correction );
+                        break;
                     default:
                         $results[] = [ 'status' => 'skipped', 'type' => $correction['type'] ];
                         break;
@@ -102,16 +108,32 @@ class VAPT_Auto_Correct {
     private function disable_feature( array $correction): array { return ['status' => 'success']; }
     private function degrade_feature( array $correction): array { return ['status' => 'success']; }
     private function fix_permission( array $correction): array { return ['status' => 'success']; }
-    private function drop_table( array $correction): array { 
+    private function drop_table( array $correction ): array { 
         global $wpdb;
         $table = $correction['table'];
         $wpdb->query("DROP TABLE IF EXISTS `{$table}`");
         return ['status' => 'success']; 
     }
-    private function delete_option( array $correction): array {
+    private function delete_option( array $correction ): array {
         delete_option($correction['option']);
         return ['status' => 'success']; 
     }
-    private function remove_directory( array $correction): array { return ['status' => 'success']; }
-    private function sync_feature_state( array $correction): array { return ['status' => 'success']; }
+    private function remove_directory( array $correction ): array { return ['status' => 'success']; }
+    private function sync_feature_state( array $correction ): array { return ['status' => 'success']; }
+    private function sync_bundle_fingerprint( array $correction ): array {
+        if ( class_exists('VAPTSECURE_DB') ) {
+            VAPTSECURE_DB::sync_bundle_fingerprint();
+        }
+
+        return [ 'status' => 'success', 'type' => 'sync_bundle_fingerprint' ];
+    }
+
+    private function rehydrate_stale_meta( array $correction ): array {
+        if ( class_exists( 'VAPTSECURE_Enforcer' ) ) {
+            $count = VAPTSECURE_Enforcer::rehydrate_all_stale_meta();
+            return [ 'status' => 'success', 'type' => 'rehydrate_stale_meta', 'features_rehydrated' => $count ];
+        }
+
+        return [ 'status' => 'error', 'type' => 'rehydrate_stale_meta', 'message' => 'VAPTSECURE_Enforcer not available' ];
+    }
 }
