@@ -191,11 +191,11 @@ class VAPTSECURE_Enforcer
         // error_log("VAPT ENFORCER: Toggle OFF NOT detected for {$key}; proceeding to deploy_feature.");
 
         $meta = VAPTSECURE_DB::get_feature_meta($key);
-        if (!$meta) { 
+        if (!$meta) {
             // error_log("VAPT ENFORCER: No meta found for {$key}, skipping dispatch");
             return;
         }
-        
+
         // error_log("VAPT ENFORCER: Dispatching enforcement for {$key}, is_enabled={$meta['is_enabled']}, is_enforced={$meta['is_enforced']}, is_adaptive={$meta['is_adaptive_deployment']}");
 
         // Fetch Status for Context
@@ -204,11 +204,18 @@ class VAPTSECURE_Enforcer
         $status = $status_row ? strtolower($status_row->status) : 'draft';
         $meta['status'] = $status;
 
-        // Override Logic
-        $use_override_schema = in_array($status, ['test', 'release']) && !empty($meta['override_schema']);
-        $raw_schema = $use_override_schema ? $meta['override_schema'] : $meta['generated_schema'];
-        $schema = !empty($raw_schema) ? json_decode($raw_schema, true) : array();
-        
+        // [v4.1.4] Use resolve_schema to get FRESH catalog data with platform implementations
+        // This ensures re-enabling gets fresh code from pattern library, not stale DB data
+        $schema = self::resolve_schema($meta);
+
+        // [DEBUG] Log platform_implementations for RISK-007
+        $impl_keys = !empty($schema['platform_implementations']) ? array_keys($schema['platform_implementations']) : [];
+        error_log("VAPT DEBUG: {$key} platform_implementations keys: " . implode(', ', $impl_keys));
+        if (!empty($schema['platform_implementations']['PHP Functions']['code'])) {
+            $code_preview = substr($schema['platform_implementations']['PHP Functions']['code'], 0, 80);
+            error_log("VAPT DEBUG: {$key} PHP Functions code found: {$code_preview}...");
+        }
+
         // error_log("VAPT ENFORCER: Schema has enforcement=" . (isset($schema['enforcement']) ? 'YES' : 'NO') . ", driver=" . ($schema['enforcement']['driver'] ?? 'none'));
 
         $impl_data = self::resolve_impl($meta);
@@ -287,11 +294,6 @@ class VAPTSECURE_Enforcer
         if (!empty($php_rules)) {
             $deployer = new VAPTSECURE_PHP_Deployer();
             $result = $deployer->deploy($key, $php_rules, true);
-            if (is_wp_error($result)) {
-                error_log("VAPT ENFORCER: PHP deploy failed for {$key}: " . $result->get_error_message());
-            } else {
-                // error_log("VAPT ENFORCER: PHP deploy success for {$key}");
-            }
         }
     }
 
@@ -374,6 +376,22 @@ class VAPTSECURE_Enforcer
         global $wpdb;
         $table = $wpdb->prefix . 'vaptsecure_feature_meta';
         $is_global = VAPTSECURE_DB::get_global_enforcement();
+
+        // [DEBUG] Check what features are available
+        $all_meta = $wpdb->get_results("SELECT feature_key, is_enabled, is_enforced FROM $table", ARRAY_A);
+        $risk007_meta = null;
+        foreach ($all_meta as $m) {
+            if (strpos($m['feature_key'], 'RISK-007') !== false) {
+                $risk007_meta = $m;
+                break;
+            }
+        }
+        error_log("VAPT DEBUG: Global enforcement=" . ($is_global ? 'ON' : 'OFF'));
+        if ($risk007_meta) {
+            error_log("VAPT DEBUG: RISK-007 meta: is_enabled=" . $risk007_meta['is_enabled'] . ", is_enforced=" . $risk007_meta['is_enforced']);
+        } else {
+            error_log("VAPT DEBUG: RISK-007 NOT FOUND in meta table");
+        }
 
         if ($is_global) {
             // [FIX v4.0.x] Check both is_enabled and is_enforced for toggle compatibility
@@ -466,9 +484,14 @@ class VAPTSECURE_Enforcer
                         $schema['enforcement'] = $db_overlay['enforcement'];
                     }
                 }
-                // Fill platform_implementations from catalog if DB had none
-                if (empty($schema['platform_implementations'])) {
-                    // [v4.1.2] Load platform implementations from enforcer pattern library
+                // [v4.1.5] Always load fresh platform_implementations from pattern library
+                // DB-stored implementations may be stale/incomplete (missing php_functions code)
+                // Load fresh from pattern library to ensure current code is used
+                $fresh_impls = self::load_platform_implementations_from_patterns($schema_key);
+                if (!empty($fresh_impls)) {
+                    $schema['platform_implementations'] = $fresh_impls;
+                } elseif (empty($schema['platform_implementations'])) {
+                    // Fallback to DB if pattern library has nothing
                     $schema['platform_implementations'] = self::load_platform_implementations_from_patterns($schema_key);
                 }
             }
@@ -840,11 +863,16 @@ class VAPTSECURE_Enforcer
      */
     private static function filter_platforms_by_environment($platforms)
     {
-        // Detect current web server
+        // Detect current web server from SERVER_SOFTWARE
         $server_software = isset($_SERVER['SERVER_SOFTWARE']) ? strtolower($_SERVER['SERVER_SOFTWARE']) : '';
-        $detected_server = 'unknown';
 
-        if (strpos($server_software, 'nginx') !== false) {
+        // Detect Cloudflare edge from HTTP headers
+        $is_cloudflare = !empty($_SERVER['HTTP_CF_RAY']) || !empty($_SERVER['HTTP_CF_VISITOR']);
+
+        $detected_server = 'unknown';
+        if ($is_cloudflare) {
+            $detected_server = 'cloudflare';
+        } elseif (strpos($server_software, 'nginx') !== false) {
             $detected_server = 'nginx';
         } elseif (strpos($server_software, 'litespeed') !== false) {
             $detected_server = 'litespeed';
@@ -852,29 +880,25 @@ class VAPTSECURE_Enforcer
             $detected_server = 'apache';
         }
 
-        // If server detected as nginx but feature only has nginx -> keep it
-        // If server detected as apache/litespeed but feature has nginx -> remove nginx
-        // If feature has htaccess/apache -> keep those for apache/litespeed
-
-        $filtered = [];
-        $platform_map = [
-            'nginx' => ['nginx', 'Nginx'],
-            'apache' => ['htaccess', 'Htaccess', 'apache', 'Apache', '.htaccess'],
-            'litespeed' => ['htaccess', 'Htaccess', 'litespeed', 'Litespeed', '.htaccess'],
-            'wp-config' => ['wp-config', 'wp_config', 'wpconfig', 'Wp-config'],
-            'php functions' => ['php functions', 'php_functions', 'PHP Functions', 'hook', 'Hook']
-        ];
-
         // What to keep for each detected server
+        // [v4.1.4] Fixed: properly exclude incompatible platforms
+        // [v4.2.x] Added .php suffix variants to match schema platform_implementations keys
         $keep_for = [
-            'nginx' => ['nginx', 'Nginx', 'php functions', 'php_functions', 'PHP Functions', 'hook', 'wp-config', 'wp_config', 'Wp-config'],
-            'apache' => ['htaccess', 'Htaccess', 'apache', 'Apache', '.htaccess', 'php functions', 'php_functions', 'PHP Functions', 'hook', 'wp-config', 'wp_config', 'Wp-config'],
-            'litespeed' => ['htaccess', 'Htaccess', 'litespeed', 'Litespeed', '.htaccess', 'php functions', 'php_functions', 'PHP Functions', 'hook', 'wp-config', 'wp_config', 'Wp-config'],
-            'unknown' => [] // Keep all if we can't detect - let user decide
+            // Nginx server: keep nginx, php, wp-config - REMOVE apache/htaccess files
+            'nginx' => ['nginx', 'Nginx', 'php functions', 'php_functions', 'PHP Functions', 'php-functions', 'php-functions.php', 'hook', 'wp-config', 'wp_config', 'wp-config.php', 'Wp-config'],
+            // Apache server: keep apache, php, wp-config - REMOVE nginx config
+            'apache' => ['htaccess', 'Htaccess', 'apache', 'Apache', '.htaccess', 'php functions', 'php_functions', 'PHP Functions', 'php-functions', 'php-functions.php', 'hook', 'wp-config', 'wp_config', 'wp-config.php', 'Wp-config'],
+            // LiteSpeed: compatible with Apache, keep htaccess - REMOVE nginx
+            'litespeed' => ['htaccess', 'Htaccess', 'litespeed', 'Litespeed', '.htaccess', 'php functions', 'php_functions', 'PHP Functions', 'php-functions', 'php-functions.php', 'hook', 'wp-config', 'wp_config', 'wp-config.php', 'Wp-config'],
+            // Cloudflare: edge handles nginx-like, keep cloudflare + php + wp-config - REMOVE apache/nginx files
+            'cloudflare' => ['cloudflare', 'Cloudflare', 'php functions', 'php_functions', 'PHP Functions', 'php-functions', 'php-functions.php', 'hook', 'wp-config', 'wp_config', 'wp-config.php', 'Wp-config'],
+            // Unknown: keep all (let user decide)
+            'unknown' => []
         ];
 
         $allowed = $keep_for[$detected_server] ?? $keep_for['unknown'];
 
+        $filtered = [];
         foreach ($platforms as $platform_name => $platform_data) {
             $normalized = strtolower(trim((string) $platform_name));
             if (in_array($normalized, array_map('strtolower', $allowed))) {
@@ -882,11 +906,9 @@ class VAPTSECURE_Enforcer
             }
         }
 
-        // If we filtered everything out but there were platforms originally,
-        // check if this is because the feature ONLY has nginx and we're on apache
-        // In this case, fall back to PHP Functions as universal fallback
-        if (empty($filtered) && !empty($platforms) && $detected_server !== 'nginx' && $detected_server !== 'unknown') {
-            // Check if PHP Functions is available
+        // If we filtered everything but there's only one platform type that doesn't match,
+        // check if PHP Functions is available as universal fallback
+        if (empty($filtered) && !empty($platforms)) {
             foreach ($platforms as $pn => $pd) {
                 $pn_lower = strtolower($pn);
                 if (strpos($pn_lower, 'php') !== false || $pn_lower === 'hook') {

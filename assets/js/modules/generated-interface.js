@@ -2424,10 +2424,9 @@ const resolvePrimaryPlatform = (featureData = {}) => {
       try { return JSON.parse(feature.implementation_data); } catch (e) { return {}; }
     });
 
-    // [v4.1.3] State for hover/copy tooltip visibility
+    // [v4.1.3] State for hover tooltip visibility
     const [showTooltip, setShowTooltip] = useState(false);
     const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0, width: 380, maxHeight: 360 });
-    const [copySuccess, setCopySuccess] = useState(false);
     const tooltipAnchorRef = useRef(null);
     const tooltipCloseTimerRef = useRef(null);
 
@@ -2945,21 +2944,33 @@ const resolvePrimaryPlatform = (featureData = {}) => {
          if (!addedCode) return null;
 
          const isCurrentlyEnforced = toBool(value);
-          const shortPath = targetFile.startsWith('/') || targetFile.includes('\\')
-            ? getShortPath(targetFile)
-            : (targetFile.startsWith('./') ? targetFile : `./${targetFile}`);
+         // [v4.1.4] Get actual target file from live audit, fallback to enforcement driver
+         const liveTargetLabel = liveAudit?.audit_summary?.[0]?.label || '';
+         const targetFilePath = liveTargetLabel || (verificationFeatureData.enforcement?.driver === 'wp_config'
+           ? 'wp-config.php'
+           : (verificationFeatureData.enforcement?.driver === 'htaccess' || verificationFeatureData.enforcement?.driver === 'apache'
+             ? '.htaccess'
+             : 'vapt-functions.php'));
 
-         let displayStatus = isCurrentlyEnforced ? 'active' : 'inactive';
-         let displayLabel = isCurrentlyEnforced ? __('Status: Active & Injected', 'vaptsecure') : __('Status: Not Active', 'vaptsecure');
-         let statusColor = isCurrentlyEnforced ? '#166534' : '#991b1b';
-         let statusBg = isCurrentlyEnforced ? '#f0fdf4' : '#fef2f2';
-         let statusIcon = isCurrentlyEnforced ? 'yes' : 'no';
-         let borderColor = isCurrentlyEnforced ? '#22c55e' : '#94a3b8';
+         const shortPath = targetFilePath.startsWith('/') || targetFilePath.includes('\\')
+            ? getShortPath(targetFilePath)
+            : (targetFilePath.startsWith('./') ? targetFilePath : `./${targetFilePath}`);
 
+         // [v4.1.4] Status based on ACTUAL live state, not just toggle
          const liveState = liveAudit?.audit_summary?.[0]?.live_state;
          const isSelfHealed = liveAudit?.was_self_healed || liveAudit?.audit_summary?.[0]?.self_healed;
          const isRemoving = statusMap[key]?.message === __('Removing...', 'vaptsecure');
+         const isMissing = liveState === 'missing';
+         const isPresent = liveState === 'present';
          const isCleaned = liveState === 'cleaned' || liveState === 'missing';
+
+         // [v4.1.4] Fixed: status follows actual live state, not just toggle
+         let displayStatus = 'inactive';
+         let displayLabel = __('Status: Not Active', 'vaptsecure');
+         let statusColor = '#991b1b';
+         let statusBg = '#fef2f2';
+         let statusIcon = 'no';
+         let borderColor = '#94a3b8';
 
          if (isRemoving) {
            displayStatus = 'removing';
@@ -2975,23 +2986,33 @@ const resolvePrimaryPlatform = (featureData = {}) => {
            statusBg = '#d1fae5';
            statusIcon = 'update';
            borderColor = '#10b981';
-         } else if (!isCurrentlyEnforced && isCleaned) {
-           displayStatus = 'cleaned';
-           displayLabel = __('Status: Cleaned', 'vaptsecure');
-           statusColor = '#166534';
-           statusBg = '#f0fdf4';
-           statusIcon = 'yes';
-           borderColor = '#22c55e';
-         } else if (isCurrentlyEnforced && liveState === 'present') {
+         } else if (isPresent && isCurrentlyEnforced) {
+           // Toggle ON + code present = Active
            displayStatus = 'active';
            displayLabel = __('Status: Active & Injected', 'vaptsecure');
            statusColor = '#166534';
            statusBg = '#f0fdf4';
            statusIcon = 'yes';
            borderColor = '#22c55e';
+         } else if (isCurrentlyEnforced && isMissing) {
+           // Toggle ON but code missing = Error state
+           displayStatus = 'missing';
+           displayLabel = __('Status: Missing (Not Injected)', 'vaptsecure');
+           statusColor = '#dc2626';
+           statusBg = '#fef2f2';
+           statusIcon = 'warning';
+           borderColor = '#ef4444';
+         } else if (!isCurrentlyEnforced && isCleaned) {
+           // Toggle OFF + code cleaned = Cleaned
+           displayStatus = 'cleaned';
+           displayLabel = __('Status: Cleaned', 'vaptsecure');
+           statusColor = '#166534';
+           statusBg = '#f0fafc';
+           statusIcon = 'yes';
+           borderColor = '#22c55e';
          }
 
-         const liveStateLabel = liveState || (isCurrentlyEnforced ? 'present' : 'cleaned');
+         const liveStateLabel = liveState || (isCurrentlyEnforced && !isMissing ? 'present' : 'missing');
          const liveStateDisplay = liveStateLabel.charAt(0).toUpperCase() + liveStateLabel.slice(1);
 
          return el('div', {
@@ -3095,32 +3116,47 @@ const resolvePrimaryPlatform = (featureData = {}) => {
           const impls = verificationFeatureData.platform_implementations || {};
           const isCurrentlyEnforced = toBool(value);
           const liveState = liveAudit?.audit_summary?.[0]?.live_state || (isCurrentlyEnforced ? 'present' : 'cleaned');
-          const catalogEntries = Array.isArray(verificationFeatureData.available_platforms) && verificationFeatureData.available_platforms.length > 0
-            ? verificationFeatureData.available_platforms
-            : Object.keys(impls);
-          const canonicalPlatform = catalogEntries[0] || 'Unknown';
-          const canonicalMatch = Object.entries(impls).find(([plat]) => platformMatches(plat, canonicalPlatform));
-          const implementationLabel = canonicalMatch?.[0] || canonicalPlatform || 'Unknown';
-          const targetLabel = canonicalMatch?.[1]?.target_file || implementationLabel;
-          // Simple target file display
-          const targetFile = /php functions/i.test(String(targetLabel))
-            ? 'vapt-functions.php'
-            : /wp-config/i.test(String(targetLabel))
-              ? 'wp-config.php'
-              : /htaccess|apache/i.test(String(targetLabel))
-                ? '.htaccess'
-                : String(targetLabel);
 
-          // Simple text status - Injected (green) / Removed (red)
+          // [v4.1.4] Use actual target file path from live audit - not platform name
+          const liveTargetLabel = liveAudit?.audit_summary?.[0]?.label || '';
+          const targetFile = liveTargetLabel || (
+            /php functions|hook/i.test(String(verificationFeatureData.enforcement?.driver))
+              ? 'vapt-functions.php'
+              : /wp-config/i.test(String(verificationFeatureData.enforcement?.driver))
+                ? 'wp-config.php'
+                : /htaccess|apache/i.test(String(verificationFeatureData.enforcement?.driver))
+                  ? '.htaccess'
+                  : 'vapt-functions.php'
+          );
+
+          // Simple text status - Injected / Removed
           const statusText = isCurrentlyEnforced ? 'Injected' : 'Removed';
-          // Simple text Live State - Present (green), Removed/Missing (red), Cleaned (gray)
+          // Simple text Live State
           const liveStateText = liveState.charAt(0).toUpperCase() + liveState.slice(1);
 
-          // [v4.1.3] Show 10 lines of code
-          const snippetSource = canonicalMatch?.[1]?.wrapped_code || canonicalMatch?.[1]?.code || '';
+          // [v4.1.4] Get code from resolved schema (platform_implementations) - not stale DB data
+          // Note: impls already declared on line 3094
+          let snippetSource = '';
+          // Get code from first platform implementation that has it
+          for (const [platform, impl] of Object.entries(impls)) {
+            if (impl?.wrapped_code) {
+              snippetSource = impl.wrapped_code;
+              break;
+            }
+            if (impl?.code) {
+              snippetSource = impl.code;
+              break;
+            }
+          }
+          // Fallback to localData
+          if (!snippetSource) {
+            snippetSource = localData?.wrapped_code || localData?.code || '';
+          }
           const snippetPreview = String(snippetSource).trim();
 
-          return `Implementation: ${implementationLabel}\nTarget File: ${targetFile}\nStatus: ${statusText}\nLive State: ${liveStateText}\n\nCode Preview:\n${snippetPreview || '(no snippet available)'}`;
+          // [v4.1.4] Use enforcement driver as implementation label
+          const implLabel = verificationFeatureData.enforcement?.driver || 'PHP Functions';
+          return `Implementation: ${implLabel}\nTarget File: ${targetFile}\nStatus: ${statusText}\nLive State: ${liveStateText}\n\nCode Preview:\n${snippetPreview || '(no snippet available)'}`;
         };
 
        const tooltipContent = getTooltipContent();
@@ -3315,20 +3351,8 @@ return el('div', { id: control.id, key: uniqueKey, style: { marginBottom: isComp
               wordBreak: 'break-word'
             }
           }, [
-            el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', borderBottom: '1px solid #334155', paddingBottom: '8px' } }, [
-              el('span', { style: { fontSize: '10px', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase' } }, __('Hover Trace', 'vaptsecure')),
-              el(Button, {
-                isSmall: true,
-                isPrimary: copySuccess,
-                isSecondary: !copySuccess,
-                onClick: () => {
-                  navigator.clipboard.writeText(tooltipText);
-                  setCopySuccess(true);
-                  setTimeout(() => setCopySuccess(false), 2000);
-                },
-                style: { minWidth: '60px' }
-              }, copySuccess ? __('Copied!', 'vaptsecure') : __('Copy', 'vaptsecure'))
-            ]),
+            // [v4.1.3] Sleek header without copy button - users can select/copy manually
+            el('div', { style: { fontSize: '10px', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '8px', borderBottom: '1px solid #334155', paddingBottom: '8px' } }, __('Technical Trace', 'vaptsecure')),
             el('div', { style: { maxHeight: `${Math.max(160, tooltipPosition.maxHeight - 86)}px`, overflowY: 'auto' } }, tooltipContent)
           ]),
           document.body

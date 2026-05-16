@@ -18,7 +18,7 @@ class VAPTSECURE_PHP_Driver implements VAPTSECURE_Driver_Interface
         $enf_config = isset($schema['enforcement']) ? $schema['enforcement'] : array();
         $rules = array();
         $mappings = isset($enf_config['mappings']) ? $enf_config['mappings'] : array();
-    
+
         // Check toggle state (v4.0.0 Adaptive logic)
         $is_enabled = true;
         if (isset($data['feat_enabled'])) {
@@ -35,7 +35,7 @@ class VAPTSECURE_PHP_Driver implements VAPTSECURE_Driver_Interface
                 $is_enabled = filter_var($data[$auto_key], FILTER_VALIDATE_BOOLEAN);
             }
         }
-    
+
         if (!$is_enabled) {
             return [];
         }
@@ -45,17 +45,26 @@ class VAPTSECURE_PHP_Driver implements VAPTSECURE_Driver_Interface
 
         // 1. Try to find the actual code from schema/mappings or implementation data
         $resolved_code = '';
-    
+
+        // [DEBUG] Log incoming schema platform implementations
+        error_log("VAPT PHP DRIVER: feature_key={$feature_key}, schema has platform_impls=" . (isset($schema['platform_implementations']) ? 'YES' : 'NO'));
+        if (isset($schema['platform_implementations'])) {
+            $impl_keys = array_keys($schema['platform_implementations']);
+            error_log("VAPT PHP DRIVER: keys in platform_implementations: " . implode(', ', $impl_keys));
+        }
+
         // Check platform implementations first (V2.0 Architecture)
-        $php_platform_keys = array('PHP Functions', 'php_functions');
+        $php_platform_keys = array('PHP Functions', 'php_functions', 'php-functions');
         foreach ($php_platform_keys as $php_key) {
             if (isset($schema['platform_implementations'][$php_key])) {
                 $impl = $schema['platform_implementations'][$php_key];
+                error_log("VAPT PHP DRIVER: Found impl for key '{$php_key}', code=" . (!empty($impl['code']) ? 'YES' : 'NO') . ", wrapped_code=" . (!empty($impl['wrapped_code']) ? 'YES' : 'NO'));
                 if (!empty($impl['code'])) { $resolved_code = $impl['code'];
                 } elseif (!empty($impl['wrapped_code'])) { $resolved_code = $impl['wrapped_code'];
                 } elseif (!empty($impl['code_ref'])) { $resolved_code = self::resolve_pattern_code($impl['code_ref'], 'php_functions');
                 }
                 if (!empty($resolved_code)) {
+                    error_log("VAPT PHP DRIVER: Resolved code from platform_implementations[{$php_key}]");
                     break;
                 }
             }
