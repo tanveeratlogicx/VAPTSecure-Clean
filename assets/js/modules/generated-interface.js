@@ -3015,101 +3015,113 @@ const resolvePrimaryPlatform = (featureData = {}) => {
          const liveStateLabel = liveState || (isCurrentlyEnforced && !isMissing ? 'present' : 'missing');
          const liveStateDisplay = liveStateLabel.charAt(0).toUpperCase() + liveStateLabel.slice(1);
 
-         return el('div', {
-           style: {
-             padding: '12px',
-             maxWidth: '350px',
-             background: '#1e293b',
-             borderRadius: '8px',
-             border: '1px solid #334155',
-             boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
-           }
-         }, [
-           el('div', {
-             style: {
-               fontSize: '10px',
-               fontWeight: '800',
-               color: '#94a3b8',
-               textTransform: 'uppercase',
-               letterSpacing: '0.05em',
-               marginBottom: '10px',
-               borderBottom: '1px solid #334155',
-               paddingBottom: '6px'
-             }
-           }, __('Technical Trace & Enforcement', 'vaptsecure')),
-           el('div', {
-             style: {
-               background: statusBg,
-               borderRadius: '6px',
-               padding: '8px 12px',
-               display: 'flex',
-               alignItems: 'center',
-               gap: '8px',
-               marginBottom: '12px'
-             }
-           }, [
-             el(Icon, {
-               icon: statusIcon,
-               size: 14,
-               style: { color: statusColor }
-             }),
-             el('span', {
-               style: {
-                 fontSize: '11px',
-                 fontWeight: '800',
-                 color: statusColor,
-                 textTransform: 'uppercase',
-                 letterSpacing: '0.025em'
-               }
-             }, displayLabel)
-           ]),
-           el('div', {
-             style: {
-               fontSize: '10px',
-               fontWeight: '600',
-               color: '#94a3b8',
-               marginBottom: '8px',
-               display: 'flex',
-               justifyContent: 'space-between'
-             }
-           }, [
-             el('span', null, __('Live State:', 'vaptsecure')),
-             el('span', { style: { color: liveState === 'present' ? '#22c55e' : (liveState === 'recovered' ? '#10b981' : (liveState === 'missing' || liveState === 'cleaned' ? '#94a3b8' : '#f59e0b')) } }, liveStateDisplay)
-           ]),
-           el('div', {
-             title: targetFile,
-             style: {
-               fontSize: '12px',
-               fontWeight: '700',
-               color: '#38bdf8',
-               marginBottom: '8px',
-               fontFamily: 'monospace',
-               cursor: 'help'
-             }
-           }, shortPath),
-           el('div', {
-             style: {
-               position: 'relative',
-               background: '#0f172a',
-               borderRadius: '4px',
-               borderLeft: `4px solid ${borderColor}`,
-               overflow: 'hidden'
-             }
-           }, [
-             el('pre', {
-               style: {
-                 fontSize: '10px',
-                 padding: '10px',
-                 margin: 0,
-                 color: '#f8fafc',
-                 whiteSpace: 'pre-wrap',
-                 wordBreak: 'break-all',
-                 fontFamily: 'monospace',
-                 lineHeight: '1.4'
-               }
-             }, addedCode)
-           ])
-         ]);
+          return el('div', {
+            style: {
+              padding: '8px',
+              width: `${tooltipPosition.width}px`,
+              maxWidth: 'calc(100vw - 24px)',
+              maxHeight: `${tooltipPosition.maxHeight}px`,
+              overflowY: 'auto',
+              background: '#1e293b',
+              borderRadius: '8px',
+              border: '1px solid #334155',
+              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '10px',
+              fontFamily: 'monospace',
+              fontSize: '11px',
+              color: '#f8fafc',
+              whiteSpace: 'normal',
+              wordBreak: 'break-word'
+            }
+          }, [
+            el('div', {
+              style: {
+                fontSize: '10px',
+                fontWeight: '800',
+                color: '#94a3b8',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                marginBottom: '0',
+                borderBottom: '1px solid #334155',
+                paddingBottom: '8px'
+              }
+            }, __('Technical Trace & Enforcement', 'vaptsecure')),
+            el('div', {
+              style: {
+                background: statusBg,
+                borderRadius: '6px',
+                padding: '8px 12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                marginBottom: '0'
+              }
+            }, [
+              el(Icon, {
+                icon: statusIcon,
+                size: 14,
+                style: { color: statusColor }
+              }),
+              el('span', {
+                style: {
+                  fontSize: '11px',
+                  fontWeight: '800',
+                  color: statusColor,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.025em'
+                }
+              }, displayLabel)
+            ]),
+            el('div', {
+              style: {
+                fontSize: '10px',
+                fontWeight: '600',
+                color: '#94a3b8',
+                marginBottom: '0',
+                display: 'flex',
+                justifyContent: 'space-between'
+              }
+            }, [
+              el('span', null, __('Live State:', 'vaptsecure')),
+              el('span', { style: { color: liveState === 'present' ? '#22c55e' : (liveState === 'recovered' ? '#10b981' : (liveState === 'missing' || liveState === 'cleaned' ? '#94a3b8' : '#f59e0b')) } }, liveStateDisplay)
+            ]),
+            el('div', {
+              title: targetFile,
+              style: {
+                fontSize: '12px',
+                fontWeight: '700',
+                color: '#38bdf8',
+                marginBottom: '0',
+                fontFamily: 'monospace',
+                cursor: 'help'
+              }
+            }, shortPath),
+            el('div', {
+              style: {
+                position: 'relative',
+                background: '#0f172a',
+                borderRadius: '0 4px 4px 0',
+                borderLeft: `3px solid ${borderColor}`,
+                overflow: 'hidden',
+                padding: '8px'
+              }
+            }, [
+              el('pre', {
+                style: {
+                  fontSize: '10px',
+                  padding: '0',
+                  margin: 0,
+                  color: '#f8fafc',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-all',
+                  fontFamily: 'monospace',
+                  lineHeight: '1.4'
+                }
+              }, addedCode)
+            ])
+          ]);
        };
 
         const getPlainTooltipText = () => {
@@ -3174,13 +3186,13 @@ const resolvePrimaryPlatform = (featureData = {}) => {
           const tooltipLines = String(tooltipText || '').split('\n');
           const textLines = tooltipLines.length;
           const longestLineLength = tooltipLines.reduce((max, line) => Math.max(max, String(line).length), 0);
-          const contentDrivenWidth = Math.round(longestLineLength * 7.2 + 72);
-          const viewportDrivenWidth = Math.round(viewportWidth * 0.28);
+          const contentDrivenWidth = Math.round(longestLineLength * 5.8 + 58);
+          const viewportDrivenWidth = Math.round(viewportWidth * 0.22);
           const desiredWidth = Math.max(
-            320,
+            260,
             Math.min(
-              420,
-              Math.max(340, contentDrivenWidth, viewportDrivenWidth)
+              340,
+              Math.max(280, contentDrivenWidth, viewportDrivenWidth)
             )
           );
           const desiredHeight = Math.min(
@@ -3324,39 +3336,22 @@ return el('div', { id: control.id, key: uniqueKey, style: { marginBottom: isComp
           }
         }, el(Icon, { icon: 'info-outline', size: 14, style: { color: '#94a3b8' } })),
         showTooltip && createPortal(
-          el('div', {
-            onMouseEnter: cancelCloseTooltip,
-            onMouseLeave: scheduleCloseTooltip,
-            onClick: (e) => e.stopPropagation(),
-            role: 'tooltip',
-            style: {
-              position: 'fixed',
-              top: `${tooltipPosition.top}px`,
-              left: `${tooltipPosition.left}px`,
-              zIndex: 100000,
-              background: '#1e293b',
-              border: '1px solid #334155',
-              borderRadius: '8px',
-              padding: '12px',
-              width: `${tooltipPosition.width}px`,
-              maxWidth: 'calc(100vw - 24px)',
-              maxHeight: `${tooltipPosition.maxHeight}px`,
-              overflow: 'hidden',
-              pointerEvents: 'auto',
-              boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
-              fontFamily: 'monospace',
-              fontSize: '11px',
-              color: '#f8fafc',
-              whiteSpace: 'normal',
-              wordBreak: 'break-word'
-            }
-          }, [
-            // [v4.1.3] Sleek header without copy button - users can select/copy manually
-            el('div', { style: { fontSize: '10px', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '8px', borderBottom: '1px solid #334155', paddingBottom: '8px' } }, __('Technical Trace', 'vaptsecure')),
-            el('div', { style: { maxHeight: `${Math.max(160, tooltipPosition.maxHeight - 86)}px`, overflowY: 'auto' } }, tooltipContent)
-          ]),
-          document.body
-        )
+           el('div', {
+             onMouseEnter: cancelCloseTooltip,
+             onMouseLeave: scheduleCloseTooltip,
+             onClick: (e) => e.stopPropagation(),
+             role: 'tooltip',
+             style: {
+               position: 'fixed',
+               top: `${tooltipPosition.top}px`,
+               left: `${tooltipPosition.left}px`,
+               zIndex: 100000,
+               pointerEvents: 'auto',
+               boxShadow: '0 10px 25px rgba(0,0,0,0.3)'
+             }
+           }, tooltipContent),
+           document.body
+         )
       ])
     ]),
     help: safeRender(control.description || help),
