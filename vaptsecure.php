@@ -136,6 +136,12 @@ function is_vaptsecure_superadmin($require_auth = false)
  */
 function vaptsecure_is_feature_allowed($feature_key)
 {
+    // Override: If Superadmin, always allow all features
+    // (REST requests don't carry admin page params, so workbench check fails here)
+    if (function_exists('is_vaptsecure_superadmin') && is_vaptsecure_superadmin()) {
+        return true;
+    }
+    
     if (
         function_exists("vaptsecure_is_builder_context") &&
         vaptsecure_is_builder_context() &&

@@ -293,7 +293,18 @@
                 setViewFeaturesModalDomain(d);
                 setViewFeaturesModalOpen(true);
               }
-            }, `${d.features.length} ${__('Features', 'vaptsecure')} `) : `${(Array.isArray(d.features) ? d.features.length : 0)} ${__('Features', 'vaptsecure')} `),
+            }, (() => {
+              // Count only Release state features for display
+              const releaseFeatures = (Array.isArray(d.features) ? d.features : []).filter(fKey => {
+                const feature = (features || []).find(f => f.key === fKey);
+                return feature && feature.status && (
+                  feature.status === 'Release' ||
+                  feature.status === 'release' ||
+                  feature.status === 'implemented'
+                );
+              });
+              return `${releaseFeatures.length} ${__('Features', 'vaptsecure')} `;
+            })()) : `${(Array.isArray(d.features) ? d.features.length : 0)} ${__('Features', 'vaptsecure')} `),
             el('td', null, el('span', { style: { fontSize: '12px', color: (d.license_type !== 'developer' && d.license_type !== 'developer_unbound' && d.manual_expiry_date && new Date(d.manual_expiry_date) < new Date()) ? '#dc2626' : 'inherit' } },
               (d.license_type === 'developer' || d.license_type === 'developer_unbound')
                 ? __('Never', 'vaptsecure')
@@ -666,9 +677,28 @@
                 }
               }, __('No Release State features enabled for this domain.', 'vaptsecure'));
           })(),
-          el('div', { style: { marginTop: '20px', textAlign: 'right', borderTop: '1px solid #e2e8f0', paddingTop: '15px' } },
+          el('div', { style: { marginTop: '20px', textAlign: 'right', borderTop: '1px solid #e2e8f0', paddingTop: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } }, [
+            el('div', { style: { display: 'flex', gap: '10px' } }, [
+              el(Button, {
+                isDestructive: true,
+                onClick: () => {
+                  // Reset features to only include Release state features
+                  const releaseFeatureKeys = (features || [])
+                    .filter(f => f.status && (
+                      f.status === 'Release' ||
+                      f.status === 'release' ||
+                      f.status === 'implemented'
+                    ))
+                    .map(f => f.key);
+                  
+                  updateDomainFeatures(viewFeaturesModalDomain.id, releaseFeatureKeys);
+                  setViewFeaturesModalDomain({ ...viewFeaturesModalDomain, features: releaseFeatureKeys });
+                  setViewFeaturesModalOpen(false);
+                }
+              }, __('Reset to Release Features', 'vaptsecure'))
+            ]),
             el(Button, { isPrimary: true, onClick: () => setViewFeaturesModalOpen(false) }, __('Close', 'vaptsecure'))
-          )
+          ])
         ])
       ])
     ]);

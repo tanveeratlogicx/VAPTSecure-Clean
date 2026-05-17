@@ -781,7 +781,8 @@ var vaptLog = window.vaptLog || {
         setGenerating(false);
       }).catch(err => {
         setGenerating(false);
-        setAlertState({ message: 'Import Error: ' + err.message, type: 'error' });
+        const errorMsg = (err && err.data && err.data.message) || (err && err.message) || (err && err.responseText) || 'Unknown error';
+        setAlertState({ message: 'Import Error: ' + errorMsg, type: 'error' });
       });
     }
 

@@ -2,12 +2,12 @@
 
 ## Project: VAPTSecure-Clean
 
-Generated: 2026-05-17 19:27:06
+Generated: 2026-05-17 20:56:15
 
 ### File Structure Summary
-- Total Files: 10231
+- Total Files: 10233
 - Total Directories: 1082
-- File Extensions: .rules: 25, .agrules: 20, .md: 312, .json: 530, .php: 206, .ps1: 32, .zip: 20, .yml: 6, .css: 10, .js: 2804, .jsx: 25, .clinerules: 5, .roorules: 5, .windsurfrules: 5, .mdc: 1, .cmd: 22, .ts: 3487, .node: 6, .cjs: 306, .cts: 306, .map: 1936, .npmignore: 4, .cpp: 3, .gyp: 3, .mjs: 6, .graphify_python: 1, .txt: 3, .html: 1, .py: 10, .png: 2, .ftp: 1, .rar: 1
+- File Extensions: .rules: 25, .agrules: 20, .md: 312, .json: 530, .php: 207, .ps1: 32, .zip: 20, .yml: 6, .css: 10, .js: 2804, .jsx: 25, .clinerules: 5, .roorules: 5, .windsurfrules: 5, .mdc: 1, .cmd: 22, .ts: 3487, .node: 6, .cjs: 306, .cts: 306, .map: 1936, .npmignore: 4, .cpp: 3, .gyp: 3, .mjs: 6, .graphify_python: 1, .txt: 3, .html: 1, .htaccess: 1, .py: 10, .png: 2, .ftp: 1, .rar: 1
 
 ### Directory Tree
 ├── .agent
@@ -11294,6 +11294,7 @@ Generated: 2026-05-17 19:27:06
    ├── VAPT-Secure-Datafile-Adoption-Plan.md
    ├── VAPTSecure-Clean_Zai.zip
 ├── .clinerules
+├── .htaccess
 ├── .roorules
 ├── .rules
 ├── .windsurfrules
@@ -11318,6 +11319,7 @@ Generated: 2026-05-17 19:27:06
 ├── vapt-dashboard.png
 ├── vapt-debug.txt
 ├── vapt-functions.php
+├── vapt-locked-config.php
 ├── VAPTSecure-Clean-VAPTSecure.rar
 ├── VAPTSecure-Clean.zip
 ├── VAPTSecure-Clean_ForReview.zip
@@ -11376,7 +11378,7 @@ Generated: 2026-05-17 19:27:06
 - T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/vapt_driver_manifest_v2.0.json
 - T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/vapt_platform_contract_v3.0.json
 
-... and 10181 more files
+... and 10183 more files
 
 ### Maintenance
 This file is auto-generated. To update it:

@@ -54,9 +54,16 @@ class VAPTSECURE_REST
 
     public function register_routes()
     {
+        // Check if we're in a client build environment
         $is_client_build =
             defined('VAPTSECURE_BUILD_PROFILE') &&
             VAPTSECURE_BUILD_PROFILE === 'client';
+        
+        // Override: If Superadmin, always register full routes regardless of build profile
+        // (REST requests don't carry admin page params, so workbench check fails here)
+        if ($is_client_build && function_exists('is_vaptsecure_superadmin') && is_vaptsecure_superadmin()) {
+            $is_client_build = false;
+        }
 
         register_rest_route(
             'vaptsecure/v1', '/features', array(
@@ -2522,24 +2529,61 @@ $runtime_verified = false;
 
         $domain_for_files = ($domain === '*' || (is_string($domain) && strpos($domain, '__universal__:') === 0)) ? 'universal' : sanitize_file_name($domain);
 
-        $files = glob(VAPTSECURE_PATH . "vapt-*-config-*.php");
-        $matched_file = null;
+        // Check if current user is the designated Superadmin for auto-provisioning
+        $is_designated_superadmin = false;
+        if (function_exists('is_vaptsecure_superadmin') && is_vaptsecure_superadmin()) {
+            $current_user = wp_get_current_user();
+            $is_designated_superadmin = ($current_user && $current_user->user_login === 'tanmalik786');
+        }
 
-        if ($files) {
-            foreach ($files as $file) {
-                if (strpos(basename($file), "vapt-{$domain_for_files}-config-") !== false) {
-                    $matched_file = $file;
-                    break;
+        // For designated Superadmin: always provision/update vapt-locked-config.php
+        if ($is_designated_superadmin) {
+            $locked_config_path = VAPTSECURE_PATH . 'vapt-locked-config.php';
+            $provisioned = $this->provision_locked_config();
+            if (!$provisioned) {
+                return new WP_REST_Response(array('error' => 'Failed to provision master config (vapt-locked-config.php)'), 500);
+            }
+            
+            // Read from the freshly provisioned generic config
+            $matched_file = $locked_config_path;
+        } else {
+            // For other users: use domain-specific config if available
+            $files = glob(VAPTSECURE_PATH . "vapt-*-config-*.php");
+            $matched_file = null;
+
+            if ($files) {
+                foreach ($files as $file) {
+                    if (strpos(basename($file), "vapt-{$domain_for_files}-config-") !== false) {
+                        $matched_file = $file;
+                        break;
+                    }
                 }
             }
-        }
 
-        if (!$matched_file && file_exists(VAPTSECURE_PATH . 'vapt-locked-config.php')) {
-            $matched_file = VAPTSECURE_PATH . 'vapt-locked-config.php';
-        }
-
-        if (!$matched_file) {
-            return new WP_REST_Response(array('error' => 'No config file found for domain: ' . $domain), 404);
+            // If no domain-specific config found, provision/use vapt-locked-config.php for Master Build
+            if (!$matched_file) {
+                $locked_config_path = VAPTSECURE_PATH . 'vapt-locked-config.php';
+                
+                // vapt-locked-config.php is restricted to Superadmin only
+                if (!function_exists('is_vaptsecure_superadmin') || !is_vaptsecure_superadmin()) {
+                    return new WP_REST_Response(array('error' => 'Master config (vapt-locked-config.php) is restricted to Superadmin only.'), 403);
+                }
+                
+                // Provision vapt-locked-config.php if it doesn't exist (generic, works on any domain)
+                if (!file_exists($locked_config_path)) {
+                    $provisioned = $this->provision_locked_config();
+                    if (!$provisioned) {
+                        return new WP_REST_Response(array('error' => 'Failed to provision master config (vapt-locked-config.php)'), 500);
+                    }
+                }
+                
+                $matched_file = $locked_config_path;
+            } elseif (basename($matched_file) === 'vapt-locked-config.php') {
+                // Also restrict access to existing vapt-locked-config.php
+                if (!function_exists('is_vaptsecure_superadmin') || !is_vaptsecure_superadmin()) {
+                    return new WP_REST_Response(array('error' => 'Master config (vapt-locked-config.php) is restricted to Superadmin only.'), 403);
+                }
+            }
         }
 
         $content = file_get_contents($matched_file);
@@ -2569,6 +2613,114 @@ $runtime_verified = false;
             'features' => $features
             ), 200
         );
+    }
+
+    /**
+     * Provision vapt-locked-config.php as generic master config for Superadmin use.
+     * Works on any domain where Superadmin is logged in.
+     * Restricted to Superadmin only.
+     */
+    private function provision_locked_config()
+    {
+        // Defense in depth: verify Superadmin status
+        if (!function_exists('is_vaptsecure_superadmin') || !is_vaptsecure_superadmin()) {
+            return false;
+        }
+        
+        global $wpdb;
+        
+        // Get all features with 'Release' status
+        $status_table = $wpdb->prefix . 'vaptsecure_feature_status';
+        
+        // Check if table exists
+        $table_exists = $wpdb->get_var("SHOW TABLES LIKE '{$status_table}'");
+        if (!$table_exists) {
+            error_log("VAPTSECURE: Feature status table {$status_table} does not exist.");
+            return false;
+        }
+        
+        // Query for Release features (case-insensitive to handle 'Release', 'release', etc.)
+        $release_features = $wpdb->get_col($wpdb->prepare(
+            "SELECT feature_key FROM {$status_table} WHERE LOWER(status) = 'release'"
+        ));
+        
+        if ($wpdb->last_error) {
+            error_log("VAPTSECURE: Database error querying release features: " . $wpdb->last_error);
+            return false;
+        }
+        
+        if (empty($release_features)) {
+            error_log("VAPTSECURE: No features with 'Release' status found in {$status_table}");
+            return false;
+        }
+
+        // Get current version
+        $version = defined('VAPTSECURE_VERSION') ? VAPTSECURE_VERSION : get_option('vaptsecure_plugin_version', '1.0.0');
+        
+        // Generate config content with explicit define() statements for released features
+        $config_content = $this->generate_locked_config_content($version, $release_features);
+
+        // Write to vapt-locked-config.php
+        $locked_config_path = VAPTSECURE_PATH . 'vapt-locked-config.php';
+        $result = file_put_contents($locked_config_path, $config_content);
+        
+        if ($result === false) {
+            error_log("VAPTSECURE: Failed to write vapt-locked-config.php to {$locked_config_path}");
+            return false;
+        }
+
+        // Secure the file
+        if (function_exists('wp_mkdir_p')) {
+            // Ensure directory is secure
+            $htaccess_path = VAPTSECURE_PATH . '.htaccess';
+            if (!file_exists($htaccess_path)) {
+                file_put_contents($htaccess_path, "Options -Indexes\n<Files \"*.php\">\n    Order Deny,Allow\n    Deny from all\n</Files>\n<Files \"vapt-locked-config.php\">\n    Allow from all\n</Files>");
+            }
+        }
+
+        error_log("VAPTSECURE: Successfully provisioned vapt-locked-config.php with " . count($release_features) . " released features.");
+        return true;
+    }
+
+    /**
+     * Generate config content with explicit define() statements for released features.
+     * This format is compatible with sync_config_from_file's regex extraction.
+     */
+    private function generate_locked_config_content($version, $features)
+    {
+        $config = "<?php\n";
+        $config .= "/**\n";
+        $config .= " * VAPTSecure Master Configuration (Locked)\n";
+        $config .= " * Build Version: {$version}\n";
+        $config .= " * Generated: " . current_time('mysql') . "\n";
+        $config .= " * Domain: * (Universal - Works on any domain)\n";
+        $config .= " * License: developer_unbound\n";
+        $config .= " * Features: " . count($features) . " Released\n";
+        $config .= " */\n\n";
+        $config .= "if ( ! defined( 'ABSPATH' ) ) { exit; }\n\n";
+
+        // Core configuration
+        $config .= "define( 'VAPTSECURE_BUILD_PROFILE', 'client' );\n";
+        $config .= "define( 'VAPTSECURE_LICENSE_TYPE', 'developer_unbound' );\n";
+        $config .= "define( 'VAPTSECURE_IS_TRIAL', false );\n";
+        $config .= "define( 'VAPTSECURE_DOMAIN_LOCKED', '' );\n";
+        $config .= "define( 'VAPTSECURE_DOMAIN_WILDCARD', true );\n";
+        $config .= "define( 'VAPTSECURE_BUILD_VERSION', '{$version}' );\n";
+        $config .= "define( 'VAPTSECURE_LICENSE_SCOPE', 'universal' );\n";
+        $config .= "define( 'VAPTSECURE_DOMAIN_LIMIT', 0 );\n";
+        $config .= "define( 'VAPTSECURE_RESTRICT_FEATURES', false );\n";
+        $config .= "define( 'VAPTSECURE_REQUIRE_WP', '6.0' );\n";
+        $config .= "define( 'VAPTSECURE_REQUIRE_PHP', '7.4.33' );\n\n";
+
+        // Feature defines (explicit for regex extraction)
+        foreach ($features as $feature_key) {
+            $const_name = 'VAPTSECURE_FEATURE_' . strtoupper(str_replace('-', '_', $feature_key));
+            $config .= "define( '{$const_name}', true );\n";
+        }
+
+        $config .= "\n// End of VAPTSecure Master Configuration\n";
+
+        return $config;
     }
 
     public function get_assignees()
