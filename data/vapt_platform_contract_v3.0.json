@@ -165,7 +165,7 @@
     "new_enforcer_key": "litespeed",
     "insertion_point": "beginning_of_file",
     "target_file": "{ABSPATH}.htaccess",
-    "marker_style": "same as htaccess (# BEGIN VAPT / # END VAPT)",
+    "marker_style": "same as htaccess (# BEGIN VAPT / # END Of)",
     "applicable_risks": [
       {
         "risk_id": "RISK-010",

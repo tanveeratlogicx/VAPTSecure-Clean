@@ -575,7 +575,7 @@ var vaptLog = window.vaptLog || {
 
   const BuildGenerator = ({ domains, features, activeFile, setAlertState }) => {
     const [buildDomain, setBuildDomain] = useState('');
-    const [buildVersion, setBuildVersion] = useState(settings.pluginVersion || '3.1.0');
+    const [buildVersion, setBuildVersion] = useState(settings.pluginVersion || '3.7.25');
     const [requireWP, setRequireWP] = useState('6.0');
     const [requirePHP, setRequirePHP] = useState('7.4.33');
     const [includeConfig, setIncludeConfig] = useState(true);
@@ -1982,7 +1982,7 @@ var vaptLog = window.vaptLog || {
         driverKey = 'wp_config';
         targetFiles = ['{ABSPATH}wp-config.php'];
         safetyRules = [
-          'Always use `/* BEGIN VAPT {ID} */` and `/* END VAPT {ID} */` markers.',
+          'Always use `/* BEGIN VAPT {ID} */` and `/* END Of {ID} */` markers.',
           'Place constants BEFORE the `/* That\'s all, stop editing! */` line (before_wp_settings).',
           'Check if constant is already defined before defining it.',
           'Use correct boolean or string values as required by WP core.'
@@ -1993,7 +1993,7 @@ var vaptLog = window.vaptLog || {
         driverKey = 'php_functions';
         targetFiles = ['{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php'];
         safetyRules = [
-          'Always use `// BEGIN VAPT {ID}` and `// END VAPT {ID}` markers.',
+          'Always use `// BEGIN VAPT {ID}` and `// END Of {ID}` markers.',
           'Use specific WordPress action or filter hooks.',
           'Prefix all functions with `vapt_` (e.g. `vapt_disable_xmlrpc`).',
           'Insert at the end of the file (`functions_php`).'
@@ -2016,8 +2016,8 @@ var vaptLog = window.vaptLog || {
         targetFiles = ['{ABSPATH}.htaccess'];
         safetyRules = [
           catalogHas('litespeed')
-            ? 'Always use `# BEGIN VAPT LS RISK-XXX` and `# END VAPT LS RISK-XXX` markers for LiteSpeed-specific blocks.'
-            : 'Always use `# BEGIN VAPT {ID}` and `# END VAPT {ID}` markers.',
+            ? 'Always use `# BEGIN VAPT LS RISK-XXX` and `# END Of LS RISK-XXX` markers for LiteSpeed-specific blocks.'
+            : 'Always use `# BEGIN VAPT {ID}` and `# END Of {ID}` markers.',
           'Place RewriteRules BEFORE the `# BEGIN WordPress` block to ensure they execute.',
           'Use `[L,F]` for blocking rules.',
           'No forbidden directives (`TraceEnable`, `ServerSignature`, `<Directory>`).',
@@ -2033,8 +2033,8 @@ var vaptLog = window.vaptLog || {
         targetFiles = ['{ABSPATH}.htaccess'];
         safetyRules = [
           selLower === 'litespeed'
-            ? 'Always use `# BEGIN VAPT LS RISK-XXX` and `# END VAPT LS RISK-XXX` markers for LiteSpeed-specific blocks.'
-            : 'Always use `# BEGIN VAPT {ID}` and `# END VAPT {ID}` markers.',
+            ? 'Always use `# BEGIN VAPT LS RISK-XXX` and `# END Of LS RISK-XXX` markers for LiteSpeed-specific blocks.'
+            : 'Always use `# BEGIN VAPT {ID}` and `# END Of {ID}` markers.',
           'Place RewriteRules BEFORE the `# BEGIN WordPress` block to ensure they execute.',
           'Use `[L,F]` for blocking rules.',
           'No forbidden directives (`TraceEnable`, `ServerSignature`, `<Directory>`).',
@@ -2047,7 +2047,7 @@ var vaptLog = window.vaptLog || {
         driverKey = 'wp_config';
         targetFiles = ['{ABSPATH}wp-config.php'];
         safetyRules = [
-          'Always use `/* BEGIN VAPT {ID} */` and `/* END VAPT {ID} */` markers.',
+          'Always use `/* BEGIN VAPT {ID} */` and `/* END Of {ID} */` markers.',
           'Place constants BEFORE the `/* That\'s all, stop editing! */` line (before_wp_settings).',
           'Check if constant is already defined before defining it.',
           'Use correct boolean or string values as required by WP core.'
@@ -2058,7 +2058,7 @@ var vaptLog = window.vaptLog || {
         driverKey = 'php_functions';
         targetFiles = ['{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php'];
         safetyRules = [
-          'Always use `// BEGIN VAPT {ID}` and `// END VAPT {ID}` markers.',
+          'Always use `// BEGIN VAPT {ID}` and `// END Of {ID}` markers.',
           'Use specific WordPress action or filter hooks.',
           'Prefix all functions with `vapt_` (e.g. `vapt_disable_xmlrpc`).',
           'Insert at the end of the file (`functions_php`).'
@@ -2079,10 +2079,10 @@ var vaptLog = window.vaptLog || {
       detectedDriver = targets.includes('litespeed') ? 'LiteSpeed / .htaccess Compatibility' : '.htaccess (Apache Core)';
       driverKey = targets.includes('litespeed') ? 'litespeed' : 'htaccess';
       targetFiles = ['{ABSPATH}.htaccess'];
-      safetyRules = [
-        targets.includes('litespeed')
-          ? 'Always use `# BEGIN VAPT LS RISK-XXX` and `# END VAPT LS RISK-XXX` markers for LiteSpeed-specific blocks.'
-          : 'Always use `# BEGIN VAPT {ID}` and `# END VAPT {ID}` markers.',
+       safetyRules = [
+         targets.includes('litespeed')
+           ? 'Always use `# BEGIN VAPT LS RISK-XXX` and `# END Of LS RISK-XXX` markers for LiteSpeed-specific blocks.'
+           : 'Always use `# BEGIN VAPT {ID}` and `# END Of {ID}` markers.',
         'Place RewriteRules BEFORE the `# BEGIN WordPress` block to ensure they execute.',
         'Use `[L,F]` for blocking rules.',
         'No forbidden directives (`TraceEnable`, `ServerSignature`, `<Directory>`).',
@@ -2094,8 +2094,8 @@ var vaptLog = window.vaptLog || {
       detectedDriver = 'wp-config.php Constants';
       driverKey = 'wp_config';
       targetFiles = ['{ABSPATH}wp-config.php'];
-      safetyRules = [
-        'Always use `/* BEGIN VAPT {ID} */` and `/* END VAPT {ID} */` markers.',
+       safetyRules = [
+         'Always use `/* BEGIN VAPT {ID} */` and `/* END Of {ID} */` markers.',
         'Place constants BEFORE the `/* That\'s all, stop editing! */` line (before_wp_settings).',
         'Check if constant is already defined before defining it.',
         'Use correct boolean or string values as required by WP core.'
@@ -2105,8 +2105,8 @@ var vaptLog = window.vaptLog || {
       detectedDriver = 'WordPress / PHP Hook';
       driverKey = 'php_functions'; // Canonical key
       targetFiles = ['{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php'];
-      safetyRules = [
-        'Always use `// BEGIN VAPT {ID}` and `// END VAPT {ID}` markers.',
+       safetyRules = [
+         'Always use `// BEGIN VAPT {ID}` and `// END Of {ID}` markers.',
         'Use specific WordPress action or filter hooks.',
         'Prefix all functions with `vapt_` (e.g. `vapt_disable_xmlrpc`).',
         'Insert at the end of the file (`functions_php`).'
@@ -2126,8 +2126,8 @@ var vaptLog = window.vaptLog || {
       detectedDriver = 'LiteSpeed / .htaccess Compatibility';
       driverKey = 'litespeed';
       targetFiles = ['{ABSPATH}.htaccess'];
-      safetyRules = [
-        'Always use `# BEGIN VAPT LS RISK-XXX` and `# END VAPT LS RISK-XXX` markers for LiteSpeed-specific blocks.',
+       safetyRules = [
+         'Always use `# BEGIN VAPT LS RISK-XXX` and `# END Of LS RISK-XXX` markers for LiteSpeed-specific blocks.',
         'Treat `.htaccess` as the shared baseline and add only LiteSpeed-compatible enhancements.',
         'Avoid prohibited platform guidance; keep the brief WordPress-hosting scoped.'
       ];

@@ -66,8 +66,8 @@ class VAPTSECURE_Config_Cleaner
         }
 
         // Remove VAPT blocks (both single and multi-line)
-        $content = preg_replace('/# BEGIN VAPT[^\n]*\n.*?# END VAPT[^\n]*/s', '', $content);
-        $content = preg_replace('/# BEGIN VAPT-RISK[^\n]*\n.*?# END VAPT-RISK[^\n]*/s', '', $content);
+        $content = preg_replace('/# BEGIN VAPT[^\n]*\n.*?# END Of [^\n]*/s', '', $content);
+        $content = preg_replace('/# BEGIN VAPT-RISK[^\n]*\n.*?# END Of RISK[^\n]*/s', '', $content);
         
         // Clean up extra newlines
         $content = preg_replace('/\n{3,}/', "\n\n", $content);
@@ -113,8 +113,9 @@ class VAPTSECURE_Config_Cleaner
         }
 
         // Remove VAPT blocks (both PHP comments and line comments)
-        $content = preg_replace('/\/\/ BEGIN VAPT[^\n]*\n.*?\/\/ END VAPT[^\n]*/s', '', $content);
-        $content = preg_replace('/\/\* BEGIN VAPT[^\n]*\*\/.*?\/\* END VAPT[^\n]*\*\//s', '', $content);
+        // [v4.1.6] Handle legacy END VAPT FEATURE markers and mixed END Of formats
+        $content = preg_replace('/\/\/ BEGIN VAPT[^\n]*\n.*?\/\/ END (?:VAPT FEATURE:|Of) [^\n]*/s', '', $content);
+        $content = preg_replace('/\/\* BEGIN VAPT[^\n]*\*\/.*?\/\* END (?:VAPT FEATURE:|Of) [^\n]*\*\//s', '', $content);
         
         // Clean up extra newlines
         $content = preg_replace('/\n{3,}/', "\n\n", $content);
@@ -186,7 +187,7 @@ class VAPTSECURE_Config_Cleaner
             return false;
         }
 
-        $content = preg_replace('/# BEGIN VAPT[^\n]*\n.*?# END VAPT[^\n]*/s', '', $content);
+        $content = preg_replace('/# BEGIN VAPT[^\n]*\n.*?# END Of [^\n]*/s', '', $content);
         $content = preg_replace('/\n{3,}/', "\n\n", $content);
 
         $result = file_put_contents($nginx_conf, $content);

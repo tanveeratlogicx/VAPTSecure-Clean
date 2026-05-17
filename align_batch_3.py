@@ -52,14 +52,14 @@ def align_batch_3():
                 "insertion_point": "before_wp_settings",
                 "anchor": {"search": "require_once ABSPATH", "position": "before", "fallback": "append"},
                 "code": f"define('{constant_name}', true);",
-                "wrapped_code": f"/* BEGIN VAPT {risk_id} */\ndefine('{constant_name}', true);\n/* END VAPT {risk_id} */",
+                "wrapped_code": f"/* BEGIN VAPT {risk_id} */\ndefine('{constant_name}', true);\n/* END Of {risk_id} */",
                 "begin_marker": f"/* BEGIN VAPT {risk_id} */",
-                "end_marker": f"/* END VAPT {risk_id} */",
+                "end_marker": f"/* END Of {risk_id} */",
                 "verification": {"command": f"wp config get {constant_name}", "expected": "true"},
                 "driver": {
                     "write_mode": "insert_at_anchor",
                     "target_file": "{ABSPATH}wp-config.php",
-                    "write_block": f"/* BEGIN VAPT {risk_id} */\ndefine('{constant_name}', true);\n/* END VAPT {risk_id} */",
+                    "write_block": f"/* BEGIN VAPT {risk_id} */\ndefine('{constant_name}', true);\n/* END Of {risk_id} */",
                     "anchor_string": "require_once ABSPATH",
                     "anchor_position": "before",
                     "idempotency_check": f"/* BEGIN VAPT {risk_id} */",
@@ -77,9 +77,9 @@ def align_batch_3():
                     "backup_required": True,
                     "idempotency": {"check_string": f"/* BEGIN VAPT {risk_id} */", "if_found": "skip", "if_not_found": "insert"},
                     "insertion": {"anchor_string": "require_once ABSPATH", "anchor_position": "before", "fallback": "append"},
-                    "write_block": f"/* BEGIN VAPT {risk_id} */\ndefine('{constant_name}', true);\n/* END VAPT {risk_id} */",
+                    "write_block": f"/* BEGIN VAPT {risk_id} */\ndefine('{constant_name}', true);\n/* END Of {risk_id} */",
                     "begin_marker": f"/* BEGIN VAPT {risk_id} */",
-                    "end_marker": f"/* END VAPT {risk_id} */",
+                    "end_marker": f"/* END Of {risk_id} */",
                     "verification": {"command": f"wp config get {constant_name}", "expected": "true"}
                 })
 
@@ -98,14 +98,14 @@ def align_batch_3():
                 "insertion_point": "http_block",
                 "anchor": {"search": None, "position": "after", "fallback": "append"},
                 "code": nginx_code,
-                "wrapped_code": f"# BEGIN VAPT {risk_id}\n{nginx_code}\n# END VAPT {risk_id}",
+                "wrapped_code": f"# BEGIN VAPT {risk_id}\n{nginx_code}\n# END Of {risk_id}",
                 "begin_marker": f"# BEGIN VAPT {risk_id}",
-                "end_marker": f"# END VAPT {risk_id}",
+                "end_marker": f"# END Of {risk_id}",
                 "verification": {"command": "nginx -t", "expected": "No errors"},
                 "driver": {
                     "write_mode": "insert_at_anchor",
                     "target_file": "/etc/nginx/conf.d/vapt-security.conf",
-                    "write_block": f"# BEGIN VAPT {risk_id}\n{nginx_code}\n# END VAPT {risk_id}",
+                    "write_block": f"# BEGIN VAPT {risk_id}\n{nginx_code}\n# END Of {risk_id}",
                     "anchor_string": "http {",
                     "anchor_position": "after",
                     "idempotency_check": f"# BEGIN VAPT {risk_id}",
@@ -123,9 +123,9 @@ def align_batch_3():
                     "backup_required": True,
                     "idempotency": {"check_string": f"# BEGIN VAPT {risk_id}", "if_found": "skip", "if_not_found": "insert"},
                     "insertion": {"anchor_string": "http {", "anchor_position": "after", "fallback": "append"},
-                    "write_block": f"# BEGIN VAPT {risk_id}\n{nginx_code}\n# END VAPT {risk_id}",
+                    "write_block": f"# BEGIN VAPT {risk_id}\n{nginx_code}\n# END Of {risk_id}",
                     "begin_marker": f"# BEGIN VAPT {risk_id}",
-                    "end_marker": f"# END VAPT {risk_id}",
+                    "end_marker": f"# END Of {risk_id}",
                     "verification": {"command": "nginx -t", "expected": "No errors"}
                 })
 

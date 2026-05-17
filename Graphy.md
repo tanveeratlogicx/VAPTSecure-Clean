@@ -2,12 +2,12 @@
 
 ## Project: VAPTSecure-Clean
 
-Generated: 2026-05-17 06:36:26
+Generated: 2026-05-17 19:27:06
 
 ### File Structure Summary
-- Total Files: 10230
-- Total Directories: 1080
-- File Extensions: .rules: 25, .agrules: 20, .md: 312, .json: 530, .php: 205, .ps1: 32, .zip: 20, .yml: 6, .css: 10, .js: 2804, .jsx: 25, .clinerules: 5, .roorules: 5, .windsurfrules: 5, .mdc: 1, .cmd: 22, .ts: 3487, .node: 6, .cjs: 306, .cts: 306, .map: 1936, .npmignore: 4, .cpp: 3, .gyp: 3, .mjs: 6, .graphify_python: 1, .txt: 3, .html: 1, .py: 10, .png: 2, .ftp: 1, .rar: 1
+- Total Files: 10231
+- Total Directories: 1082
+- File Extensions: .rules: 25, .agrules: 20, .md: 312, .json: 530, .php: 206, .ps1: 32, .zip: 20, .yml: 6, .css: 10, .js: 2804, .jsx: 25, .clinerules: 5, .roorules: 5, .windsurfrules: 5, .mdc: 1, .cmd: 22, .ts: 3487, .node: 6, .cjs: 306, .cts: 306, .map: 1936, .npmignore: 4, .cpp: 3, .gyp: 3, .mjs: 6, .graphify_python: 1, .txt: 3, .html: 1, .py: 10, .png: 2, .ftp: 1, .rar: 1
 
 ### Directory Tree
 ├── .agent
@@ -7045,6 +7045,8 @@ Generated: 2026-05-17 06:36:26
 ├── .opencode
    ├── instructions
       ├── SOUL.md
+   ├── magic-context
+      ├── historian
    ├── node_modules
       ├── .bin
          ├── download-msgpackr-prebuilds
@@ -11301,6 +11303,7 @@ Generated: 2026-05-17 06:36:26
 ├── align_batch_4.py
 ├── align_batch_5.py
 ├── ANALYSIS_REPORT.md
+├── cleanup-legacy-markers.php
 ├── CODEBASE_REVIEW.md
 ├── COMMIT_MSG.txt
 ├── data_old.zip
@@ -11373,7 +11376,7 @@ Generated: 2026-05-17 06:36:26
 - T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/vapt_driver_manifest_v2.0.json
 - T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/vapt_platform_contract_v3.0.json
 
-... and 10180 more files
+... and 10181 more files
 
 ### Maintenance
 This file is auto-generated. To update it:

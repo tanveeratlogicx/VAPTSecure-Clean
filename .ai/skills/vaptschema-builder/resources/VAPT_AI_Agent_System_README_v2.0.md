@@ -136,7 +136,7 @@ enforcer_pattern_library_v2.0.patterns[RISK-XXX][lib_key]
   → code           bare code only
   → wrapped_code   code with begin_marker / end_marker already included
   → begin_marker   e.g. "# BEGIN VAPT RISK-003"
-  → end_marker     e.g. "# END VAPT RISK-003"
+  → end_marker     e.g. "# END Of RISK-003"
   → insertion_point  canonical token (before_wordpress_rewrite, beginning_of_file, …)
   → anchor         { search, position, fallback }
   → requires       [ "mod_rewrite", "mod_headers", … ]
@@ -174,7 +174,7 @@ Before emitting **any** `.htaccess` code, check every directive against these ru
     RewriteBase /
     {your_rules}
 </IfModule>
-# END VAPT RISK-XXX
+# END Of RISK-XXX
 ```
 
 **Why BEFORE `# BEGIN WordPress`:** WordPress's block ends with `RewriteRule . /index.php [L]`. The `[L]` flag stops all further rewrite processing — any RewriteRule placed after `# END WordPress` is in a dead zone and will never execute.
@@ -270,9 +270,9 @@ Every block written to disk is wrapped with markers so the driver can locate, ve
 
 | Enforcer | Begin Marker | End Marker |
 |----------|-------------|------------|
-| `.htaccess`, Nginx, Apache, LiteSpeed, Server Cron | `# BEGIN VAPT RISK-XXX` | `# END VAPT RISK-XXX` |
-| `wp-config.php` | `/* BEGIN VAPT RISK-XXX */` | `/* END VAPT RISK-XXX */` |
-| PHP Functions, WordPress, WordPress Core | `// BEGIN VAPT RISK-XXX` | `// END VAPT RISK-XXX` |
+| `.htaccess`, Nginx, Apache, LiteSpeed, Server Cron | `# BEGIN VAPT RISK-XXX` | `# END Of RISK-XXX` |
+| `wp-config.php` | `/* BEGIN VAPT RISK-XXX */` | `/* END Of RISK-XXX */` |
+| PHP Functions, WordPress, WordPress Core | `// BEGIN VAPT RISK-XXX` | `// END Of RISK-XXX` |
 
 ---
 
@@ -382,7 +382,7 @@ Every block written to disk is wrapped with markers so the driver can locate, ve
     RewriteRule ^wp-json/wp/v2/users$ - [F,L]
     RewriteRule ^wp-json/wp/v2/users/ - [F,L]
 </IfModule>
-# END VAPT RISK-003
+# END Of RISK-003
 ```
 
 4. Verification: `apachectl -t && curl -sI 'https://yoursite.com/wp-json/wp/v2/users' | grep HTTP`

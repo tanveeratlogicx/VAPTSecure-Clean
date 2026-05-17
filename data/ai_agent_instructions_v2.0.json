@@ -375,10 +375,10 @@
     "rollback_structured": "Machine-executable rollback object in enforcer_pattern_library: {action, begin_marker, end_marker, target_file} for file-based enforcers; {action, rule_identifier, zone_id, api_endpoint, api_method, auth_required} for Cloudflare. Present in all 430 entries.",
     "remove_mode": "Symmetric counterpart to write_mode in driver{} sub-object. Value: 'marker_regex_remove'. Defines how the driver removes an injected block.",
     "disable_verification": "Post-removal verification object in driver_manifest: {check_type, check_string, expected_result, fallback_verification}. Present in all 429 steps. check_type is 'marker_absent' for file-based, 'api_rule_absent' for Cloudflare.",
-    "litespeed_marker_convention": "LiteSpeed enforcers use '# BEGIN VAPT LS RISK-XXX' / '# END VAPT LS RISK-XXX' markers to avoid collision with htaccess enforcers that write to the same .htaccess file with '# BEGIN VAPT RISK-XXX' markers.",
+    "litespeed_marker_convention": "LiteSpeed enforcers use '# BEGIN VAPT LS RISK-XXX' / '# END Of LS RISK-XXX' markers to avoid collision with htaccess enforcers that write to the same .htaccess file with '# BEGIN VAPT RISK-XXX' markers.",
     "remove_operation": "Symmetric counterpart to 'operation' in interface_schema platform_implementations. Must be non-null for all entries. Maps: add_* -> remove_*, waf_custom_rule -> delete_waf_rule, transform_rule -> delete_transform_rule.",
     "disable_driver_ref": "Reference path to the driver_manifest rollback object for this platform. Example: 'vapt_driver_manifest_v2.0.risks.RISK-001.steps[*enforcer=htaccess].rollback'. Present in all 430 platform_implementations entries.",
-    "php_functions_marker_convention": "PHP Functions enforcers use '// BEGIN VAPT PF RISK-XXX' / '// END VAPT PF RISK-XXX' markers to avoid collision with WordPress/WordPress Core enforcers that write to the same vapt-functions.php file with '// BEGIN VAPT RISK-XXX' markers."
+    "php_functions_marker_convention": "PHP Functions enforcers use '// BEGIN VAPT PF RISK-XXX' / '// END Of PF RISK-XXX' markers to avoid collision with WordPress/WordPress Core enforcers that write to the same vapt-functions.php file with '// BEGIN VAPT RISK-XXX' markers."
   },
   "example_workflows": {
     "generate_RISK003_htaccess": {
@@ -389,11 +389,11 @@
         "3. Check insertion_point: before_wordpress_rewrite \u2713 (not a dead zone)",
         "4. Confirm <IfModule mod_rewrite.c> wrapper present \u2713",
         "5. Confirm RewriteBase / present \u2713",
-        "6. Output wrapped_code with # BEGIN VAPT RISK-003 / # END VAPT RISK-003",
+        "6. Output wrapped_code with # BEGIN VAPT RISK-003 / # END Of RISK-003",
         "7. Note: AllowOverride FileInfo or All required",
         "8. Self-check: checks 2,6,9,10,11 all pass \u2192 score \u226526 \u2192 deliver"
       ],
-      "correct_output_preview": "# BEGIN VAPT RISK-003\n<IfModule mod_rewrite.c>\n    RewriteEngine On\n    RewriteBase /\n    RewriteRule ^wp-json/wp/v2/users$ - [F,L]\n    RewriteRule ^wp-json/wp/v2/users/ - [F,L]\n</IfModule>\n# END VAPT RISK-003"
+      "correct_output_preview": "# BEGIN VAPT RISK-003\n<IfModule mod_rewrite.c>\n    RewriteEngine On\n    RewriteBase /\n    RewriteRule ^wp-json/wp/v2/users$ - [F,L]\n    RewriteRule ^wp-json/wp/v2/users/ - [F,L]\n</IfModule>\n# END Of RISK-003"
     },
     "diagnose_RISK003_driver_failure": {
       "prompt": "RISK-003 was applied but no rule appeared in .htaccess \u2014 diagnose",

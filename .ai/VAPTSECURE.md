@@ -35,7 +35,7 @@ last_updated: 2025-01-20
 - [ ] Verify: Will NOT block `/wp-admin/`, `/wp-login.php`, `/wp-json/wp/v2/`, `/wp-json/vaptsecure/v1/`
 - [ ] Verify: htaccess RewriteRule directives go **BEFORE** `# BEGIN WordPress`
 - [ ] Verify: No forbidden directives (`TraceEnable`, `ServerSignature`, `ServerTokens`, `<Directory>`, `<?php`)
-- [ ] Verify: Using proper block markers (`# BEGIN VAPT RISK-XXX` / `# END VAPT RISK-XXX`)
+- [ ] Verify: Using proper block markers (`# BEGIN VAPT RISK-XXX` / `# END Of RISK-XXX`)
 - [ ] Verify: All RewriteRule blocks wrapped in `<IfModule mod_rewrite.c>` with `RewriteEngine On` and `RewriteBase /`
 
 ### 1.4 Naming Convention Confirmation
@@ -133,16 +133,16 @@ $results = $driver->rollback( 'RISK-003' ); // Remove all VAPT blocks for this r
 
 | Enforcer Type | Begin Marker | End Marker |
 |----------------|--------------|------------|
-| `.htaccess` | `# BEGIN VAPT RISK-XXX` | `# END VAPT RISK-XXX` |
-| `nginx` | `# BEGIN VAPT RISK-XXX` | `# END VAPT RISK-XXX` |
-| `apache` | `# BEGIN VAPT RISK-XXX` | `# END VAPT RISK-XXX` |
-| `caddy` | `# BEGIN VAPT RISK-XXX` | `# END VAPT RISK-XXX` |
-| `fail2ban` | `# BEGIN VAPT RISK-XXX` | `# END VAPT RISK-XXX` |
-| `server_cron` | `# BEGIN VAPT RISK-XXX` | `# END VAPT RISK-XXX` |
-| `wp_config` | `/* BEGIN VAPT RISK-XXX */` | `/* END VAPT RISK-XXX */` |
-| `php_functions` | `// BEGIN VAPT RISK-XXX` | `// END VAPT RISK-XXX` |
-| `wordpress` | `// BEGIN VAPT RISK-XXX` | `// END VAPT RISK-XXX` |
-| `wordpress_core` | `// BEGIN VAPT RISK-XXX` | `// END VAPT RISK-XXX` |
+| `.htaccess` | `# BEGIN VAPT RISK-XXX` | `# END Of RISK-XXX` |
+| `nginx` | `# BEGIN VAPT RISK-XXX` | `# END Of RISK-XXX` |
+| `apache` | `# BEGIN VAPT RISK-XXX` | `# END Of RISK-XXX` |
+| `caddy` | `# BEGIN VAPT RISK-XXX` | `# END Of RISK-XXX` |
+| `fail2ban` | `# BEGIN VAPT RISK-XXX` | `# END Of RISK-XXX` |
+| `server_cron` | `# BEGIN VAPT RISK-XXX` | `# END Of RISK-XXX` |
+| `wp_config` | `/* BEGIN VAPT RISK-XXX */` | `/* END Of RISK-XXX */` |
+| `php_functions` | `// BEGIN VAPT RISK-XXX` | `// END Of RISK-XXX` |
+| `wordpress` | `// BEGIN VAPT RISK-XXX` | `// END Of RISK-XXX` |
+| `wordpress_core` | `// BEGIN VAPT RISK-XXX` | `// END Of RISK-XXX` |
 | `cloudflare` | N/A (API-based) | N/A (API-based) |
 | `iis` | XML comments or section markers | XML comments or section markers |
 
@@ -218,7 +218,7 @@ The `[L]` flag stops all further rewrite processing. Any RewriteRule placed **af
     RewriteBase /
     {your_rules_here}
 </IfModule>
-# END VAPT RISK-XXX
+# END Of RISK-XXX
 ```
 
 ### Required Elements

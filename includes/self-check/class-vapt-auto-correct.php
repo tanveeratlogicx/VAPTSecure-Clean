@@ -75,7 +75,7 @@ class VAPT_Auto_Correct {
         $content       = file_get_contents( $htaccess_path );
 
         $new_content = preg_replace_callback(
-            "/(# BEGIN VAPT-RISK-{$id}\n)(.*?)(\n# END VAPT-RISK-{$id})/s",
+            "/(# BEGIN VAPT-RISK-{$id}\n)(.*?)(\n# END Of RISK-{$id})/s",
             function( $m ) { return $m[1] . rtrim( $m[2] ) . "\n\n" . ltrim( $m[3], "\n" ); },
             $content
         );
@@ -96,7 +96,7 @@ class VAPT_Auto_Correct {
         if ( $correction['backup'] ?? false ) {
             copy( $htaccess_path, $htaccess_path . '.vapt-backup-' . date( 'Ymd-His' ) );
         }
-        $new_content = preg_replace( '/\n?# BEGIN VAPT-.*?# END VAPT-[^\n]*\n?/s', '', $content );
+        $new_content = preg_replace( '/\n?# BEGIN VAPT-.*?# END Of [^\n]*\n?/s', '', $content );
         file_put_contents( $htaccess_path, $new_content );
         return [ 'status' => 'success', 'type' => 'remove_all_htaccess' ];
     }

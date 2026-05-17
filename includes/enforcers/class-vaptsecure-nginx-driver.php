@@ -80,7 +80,7 @@ class VAPTSECURE_Nginx_Driver implements VAPTSECURE_Driver_Interface
                 $wrapped_rules[] = $rule;
             }
             $wrapped_rules[] = "add_header X-VAPT-Feature \"$feature_key\" always; # Marker for verify";
-            $wrapped_rules[] = "# END VAPT $feature_key";
+            $wrapped_rules[] = "# END Of $feature_key";
 
             return $wrapped_rules;
         }

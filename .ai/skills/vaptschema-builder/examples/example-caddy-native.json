@@ -11,7 +11,7 @@
   "enforcement": {
     "driver": "caddy_native",
     "mappings": {
-      "UI-RISK-123-001": "# BEGIN VAPT RISK-123\nheader {\n    X-Content-Type-Options nosniff\n}\n# END VAPT RISK-123"
+      "UI-RISK-123-001": "# BEGIN VAPT RISK-123\nheader {\n    X-Content-Type-Options nosniff\n}\n# END Of RISK-123"
     }
   }
 }

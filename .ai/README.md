@@ -683,7 +683,7 @@ flowchart TD
                                        ← ✅ EXACTLY ONE blank line here
 </IfModule>
                                        ← ✅ (content ends, one blank line before END)
-# END VAPT-RISK-{FEATURE-ID}          ← marker
+# END Of-RISK-{FEATURE-ID}          ← marker
                                        ← ✅ EXACTLY ONE blank line here (between blocks)
 # BEGIN VAPT-RISK-NEXT-FEATURE        ← next block
 ```

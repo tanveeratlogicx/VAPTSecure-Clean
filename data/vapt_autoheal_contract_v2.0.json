@@ -102,49 +102,49 @@
     "marker_formats": {
       "htaccess": {
         "begin": "# BEGIN VAPT RISK-XXX",
-        "end": "# END VAPT RISK-XXX",
+        "end": "# END Of RISK-XXX",
         "comment_style": "hash"
       },
       "nginx": {
         "begin": "# BEGIN VAPT RISK-XXX",
-        "end": "# END VAPT RISK-XXX",
+        "end": "# END Of RISK-XXX",
         "comment_style": "hash"
       },
       "apache": {
         "begin": "# BEGIN VAPT RISK-XXX",
-        "end": "# END VAPT RISK-XXX",
+        "end": "# END Of RISK-XXX",
         "comment_style": "hash"
       },
       "litespeed": {
         "begin": "# BEGIN VAPT LS RISK-XXX",
-        "end": "# END VAPT LS RISK-XXX",
+        "end": "# END Of LS RISK-XXX",
         "comment_style": "hash",
         "rationale": "LS prefix prevents same-file marker collision when litespeed and htaccess both write to .htaccess"
       },
       "server_cron": {
         "begin": "# BEGIN VAPT RISK-XXX",
-        "end": "# END VAPT RISK-XXX",
+        "end": "# END Of RISK-XXX",
         "comment_style": "hash"
       },
       "wp-config.php": {
         "begin": "/* BEGIN VAPT RISK-XXX */",
-        "end": "/* END VAPT RISK-XXX */",
+        "end": "/* END Of RISK-XXX */",
         "comment_style": "c_block"
       },
       "php_functions": {
         "begin": "// BEGIN VAPT PF RISK-XXX",
-        "end": "// END VAPT PF RISK-XXX",
+        "end": "// END Of PF RISK-XXX",
         "comment_style": "single_line",
         "rationale": "PF prefix prevents same-file marker collision when php_functions and wordpress enforcers both write to vapt-functions.php"
       },
       "wordpress": {
         "begin": "// BEGIN VAPT RISK-XXX",
-        "end": "// END VAPT RISK-XXX",
+        "end": "// END Of RISK-XXX",
         "comment_style": "single_line"
       },
       "wordpress_core": {
         "begin": "// BEGIN VAPT RISK-XXX",
-        "end": "// END VAPT RISK-XXX",
+        "end": "// END Of RISK-XXX",
         "comment_style": "single_line"
       },
       "cloudflare": {
@@ -156,8 +156,8 @@
     },
     "naming_convention": "XXX = zero-padded risk number (e.g., 002, 014, 129)",
     "litespeed_marker_change": {
-      "old_format": "# BEGIN VAPT RISK-XXX / # END VAPT RISK-XXX",
-      "new_format": "# BEGIN VAPT LS RISK-XXX / # END VAPT LS RISK-XXX",
+      "old_format": "# BEGIN VAPT RISK-XXX / # END Of RISK-XXX",
+      "new_format": "# BEGIN VAPT LS RISK-XXX / # END Of LS RISK-XXX",
       "affected_risks": [
         "RISK-010",
         "RISK-013",
@@ -185,8 +185,8 @@
     },
     "wordpress_convention_alignment": "Mirrors WordPress core # BEGIN WordPress / # END WordPress pattern",
     "php_functions_marker_change": {
-      "old_format": "// BEGIN VAPT RISK-XXX / // END VAPT RISK-XXX",
-      "new_format": "// BEGIN VAPT PF RISK-XXX / // END VAPT PF RISK-XXX",
+      "old_format": "// BEGIN VAPT RISK-XXX / // END Of RISK-XXX",
+      "new_format": "// BEGIN VAPT PF RISK-XXX / // END Of PF RISK-XXX",
       "affected_risks": [
         "RISK-106",
         "RISK-107",
@@ -214,7 +214,7 @@
       "phase_id": "AH-P1",
       "title": "Critical Fix \u2014 LiteSpeed Marker Collision Resolution",
       "severity": "CRITICAL",
-      "description": "4 LiteSpeed enforcer steps (RISK-013, 023, 024, 035) share identical markers with their corresponding htaccess steps in the SAME target file ({ABSPATH}.htaccess). This causes: (1) litespeed idempotency check finds htaccess marker and skips, so LS protection never applies; (2) rollback of either enforcer removes the other's block. Fix: change all 8 litespeed steps to use '# BEGIN VAPT LS RISK-XXX' / '# END VAPT LS RISK-XXX' markers. This change must be made consistently across 3 files: driver_manifest, pattern_library, and interface_schema.",
+      "description": "4 LiteSpeed enforcer steps (RISK-013, 023, 024, 035) share identical markers with their corresponding htaccess steps in the SAME target file ({ABSPATH}.htaccess). This causes: (1) litespeed idempotency check finds htaccess marker and skips, so LS protection never applies; (2) rollback of either enforcer removes the other's block. Fix: change all 8 litespeed steps to use '# BEGIN VAPT LS RISK-XXX' / '# END Of LS RISK-XXX' markers. This change must be made consistently across 3 files: driver_manifest, pattern_library, and interface_schema.",
       "target_files": [
         "vapt_driver_manifest_v2.0.json",
         "enforcer_pattern_library_v2.0.json",
@@ -237,8 +237,8 @@
           "marker_change": {
             "old_begin": "# BEGIN VAPT RISK-{XXX}",
             "new_begin": "# BEGIN VAPT LS RISK-{XXX}",
-            "old_end": "# END VAPT RISK-{XXX}",
-            "new_end": "# END VAPT LS RISK-{XXX}"
+            "old_end": "# END Of RISK-{XXX}",
+            "new_end": "# END Of LS RISK-{XXX}"
           },
           "fields_to_update_per_step": [
             "begin_marker",
@@ -273,7 +273,7 @@
         {
           "action_id": "AH-P1-004",
           "description": "Verify that after marker change, the htaccess enforcer steps for the same 4 collision risks (RISK-013, 023, 024, 035) still use original markers (# BEGIN VAPT RISK-XXX) and were NOT modified",
-          "check": "For each collision risk, verify htaccess step markers remain unchanged: begin_marker === '# BEGIN VAPT RISK-{XXX}' AND end_marker === '# END VAPT RISK-{XXX}'",
+          "check": "For each collision risk, verify htaccess step markers remain unchanged: begin_marker === '# BEGIN VAPT RISK-{XXX}' AND end_marker === '# END Of RISK-{XXX}'",
           "count": 4
         }
       ],
@@ -281,13 +281,13 @@
         {
           "gate_id": "AH-P1-V1",
           "description": "All 8 litespeed steps in driver_manifest use LS-prefixed markers",
-          "check": "For each litespeed step: step.begin_marker starts with '# BEGIN VAPT LS RISK-' AND step.end_marker starts with '# END VAPT LS RISK-'",
+          "check": "For each litespeed step: step.begin_marker starts with '# BEGIN VAPT LS RISK-' AND step.end_marker starts with '# END Of LS RISK-'",
           "severity": "CRITICAL"
         },
         {
           "gate_id": "AH-P1-V2",
           "description": "All 8 litespeed rollback objects in driver_manifest use LS-prefixed markers",
-          "check": "For each litespeed step: step.rollback.begin_marker starts with '# BEGIN VAPT LS RISK-' AND step.rollback.end_marker starts with '# END VAPT LS RISK-'",
+          "check": "For each litespeed step: step.rollback.begin_marker starts with '# BEGIN VAPT LS RISK-' AND step.rollback.end_marker starts with '# END Of LS RISK-'",
           "severity": "CRITICAL"
         },
         {
@@ -523,7 +523,7 @@
           "action_id": "AH-P4-001",
           "description": "For each of the 22 wp_config entries with mismatched rollback string, update the legacy rollback string to describe marker-based removal instead of wp-config-delete",
           "before_template": "wp config delete {CONSTANT_NAME}",
-          "after_template": "Remove /* BEGIN VAPT RISK-{NNN} */ ... /* END VAPT RISK-{NNN} */ block from wp-config.php",
+          "after_template": "Remove /* BEGIN VAPT RISK-{NNN} */ ... /* END Of RISK-{NNN} */ block from wp-config.php",
           "rationale": "The rollback_structured action is 'remove_block' with markers \u2014 the legacy string should describe the same operation. wp config delete would remove a pre-existing constant that VAPT merely wrapped, causing data loss. Marker-based removal only removes VAPT's additions.",
           "count": 22
         }
@@ -538,7 +538,7 @@
         {
           "gate_id": "AH-P4-V2",
           "description": "All 22 wp_config legacy rollback strings describe marker-based removal",
-          "check": "For each updated entry, verify rollback string contains 'BEGIN VAPT RISK' and 'END VAPT RISK'",
+          "check": "For each updated entry, verify rollback string contains 'BEGIN VAPT RISK' and 'END Of RISK'",
           "severity": "HIGH"
         },
         {
@@ -767,7 +767,7 @@
           "additions": {
             "rollback_structured": "Machine-executable rollback object in enforcer_pattern_library: {action, begin_marker, end_marker, target_file} for file-based enforcers; {action, rule_identifier, zone_id, api_endpoint, api_method, auth_required} for Cloudflare. Present in all 430 entries.",
             "disable_verification": "Post-removal verification object in driver_manifest: {check_type, check_string, expected_result, fallback_verification}. Present in all 429 steps. check_type is 'marker_absent' for file-based, 'api_rule_absent' for Cloudflare.",
-            "litespeed_marker_convention": "LiteSpeed enforcers use '# BEGIN VAPT LS RISK-XXX' / '# END VAPT LS RISK-XXX' markers to avoid collision with htaccess enforcers that write to the same .htaccess file with '# BEGIN VAPT RISK-XXX' markers.",
+            "litespeed_marker_convention": "LiteSpeed enforcers use '# BEGIN VAPT LS RISK-XXX' / '# END Of LS RISK-XXX' markers to avoid collision with htaccess enforcers that write to the same .htaccess file with '# BEGIN VAPT RISK-XXX' markers.",
             "remove_operation": "Symmetric counterpart to 'operation' in interface_schema platform_implementations. Must be non-null for all entries. Maps: add_* -> remove_*, waf_custom_rule -> delete_waf_rule, transform_rule -> delete_transform_rule.",
             "disable_driver_ref": "Reference path to the driver_manifest rollback object for this platform. Example: 'vapt_driver_manifest_v2.0.risks.RISK-001.steps[*enforcer=htaccess].rollback'. Present in all 430 platform_implementations entries."
           }

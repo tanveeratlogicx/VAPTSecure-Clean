@@ -11,7 +11,7 @@
   "enforcement": {
     "driver": "htaccess",
     "mappings": {
-      "UI-RISK-003-001": "# BEGIN VAPT RISK-003\n# Requires: mod_rewrite | AllowOverride: FileInfo or All\n# Position: BEFORE # BEGIN WordPress\n<IfModule mod_rewrite.c>\n    RewriteEngine On\n    RewriteBase /\n    RewriteRule ^wp-json/wp/v2/users$ - [F,L]\n    RewriteRule ^wp-json/wp/v2/users/ - [F,L]\n</IfModule>\n# END VAPT RISK-003"
+      "UI-RISK-003-001": "# BEGIN VAPT RISK-003\n# Requires: mod_rewrite | AllowOverride: FileInfo or All\n# Position: BEFORE # BEGIN WordPress\n<IfModule mod_rewrite.c>\n    RewriteEngine On\n    RewriteBase /\n    RewriteRule ^wp-json/wp/v2/users$ - [F,L]\n    RewriteRule ^wp-json/wp/v2/users/ - [F,L]\n</IfModule>\n# END Of RISK-003"
     }
   }
 }

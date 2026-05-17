@@ -62,14 +62,14 @@ def align_batch_2():
                 "insertion_point": "http_block",
                 "anchor": {"search": None, "position": "after", "fallback": "append"},
                 "code": nginx_code,
-                "wrapped_code": f"# BEGIN VAPT {risk_id}\n{nginx_code}\n# END VAPT {risk_id}",
+                "wrapped_code": f"# BEGIN VAPT {risk_id}\n{nginx_code}\n# END Of {risk_id}",
                 "begin_marker": f"# BEGIN VAPT {risk_id}",
-                "end_marker": f"# END VAPT {risk_id}",
+                "end_marker": f"# END Of {risk_id}",
                 "verification": {"command": "nginx -t", "expected": "No errors"},
                 "driver": {
                     "write_mode": "insert_at_anchor",
                     "target_file": "/etc/nginx/conf.d/vapt-security.conf",
-                    "write_block": f"# BEGIN VAPT {risk_id}\n{nginx_code}\n# END VAPT {risk_id}",
+                    "write_block": f"# BEGIN VAPT {risk_id}\n{nginx_code}\n# END Of {risk_id}",
                     "anchor_string": "http {",
                     "anchor_position": "after",
                     "idempotency_check": f"# BEGIN VAPT {risk_id}",
@@ -87,9 +87,9 @@ def align_batch_2():
                     "backup_required": True,
                     "idempotency": {"check_string": f"# BEGIN VAPT {risk_id}", "if_found": "skip", "if_not_found": "insert"},
                     "insertion": {"anchor_string": "http {", "anchor_position": "after", "fallback": "append"},
-                    "write_block": f"# BEGIN VAPT {risk_id}\n{nginx_code}\n# END VAPT {risk_id}",
+                    "write_block": f"# BEGIN VAPT {risk_id}\n{nginx_code}\n# END Of {risk_id}",
                     "begin_marker": f"# BEGIN VAPT {risk_id}",
-                    "end_marker": f"# END VAPT {risk_id}",
+                    "end_marker": f"# END Of {risk_id}",
                     "verification": {"command": "nginx -t", "expected": "No errors"}
                 })
 
@@ -125,14 +125,14 @@ def align_batch_2():
                 "insertion_point": "functions_php",
                 "anchor": {"search": None, "position": "append", "fallback": None},
                 "code": php_code,
-                "wrapped_code": f"// BEGIN VAPT {risk_id}\n{php_code}\n// END VAPT {risk_id}",
+                "wrapped_code": f"// BEGIN VAPT {risk_id}\n{php_code}\n// END Of {risk_id}",
                 "begin_marker": f"// BEGIN VAPT {risk_id}",
-                "end_marker": f"// END VAPT {risk_id}",
+                "end_marker": f"// END Of {risk_id}",
                 "verification": {"command": f"wp eval \"do_action('{hook_name}');\"", "expected": "No errors"},
                 "driver": {
                     "write_mode": "append_to_file",
                     "target_file": "{ABSPATH}wp-content/plugins/vapt-protection-suite/vapt-functions.php",
-                    "write_block": f"// BEGIN VAPT {risk_id}\n{php_code}\n// END VAPT {risk_id}",
+                    "write_block": f"// BEGIN VAPT {risk_id}\n{php_code}\n// END Of {risk_id}",
                     "anchor_string": None,
                     "anchor_position": "append",
                     "idempotency_check": f"// BEGIN VAPT {risk_id}",
@@ -150,9 +150,9 @@ def align_batch_2():
                     "backup_required": True,
                     "idempotency": {"check_string": f"// BEGIN VAPT {risk_id}", "if_found": "skip", "if_not_found": "insert"},
                     "insertion": {"anchor_string": None, "anchor_position": "append", "fallback": None},
-                    "write_block": f"// BEGIN VAPT {risk_id}\n{php_code}\n// END VAPT {risk_id}",
+                    "write_block": f"// BEGIN VAPT {risk_id}\n{php_code}\n// END Of {risk_id}",
                     "begin_marker": f"// BEGIN VAPT {risk_id}",
-                    "end_marker": f"// END VAPT {risk_id}",
+                    "end_marker": f"// END Of {risk_id}",
                     "verification": {"command": f"wp eval \"do_action('{hook_name}');\"", "expected": "No errors"}
                 })
 

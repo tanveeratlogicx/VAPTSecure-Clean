@@ -202,7 +202,7 @@ class VAPTSECURE_Apache_Deployer implements VAPTSECURE_Driver_Interface
 
         $status_suffix = $is_enabled ? ' - ACTIVE' : ' - DISABLED';
         $start_marker = "# BEGIN VAPT PROTECTION: {$risk_id}";
-        $end_marker = "# END VAPT PROTECTION: {$risk_id}";
+        $end_marker = "# END Of PROTECTION: {$risk_id}";
 
         // Handle content neutralization (comment out) if disabled
         if (!$is_enabled) {
@@ -228,8 +228,8 @@ class VAPTSECURE_Apache_Deployer implements VAPTSECURE_Driver_Interface
         $new_block = "\n{$final_start_marker}\n{$rules}\n{$end_marker}\n";
 
         // Insert after Global Whitelist or WordPress markers
-        if (strpos($content, '# END VAPT GLOBAL WHITELIST') !== false) {
-            $content = str_replace('# END VAPT GLOBAL WHITELIST', "# END VAPT GLOBAL WHITELIST\n" . $new_block, $content);
+        if (strpos($content, '# END Of GLOBAL WHITELIST') !== false) {
+            $content = str_replace('# END Of GLOBAL WHITELIST', "# END Of GLOBAL WHITELIST\n" . $new_block, $content);
         } elseif (strpos($content, '# BEGIN WordPress') !== false) {
             $content = str_replace('# BEGIN WordPress', $new_block . '# BEGIN WordPress', $content);
         } else {
@@ -257,7 +257,7 @@ class VAPTSECURE_Apache_Deployer implements VAPTSECURE_Driver_Interface
         $content = file_exists($this->htaccess_path) ? file_get_contents($this->htaccess_path) : '';
     
         $start_marker = "# BEGIN VAPT GLOBAL WHITELIST";
-        $end_marker = "# END VAPT GLOBAL WHITELIST";
+        $end_marker = "# END Of GLOBAL WHITELIST";
     
         if (strpos($content, $start_marker) !== false) { return;
         }
@@ -291,10 +291,10 @@ class VAPTSECURE_Apache_Deployer implements VAPTSECURE_Driver_Interface
         
         // Robust per-feature removal (v4.0.1) - Check multiple marker formats
         $markers = [
-            ["# BEGIN VAPT PROTECTION: {$risk_id}", "# END VAPT PROTECTION: {$risk_id}"],
-            ["# BEGIN VAPT-RISK: {$risk_id}", "# END VAPT-RISK: {$risk_id}"],
-            ["# BEGIN VAPT FEATURE: {$risk_id}", "# END VAPT FEATURE: {$risk_id}"],
-            ["# BEGIN VAPT {$risk_id}", "# END VAPT {$risk_id}"]
+            ["# BEGIN VAPT PROTECTION: {$risk_id}", "# END Of PROTECTION: {$risk_id}"],
+            ["# BEGIN VAPT-RISK: {$risk_id}", "# END Of RISK: {$risk_id}"],
+            ["# BEGIN VAPT FEATURE: {$risk_id}", "# END Of {$risk_id}"],
+            ["# BEGIN VAPT {$risk_id}", "# END Of {$risk_id}"]
         ];
 
         $new_content = $content;

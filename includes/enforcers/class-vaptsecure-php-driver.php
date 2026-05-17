@@ -182,7 +182,7 @@ class VAPTSECURE_PHP_Driver implements VAPTSECURE_Driver_Interface
         $path = VAPTSECURE_PATH . 'vapt-functions.php';
     
         $start_marker = "// BEGIN VAPT SECURITY RULES";
-        $end_marker = "// END VAPT SECURITY RULES";
+        $end_marker = "// END Of SECURITY RULES";
 
         $vapt_block = "";
         if (!empty($all_rules_array)) {

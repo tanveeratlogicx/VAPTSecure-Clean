@@ -178,7 +178,7 @@ class VAPTSECURE_Config_Driver implements VAPTSECURE_Driver_Interface
         $lines = explode($line_ending, $content);
 
         $start_marker = "// BEGIN VAPT CONFIG RULES";
-        $end_marker = "// END VAPT CONFIG RULES";
+        $end_marker = "// END Of CONFIG RULES";
 
         // 1. Identify constants we are managing in this batch (to prevent duplicates)
         $managed_constants = [];
@@ -200,10 +200,10 @@ class VAPTSECURE_Config_Driver implements VAPTSECURE_Driver_Interface
         "# BEGIN VAPT SECURITY RULES"
         ];
         $end_markers = [
-        "// END VAPT CONFIG RULES",
-        "/* END VAPT CONFIG RULES",
-        "/* END VAPT SECURITY RULES",
-        "# END VAPT SECURITY RULES"
+        "// END Of CONFIG RULES",
+        "/* END Of CONFIG RULES",
+        "/* END Of SECURITY RULES",
+        "# END Of SECURITY RULES"
         ];
 
         foreach ($lines as $line) {

@@ -196,7 +196,7 @@
           "insertion_rule": "Must be placed BEFORE: require_once ABSPATH . 'wp-settings.php';",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-001 */",
-          "marker_end": "/* END VAPT RISK-001 */",
+          "marker_end": "/* END Of RISK-001 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-001.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -334,7 +334,7 @@
           "note": "Apache 2.4+: use Require all denied",
           "remove_operation": "remove_files_block",
           "marker_begin": "# BEGIN VAPT RISK-002",
-          "marker_end": "# END VAPT RISK-002",
+          "marker_end": "# END Of RISK-002",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-002.steps[*enforcer=.htaccess].rollback"
         },
         "Cloudflare": {
@@ -362,7 +362,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-002",
-          "marker_end": "# END VAPT RISK-002",
+          "marker_end": "# END Of RISK-002",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-002.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -375,7 +375,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-002",
-          "marker_end": "// END VAPT RISK-002",
+          "marker_end": "// END Of RISK-002",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-002.steps[*enforcer=PHP Functions].rollback"
         },
         "Apache": {
@@ -388,7 +388,7 @@
           "implementation_type": "apache_conf",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-002",
-          "marker_end": "# END VAPT RISK-002",
+          "marker_end": "# END Of RISK-002",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-002.steps[*enforcer=Apache].rollback"
         },
         "wp-config.php": {
@@ -401,7 +401,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-002 */",
-          "marker_end": "/* END VAPT RISK-002 */",
+          "marker_end": "/* END Of RISK-002 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-002.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -545,7 +545,7 @@
           "note": "Must be BEFORE # BEGIN WordPress. WP [L] catch-all makes anything after # END WordPress a dead zone. Covers /users and /users/ variants.",
           "remove_operation": "remove_rewrite_rule",
           "marker_begin": "# BEGIN VAPT RISK-003",
-          "marker_end": "# END VAPT RISK-003",
+          "marker_end": "# END Of RISK-003",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-003.steps[*enforcer=.htaccess].rollback"
         },
         "Cloudflare": {
@@ -573,7 +573,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-003",
-          "marker_end": "# END VAPT RISK-003",
+          "marker_end": "# END Of RISK-003",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-003.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -586,7 +586,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-003",
-          "marker_end": "// END VAPT RISK-003",
+          "marker_end": "// END Of RISK-003",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-003.steps[*enforcer=PHP Functions].rollback"
         },
         "Apache": {
@@ -599,7 +599,7 @@
           "implementation_type": "apache_conf",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-003",
-          "marker_end": "# END VAPT RISK-003",
+          "marker_end": "# END Of RISK-003",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-003.steps[*enforcer=Apache].rollback"
         },
         "wp-config.php": {
@@ -612,7 +612,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-003 */",
-          "marker_end": "/* END VAPT RISK-003 */",
+          "marker_end": "/* END Of RISK-003 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-003.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -759,7 +759,7 @@
           "implementation_type": "",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-004",
-          "marker_end": "// END VAPT RISK-004",
+          "marker_end": "// END Of RISK-004",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-004.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -772,7 +772,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-004 */",
-          "marker_end": "/* END VAPT RISK-004 */",
+          "marker_end": "/* END Of RISK-004 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-004.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -914,7 +914,7 @@
           "note": "Must be BEFORE # BEGIN WordPress. Regex (^|&)author=\\d+ matches all numeric IDs and any query param position.",
           "remove_operation": "remove_rewrite_cond",
           "marker_begin": "# BEGIN VAPT RISK-005",
-          "marker_end": "# END VAPT RISK-005",
+          "marker_end": "# END Of RISK-005",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-005.steps[*enforcer=.htaccess].rollback"
         },
         "Cloudflare": {
@@ -942,7 +942,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-005",
-          "marker_end": "# END VAPT RISK-005",
+          "marker_end": "# END Of RISK-005",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-005.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -955,7 +955,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-005",
-          "marker_end": "// END VAPT RISK-005",
+          "marker_end": "// END Of RISK-005",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-005.steps[*enforcer=PHP Functions].rollback"
         },
         "Apache": {
@@ -968,7 +968,7 @@
           "implementation_type": "apache_conf",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-005",
-          "marker_end": "# END VAPT RISK-005",
+          "marker_end": "# END Of RISK-005",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-005.steps[*enforcer=Apache].rollback"
         },
         "wp-config.php": {
@@ -981,7 +981,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-005 */",
-          "marker_end": "/* END VAPT RISK-005 */",
+          "marker_end": "/* END Of RISK-005 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-005.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -1113,7 +1113,7 @@
           "implementation_type": "",
           "remove_operation": "remove_filter_hook",
           "marker_begin": "// BEGIN VAPT RISK-006",
-          "marker_end": "// END VAPT RISK-006",
+          "marker_end": "// END Of RISK-006",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-006.steps[*enforcer=WordPress Core].rollback"
         },
         "PHP Functions": {
@@ -1126,7 +1126,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT PF RISK-006",
-          "marker_end": "// END VAPT PF RISK-006",
+          "marker_end": "// END Of PF RISK-006",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-006.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -1139,7 +1139,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-006 */",
-          "marker_end": "/* END VAPT RISK-006 */",
+          "marker_end": "/* END Of RISK-006 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-006.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -1292,7 +1292,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-007",
-          "marker_end": "// END VAPT RISK-007",
+          "marker_end": "// END Of RISK-007",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-007.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -1305,7 +1305,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-007 */",
-          "marker_end": "/* END VAPT RISK-007 */",
+          "marker_end": "/* END Of RISK-007 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-007.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -1442,7 +1442,7 @@
           "implementation_type": "",
           "remove_operation": "remove_filter_hook",
           "marker_begin": "// BEGIN VAPT RISK-008",
-          "marker_end": "// END VAPT RISK-008",
+          "marker_end": "// END Of RISK-008",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-008.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -1455,7 +1455,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-008 */",
-          "marker_end": "/* END VAPT RISK-008 */",
+          "marker_end": "/* END Of RISK-008 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-008.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -1602,7 +1602,7 @@
           "implementation_type": "",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-009",
-          "marker_end": "// END VAPT RISK-009",
+          "marker_end": "// END Of RISK-009",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-009.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -1615,7 +1615,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-009 */",
-          "marker_end": "/* END VAPT RISK-009 */",
+          "marker_end": "/* END Of RISK-009 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-009.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -1747,7 +1747,7 @@
           "implementation_type": "",
           "remove_operation": "remove_server_tokens_directive",
           "marker_begin": "# BEGIN VAPT RISK-010",
-          "marker_end": "# END VAPT RISK-010",
+          "marker_end": "# END Of RISK-010",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-010.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -1760,7 +1760,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-010",
-          "marker_end": "// END VAPT RISK-010",
+          "marker_end": "// END Of RISK-010",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-010.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -1773,7 +1773,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-010 */",
-          "marker_end": "/* END VAPT RISK-010 */",
+          "marker_end": "/* END Of RISK-010 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-010.steps[*enforcer=wp-config.php].rollback"
         },
         "litespeed": {
@@ -1788,7 +1788,7 @@
           "note": "LiteSpeed-specific header suppression using IfModule LiteSpeed wrapper",
           "remove_operation": "remove_litespeed_block",
           "marker_begin": "# BEGIN VAPT LS RISK-010",
-          "marker_end": "# END VAPT LS RISK-010",
+          "marker_end": "# END Of LS RISK-010",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-010.steps[*enforcer=litespeed].rollback"
         }
       },
@@ -1930,7 +1930,7 @@
           "note": "Apache 2.4+: use Require all denied",
           "remove_operation": "remove_files_block",
           "marker_begin": "# BEGIN VAPT RISK-011",
-          "marker_end": "# END VAPT RISK-011",
+          "marker_end": "# END Of RISK-011",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-011.steps[*enforcer=.htaccess].rollback"
         },
         "Cloudflare": {
@@ -1958,7 +1958,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-011",
-          "marker_end": "# END VAPT RISK-011",
+          "marker_end": "# END Of RISK-011",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-011.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -1971,7 +1971,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-011",
-          "marker_end": "// END VAPT RISK-011",
+          "marker_end": "// END Of RISK-011",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-011.steps[*enforcer=PHP Functions].rollback"
         },
         "Apache": {
@@ -1984,7 +1984,7 @@
           "implementation_type": "apache_conf",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-011",
-          "marker_end": "# END VAPT RISK-011",
+          "marker_end": "# END Of RISK-011",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-011.steps[*enforcer=Apache].rollback"
         },
         "wp-config.php": {
@@ -1997,7 +1997,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-011 */",
-          "marker_end": "/* END VAPT RISK-011 */",
+          "marker_end": "/* END Of RISK-011 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-011.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -2138,7 +2138,7 @@
           "note": "Enable mod_headers: sudo a2enmod headers. Effective over HTTPS only.",
           "remove_operation": "remove_header",
           "marker_begin": "# BEGIN VAPT RISK-012",
-          "marker_end": "# END VAPT RISK-012",
+          "marker_end": "# END Of RISK-012",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-012.steps[*enforcer=.htaccess].rollback"
         },
         "Cloudflare": {
@@ -2166,7 +2166,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-012",
-          "marker_end": "# END VAPT RISK-012",
+          "marker_end": "# END Of RISK-012",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-012.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -2179,7 +2179,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-012",
-          "marker_end": "// END VAPT RISK-012",
+          "marker_end": "// END Of RISK-012",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-012.steps[*enforcer=PHP Functions].rollback"
         },
         "Apache": {
@@ -2192,7 +2192,7 @@
           "implementation_type": "apache_conf",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-012",
-          "marker_end": "# END VAPT RISK-012",
+          "marker_end": "# END Of RISK-012",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-012.steps[*enforcer=Apache].rollback"
         },
         "wp-config.php": {
@@ -2205,7 +2205,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-012 */",
-          "marker_end": "/* END VAPT RISK-012 */",
+          "marker_end": "/* END Of RISK-012 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-012.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -2346,7 +2346,7 @@
           "note": "Requires AllowOverride Options or All. Silently fails without it.",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-013",
-          "marker_end": "# END VAPT RISK-013",
+          "marker_end": "# END Of RISK-013",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-013.steps[*enforcer=.htaccess].rollback"
         },
         "Cloudflare": {
@@ -2374,7 +2374,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-013",
-          "marker_end": "# END VAPT RISK-013",
+          "marker_end": "# END Of RISK-013",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-013.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -2387,7 +2387,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-013",
-          "marker_end": "// END VAPT RISK-013",
+          "marker_end": "// END Of RISK-013",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-013.steps[*enforcer=PHP Functions].rollback"
         },
         "Apache": {
@@ -2400,7 +2400,7 @@
           "implementation_type": "apache_conf",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-013",
-          "marker_end": "# END VAPT RISK-013",
+          "marker_end": "# END Of RISK-013",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-013.steps[*enforcer=Apache].rollback"
         },
         "wp-config.php": {
@@ -2413,7 +2413,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-013 */",
-          "marker_end": "/* END VAPT RISK-013 */",
+          "marker_end": "/* END Of RISK-013 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-013.steps[*enforcer=wp-config.php].rollback"
         },
         "litespeed": {
@@ -2426,7 +2426,7 @@
           "note": "LiteSpeed respects Options -Indexes identically to Apache - existing htaccess rule is sufficient, litespeed key references the same",
           "remove_operation": "remove_litespeed_block",
           "marker_begin": "# BEGIN VAPT LS RISK-013",
-          "marker_end": "# END VAPT LS RISK-013",
+          "marker_end": "# END Of LS RISK-013",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-013.steps[*enforcer=litespeed].rollback"
         }
       },
@@ -2567,7 +2567,7 @@
           "note": "",
           "remove_operation": "remove_header",
           "marker_begin": "# BEGIN VAPT RISK-014",
-          "marker_end": "# END VAPT RISK-014",
+          "marker_end": "# END Of RISK-014",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-014.steps[*enforcer=.htaccess].rollback"
         },
         "Cloudflare": {
@@ -2595,7 +2595,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-014",
-          "marker_end": "# END VAPT RISK-014",
+          "marker_end": "# END Of RISK-014",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-014.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -2608,7 +2608,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-014",
-          "marker_end": "// END VAPT RISK-014",
+          "marker_end": "// END Of RISK-014",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-014.steps[*enforcer=PHP Functions].rollback"
         },
         "Apache": {
@@ -2621,7 +2621,7 @@
           "implementation_type": "apache_conf",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-014",
-          "marker_end": "# END VAPT RISK-014",
+          "marker_end": "# END Of RISK-014",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-014.steps[*enforcer=Apache].rollback"
         },
         "wp-config.php": {
@@ -2634,7 +2634,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-014 */",
-          "marker_end": "/* END VAPT RISK-014 */",
+          "marker_end": "/* END Of RISK-014 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-014.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -2775,7 +2775,7 @@
           "note": "",
           "remove_operation": "remove_header",
           "marker_begin": "# BEGIN VAPT RISK-015",
-          "marker_end": "# END VAPT RISK-015",
+          "marker_end": "# END Of RISK-015",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-015.steps[*enforcer=.htaccess].rollback"
         },
         "Cloudflare": {
@@ -2803,7 +2803,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-015",
-          "marker_end": "# END VAPT RISK-015",
+          "marker_end": "# END Of RISK-015",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-015.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -2816,7 +2816,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-015",
-          "marker_end": "// END VAPT RISK-015",
+          "marker_end": "// END Of RISK-015",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-015.steps[*enforcer=PHP Functions].rollback"
         },
         "Apache": {
@@ -2829,7 +2829,7 @@
           "implementation_type": "apache_conf",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-015",
-          "marker_end": "# END VAPT RISK-015",
+          "marker_end": "# END Of RISK-015",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-015.steps[*enforcer=Apache].rollback"
         },
         "wp-config.php": {
@@ -2842,7 +2842,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-015 */",
-          "marker_end": "/* END VAPT RISK-015 */",
+          "marker_end": "/* END Of RISK-015 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-015.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -2968,7 +2968,7 @@
           "note": "",
           "remove_operation": "remove_header",
           "marker_begin": "# BEGIN VAPT RISK-016",
-          "marker_end": "# END VAPT RISK-016",
+          "marker_end": "# END Of RISK-016",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-016.steps[*enforcer=.htaccess].rollback"
         },
         "Cloudflare": {
@@ -2996,7 +2996,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-016",
-          "marker_end": "# END VAPT RISK-016",
+          "marker_end": "# END Of RISK-016",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-016.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -3009,7 +3009,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-016",
-          "marker_end": "// END VAPT RISK-016",
+          "marker_end": "// END Of RISK-016",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-016.steps[*enforcer=PHP Functions].rollback"
         },
         "Apache": {
@@ -3022,7 +3022,7 @@
           "implementation_type": "apache_conf",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-016",
-          "marker_end": "# END VAPT RISK-016",
+          "marker_end": "# END Of RISK-016",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-016.steps[*enforcer=Apache].rollback"
         },
         "wp-config.php": {
@@ -3035,7 +3035,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-016 */",
-          "marker_end": "/* END VAPT RISK-016 */",
+          "marker_end": "/* END Of RISK-016 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-016.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -3161,7 +3161,7 @@
           "note": "",
           "remove_operation": "remove_header",
           "marker_begin": "# BEGIN VAPT RISK-017",
-          "marker_end": "# END VAPT RISK-017",
+          "marker_end": "# END Of RISK-017",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-017.steps[*enforcer=.htaccess].rollback"
         },
         "Cloudflare": {
@@ -3189,7 +3189,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-017",
-          "marker_end": "# END VAPT RISK-017",
+          "marker_end": "# END Of RISK-017",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-017.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -3202,7 +3202,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-017",
-          "marker_end": "// END VAPT RISK-017",
+          "marker_end": "// END Of RISK-017",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-017.steps[*enforcer=PHP Functions].rollback"
         },
         "Apache": {
@@ -3215,7 +3215,7 @@
           "implementation_type": "apache_conf",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-017",
-          "marker_end": "# END VAPT RISK-017",
+          "marker_end": "# END Of RISK-017",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-017.steps[*enforcer=Apache].rollback"
         },
         "wp-config.php": {
@@ -3228,7 +3228,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-017 */",
-          "marker_end": "/* END VAPT RISK-017 */",
+          "marker_end": "/* END Of RISK-017 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-017.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -3354,7 +3354,7 @@
           "note": "",
           "remove_operation": "remove_header",
           "marker_begin": "# BEGIN VAPT RISK-018",
-          "marker_end": "# END VAPT RISK-018",
+          "marker_end": "# END Of RISK-018",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-018.steps[*enforcer=.htaccess].rollback"
         },
         "Cloudflare": {
@@ -3382,7 +3382,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-018",
-          "marker_end": "# END VAPT RISK-018",
+          "marker_end": "# END Of RISK-018",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-018.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -3395,7 +3395,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-018",
-          "marker_end": "// END VAPT RISK-018",
+          "marker_end": "// END Of RISK-018",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-018.steps[*enforcer=PHP Functions].rollback"
         },
         "Apache": {
@@ -3408,7 +3408,7 @@
           "implementation_type": "apache_conf",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-018",
-          "marker_end": "# END VAPT RISK-018",
+          "marker_end": "# END Of RISK-018",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-018.steps[*enforcer=Apache].rollback"
         },
         "wp-config.php": {
@@ -3421,7 +3421,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-018 */",
-          "marker_end": "/* END VAPT RISK-018 */",
+          "marker_end": "/* END Of RISK-018 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-018.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -3547,7 +3547,7 @@
           "note": "Apache 2.4+: use Require all denied",
           "remove_operation": "remove_files_match_block",
           "marker_begin": "# BEGIN VAPT RISK-019",
-          "marker_end": "# END VAPT RISK-019",
+          "marker_end": "# END Of RISK-019",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-019.steps[*enforcer=.htaccess].rollback"
         },
         "Cloudflare": {
@@ -3575,7 +3575,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-019",
-          "marker_end": "# END VAPT RISK-019",
+          "marker_end": "# END Of RISK-019",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-019.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -3588,7 +3588,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-019",
-          "marker_end": "// END VAPT RISK-019",
+          "marker_end": "// END Of RISK-019",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-019.steps[*enforcer=PHP Functions].rollback"
         },
         "Apache": {
@@ -3601,7 +3601,7 @@
           "implementation_type": "apache_conf",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-019",
-          "marker_end": "# END VAPT RISK-019",
+          "marker_end": "# END Of RISK-019",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-019.steps[*enforcer=Apache].rollback"
         },
         "wp-config.php": {
@@ -3614,7 +3614,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-019 */",
-          "marker_end": "/* END VAPT RISK-019 */",
+          "marker_end": "/* END Of RISK-019 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-019.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -3741,7 +3741,7 @@
           "note": "CRITICAL: Place in wp-content/uploads/.htaccess \u2014 a separate file. <Directory> is silently ignored in .htaccess. Apache 2.4+: use Require all denied",
           "remove_operation": "remove_files_match_block",
           "marker_begin": "# BEGIN VAPT RISK-020",
-          "marker_end": "# END VAPT RISK-020",
+          "marker_end": "# END Of RISK-020",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-020.steps[*enforcer=.htaccess].rollback"
         },
         "Cloudflare": {
@@ -3769,7 +3769,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-020",
-          "marker_end": "# END VAPT RISK-020",
+          "marker_end": "# END Of RISK-020",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-020.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -3782,7 +3782,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-020",
-          "marker_end": "// END VAPT RISK-020",
+          "marker_end": "// END Of RISK-020",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-020.steps[*enforcer=PHP Functions].rollback"
         },
         "Apache": {
@@ -3795,7 +3795,7 @@
           "implementation_type": "apache_conf",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-020",
-          "marker_end": "# END VAPT RISK-020",
+          "marker_end": "# END Of RISK-020",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-020.steps[*enforcer=Apache].rollback"
         },
         "wp-config.php": {
@@ -3808,7 +3808,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-020 */",
-          "marker_end": "/* END VAPT RISK-020 */",
+          "marker_end": "/* END Of RISK-020 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-020.steps[*enforcer=wp-config.php].rollback"
         },
         "litespeed": {
@@ -3821,7 +3821,7 @@
           "note": "LiteSpeed-specific PHP execution blocking in uploads directory",
           "remove_operation": "remove_litespeed_block",
           "marker_begin": "# BEGIN VAPT LS RISK-020",
-          "marker_end": "# END VAPT LS RISK-020",
+          "marker_end": "# END Of LS RISK-020",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-020.steps[*enforcer=litespeed].rollback"
         }
       },
@@ -3947,7 +3947,7 @@
           "note": "Apache 2.4+: use Require all denied",
           "remove_operation": "remove_files_block",
           "marker_begin": "# BEGIN VAPT RISK-021",
-          "marker_end": "# END VAPT RISK-021",
+          "marker_end": "# END Of RISK-021",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-021.steps[*enforcer=.htaccess].rollback"
         },
         "Cloudflare": {
@@ -3975,7 +3975,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-021",
-          "marker_end": "# END VAPT RISK-021",
+          "marker_end": "# END Of RISK-021",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-021.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -3988,7 +3988,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-021",
-          "marker_end": "// END VAPT RISK-021",
+          "marker_end": "// END Of RISK-021",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-021.steps[*enforcer=PHP Functions].rollback"
         },
         "Apache": {
@@ -4001,7 +4001,7 @@
           "implementation_type": "apache_conf",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-021",
-          "marker_end": "# END VAPT RISK-021",
+          "marker_end": "# END Of RISK-021",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-021.steps[*enforcer=Apache].rollback"
         },
         "wp-config.php": {
@@ -4014,7 +4014,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-021 */",
-          "marker_end": "/* END VAPT RISK-021 */",
+          "marker_end": "/* END Of RISK-021 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-021.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -4140,7 +4140,7 @@
           "note": "Tune to your plugin/theme needs. Use Content-Security-Policy-Report-Only first.",
           "remove_operation": "remove_header",
           "marker_begin": "# BEGIN VAPT RISK-022",
-          "marker_end": "# END VAPT RISK-022",
+          "marker_end": "# END Of RISK-022",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-022.steps[*enforcer=.htaccess].rollback"
         },
         "Cloudflare": {
@@ -4168,7 +4168,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-022",
-          "marker_end": "# END VAPT RISK-022",
+          "marker_end": "# END Of RISK-022",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-022.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -4181,7 +4181,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-022",
-          "marker_end": "// END VAPT RISK-022",
+          "marker_end": "// END Of RISK-022",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-022.steps[*enforcer=PHP Functions].rollback"
         },
         "Apache": {
@@ -4194,7 +4194,7 @@
           "implementation_type": "apache_conf",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-022",
-          "marker_end": "# END VAPT RISK-022",
+          "marker_end": "# END Of RISK-022",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-022.steps[*enforcer=Apache].rollback"
         },
         "wp-config.php": {
@@ -4207,7 +4207,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-022 */",
-          "marker_end": "/* END VAPT RISK-022 */",
+          "marker_end": "/* END Of RISK-022 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-022.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -4334,7 +4334,7 @@
           "note": "TraceEnable off is server-level only (silently ignored in .htaccess). Also add: TraceEnable off to httpd.conf.",
           "remove_operation": "remove_rewrite_rule",
           "marker_begin": "# BEGIN VAPT RISK-023",
-          "marker_end": "# END VAPT RISK-023",
+          "marker_end": "# END Of RISK-023",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-023.steps[*enforcer=.htaccess].rollback"
         },
         "Cloudflare": {
@@ -4362,7 +4362,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-023",
-          "marker_end": "# END VAPT RISK-023",
+          "marker_end": "# END Of RISK-023",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-023.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -4375,7 +4375,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-023",
-          "marker_end": "// END VAPT RISK-023",
+          "marker_end": "// END Of RISK-023",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-023.steps[*enforcer=PHP Functions].rollback"
         },
         "Apache": {
@@ -4388,7 +4388,7 @@
           "implementation_type": "apache_conf",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-023",
-          "marker_end": "# END VAPT RISK-023",
+          "marker_end": "# END Of RISK-023",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-023.steps[*enforcer=Apache].rollback"
         },
         "wp-config.php": {
@@ -4401,7 +4401,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-023 */",
-          "marker_end": "/* END VAPT RISK-023 */",
+          "marker_end": "/* END Of RISK-023 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-023.steps[*enforcer=wp-config.php].rollback"
         },
         "litespeed": {
@@ -4414,7 +4414,7 @@
           "note": "LiteSpeed TRACE method blocking",
           "remove_operation": "remove_litespeed_block",
           "marker_begin": "# BEGIN VAPT LS RISK-023",
-          "marker_end": "# END VAPT LS RISK-023",
+          "marker_end": "# END Of LS RISK-023",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-023.steps[*enforcer=litespeed].rollback"
         }
       },
@@ -4541,7 +4541,7 @@
           "note": "ServerSignature Off is server-level only (silently ignored in .htaccess). Also add: ServerSignature Off + ServerTokens Prod to httpd.conf.",
           "remove_operation": "remove_header",
           "marker_begin": "# BEGIN VAPT RISK-024",
-          "marker_end": "# END VAPT RISK-024",
+          "marker_end": "# END Of RISK-024",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-024.steps[*enforcer=.htaccess].rollback"
         },
         "Cloudflare": {
@@ -4569,7 +4569,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-024",
-          "marker_end": "# END VAPT RISK-024",
+          "marker_end": "# END Of RISK-024",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-024.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -4582,7 +4582,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-024",
-          "marker_end": "// END VAPT RISK-024",
+          "marker_end": "// END Of RISK-024",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-024.steps[*enforcer=PHP Functions].rollback"
         },
         "Apache": {
@@ -4595,7 +4595,7 @@
           "implementation_type": "apache_conf",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-024",
-          "marker_end": "# END VAPT RISK-024",
+          "marker_end": "# END Of RISK-024",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-024.steps[*enforcer=Apache].rollback"
         },
         "wp-config.php": {
@@ -4608,7 +4608,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-024 */",
-          "marker_end": "/* END VAPT RISK-024 */",
+          "marker_end": "/* END Of RISK-024 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-024.steps[*enforcer=wp-config.php].rollback"
         },
         "litespeed": {
@@ -4623,7 +4623,7 @@
           "note": "LiteSpeed server signature suppression",
           "remove_operation": "remove_litespeed_block",
           "marker_begin": "# BEGIN VAPT LS RISK-024",
-          "marker_end": "# END VAPT LS RISK-024",
+          "marker_end": "# END Of LS RISK-024",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-024.steps[*enforcer=litespeed].rollback"
         }
       },
@@ -4747,7 +4747,7 @@
           "note": "Requires AllowOverride Options or All.",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-025",
-          "marker_end": "# END VAPT RISK-025",
+          "marker_end": "# END Of RISK-025",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-025.steps[*enforcer=.htaccess].rollback"
         },
         "Cloudflare": {
@@ -4775,7 +4775,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-025",
-          "marker_end": "# END VAPT RISK-025",
+          "marker_end": "# END Of RISK-025",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-025.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -4788,7 +4788,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-025",
-          "marker_end": "// END VAPT RISK-025",
+          "marker_end": "// END Of RISK-025",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-025.steps[*enforcer=PHP Functions].rollback"
         },
         "Apache": {
@@ -4801,7 +4801,7 @@
           "implementation_type": "apache_conf",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-025",
-          "marker_end": "# END VAPT RISK-025",
+          "marker_end": "# END Of RISK-025",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-025.steps[*enforcer=Apache].rollback"
         },
         "wp-config.php": {
@@ -4814,7 +4814,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-025 */",
-          "marker_end": "/* END VAPT RISK-025 */",
+          "marker_end": "/* END Of RISK-025 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-025.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -4938,7 +4938,7 @@
           "note": "SymLinksIfOwnerMatch allows same-owner symlinks as a safer alternative.",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-026",
-          "marker_end": "# END VAPT RISK-026",
+          "marker_end": "# END Of RISK-026",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-026.steps[*enforcer=.htaccess].rollback"
         },
         "Cloudflare": {
@@ -4966,7 +4966,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-026",
-          "marker_end": "# END VAPT RISK-026",
+          "marker_end": "# END Of RISK-026",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-026.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -4979,7 +4979,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-026",
-          "marker_end": "// END VAPT RISK-026",
+          "marker_end": "// END Of RISK-026",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-026.steps[*enforcer=PHP Functions].rollback"
         },
         "Apache": {
@@ -4992,7 +4992,7 @@
           "implementation_type": "apache_conf",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-026",
-          "marker_end": "# END VAPT RISK-026",
+          "marker_end": "# END Of RISK-026",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-026.steps[*enforcer=Apache].rollback"
         },
         "wp-config.php": {
@@ -5005,7 +5005,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-026 */",
-          "marker_end": "/* END VAPT RISK-026 */",
+          "marker_end": "/* END Of RISK-026 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-026.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -5131,7 +5131,7 @@
           "note": "Apache 2.4+: use Require all denied",
           "remove_operation": "remove_files_block",
           "marker_begin": "# BEGIN VAPT RISK-027",
-          "marker_end": "# END VAPT RISK-027",
+          "marker_end": "# END Of RISK-027",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-027.steps[*enforcer=.htaccess].rollback"
         },
         "Cloudflare": {
@@ -5159,7 +5159,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-027",
-          "marker_end": "# END VAPT RISK-027",
+          "marker_end": "# END Of RISK-027",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-027.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -5172,7 +5172,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-027",
-          "marker_end": "// END VAPT RISK-027",
+          "marker_end": "// END Of RISK-027",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-027.steps[*enforcer=PHP Functions].rollback"
         },
         "Apache": {
@@ -5185,7 +5185,7 @@
           "implementation_type": "apache_conf",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-027",
-          "marker_end": "# END VAPT RISK-027",
+          "marker_end": "# END Of RISK-027",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-027.steps[*enforcer=Apache].rollback"
         },
         "wp-config.php": {
@@ -5198,7 +5198,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-027 */",
-          "marker_end": "/* END VAPT RISK-027 */",
+          "marker_end": "/* END Of RISK-027 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-027.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -5324,7 +5324,7 @@
           "note": "Apache 2.4+: use Require all denied",
           "remove_operation": "remove_files_block",
           "marker_begin": "# BEGIN VAPT RISK-028",
-          "marker_end": "# END VAPT RISK-028",
+          "marker_end": "# END Of RISK-028",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-028.steps[*enforcer=.htaccess].rollback"
         },
         "Cloudflare": {
@@ -5352,7 +5352,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-028",
-          "marker_end": "# END VAPT RISK-028",
+          "marker_end": "# END Of RISK-028",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-028.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -5365,7 +5365,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-028",
-          "marker_end": "// END VAPT RISK-028",
+          "marker_end": "// END Of RISK-028",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-028.steps[*enforcer=PHP Functions].rollback"
         },
         "Apache": {
@@ -5378,7 +5378,7 @@
           "implementation_type": "apache_conf",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-028",
-          "marker_end": "# END VAPT RISK-028",
+          "marker_end": "# END Of RISK-028",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-028.steps[*enforcer=Apache].rollback"
         },
         "wp-config.php": {
@@ -5391,7 +5391,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-028 */",
-          "marker_end": "/* END VAPT RISK-028 */",
+          "marker_end": "/* END Of RISK-028 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-028.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -5517,7 +5517,7 @@
           "note": "Apache 2.4+: use Require all denied",
           "remove_operation": "remove_files_match_block",
           "marker_begin": "# BEGIN VAPT RISK-029",
-          "marker_end": "# END VAPT RISK-029",
+          "marker_end": "# END Of RISK-029",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-029.steps[*enforcer=.htaccess].rollback"
         },
         "Cloudflare": {
@@ -5545,7 +5545,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-029",
-          "marker_end": "# END VAPT RISK-029",
+          "marker_end": "# END Of RISK-029",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-029.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -5558,7 +5558,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-029",
-          "marker_end": "// END VAPT RISK-029",
+          "marker_end": "// END Of RISK-029",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-029.steps[*enforcer=PHP Functions].rollback"
         },
         "Apache": {
@@ -5571,7 +5571,7 @@
           "implementation_type": "apache_conf",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-029",
-          "marker_end": "# END VAPT RISK-029",
+          "marker_end": "# END Of RISK-029",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-029.steps[*enforcer=Apache].rollback"
         },
         "wp-config.php": {
@@ -5584,7 +5584,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-029 */",
-          "marker_end": "/* END VAPT RISK-029 */",
+          "marker_end": "/* END Of RISK-029 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-029.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -5710,7 +5710,7 @@
           "note": "Apache 2.4+: use Require all denied",
           "remove_operation": "remove_files_match_block",
           "marker_begin": "# BEGIN VAPT RISK-030",
-          "marker_end": "# END VAPT RISK-030",
+          "marker_end": "# END Of RISK-030",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-030.steps[*enforcer=.htaccess].rollback"
         },
         "Cloudflare": {
@@ -5738,7 +5738,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-030",
-          "marker_end": "# END VAPT RISK-030",
+          "marker_end": "# END Of RISK-030",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-030.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -5751,7 +5751,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-030",
-          "marker_end": "// END VAPT RISK-030",
+          "marker_end": "// END Of RISK-030",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-030.steps[*enforcer=PHP Functions].rollback"
         },
         "Apache": {
@@ -5764,7 +5764,7 @@
           "implementation_type": "apache_conf",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-030",
-          "marker_end": "# END VAPT RISK-030",
+          "marker_end": "# END Of RISK-030",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-030.steps[*enforcer=Apache].rollback"
         },
         "wp-config.php": {
@@ -5777,7 +5777,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-030 */",
-          "marker_end": "/* END VAPT RISK-030 */",
+          "marker_end": "/* END Of RISK-030 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-030.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -5903,7 +5903,7 @@
           "note": "",
           "remove_operation": "remove_header",
           "marker_begin": "# BEGIN VAPT RISK-031",
-          "marker_end": "# END VAPT RISK-031",
+          "marker_end": "# END Of RISK-031",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-031.steps[*enforcer=.htaccess].rollback"
         },
         "Cloudflare": {
@@ -5931,7 +5931,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-031",
-          "marker_end": "# END VAPT RISK-031",
+          "marker_end": "# END Of RISK-031",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-031.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -5944,7 +5944,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-031",
-          "marker_end": "// END VAPT RISK-031",
+          "marker_end": "// END Of RISK-031",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-031.steps[*enforcer=PHP Functions].rollback"
         },
         "Apache": {
@@ -5957,7 +5957,7 @@
           "implementation_type": "apache_conf",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-031",
-          "marker_end": "# END VAPT RISK-031",
+          "marker_end": "# END Of RISK-031",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-031.steps[*enforcer=Apache].rollback"
         },
         "wp-config.php": {
@@ -5970,7 +5970,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-031 */",
-          "marker_end": "/* END VAPT RISK-031 */",
+          "marker_end": "/* END Of RISK-031 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-031.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -6096,7 +6096,7 @@
           "note": "May break third-party embeds. Test with COEP: Report-Only first.",
           "remove_operation": "remove_header",
           "marker_begin": "# BEGIN VAPT RISK-032",
-          "marker_end": "# END VAPT RISK-032",
+          "marker_end": "# END Of RISK-032",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-032.steps[*enforcer=.htaccess].rollback"
         },
         "Cloudflare": {
@@ -6124,7 +6124,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-032",
-          "marker_end": "# END VAPT RISK-032",
+          "marker_end": "# END Of RISK-032",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-032.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -6137,7 +6137,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-032",
-          "marker_end": "// END VAPT RISK-032",
+          "marker_end": "// END Of RISK-032",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-032.steps[*enforcer=PHP Functions].rollback"
         },
         "Apache": {
@@ -6150,7 +6150,7 @@
           "implementation_type": "apache_conf",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-032",
-          "marker_end": "# END VAPT RISK-032",
+          "marker_end": "# END Of RISK-032",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-032.steps[*enforcer=Apache].rollback"
         },
         "wp-config.php": {
@@ -6163,7 +6163,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-032 */",
-          "marker_end": "/* END VAPT RISK-032 */",
+          "marker_end": "/* END Of RISK-032 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-032.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -6289,7 +6289,7 @@
           "note": "",
           "remove_operation": "remove_header",
           "marker_begin": "# BEGIN VAPT RISK-033",
-          "marker_end": "# END VAPT RISK-033",
+          "marker_end": "# END Of RISK-033",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-033.steps[*enforcer=.htaccess].rollback"
         },
         "Cloudflare": {
@@ -6317,7 +6317,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-033",
-          "marker_end": "# END VAPT RISK-033",
+          "marker_end": "# END Of RISK-033",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-033.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -6330,7 +6330,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-033",
-          "marker_end": "// END VAPT RISK-033",
+          "marker_end": "// END Of RISK-033",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-033.steps[*enforcer=PHP Functions].rollback"
         },
         "Apache": {
@@ -6343,7 +6343,7 @@
           "implementation_type": "apache_conf",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-033",
-          "marker_end": "# END VAPT RISK-033",
+          "marker_end": "# END Of RISK-033",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-033.steps[*enforcer=Apache].rollback"
         },
         "wp-config.php": {
@@ -6356,7 +6356,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-033 */",
-          "marker_end": "/* END VAPT RISK-033 */",
+          "marker_end": "/* END Of RISK-033 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-033.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -6482,7 +6482,7 @@
           "note": "Apache 2.4+: use Require all denied",
           "remove_operation": "remove_files_block",
           "marker_begin": "# BEGIN VAPT RISK-034",
-          "marker_end": "# END VAPT RISK-034",
+          "marker_end": "# END Of RISK-034",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-034.steps[*enforcer=.htaccess].rollback"
         },
         "Cloudflare": {
@@ -6510,7 +6510,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-034",
-          "marker_end": "# END VAPT RISK-034",
+          "marker_end": "# END Of RISK-034",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-034.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -6523,7 +6523,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-034",
-          "marker_end": "// END VAPT RISK-034",
+          "marker_end": "// END Of RISK-034",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-034.steps[*enforcer=PHP Functions].rollback"
         },
         "Apache": {
@@ -6536,7 +6536,7 @@
           "implementation_type": "apache_conf",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-034",
-          "marker_end": "# END VAPT RISK-034",
+          "marker_end": "# END Of RISK-034",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-034.steps[*enforcer=Apache].rollback"
         },
         "wp-config.php": {
@@ -6549,7 +6549,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-034 */",
-          "marker_end": "/* END VAPT RISK-034 */",
+          "marker_end": "/* END Of RISK-034 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-034.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -6676,7 +6676,7 @@
           "note": "Preferred: restrict in httpd.conf with <Location /server-status> Require local </Location>",
           "remove_operation": "remove_rewrite_rule",
           "marker_begin": "# BEGIN VAPT RISK-035",
-          "marker_end": "# END VAPT RISK-035",
+          "marker_end": "# END Of RISK-035",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-035.steps[*enforcer=.htaccess].rollback"
         },
         "Cloudflare": {
@@ -6704,7 +6704,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-035",
-          "marker_end": "# END VAPT RISK-035",
+          "marker_end": "# END Of RISK-035",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-035.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -6717,7 +6717,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-035",
-          "marker_end": "// END VAPT RISK-035",
+          "marker_end": "// END Of RISK-035",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-035.steps[*enforcer=PHP Functions].rollback"
         },
         "Apache": {
@@ -6730,7 +6730,7 @@
           "implementation_type": "apache_conf",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-035",
-          "marker_end": "# END VAPT RISK-035",
+          "marker_end": "# END Of RISK-035",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-035.steps[*enforcer=Apache].rollback"
         },
         "wp-config.php": {
@@ -6743,7 +6743,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-035 */",
-          "marker_end": "/* END VAPT RISK-035 */",
+          "marker_end": "/* END Of RISK-035 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-035.steps[*enforcer=wp-config.php].rollback"
         },
         "litespeed": {
@@ -6756,7 +6756,7 @@
           "note": "LiteSpeed server-status page blocking",
           "remove_operation": "remove_litespeed_block",
           "marker_begin": "# BEGIN VAPT LS RISK-035",
-          "marker_end": "# END VAPT LS RISK-035",
+          "marker_end": "# END Of LS RISK-035",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-035.steps[*enforcer=litespeed].rollback"
         }
       },
@@ -6872,7 +6872,7 @@
           "implementation_type": "",
           "remove_operation": "remove_hook",
           "marker_begin": "// BEGIN VAPT RISK-036",
-          "marker_end": "// END VAPT RISK-036",
+          "marker_end": "// END Of RISK-036",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-036.steps[*enforcer=PHP Functions].rollback"
         },
         "Nginx": {
@@ -6885,7 +6885,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-036",
-          "marker_end": "# END VAPT RISK-036",
+          "marker_end": "# END Of RISK-036",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-036.steps[*enforcer=Nginx].rollback"
         },
         "wp-config.php": {
@@ -6898,7 +6898,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-036 */",
-          "marker_end": "/* END VAPT RISK-036 */",
+          "marker_end": "/* END Of RISK-036 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-036.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -7014,7 +7014,7 @@
           "implementation_type": "",
           "remove_operation": "remove_hook",
           "marker_begin": "// BEGIN VAPT RISK-037",
-          "marker_end": "// END VAPT RISK-037",
+          "marker_end": "// END Of RISK-037",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-037.steps[*enforcer=PHP Functions].rollback"
         },
         "Nginx": {
@@ -7027,7 +7027,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-037",
-          "marker_end": "# END VAPT RISK-037",
+          "marker_end": "# END Of RISK-037",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-037.steps[*enforcer=Nginx].rollback"
         },
         "wp-config.php": {
@@ -7040,7 +7040,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-037 */",
-          "marker_end": "/* END VAPT RISK-037 */",
+          "marker_end": "/* END Of RISK-037 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-037.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -7156,7 +7156,7 @@
           "implementation_type": "",
           "remove_operation": "restore_hook",
           "marker_begin": "// BEGIN VAPT RISK-038",
-          "marker_end": "// END VAPT RISK-038",
+          "marker_end": "// END Of RISK-038",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-038.steps[*enforcer=PHP Functions].rollback"
         },
         "Nginx": {
@@ -7169,7 +7169,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-038",
-          "marker_end": "# END VAPT RISK-038",
+          "marker_end": "# END Of RISK-038",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-038.steps[*enforcer=Nginx].rollback"
         },
         "wp-config.php": {
@@ -7182,7 +7182,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-038 */",
-          "marker_end": "/* END VAPT RISK-038 */",
+          "marker_end": "/* END Of RISK-038 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-038.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -7298,7 +7298,7 @@
           "implementation_type": "",
           "remove_operation": "remove_filter_hook",
           "marker_begin": "// BEGIN VAPT RISK-039",
-          "marker_end": "// END VAPT RISK-039",
+          "marker_end": "// END Of RISK-039",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-039.steps[*enforcer=PHP Functions].rollback"
         },
         "Nginx": {
@@ -7311,7 +7311,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-039",
-          "marker_end": "# END VAPT RISK-039",
+          "marker_end": "# END Of RISK-039",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-039.steps[*enforcer=Nginx].rollback"
         },
         "wp-config.php": {
@@ -7324,7 +7324,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-039 */",
-          "marker_end": "/* END VAPT RISK-039 */",
+          "marker_end": "/* END Of RISK-039 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-039.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -7440,7 +7440,7 @@
           "implementation_type": "",
           "remove_operation": "remove_hook",
           "marker_begin": "// BEGIN VAPT RISK-040",
-          "marker_end": "// END VAPT RISK-040",
+          "marker_end": "// END Of RISK-040",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-040.steps[*enforcer=PHP Functions].rollback"
         },
         "Nginx": {
@@ -7453,7 +7453,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-040",
-          "marker_end": "# END VAPT RISK-040",
+          "marker_end": "# END Of RISK-040",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-040.steps[*enforcer=Nginx].rollback"
         },
         "wp-config.php": {
@@ -7466,7 +7466,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-040 */",
-          "marker_end": "/* END VAPT RISK-040 */",
+          "marker_end": "/* END Of RISK-040 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-040.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -7582,7 +7582,7 @@
           "implementation_type": "",
           "remove_operation": "remove_hook",
           "marker_begin": "// BEGIN VAPT RISK-041",
-          "marker_end": "// END VAPT RISK-041",
+          "marker_end": "// END Of RISK-041",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-041.steps[*enforcer=PHP Functions].rollback"
         },
         "Nginx": {
@@ -7595,7 +7595,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-041",
-          "marker_end": "# END VAPT RISK-041",
+          "marker_end": "# END Of RISK-041",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-041.steps[*enforcer=Nginx].rollback"
         },
         "wp-config.php": {
@@ -7608,7 +7608,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-041 */",
-          "marker_end": "/* END VAPT RISK-041 */",
+          "marker_end": "/* END Of RISK-041 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-041.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -7724,7 +7724,7 @@
           "implementation_type": "",
           "remove_operation": "remove_filter_hook",
           "marker_begin": "// BEGIN VAPT RISK-042",
-          "marker_end": "// END VAPT RISK-042",
+          "marker_end": "// END Of RISK-042",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-042.steps[*enforcer=PHP Functions].rollback"
         },
         "Nginx": {
@@ -7737,7 +7737,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-042",
-          "marker_end": "# END VAPT RISK-042",
+          "marker_end": "# END Of RISK-042",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-042.steps[*enforcer=Nginx].rollback"
         },
         "wp-config.php": {
@@ -7750,7 +7750,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-042 */",
-          "marker_end": "/* END VAPT RISK-042 */",
+          "marker_end": "/* END Of RISK-042 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-042.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -7866,7 +7866,7 @@
           "implementation_type": "",
           "remove_operation": "remove_hook",
           "marker_begin": "// BEGIN VAPT RISK-043",
-          "marker_end": "// END VAPT RISK-043",
+          "marker_end": "// END Of RISK-043",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-043.steps[*enforcer=PHP Functions].rollback"
         },
         "Nginx": {
@@ -7879,7 +7879,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-043",
-          "marker_end": "# END VAPT RISK-043",
+          "marker_end": "# END Of RISK-043",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-043.steps[*enforcer=Nginx].rollback"
         },
         "wp-config.php": {
@@ -7892,7 +7892,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-043 */",
-          "marker_end": "/* END VAPT RISK-043 */",
+          "marker_end": "/* END Of RISK-043 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-043.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -8008,7 +8008,7 @@
           "implementation_type": "",
           "remove_operation": "remove_hook",
           "marker_begin": "// BEGIN VAPT RISK-044",
-          "marker_end": "// END VAPT RISK-044",
+          "marker_end": "// END Of RISK-044",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-044.steps[*enforcer=PHP Functions].rollback"
         },
         "Nginx": {
@@ -8021,7 +8021,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-044",
-          "marker_end": "# END VAPT RISK-044",
+          "marker_end": "# END Of RISK-044",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-044.steps[*enforcer=Nginx].rollback"
         },
         "wp-config.php": {
@@ -8034,7 +8034,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-044 */",
-          "marker_end": "/* END VAPT RISK-044 */",
+          "marker_end": "/* END Of RISK-044 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-044.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -8150,7 +8150,7 @@
           "implementation_type": "",
           "remove_operation": "remove_hook",
           "marker_begin": "// BEGIN VAPT RISK-045",
-          "marker_end": "// END VAPT RISK-045",
+          "marker_end": "// END Of RISK-045",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-045.steps[*enforcer=PHP Functions].rollback"
         },
         "Nginx": {
@@ -8163,7 +8163,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-045",
-          "marker_end": "# END VAPT RISK-045",
+          "marker_end": "# END Of RISK-045",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-045.steps[*enforcer=Nginx].rollback"
         },
         "wp-config.php": {
@@ -8176,7 +8176,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-045 */",
-          "marker_end": "/* END VAPT RISK-045 */",
+          "marker_end": "/* END Of RISK-045 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-045.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -8292,7 +8292,7 @@
           "implementation_type": "",
           "remove_operation": "remove_hook",
           "marker_begin": "// BEGIN VAPT RISK-046",
-          "marker_end": "// END VAPT RISK-046",
+          "marker_end": "// END Of RISK-046",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-046.steps[*enforcer=PHP Functions].rollback"
         },
         "Nginx": {
@@ -8305,7 +8305,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-046",
-          "marker_end": "# END VAPT RISK-046",
+          "marker_end": "# END Of RISK-046",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-046.steps[*enforcer=Nginx].rollback"
         },
         "wp-config.php": {
@@ -8318,7 +8318,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-046 */",
-          "marker_end": "/* END VAPT RISK-046 */",
+          "marker_end": "/* END Of RISK-046 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-046.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -8434,7 +8434,7 @@
           "implementation_type": "",
           "remove_operation": "remove_filter_hook",
           "marker_begin": "// BEGIN VAPT RISK-047",
-          "marker_end": "// END VAPT RISK-047",
+          "marker_end": "// END Of RISK-047",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-047.steps[*enforcer=PHP Functions].rollback"
         },
         "Nginx": {
@@ -8447,7 +8447,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-047",
-          "marker_end": "# END VAPT RISK-047",
+          "marker_end": "# END Of RISK-047",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-047.steps[*enforcer=Nginx].rollback"
         },
         "wp-config.php": {
@@ -8460,7 +8460,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-047 */",
-          "marker_end": "/* END VAPT RISK-047 */",
+          "marker_end": "/* END Of RISK-047 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-047.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -8576,7 +8576,7 @@
           "implementation_type": "",
           "remove_operation": "remove_filter_hook",
           "marker_begin": "// BEGIN VAPT RISK-048",
-          "marker_end": "// END VAPT RISK-048",
+          "marker_end": "// END Of RISK-048",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-048.steps[*enforcer=PHP Functions].rollback"
         },
         "Nginx": {
@@ -8589,7 +8589,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-048",
-          "marker_end": "# END VAPT RISK-048",
+          "marker_end": "# END Of RISK-048",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-048.steps[*enforcer=Nginx].rollback"
         },
         "wp-config.php": {
@@ -8602,7 +8602,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-048 */",
-          "marker_end": "/* END VAPT RISK-048 */",
+          "marker_end": "/* END Of RISK-048 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-048.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -8718,7 +8718,7 @@
           "implementation_type": "",
           "remove_operation": "remove_filter_hook",
           "marker_begin": "// BEGIN VAPT RISK-049",
-          "marker_end": "// END VAPT RISK-049",
+          "marker_end": "// END Of RISK-049",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-049.steps[*enforcer=PHP Functions].rollback"
         },
         "Nginx": {
@@ -8731,7 +8731,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-049",
-          "marker_end": "# END VAPT RISK-049",
+          "marker_end": "# END Of RISK-049",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-049.steps[*enforcer=Nginx].rollback"
         },
         "wp-config.php": {
@@ -8744,7 +8744,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-049 */",
-          "marker_end": "/* END VAPT RISK-049 */",
+          "marker_end": "/* END Of RISK-049 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-049.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -8860,7 +8860,7 @@
           "implementation_type": "",
           "remove_operation": "remove_hook",
           "marker_begin": "// BEGIN VAPT RISK-050",
-          "marker_end": "// END VAPT RISK-050",
+          "marker_end": "// END Of RISK-050",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-050.steps[*enforcer=PHP Functions].rollback"
         },
         "Nginx": {
@@ -8873,7 +8873,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-050",
-          "marker_end": "# END VAPT RISK-050",
+          "marker_end": "# END Of RISK-050",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-050.steps[*enforcer=Nginx].rollback"
         },
         "wp-config.php": {
@@ -8886,7 +8886,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-050 */",
-          "marker_end": "/* END VAPT RISK-050 */",
+          "marker_end": "/* END Of RISK-050 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-050.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -9002,7 +9002,7 @@
           "implementation_type": "",
           "remove_operation": "remove_filter_hook",
           "marker_begin": "// BEGIN VAPT RISK-051",
-          "marker_end": "// END VAPT RISK-051",
+          "marker_end": "// END Of RISK-051",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-051.steps[*enforcer=PHP Functions].rollback"
         },
         "Nginx": {
@@ -9015,7 +9015,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-051",
-          "marker_end": "# END VAPT RISK-051",
+          "marker_end": "# END Of RISK-051",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-051.steps[*enforcer=Nginx].rollback"
         },
         "wp-config.php": {
@@ -9028,7 +9028,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-051 */",
-          "marker_end": "/* END VAPT RISK-051 */",
+          "marker_end": "/* END Of RISK-051 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-051.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -9144,7 +9144,7 @@
           "implementation_type": "",
           "remove_operation": "remove_hook",
           "marker_begin": "// BEGIN VAPT RISK-052",
-          "marker_end": "// END VAPT RISK-052",
+          "marker_end": "// END Of RISK-052",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-052.steps[*enforcer=PHP Functions].rollback"
         },
         "Nginx": {
@@ -9157,7 +9157,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-052",
-          "marker_end": "# END VAPT RISK-052",
+          "marker_end": "# END Of RISK-052",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-052.steps[*enforcer=Nginx].rollback"
         },
         "wp-config.php": {
@@ -9170,7 +9170,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-052 */",
-          "marker_end": "/* END VAPT RISK-052 */",
+          "marker_end": "/* END Of RISK-052 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-052.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -9286,7 +9286,7 @@
           "implementation_type": "",
           "remove_operation": "remove_hook",
           "marker_begin": "// BEGIN VAPT RISK-053",
-          "marker_end": "// END VAPT RISK-053",
+          "marker_end": "// END Of RISK-053",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-053.steps[*enforcer=PHP Functions].rollback"
         },
         "Nginx": {
@@ -9299,7 +9299,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-053",
-          "marker_end": "# END VAPT RISK-053",
+          "marker_end": "# END Of RISK-053",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-053.steps[*enforcer=Nginx].rollback"
         },
         "wp-config.php": {
@@ -9312,7 +9312,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-053 */",
-          "marker_end": "/* END VAPT RISK-053 */",
+          "marker_end": "/* END Of RISK-053 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-053.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -9428,7 +9428,7 @@
           "implementation_type": "",
           "remove_operation": "remove_function_call",
           "marker_begin": "// BEGIN VAPT RISK-054",
-          "marker_end": "// END VAPT RISK-054",
+          "marker_end": "// END Of RISK-054",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-054.steps[*enforcer=PHP Functions].rollback"
         },
         "Nginx": {
@@ -9441,7 +9441,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-054",
-          "marker_end": "# END VAPT RISK-054",
+          "marker_end": "# END Of RISK-054",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-054.steps[*enforcer=Nginx].rollback"
         },
         "wp-config.php": {
@@ -9454,7 +9454,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-054 */",
-          "marker_end": "/* END VAPT RISK-054 */",
+          "marker_end": "/* END Of RISK-054 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-054.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -9570,7 +9570,7 @@
           "implementation_type": "",
           "remove_operation": "remove_filter_hook",
           "marker_begin": "// BEGIN VAPT RISK-055",
-          "marker_end": "// END VAPT RISK-055",
+          "marker_end": "// END Of RISK-055",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-055.steps[*enforcer=PHP Functions].rollback"
         },
         "Nginx": {
@@ -9583,7 +9583,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-055",
-          "marker_end": "# END VAPT RISK-055",
+          "marker_end": "# END Of RISK-055",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-055.steps[*enforcer=Nginx].rollback"
         },
         "wp-config.php": {
@@ -9596,7 +9596,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-055 */",
-          "marker_end": "/* END VAPT RISK-055 */",
+          "marker_end": "/* END Of RISK-055 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-055.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -9712,7 +9712,7 @@
           "implementation_type": "",
           "remove_operation": "remove_filter_hook",
           "marker_begin": "// BEGIN VAPT RISK-056",
-          "marker_end": "// END VAPT RISK-056",
+          "marker_end": "// END Of RISK-056",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-056.steps[*enforcer=PHP Functions].rollback"
         },
         "Nginx": {
@@ -9725,7 +9725,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-056",
-          "marker_end": "# END VAPT RISK-056",
+          "marker_end": "# END Of RISK-056",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-056.steps[*enforcer=Nginx].rollback"
         },
         "wp-config.php": {
@@ -9738,7 +9738,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-056 */",
-          "marker_end": "/* END VAPT RISK-056 */",
+          "marker_end": "/* END Of RISK-056 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-056.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -9854,7 +9854,7 @@
           "implementation_type": "",
           "remove_operation": "remove_filter_hook",
           "marker_begin": "// BEGIN VAPT RISK-057",
-          "marker_end": "// END VAPT RISK-057",
+          "marker_end": "// END Of RISK-057",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-057.steps[*enforcer=PHP Functions].rollback"
         },
         "Nginx": {
@@ -9867,7 +9867,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-057",
-          "marker_end": "# END VAPT RISK-057",
+          "marker_end": "# END Of RISK-057",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-057.steps[*enforcer=Nginx].rollback"
         },
         "wp-config.php": {
@@ -9880,7 +9880,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-057 */",
-          "marker_end": "/* END VAPT RISK-057 */",
+          "marker_end": "/* END Of RISK-057 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-057.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -9996,7 +9996,7 @@
           "implementation_type": "",
           "remove_operation": "remove_filter_hook",
           "marker_begin": "// BEGIN VAPT RISK-058",
-          "marker_end": "// END VAPT RISK-058",
+          "marker_end": "// END Of RISK-058",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-058.steps[*enforcer=PHP Functions].rollback"
         },
         "Nginx": {
@@ -10009,7 +10009,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-058",
-          "marker_end": "# END VAPT RISK-058",
+          "marker_end": "# END Of RISK-058",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-058.steps[*enforcer=Nginx].rollback"
         },
         "wp-config.php": {
@@ -10022,7 +10022,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-058 */",
-          "marker_end": "/* END VAPT RISK-058 */",
+          "marker_end": "/* END Of RISK-058 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-058.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -10138,7 +10138,7 @@
           "implementation_type": "",
           "remove_operation": "remove_filter_hook",
           "marker_begin": "// BEGIN VAPT RISK-059",
-          "marker_end": "// END VAPT RISK-059",
+          "marker_end": "// END Of RISK-059",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-059.steps[*enforcer=PHP Functions].rollback"
         },
         "Nginx": {
@@ -10151,7 +10151,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-059",
-          "marker_end": "# END VAPT RISK-059",
+          "marker_end": "# END Of RISK-059",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-059.steps[*enforcer=Nginx].rollback"
         },
         "wp-config.php": {
@@ -10164,7 +10164,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-059 */",
-          "marker_end": "/* END VAPT RISK-059 */",
+          "marker_end": "/* END Of RISK-059 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-059.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -10280,7 +10280,7 @@
           "implementation_type": "",
           "remove_operation": "remove_hook",
           "marker_begin": "// BEGIN VAPT RISK-060",
-          "marker_end": "// END VAPT RISK-060",
+          "marker_end": "// END Of RISK-060",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-060.steps[*enforcer=PHP Functions].rollback"
         },
         "Nginx": {
@@ -10293,7 +10293,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-060",
-          "marker_end": "# END VAPT RISK-060",
+          "marker_end": "# END Of RISK-060",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-060.steps[*enforcer=Nginx].rollback"
         },
         "wp-config.php": {
@@ -10306,7 +10306,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-060 */",
-          "marker_end": "/* END VAPT RISK-060 */",
+          "marker_end": "/* END Of RISK-060 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-060.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -10429,7 +10429,7 @@
           "insertion_rule": "Must be placed BEFORE: require_once ABSPATH . 'wp-settings.php';",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-061 */",
-          "marker_end": "/* END VAPT RISK-061 */",
+          "marker_end": "/* END Of RISK-061 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-061.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -10550,7 +10550,7 @@
           "insertion_rule": "Must be placed BEFORE: require_once ABSPATH . 'wp-settings.php';",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-062 */",
-          "marker_end": "/* END VAPT RISK-062 */",
+          "marker_end": "/* END Of RISK-062 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-062.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -10671,7 +10671,7 @@
           "insertion_rule": "Must be placed BEFORE: require_once ABSPATH . 'wp-settings.php';",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-063 */",
-          "marker_end": "/* END VAPT RISK-063 */",
+          "marker_end": "/* END Of RISK-063 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-063.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -10792,7 +10792,7 @@
           "insertion_rule": "Must be placed BEFORE: require_once ABSPATH . 'wp-settings.php';",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-064 */",
-          "marker_end": "/* END VAPT RISK-064 */",
+          "marker_end": "/* END Of RISK-064 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-064.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -10913,7 +10913,7 @@
           "insertion_rule": "Must be placed BEFORE: require_once ABSPATH . 'wp-settings.php';",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-065 */",
-          "marker_end": "/* END VAPT RISK-065 */",
+          "marker_end": "/* END Of RISK-065 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-065.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -11034,7 +11034,7 @@
           "insertion_rule": "Must be placed BEFORE: require_once ABSPATH . 'wp-settings.php';",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-066 */",
-          "marker_end": "/* END VAPT RISK-066 */",
+          "marker_end": "/* END Of RISK-066 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-066.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -11155,7 +11155,7 @@
           "insertion_rule": "Must be placed BEFORE: require_once ABSPATH . 'wp-settings.php';",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-067 */",
-          "marker_end": "/* END VAPT RISK-067 */",
+          "marker_end": "/* END Of RISK-067 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-067.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -11276,7 +11276,7 @@
           "insertion_rule": "Must be placed BEFORE: require_once ABSPATH . 'wp-settings.php';",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-068 */",
-          "marker_end": "/* END VAPT RISK-068 */",
+          "marker_end": "/* END Of RISK-068 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-068.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -11397,7 +11397,7 @@
           "insertion_rule": "Must be placed BEFORE: require_once ABSPATH . 'wp-settings.php';",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-069 */",
-          "marker_end": "/* END VAPT RISK-069 */",
+          "marker_end": "/* END Of RISK-069 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-069.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -11518,7 +11518,7 @@
           "insertion_rule": "Must be placed BEFORE: require_once ABSPATH . 'wp-settings.php';",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-070 */",
-          "marker_end": "/* END VAPT RISK-070 */",
+          "marker_end": "/* END Of RISK-070 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-070.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -11639,7 +11639,7 @@
           "insertion_rule": "Must be placed BEFORE: require_once ABSPATH . 'wp-settings.php';",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-071 */",
-          "marker_end": "/* END VAPT RISK-071 */",
+          "marker_end": "/* END Of RISK-071 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-071.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -11760,7 +11760,7 @@
           "insertion_rule": "Must be placed BEFORE: require_once ABSPATH . 'wp-settings.php';",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-072 */",
-          "marker_end": "/* END VAPT RISK-072 */",
+          "marker_end": "/* END Of RISK-072 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-072.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -11881,7 +11881,7 @@
           "insertion_rule": "Must be placed BEFORE: require_once ABSPATH . 'wp-settings.php';",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-073 */",
-          "marker_end": "/* END VAPT RISK-073 */",
+          "marker_end": "/* END Of RISK-073 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-073.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -12002,7 +12002,7 @@
           "insertion_rule": "Must be placed BEFORE: require_once ABSPATH . 'wp-settings.php';",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-074 */",
-          "marker_end": "/* END VAPT RISK-074 */",
+          "marker_end": "/* END Of RISK-074 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-074.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -12123,7 +12123,7 @@
           "insertion_rule": "Must be placed BEFORE: require_once ABSPATH . 'wp-settings.php';",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-075 */",
-          "marker_end": "/* END VAPT RISK-075 */",
+          "marker_end": "/* END Of RISK-075 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-075.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -12244,7 +12244,7 @@
           "insertion_rule": "Must be placed BEFORE: require_once ABSPATH . 'wp-settings.php';",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-076 */",
-          "marker_end": "/* END VAPT RISK-076 */",
+          "marker_end": "/* END Of RISK-076 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-076.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -12365,7 +12365,7 @@
           "insertion_rule": "Must be placed BEFORE: require_once ABSPATH . 'wp-settings.php';",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-077 */",
-          "marker_end": "/* END VAPT RISK-077 */",
+          "marker_end": "/* END Of RISK-077 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-077.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -12486,7 +12486,7 @@
           "insertion_rule": "Must be placed BEFORE: require_once ABSPATH . 'wp-settings.php';",
           "remove_operation": "remove_variable",
           "marker_begin": "/* BEGIN VAPT RISK-078 */",
-          "marker_end": "/* END VAPT RISK-078 */",
+          "marker_end": "/* END Of RISK-078 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-078.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -12607,7 +12607,7 @@
           "insertion_rule": "Must be placed BEFORE: require_once ABSPATH . 'wp-settings.php';",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-079 */",
-          "marker_end": "/* END VAPT RISK-079 */",
+          "marker_end": "/* END Of RISK-079 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-079.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -12728,7 +12728,7 @@
           "insertion_rule": "Must be placed BEFORE: require_once ABSPATH . 'wp-settings.php';",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-080 */",
-          "marker_end": "/* END VAPT RISK-080 */",
+          "marker_end": "/* END Of RISK-080 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-080.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -12842,7 +12842,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-081 */",
-          "marker_end": "/* END VAPT RISK-081 */",
+          "marker_end": "/* END Of RISK-081 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-081.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -12956,7 +12956,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-082 */",
-          "marker_end": "/* END VAPT RISK-082 */",
+          "marker_end": "/* END Of RISK-082 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-082.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -13070,7 +13070,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-083 */",
-          "marker_end": "/* END VAPT RISK-083 */",
+          "marker_end": "/* END Of RISK-083 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-083.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -13184,7 +13184,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-084 */",
-          "marker_end": "/* END VAPT RISK-084 */",
+          "marker_end": "/* END Of RISK-084 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-084.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -13298,7 +13298,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-085 */",
-          "marker_end": "/* END VAPT RISK-085 */",
+          "marker_end": "/* END Of RISK-085 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-085.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -13412,7 +13412,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-086 */",
-          "marker_end": "/* END VAPT RISK-086 */",
+          "marker_end": "/* END Of RISK-086 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-086.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -13526,7 +13526,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-087 */",
-          "marker_end": "/* END VAPT RISK-087 */",
+          "marker_end": "/* END Of RISK-087 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-087.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -13640,7 +13640,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-088 */",
-          "marker_end": "/* END VAPT RISK-088 */",
+          "marker_end": "/* END Of RISK-088 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-088.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -13754,7 +13754,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-089 */",
-          "marker_end": "/* END VAPT RISK-089 */",
+          "marker_end": "/* END Of RISK-089 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-089.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -13868,7 +13868,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-090 */",
-          "marker_end": "/* END VAPT RISK-090 */",
+          "marker_end": "/* END Of RISK-090 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-090.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -13983,7 +13983,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-091",
-          "marker_end": "// END VAPT RISK-091",
+          "marker_end": "// END Of RISK-091",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-091.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -13996,7 +13996,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-091 */",
-          "marker_end": "/* END VAPT RISK-091 */",
+          "marker_end": "/* END Of RISK-091 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-091.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -14111,7 +14111,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-092",
-          "marker_end": "// END VAPT RISK-092",
+          "marker_end": "// END Of RISK-092",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-092.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -14124,7 +14124,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-092 */",
-          "marker_end": "/* END VAPT RISK-092 */",
+          "marker_end": "/* END Of RISK-092 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-092.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -14239,7 +14239,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-093",
-          "marker_end": "// END VAPT RISK-093",
+          "marker_end": "// END Of RISK-093",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-093.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -14252,7 +14252,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-093 */",
-          "marker_end": "/* END VAPT RISK-093 */",
+          "marker_end": "/* END Of RISK-093 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-093.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -14367,7 +14367,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-094",
-          "marker_end": "// END VAPT RISK-094",
+          "marker_end": "// END Of RISK-094",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-094.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -14380,7 +14380,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-094 */",
-          "marker_end": "/* END VAPT RISK-094 */",
+          "marker_end": "/* END Of RISK-094 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-094.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -14495,7 +14495,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-095",
-          "marker_end": "// END VAPT RISK-095",
+          "marker_end": "// END Of RISK-095",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-095.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -14508,7 +14508,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-095 */",
-          "marker_end": "/* END VAPT RISK-095 */",
+          "marker_end": "/* END Of RISK-095 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-095.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -14624,7 +14624,7 @@
           "implementation_type": "",
           "remove_operation": "remove_cron_entry",
           "marker_begin": "# BEGIN VAPT RISK-096",
-          "marker_end": "# END VAPT RISK-096",
+          "marker_end": "# END Of RISK-096",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-096.steps[*enforcer=Server Cron].rollback"
         },
         "PHP Functions": {
@@ -14637,7 +14637,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-096",
-          "marker_end": "// END VAPT RISK-096",
+          "marker_end": "// END Of RISK-096",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-096.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -14650,7 +14650,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-096 */",
-          "marker_end": "/* END VAPT RISK-096 */",
+          "marker_end": "/* END Of RISK-096 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-096.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -14766,7 +14766,7 @@
           "implementation_type": "",
           "remove_operation": "remove_cron_entry",
           "marker_begin": "# BEGIN VAPT RISK-097",
-          "marker_end": "# END VAPT RISK-097",
+          "marker_end": "# END Of RISK-097",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-097.steps[*enforcer=Server Cron].rollback"
         },
         "PHP Functions": {
@@ -14779,7 +14779,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-097",
-          "marker_end": "// END VAPT RISK-097",
+          "marker_end": "// END Of RISK-097",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-097.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -14792,7 +14792,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-097 */",
-          "marker_end": "/* END VAPT RISK-097 */",
+          "marker_end": "/* END Of RISK-097 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-097.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -14908,7 +14908,7 @@
           "implementation_type": "",
           "remove_operation": "remove_cron_entry",
           "marker_begin": "# BEGIN VAPT RISK-098",
-          "marker_end": "# END VAPT RISK-098",
+          "marker_end": "# END Of RISK-098",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-098.steps[*enforcer=Server Cron].rollback"
         },
         "PHP Functions": {
@@ -14921,7 +14921,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-098",
-          "marker_end": "// END VAPT RISK-098",
+          "marker_end": "// END Of RISK-098",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-098.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -14934,7 +14934,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-098 */",
-          "marker_end": "/* END VAPT RISK-098 */",
+          "marker_end": "/* END Of RISK-098 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-098.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -15050,7 +15050,7 @@
           "implementation_type": "",
           "remove_operation": "remove_cron_entry",
           "marker_begin": "# BEGIN VAPT RISK-099",
-          "marker_end": "# END VAPT RISK-099",
+          "marker_end": "# END Of RISK-099",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-099.steps[*enforcer=Server Cron].rollback"
         },
         "PHP Functions": {
@@ -15063,7 +15063,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-099",
-          "marker_end": "// END VAPT RISK-099",
+          "marker_end": "// END Of RISK-099",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-099.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -15076,7 +15076,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-099 */",
-          "marker_end": "/* END VAPT RISK-099 */",
+          "marker_end": "/* END Of RISK-099 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-099.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -15192,7 +15192,7 @@
           "implementation_type": "",
           "remove_operation": "remove_cron_entry",
           "marker_begin": "# BEGIN VAPT RISK-100",
-          "marker_end": "# END VAPT RISK-100",
+          "marker_end": "# END Of RISK-100",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-100.steps[*enforcer=Server Cron].rollback"
         },
         "PHP Functions": {
@@ -15205,7 +15205,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-100",
-          "marker_end": "// END VAPT RISK-100",
+          "marker_end": "// END Of RISK-100",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-100.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -15218,7 +15218,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-100 */",
-          "marker_end": "/* END VAPT RISK-100 */",
+          "marker_end": "/* END Of RISK-100 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-100.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -15334,7 +15334,7 @@
           "implementation_type": "",
           "remove_operation": "remove_cron_entry",
           "marker_begin": "# BEGIN VAPT RISK-101",
-          "marker_end": "# END VAPT RISK-101",
+          "marker_end": "# END Of RISK-101",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-101.steps[*enforcer=Server Cron].rollback"
         },
         "PHP Functions": {
@@ -15347,7 +15347,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-101",
-          "marker_end": "// END VAPT RISK-101",
+          "marker_end": "// END Of RISK-101",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-101.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -15360,7 +15360,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-101 */",
-          "marker_end": "/* END VAPT RISK-101 */",
+          "marker_end": "/* END Of RISK-101 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-101.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -15476,7 +15476,7 @@
           "implementation_type": "",
           "remove_operation": "remove_cron_entry",
           "marker_begin": "# BEGIN VAPT RISK-102",
-          "marker_end": "# END VAPT RISK-102",
+          "marker_end": "# END Of RISK-102",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-102.steps[*enforcer=Server Cron].rollback"
         },
         "PHP Functions": {
@@ -15489,7 +15489,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-102",
-          "marker_end": "// END VAPT RISK-102",
+          "marker_end": "// END Of RISK-102",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-102.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -15502,7 +15502,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-102 */",
-          "marker_end": "/* END VAPT RISK-102 */",
+          "marker_end": "/* END Of RISK-102 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-102.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -15618,7 +15618,7 @@
           "implementation_type": "",
           "remove_operation": "remove_cron_entry",
           "marker_begin": "# BEGIN VAPT RISK-103",
-          "marker_end": "# END VAPT RISK-103",
+          "marker_end": "# END Of RISK-103",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-103.steps[*enforcer=Server Cron].rollback"
         },
         "PHP Functions": {
@@ -15631,7 +15631,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-103",
-          "marker_end": "// END VAPT RISK-103",
+          "marker_end": "// END Of RISK-103",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-103.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -15644,7 +15644,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-103 */",
-          "marker_end": "/* END VAPT RISK-103 */",
+          "marker_end": "/* END Of RISK-103 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-103.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -15760,7 +15760,7 @@
           "implementation_type": "",
           "remove_operation": "remove_cron_entry",
           "marker_begin": "# BEGIN VAPT RISK-104",
-          "marker_end": "# END VAPT RISK-104",
+          "marker_end": "# END Of RISK-104",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-104.steps[*enforcer=Server Cron].rollback"
         },
         "PHP Functions": {
@@ -15773,7 +15773,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-104",
-          "marker_end": "// END VAPT RISK-104",
+          "marker_end": "// END Of RISK-104",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-104.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -15786,7 +15786,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-104 */",
-          "marker_end": "/* END VAPT RISK-104 */",
+          "marker_end": "/* END Of RISK-104 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-104.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -15902,7 +15902,7 @@
           "implementation_type": "",
           "remove_operation": "remove_cron_entry",
           "marker_begin": "# BEGIN VAPT RISK-105",
-          "marker_end": "# END VAPT RISK-105",
+          "marker_end": "# END Of RISK-105",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-105.steps[*enforcer=Server Cron].rollback"
         },
         "PHP Functions": {
@@ -15915,7 +15915,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-105",
-          "marker_end": "// END VAPT RISK-105",
+          "marker_end": "// END Of RISK-105",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-105.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -15928,7 +15928,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-105 */",
-          "marker_end": "/* END VAPT RISK-105 */",
+          "marker_end": "/* END Of RISK-105 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-105.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -16044,7 +16044,7 @@
           "implementation_type": "",
           "remove_operation": "remove_hook",
           "marker_begin": "// BEGIN VAPT RISK-106",
-          "marker_end": "// END VAPT RISK-106",
+          "marker_end": "// END Of RISK-106",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-106.steps[*enforcer=WordPress].rollback"
         },
         "PHP Functions": {
@@ -16057,7 +16057,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT PF RISK-106",
-          "marker_end": "// END VAPT PF RISK-106",
+          "marker_end": "// END Of PF RISK-106",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-106.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -16070,7 +16070,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-106 */",
-          "marker_end": "/* END VAPT RISK-106 */",
+          "marker_end": "/* END Of RISK-106 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-106.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -16186,7 +16186,7 @@
           "implementation_type": "",
           "remove_operation": "remove_hook",
           "marker_begin": "// BEGIN VAPT RISK-107",
-          "marker_end": "// END VAPT RISK-107",
+          "marker_end": "// END Of RISK-107",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-107.steps[*enforcer=WordPress].rollback"
         },
         "PHP Functions": {
@@ -16199,7 +16199,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT PF RISK-107",
-          "marker_end": "// END VAPT PF RISK-107",
+          "marker_end": "// END Of PF RISK-107",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-107.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -16212,7 +16212,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-107 */",
-          "marker_end": "/* END VAPT RISK-107 */",
+          "marker_end": "/* END Of RISK-107 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-107.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -16328,7 +16328,7 @@
           "implementation_type": "",
           "remove_operation": "remove_hook",
           "marker_begin": "// BEGIN VAPT RISK-108",
-          "marker_end": "// END VAPT RISK-108",
+          "marker_end": "// END Of RISK-108",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-108.steps[*enforcer=WordPress].rollback"
         },
         "PHP Functions": {
@@ -16341,7 +16341,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT PF RISK-108",
-          "marker_end": "// END VAPT PF RISK-108",
+          "marker_end": "// END Of PF RISK-108",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-108.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -16354,7 +16354,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-108 */",
-          "marker_end": "/* END VAPT RISK-108 */",
+          "marker_end": "/* END Of RISK-108 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-108.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -16470,7 +16470,7 @@
           "implementation_type": "",
           "remove_operation": "remove_hook",
           "marker_begin": "// BEGIN VAPT RISK-109",
-          "marker_end": "// END VAPT RISK-109",
+          "marker_end": "// END Of RISK-109",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-109.steps[*enforcer=WordPress].rollback"
         },
         "PHP Functions": {
@@ -16483,7 +16483,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT PF RISK-109",
-          "marker_end": "// END VAPT PF RISK-109",
+          "marker_end": "// END Of PF RISK-109",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-109.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -16496,7 +16496,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-109 */",
-          "marker_end": "/* END VAPT RISK-109 */",
+          "marker_end": "/* END Of RISK-109 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-109.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -16612,7 +16612,7 @@
           "implementation_type": "",
           "remove_operation": "remove_filter_hook",
           "marker_begin": "// BEGIN VAPT RISK-110",
-          "marker_end": "// END VAPT RISK-110",
+          "marker_end": "// END Of RISK-110",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-110.steps[*enforcer=WordPress].rollback"
         },
         "PHP Functions": {
@@ -16625,7 +16625,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT PF RISK-110",
-          "marker_end": "// END VAPT PF RISK-110",
+          "marker_end": "// END Of PF RISK-110",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-110.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -16638,7 +16638,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-110 */",
-          "marker_end": "/* END VAPT RISK-110 */",
+          "marker_end": "/* END Of RISK-110 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-110.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -16754,7 +16754,7 @@
           "implementation_type": "",
           "remove_operation": "restore_hook",
           "marker_begin": "// BEGIN VAPT RISK-111",
-          "marker_end": "// END VAPT RISK-111",
+          "marker_end": "// END Of RISK-111",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-111.steps[*enforcer=WordPress].rollback"
         },
         "PHP Functions": {
@@ -16767,7 +16767,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT PF RISK-111",
-          "marker_end": "// END VAPT PF RISK-111",
+          "marker_end": "// END Of PF RISK-111",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-111.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -16780,7 +16780,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-111 */",
-          "marker_end": "/* END VAPT RISK-111 */",
+          "marker_end": "/* END Of RISK-111 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-111.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -16896,7 +16896,7 @@
           "implementation_type": "",
           "remove_operation": "restore_hook",
           "marker_begin": "// BEGIN VAPT RISK-112",
-          "marker_end": "// END VAPT RISK-112",
+          "marker_end": "// END Of RISK-112",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-112.steps[*enforcer=WordPress].rollback"
         },
         "PHP Functions": {
@@ -16909,7 +16909,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT PF RISK-112",
-          "marker_end": "// END VAPT PF RISK-112",
+          "marker_end": "// END Of PF RISK-112",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-112.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -16922,7 +16922,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-112 */",
-          "marker_end": "/* END VAPT RISK-112 */",
+          "marker_end": "/* END Of RISK-112 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-112.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -17038,7 +17038,7 @@
           "implementation_type": "",
           "remove_operation": "restore_hook",
           "marker_begin": "// BEGIN VAPT RISK-113",
-          "marker_end": "// END VAPT RISK-113",
+          "marker_end": "// END Of RISK-113",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-113.steps[*enforcer=WordPress].rollback"
         },
         "PHP Functions": {
@@ -17051,7 +17051,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT PF RISK-113",
-          "marker_end": "// END VAPT PF RISK-113",
+          "marker_end": "// END Of PF RISK-113",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-113.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -17064,7 +17064,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-113 */",
-          "marker_end": "/* END VAPT RISK-113 */",
+          "marker_end": "/* END Of RISK-113 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-113.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -17180,7 +17180,7 @@
           "implementation_type": "",
           "remove_operation": "restore_hook",
           "marker_begin": "// BEGIN VAPT RISK-114",
-          "marker_end": "// END VAPT RISK-114",
+          "marker_end": "// END Of RISK-114",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-114.steps[*enforcer=WordPress].rollback"
         },
         "PHP Functions": {
@@ -17193,7 +17193,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT PF RISK-114",
-          "marker_end": "// END VAPT PF RISK-114",
+          "marker_end": "// END Of PF RISK-114",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-114.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -17206,7 +17206,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-114 */",
-          "marker_end": "/* END VAPT RISK-114 */",
+          "marker_end": "/* END Of RISK-114 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-114.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -17322,7 +17322,7 @@
           "implementation_type": "",
           "remove_operation": "restore_hook",
           "marker_begin": "// BEGIN VAPT RISK-115",
-          "marker_end": "// END VAPT RISK-115",
+          "marker_end": "// END Of RISK-115",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-115.steps[*enforcer=WordPress].rollback"
         },
         "PHP Functions": {
@@ -17335,7 +17335,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT PF RISK-115",
-          "marker_end": "// END VAPT PF RISK-115",
+          "marker_end": "// END Of PF RISK-115",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-115.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -17348,7 +17348,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-115 */",
-          "marker_end": "/* END VAPT RISK-115 */",
+          "marker_end": "/* END Of RISK-115 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-115.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -17465,7 +17465,7 @@
           "implementation_type": "",
           "remove_operation": "remove_config_block",
           "marker_begin": "# BEGIN VAPT RISK-116",
-          "marker_end": "# END VAPT RISK-116",
+          "marker_end": "# END Of RISK-116",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-116.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -17478,7 +17478,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-116",
-          "marker_end": "// END VAPT RISK-116",
+          "marker_end": "// END Of RISK-116",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-116.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -17491,7 +17491,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-116 */",
-          "marker_end": "/* END VAPT RISK-116 */",
+          "marker_end": "/* END Of RISK-116 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-116.steps[*enforcer=wp-config.php].rollback"
         },
         "litespeed": {
@@ -17506,7 +17506,7 @@
           "note": "LiteSpeed version hiding via header removal",
           "remove_operation": "remove_litespeed_block",
           "marker_begin": "# BEGIN VAPT LS RISK-116",
-          "marker_end": "# END VAPT LS RISK-116",
+          "marker_end": "# END Of LS RISK-116",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-116.steps[*enforcer=litespeed].rollback"
         }
       },
@@ -17623,7 +17623,7 @@
           "implementation_type": "",
           "remove_operation": "remove_config_block",
           "marker_begin": "# BEGIN VAPT RISK-117",
-          "marker_end": "# END VAPT RISK-117",
+          "marker_end": "# END Of RISK-117",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-117.steps[*enforcer=Apache].rollback"
         },
         "PHP Functions": {
@@ -17636,7 +17636,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-117",
-          "marker_end": "// END VAPT RISK-117",
+          "marker_end": "// END Of RISK-117",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-117.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -17649,7 +17649,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-117 */",
-          "marker_end": "/* END VAPT RISK-117 */",
+          "marker_end": "/* END Of RISK-117 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-117.steps[*enforcer=wp-config.php].rollback"
         },
         "litespeed": {
@@ -17664,7 +17664,7 @@
           "note": "Apache/LiteSpeed version hiding - same approach",
           "remove_operation": "remove_litespeed_block",
           "marker_begin": "# BEGIN VAPT LS RISK-117",
-          "marker_end": "# END VAPT LS RISK-117",
+          "marker_end": "# END Of LS RISK-117",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-117.steps[*enforcer=litespeed].rollback"
         }
       },
@@ -17780,7 +17780,7 @@
           "implementation_type": "",
           "remove_operation": "remove_config_block",
           "marker_begin": "# BEGIN VAPT RISK-118",
-          "marker_end": "# END VAPT RISK-118",
+          "marker_end": "# END Of RISK-118",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-118.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -17793,7 +17793,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-118",
-          "marker_end": "// END VAPT RISK-118",
+          "marker_end": "// END Of RISK-118",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-118.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -17806,7 +17806,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-118 */",
-          "marker_end": "/* END VAPT RISK-118 */",
+          "marker_end": "/* END Of RISK-118 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-118.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -17922,7 +17922,7 @@
           "implementation_type": "",
           "remove_operation": "remove_config_block",
           "marker_begin": "# BEGIN VAPT RISK-119",
-          "marker_end": "# END VAPT RISK-119",
+          "marker_end": "# END Of RISK-119",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-119.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -17935,7 +17935,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-119",
-          "marker_end": "// END VAPT RISK-119",
+          "marker_end": "// END Of RISK-119",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-119.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -17948,7 +17948,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-119 */",
-          "marker_end": "/* END VAPT RISK-119 */",
+          "marker_end": "/* END Of RISK-119 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-119.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -18064,7 +18064,7 @@
           "implementation_type": "",
           "remove_operation": "remove_config_block",
           "marker_begin": "# BEGIN VAPT RISK-120",
-          "marker_end": "# END VAPT RISK-120",
+          "marker_end": "# END Of RISK-120",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-120.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -18077,7 +18077,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-120",
-          "marker_end": "// END VAPT RISK-120",
+          "marker_end": "// END Of RISK-120",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-120.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -18090,7 +18090,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-120 */",
-          "marker_end": "/* END VAPT RISK-120 */",
+          "marker_end": "/* END Of RISK-120 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-120.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -18206,7 +18206,7 @@
           "implementation_type": "",
           "remove_operation": "remove_config_block",
           "marker_begin": "# BEGIN VAPT RISK-121",
-          "marker_end": "# END VAPT RISK-121",
+          "marker_end": "# END Of RISK-121",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-121.steps[*enforcer=Apache].rollback"
         },
         "PHP Functions": {
@@ -18219,7 +18219,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-121",
-          "marker_end": "// END VAPT RISK-121",
+          "marker_end": "// END Of RISK-121",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-121.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -18232,7 +18232,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-121 */",
-          "marker_end": "/* END VAPT RISK-121 */",
+          "marker_end": "/* END Of RISK-121 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-121.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -18348,7 +18348,7 @@
           "implementation_type": "",
           "remove_operation": "remove_config_block",
           "marker_begin": "# BEGIN VAPT RISK-122",
-          "marker_end": "# END VAPT RISK-122",
+          "marker_end": "# END Of RISK-122",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-122.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -18361,7 +18361,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-122",
-          "marker_end": "// END VAPT RISK-122",
+          "marker_end": "// END Of RISK-122",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-122.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -18374,7 +18374,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-122 */",
-          "marker_end": "/* END VAPT RISK-122 */",
+          "marker_end": "/* END Of RISK-122 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-122.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -18490,7 +18490,7 @@
           "implementation_type": "",
           "remove_operation": "remove_config_block",
           "marker_begin": "# BEGIN VAPT RISK-125",
-          "marker_end": "# END VAPT RISK-125",
+          "marker_end": "# END Of RISK-125",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-125.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -18503,7 +18503,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-125",
-          "marker_end": "// END VAPT RISK-125",
+          "marker_end": "// END Of RISK-125",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-125.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -18516,7 +18516,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-125 */",
-          "marker_end": "/* END VAPT RISK-125 */",
+          "marker_end": "/* END Of RISK-125 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-125.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -18632,7 +18632,7 @@
           "implementation_type": "",
           "remove_operation": "remove_filter_hook",
           "marker_begin": "// BEGIN VAPT RISK-126",
-          "marker_end": "// END VAPT RISK-126",
+          "marker_end": "// END Of RISK-126",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-126.steps[*enforcer=WordPress Core].rollback"
         },
         "PHP Functions": {
@@ -18645,7 +18645,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT PF RISK-126",
-          "marker_end": "// END VAPT PF RISK-126",
+          "marker_end": "// END Of PF RISK-126",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-126.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -18658,7 +18658,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-126 */",
-          "marker_end": "/* END VAPT RISK-126 */",
+          "marker_end": "/* END Of RISK-126 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-126.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -18774,7 +18774,7 @@
           "implementation_type": "",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-127",
-          "marker_end": "// END VAPT RISK-127",
+          "marker_end": "// END Of RISK-127",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-127.steps[*enforcer=PHP Functions].rollback"
         },
         "Nginx": {
@@ -18787,7 +18787,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-127",
-          "marker_end": "# END VAPT RISK-127",
+          "marker_end": "# END Of RISK-127",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-127.steps[*enforcer=Nginx].rollback"
         },
         "wp-config.php": {
@@ -18800,7 +18800,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-127 */",
-          "marker_end": "/* END VAPT RISK-127 */",
+          "marker_end": "/* END Of RISK-127 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-127.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -18921,7 +18921,7 @@
           "insertion_rule": "Must be placed BEFORE: require_once ABSPATH . 'wp-settings.php';",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-128 */",
-          "marker_end": "/* END VAPT RISK-128 */",
+          "marker_end": "/* END Of RISK-128 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-128.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -19047,7 +19047,7 @@
           "note": "Apache 2.4+: use Require all denied",
           "remove_operation": "remove_files_block",
           "marker_begin": "# BEGIN VAPT RISK-129",
-          "marker_end": "# END VAPT RISK-129",
+          "marker_end": "# END Of RISK-129",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-129.steps[*enforcer=.htaccess].rollback"
         },
         "Cloudflare": {
@@ -19075,7 +19075,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-129",
-          "marker_end": "# END VAPT RISK-129",
+          "marker_end": "# END Of RISK-129",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-129.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -19088,7 +19088,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-129",
-          "marker_end": "// END VAPT RISK-129",
+          "marker_end": "// END Of RISK-129",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-129.steps[*enforcer=PHP Functions].rollback"
         },
         "Apache": {
@@ -19101,7 +19101,7 @@
           "implementation_type": "apache_conf",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-129",
-          "marker_end": "# END VAPT RISK-129",
+          "marker_end": "# END Of RISK-129",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-129.steps[*enforcer=Apache].rollback"
         },
         "wp-config.php": {
@@ -19114,7 +19114,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-129 */",
-          "marker_end": "/* END VAPT RISK-129 */",
+          "marker_end": "/* END Of RISK-129 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-129.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -19238,7 +19238,7 @@
           "note": "Requires AllowOverride Options or All. Silently fails without it.",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-130",
-          "marker_end": "# END VAPT RISK-130",
+          "marker_end": "# END Of RISK-130",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-130.steps[*enforcer=.htaccess].rollback"
         },
         "Cloudflare": {
@@ -19266,7 +19266,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-130",
-          "marker_end": "# END VAPT RISK-130",
+          "marker_end": "# END Of RISK-130",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-130.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -19279,7 +19279,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-130",
-          "marker_end": "// END VAPT RISK-130",
+          "marker_end": "// END Of RISK-130",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-130.steps[*enforcer=PHP Functions].rollback"
         },
         "Apache": {
@@ -19292,7 +19292,7 @@
           "implementation_type": "apache_conf",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-130",
-          "marker_end": "# END VAPT RISK-130",
+          "marker_end": "# END Of RISK-130",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-130.steps[*enforcer=Apache].rollback"
         },
         "wp-config.php": {
@@ -19305,7 +19305,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-130 */",
-          "marker_end": "/* END VAPT RISK-130 */",
+          "marker_end": "/* END Of RISK-130 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-130.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -19421,7 +19421,7 @@
           "implementation_type": "",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-131",
-          "marker_end": "// END VAPT RISK-131",
+          "marker_end": "// END Of RISK-131",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-131.steps[*enforcer=PHP Functions].rollback"
         },
         "Nginx": {
@@ -19434,7 +19434,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-131",
-          "marker_end": "# END VAPT RISK-131",
+          "marker_end": "# END Of RISK-131",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-131.steps[*enforcer=Nginx].rollback"
         },
         "wp-config.php": {
@@ -19447,7 +19447,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-131 */",
-          "marker_end": "/* END VAPT RISK-131 */",
+          "marker_end": "/* END Of RISK-131 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-131.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -19563,7 +19563,7 @@
           "implementation_type": "",
           "remove_operation": "remove_server_tokens_directive",
           "marker_begin": "# BEGIN VAPT RISK-132",
-          "marker_end": "# END VAPT RISK-132",
+          "marker_end": "# END Of RISK-132",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-132.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -19576,7 +19576,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-132",
-          "marker_end": "// END VAPT RISK-132",
+          "marker_end": "// END Of RISK-132",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-132.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -19589,7 +19589,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-132 */",
-          "marker_end": "/* END VAPT RISK-132 */",
+          "marker_end": "/* END Of RISK-132 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-132.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -19705,7 +19705,7 @@
           "implementation_type": "",
           "remove_operation": "remove_filter_hook",
           "marker_begin": "// BEGIN VAPT RISK-133",
-          "marker_end": "// END VAPT RISK-133",
+          "marker_end": "// END Of RISK-133",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-133.steps[*enforcer=WordPress Core].rollback"
         },
         "PHP Functions": {
@@ -19718,7 +19718,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT PF RISK-133",
-          "marker_end": "// END VAPT PF RISK-133",
+          "marker_end": "// END Of PF RISK-133",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-133.steps[*enforcer=PHP Functions].rollback"
         },
         "wp-config.php": {
@@ -19731,7 +19731,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-133 */",
-          "marker_end": "/* END VAPT RISK-133 */",
+          "marker_end": "/* END Of RISK-133 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-133.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -19857,7 +19857,7 @@
           "note": "",
           "remove_operation": "remove_header",
           "marker_begin": "# BEGIN VAPT RISK-134",
-          "marker_end": "# END VAPT RISK-134",
+          "marker_end": "# END Of RISK-134",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-134.steps[*enforcer=.htaccess].rollback"
         },
         "Cloudflare": {
@@ -19885,7 +19885,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-134",
-          "marker_end": "# END VAPT RISK-134",
+          "marker_end": "# END Of RISK-134",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-134.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -19898,7 +19898,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-134",
-          "marker_end": "// END VAPT RISK-134",
+          "marker_end": "// END Of RISK-134",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-134.steps[*enforcer=PHP Functions].rollback"
         },
         "Apache": {
@@ -19911,7 +19911,7 @@
           "implementation_type": "apache_conf",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-134",
-          "marker_end": "# END VAPT RISK-134",
+          "marker_end": "# END Of RISK-134",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-134.steps[*enforcer=Apache].rollback"
         },
         "wp-config.php": {
@@ -19924,7 +19924,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-134 */",
-          "marker_end": "/* END VAPT RISK-134 */",
+          "marker_end": "/* END Of RISK-134 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-134.steps[*enforcer=wp-config.php].rollback"
         }
       },
@@ -20050,7 +20050,7 @@
           "note": "Apache 2.4+: use Require all denied",
           "remove_operation": "remove_files_block",
           "marker_begin": "# BEGIN VAPT RISK-135",
-          "marker_end": "# END VAPT RISK-135",
+          "marker_end": "# END Of RISK-135",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-135.steps[*enforcer=.htaccess].rollback"
         },
         "Cloudflare": {
@@ -20078,7 +20078,7 @@
           "implementation_type": "nginx_location",
           "remove_operation": "remove_location_block",
           "marker_begin": "# BEGIN VAPT RISK-135",
-          "marker_end": "# END VAPT RISK-135",
+          "marker_end": "# END Of RISK-135",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-135.steps[*enforcer=Nginx].rollback"
         },
         "PHP Functions": {
@@ -20091,7 +20091,7 @@
           "implementation_type": "wp_hook",
           "remove_operation": "remove_action_hook",
           "marker_begin": "// BEGIN VAPT RISK-135",
-          "marker_end": "// END VAPT RISK-135",
+          "marker_end": "// END Of RISK-135",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-135.steps[*enforcer=PHP Functions].rollback"
         },
         "Apache": {
@@ -20104,7 +20104,7 @@
           "implementation_type": "apache_conf",
           "remove_operation": "remove_directive",
           "marker_begin": "# BEGIN VAPT RISK-135",
-          "marker_end": "# END VAPT RISK-135",
+          "marker_end": "# END Of RISK-135",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-135.steps[*enforcer=Apache].rollback"
         },
         "wp-config.php": {
@@ -20117,7 +20117,7 @@
           "implementation_type": "wp_config_constant",
           "remove_operation": "remove_constant",
           "marker_begin": "/* BEGIN VAPT RISK-135 */",
-          "marker_end": "/* END VAPT RISK-135 */",
+          "marker_end": "/* END Of RISK-135 */",
           "disable_driver_ref": "vapt_driver_manifest_v2.0.risks.RISK-135.steps[*enforcer=wp-config.php].rollback"
         }
       },

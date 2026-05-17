@@ -34,7 +34,7 @@ class VAPT_Lifecycle {
             $content = file_get_contents($htaccess_path);
             if ( strpos($content, '# BEGIN VAPT-') !== false ) {
                 // Force remove if auto-correct didn't catch it
-                $clean = preg_replace('/\n?# BEGIN VAPT-.*?# END VAPT-[^\n]*\n?/s', '', $content);
+                $clean = preg_replace('/\n?# BEGIN VAPT-.*?# END Of [^\n]*\n?/s', '', $content);
                 file_put_contents($htaccess_path, $clean);
             }
         }
@@ -63,7 +63,7 @@ class VAPT_Lifecycle {
         $htaccess_path = ABSPATH . '.htaccess';
         if ( file_exists($htaccess_path) ) {
             $content = file_get_contents($htaccess_path);
-            $clean   = preg_replace('/\n?# BEGIN VAPT-.*?# END VAPT-[^\n]*\n?/s', '', $content);
+            $clean   = preg_replace('/\n?# BEGIN VAPT-.*?# END Of [^\n]*\n?/s', '', $content);
             file_put_contents($htaccess_path, $clean);
         }
 

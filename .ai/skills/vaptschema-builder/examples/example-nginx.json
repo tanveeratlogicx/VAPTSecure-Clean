@@ -11,7 +11,7 @@
   "enforcement": {
     "driver": "nginx",
     "mappings": {
-      "UI-RISK-002-001": "# BEGIN VAPT RISK-002\nlocation ~* ^/xmlrpc\\.php$ {\n    deny all;\n}\n# END VAPT RISK-002"
+      "UI-RISK-002-001": "# BEGIN VAPT RISK-002\nlocation ~* ^/xmlrpc\\.php$ {\n    deny all;\n}\n# END Of RISK-002"
     }
   }
 }

@@ -47,7 +47,7 @@ class VAPTSECURE_PHP_Deployer implements VAPTSECURE_Driver_Interface
         $rules = $this->normalize_rules($implementation);
 
         $start_marker = "// BEGIN VAPT FEATURE: {$feature_key}";
-        $end_marker = "// END VAPT FEATURE: {$feature_key}";
+        $end_marker = "// END Of {$feature_key}";
 
         if (!file_exists($path)) {
             if (empty($rules) || !$is_enabled) {
@@ -92,7 +92,7 @@ class VAPTSECURE_PHP_Deployer implements VAPTSECURE_Driver_Interface
 
         $content = file_get_contents($path);
         $start_marker = "// BEGIN VAPT FEATURE: {$feature_key}";
-        $end_marker   = "// END VAPT FEATURE: {$feature_key}";
+        $end_marker   = "// END Of {$feature_key}";
 
         $pattern = "/" . preg_quote($start_marker, '/') . ".*?" . preg_quote($end_marker, '/') . "/s";
         $new_content = preg_replace($pattern, '', $content);

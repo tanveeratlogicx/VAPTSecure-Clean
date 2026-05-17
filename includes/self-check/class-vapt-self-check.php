@@ -275,7 +275,7 @@ class VAPT_Self_Check {
         $content = file_get_contents( $htaccess_path );
 
         preg_match_all( '/# BEGIN VAPT-RISK-([a-z0-9-]+)/', $content, $begin_matches );
-        preg_match_all( '/# END VAPT-RISK-([a-z0-9-]+)/',   $content, $end_matches   );
+        preg_match_all( '/# END Of RISK-([a-z0-9-]+)/',   $content, $end_matches   );
 
         $orphaned_begin = array_diff( $begin_matches[1], $end_matches[1] );
         $orphaned_end   = array_diff( $end_matches[1],   $begin_matches[1] );
@@ -289,7 +289,7 @@ class VAPT_Self_Check {
 
         foreach ( $begin_matches[1] as $feature_id ) {
             $id      = preg_quote( $feature_id, '/' );
-            $pattern = "/# BEGIN VAPT-RISK-{$id}\n(.*?)\n# END VAPT-RISK-{$id}/s";
+            $pattern = "/# BEGIN VAPT-RISK-{$id}\n(.*?)\n# END Of RISK-{$id}/s";
 
             if ( preg_match( $pattern, $content, $block ) ) {
                 if ( ! preg_match( "/\n\n$/", $block[1] ) ) {
@@ -313,7 +313,7 @@ class VAPT_Self_Check {
         $corrections   = [];
 
         preg_match_all(
-            '/(# BEGIN VAPT-RISK-[a-z0-9-]+\n)(.*?)(\n# END VAPT-RISK-[a-z0-9-]+)/s',
+            '/(# BEGIN VAPT-RISK-[a-z0-9-]+\n)(.*?)(\n# END Of RISK-[a-z0-9-]+)/s',
             $content, $blocks, PREG_SET_ORDER
         );
 
@@ -385,7 +385,7 @@ class VAPT_Self_Check {
 
         // Extract all VAPT rewrite blocks that contain deny rules
         preg_match_all(
-            '/(# BEGIN VAPT-RISK-[a-z0-9-]+\n)(.*?)(\n# END VAPT-RISK-[a-z0-9-]+)/s',
+            '/(# BEGIN VAPT-RISK-[a-z0-9-]+\n)(.*?)(\n# END Of RISK-[a-z0-9-]+)/s',
             $content, $blocks, PREG_SET_ORDER
         );
 
@@ -449,7 +449,7 @@ class VAPT_Self_Check {
         ];
 
         preg_match_all(
-            '/(# BEGIN VAPT-RISK-[a-z0-9-]+\n)(.*?)(\n# END VAPT-RISK-[a-z0-9-]+)/s',
+            '/(# BEGIN VAPT-RISK-[a-z0-9-]+\n)(.*?)(\n# END Of RISK-[a-z0-9-]+)/s',
             $content, $blocks, PREG_SET_ORDER
         );
 
@@ -823,7 +823,7 @@ class VAPT_Self_Check {
         $issues        = [];
 
         preg_match_all(
-            '/(# BEGIN VAPT-RISK-[a-z0-9-]+\n)(.*?)(\n# END VAPT-RISK-[a-z0-9-]+)/s',
+            '/(# BEGIN VAPT-RISK-[a-z0-9-]+\n)(.*?)(\n# END Of RISK-[a-z0-9-]+)/s',
             $content, $blocks, PREG_SET_ORDER
         );
 
@@ -878,7 +878,7 @@ class VAPT_Self_Check {
         $corrections   = [];
 
         preg_match_all(
-            '/(# BEGIN VAPT-RISK-[a-z0-9-]+\n)(.*?)(\n# END VAPT-RISK-[a-z0-9-]+)(\n*)/s',
+            '/(# BEGIN VAPT-RISK-[a-z0-9-]+\n)(.*?)(\n# END Of RISK-[a-z0-9-]+)(\n*)/s',
             $content, $blocks, PREG_SET_ORDER
         );
 

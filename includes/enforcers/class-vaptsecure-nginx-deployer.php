@@ -91,7 +91,7 @@ class VAPTSECURE_Nginx_Deployer implements VAPTSECURE_Driver_Interface
 
         $status_suffix = $is_enabled ? ' - ACTIVE' : ' - DISABLED';
         $start_marker = "# BEGIN VAPT PROTECTION: {$risk_id}";
-        $end_marker = "# END VAPT PROTECTION: {$risk_id}";
+        $end_marker = "# END Of PROTECTION: {$risk_id}";
 
         // Handle content neutralization if disabled
         if (!$is_enabled) {
@@ -127,7 +127,7 @@ class VAPTSECURE_Nginx_Deployer implements VAPTSECURE_Driver_Interface
         $content = file_exists($this->nginx_rules_path) ? file_get_contents($this->nginx_rules_path) : "";
     
         $start_marker = "# BEGIN VAPT GLOBAL WHITELIST";
-        $end_marker = "# END VAPT GLOBAL WHITELIST";
+        $end_marker = "# END Of GLOBAL WHITELIST";
     
         if (strpos($content, $start_marker) !== false) { return;
         }
@@ -145,7 +145,7 @@ class VAPTSECURE_Nginx_Deployer implements VAPTSECURE_Driver_Interface
 
         $content = file_get_contents($this->nginx_rules_path);
         $start_marker = "# BEGIN VAPT PROTECTION: {$risk_id}";
-        $end_marker = "# END VAPT PROTECTION: {$risk_id}";
+        $end_marker = "# END Of PROTECTION: {$risk_id}";
 
         $pattern = "/" . preg_quote($start_marker, '/') . ".*?" . preg_quote($end_marker, '/') . "/s";
         $new_content = preg_replace($pattern, '', $content);

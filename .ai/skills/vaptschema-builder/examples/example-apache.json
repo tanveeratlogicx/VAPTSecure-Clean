@@ -11,7 +11,7 @@
   "enforcement": {
     "driver": "apache",
     "mappings": {
-      "UI-RISK-100-001": "# BEGIN VAPT RISK-100\n<Directory /var/www/html/wp-content/uploads>\n    php_flag engine off\n</Directory>\n# END VAPT RISK-100"
+      "UI-RISK-100-001": "# BEGIN VAPT RISK-100\n<Directory /var/www/html/wp-content/uploads>\n    php_flag engine off\n</Directory>\n# END Of RISK-100"
     }
   }
 }

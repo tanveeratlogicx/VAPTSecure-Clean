@@ -135,15 +135,14 @@ class VAPTSECURE_AI_Validator {
      * @var array
      */
     private $block_markers = array(
-        'htaccess' => array('begin' => '# BEGIN VAPT', 'end' => '# END VAPT'),
-        'nginx' => array('begin' => '# BEGIN VAPT', 'end' => '# END VAPT'),
-        'apache' => array('begin' => '# BEGIN VAPT', 'end' => '# END VAPT'),
-        // [v4.0.x-SSoT] fail2ban removed - not applicable to WordPress hosting
-        'server_cron' => array('begin' => '# BEGIN VAPT', 'end' => '# END VAPT'),
-        'wp_config' => array('begin' => '/* BEGIN VAPT', 'end' => '/* END VAPT'),
-        'php_functions' => array('begin' => '// BEGIN VAPT', 'end' => '// END VAPT'),
-        'wordpress' => array('begin' => '// BEGIN VAPT', 'end' => '// END VAPT'),
-        'wordpress_core' => array('begin' => '// BEGIN VAPT', 'end' => '// END VAPT'),
+        'htaccess' => array('begin' => '# BEGIN VAPT', 'end' => '# END Of'),
+        'nginx' => array('begin' => '# BEGIN VAPT', 'end' => '# END Of'),
+        'apache' => array('begin' => '# BEGIN VAPT', 'end' => '# END Of'),
+        'server_cron' => array('begin' => '# BEGIN VAPT', 'end' => '# END Of'),
+        'wp_config' => array('begin' => '/* BEGIN VAPT', 'end' => '/* END Of'),
+        'php_functions' => array('begin' => '// BEGIN VAPT', 'end' => '// END Of'),
+        'wordpress' => array('begin' => '// BEGIN VAPT', 'end' => '// END Of'),
+        'wordpress_core' => array('begin' => '// BEGIN VAPT', 'end' => '// END Of'),
     );
 
     /**
@@ -690,7 +689,7 @@ $package = array(
         'handlers' => array('handleRISK003ToggleChange')
     ),
     'enforcement' => array(
-        'htaccess' => '<IfModule mod_rewrite.c>\n    RewriteEngine On\n    RewriteBase /\n    # BEGIN VAPT RISK-003\n    RewriteRule ^wp-json/wp/v2/users$ - [F,L]\n    # END VAPT RISK-003\n</IfModule>'
+        'htaccess' => '<IfModule mod_rewrite.c>\n    RewriteEngine On\n    RewriteBase /\n    # BEGIN VAPT RISK-003\n    RewriteRule ^wp-json/wp/v2/users$ - [F,L]\n    # END Of RISK-003\n</IfModule>'
     )
 );
 

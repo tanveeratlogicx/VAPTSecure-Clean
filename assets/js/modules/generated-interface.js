@@ -487,6 +487,22 @@ const resolvePrimaryPlatform = (featureData = {}) => {
     return normalized;
   };
 
+  const getShortPath = (fullPath, vSettings = {}) => {
+    if (!fullPath) return '';
+    let pathStr = fullPath.replace(/\\/g, '/');
+    let absPath = (vSettings.abspath || '').replace(/\\/g, '/');
+    let pluginPath = (vSettings.pluginPath || '').replace(/\\/g, '/');
+
+    if (absPath && pathStr.toLowerCase().startsWith(absPath.toLowerCase())) {
+      return './' + pathStr.substring(absPath.length).replace(/^[\\\/]/, '');
+    }
+    if (pluginPath && pathStr.toLowerCase().startsWith(pluginPath.toLowerCase())) {
+      const pluginBase = pluginPath.split(/[\\\/]/).filter(Boolean).pop();
+      return pluginBase + '/' + pathStr.substring(pluginPath.length).replace(/^[\\\/]/, '');
+    }
+    return pathStr;
+  };
+
   const expectedEnforcerAliases = (expected) => {
     const normalized = normalizeEnforcerValue(expected);
     // [v4.0.x-SSoT] Removed: caddy, iis, fail2ban — not applicable to WordPress hosting; nginx retained
@@ -2717,6 +2733,7 @@ const resolvePrimaryPlatform = (featureData = {}) => {
     const [localAlert, setLocalAlert] = useState(null);
     const [statusMap, setStatusMap] = useState({});
     const [liveAudit, setLiveAudit] = useState(null);
+    const [activeTabKey, setActiveTabKey] = useState(null);
     const statusTimersRef = useRef({});
     const pollTimersRef = useRef({});
 
@@ -2738,6 +2755,7 @@ const resolvePrimaryPlatform = (featureData = {}) => {
     // [v4.0.x] Fetch live file audit status on mount / feature change
     useEffect(() => {
       if (!feature?.key || !apiFetch) return;
+      setActiveTabKey(null);
       const fetchStatus = async () => {
         try {
           const resp = await apiFetch({
@@ -2868,152 +2886,199 @@ const resolvePrimaryPlatform = (featureData = {}) => {
           const vSettings = window.vaptSecureSettings || {};
 
        const getTooltipContent = () => {
-         const impls = verificationFeatureData.platform_implementations || {};
-         let addedCode = '';
-         let targetFile = '';
+          const impls = verificationFeatureData.platform_implementations || {};
+          const auditSummary = Array.isArray(liveAudit?.audit_summary) ? liveAudit.audit_summary : [];
+          const isCurrentlyEnforced = toBool(value);
+          const isRemoving = statusMap[key]?.message === __('Removing...', 'vaptsecure');
+          const isSelfHealed = liveAudit?.was_self_healed || auditSummary.some(a => a.self_healed);
 
-         // [v4.0.x-SSoT] Removed: fail2ban ? not applicable to WordPress hosting; caddy/iis filtered upstream
-         const removedPlatforms = ['fail2ban'];
-         const activeDriver = schema.enforcement?.driver || schema.client_deployment?.enforcement?.driver || 'hook';
-         const driverToPlatform = {
-           'htaccess': 'htaccess',
-           'apache': 'htaccess',
-           'litespeed': 'litespeed',
-           'wp_config': 'wp-config',
-           'php_functions': 'php_functions',
-           'hook': 'php_functions',
-           'universal': 'php_functions'
-         };
-         const catalogEntries = Array.isArray(verificationFeatureData.available_platforms) && verificationFeatureData.available_platforms.length > 0
-           ? verificationFeatureData.available_platforms
-           : Object.keys(impls);
-         const preferredPlatform = driverToPlatform[activeDriver] || activeDriver;
-         const canonicalPlatform = catalogEntries[0] || preferredPlatform;
+          const removedPlatforms = ['fail2ban'];
+          const driverToPlatform = {
+            'htaccess': 'htaccess',
+            'apache': 'htaccess',
+            'litespeed': 'litespeed',
+            'wp_config': 'wp-config',
+            'php_functions': 'php_functions',
+            'hook': 'php_functions',
+            'universal': 'php_functions'
+          };
+          const activeDriver = schema.enforcement?.driver || schema.client_deployment?.enforcement?.driver || 'hook';
+          const preferredPlatform = driverToPlatform[activeDriver] || activeDriver;
 
-         const candidates = Object.entries(impls).filter(([plat]) => {
-           const p = plat.toLowerCase().replace(/\s+/g, '_');
-           return !removedPlatforms.some(rp => p.includes(rp));
-         });
+          const fileEntries = [];
+          for (const audit of auditSummary) {
+            const targetKey = audit.target || '';
+            const label = audit.label || '';
+            const liveState = audit.live_state || 'missing';
 
-         if (catalogEntries.length > 0) {
-           const canonicalMatch = candidates.find(([plat]) => platformMatches(plat, canonicalPlatform));
-           if (canonicalMatch) {
-             targetFile = canonicalMatch[1].target_file || canonicalMatch[0];
-           }
-         }
+            let implCode = '';
+            let implTargetFile = label;
+            let matchedPlatform = targetKey;
 
-         if (!targetFile && candidates.length > 0) {
-           for (const [plat, details] of candidates) {
-             if (platformMatches(plat, preferredPlatform)) {
-               targetFile = details.target_file || plat;
-               break;
-             }
-           }
-           if (!targetFile) {
-             targetFile = candidates[0][1].target_file || candidates[0][0];
-           }
-         }
+            for (const [plat, details] of Object.entries(impls)) {
+              const p = plat.toLowerCase().replace(/\s+/g, '_');
+              if (removedPlatforms.some(rp => p.includes(rp))) continue;
 
-         if (!targetFile) {
-           return null;
-         }
+              if (platformMatches(plat, targetKey) || platformMatches(plat, label) ||
+                  (details.target_file && label.includes(details.target_file))) {
+                implCode = details.wrapped_code || details.code || '';
+                implTargetFile = details.target_file || label;
+                matchedPlatform = plat;
+                break;
+              }
+            }
 
-         if (candidates.length > 0) {
-           const canonicalMatch = candidates.find(([plat]) => platformMatches(plat, canonicalPlatform));
-           if (canonicalMatch) {
-             addedCode = canonicalMatch[1].wrapped_code || canonicalMatch[1].code;
-           }
-         }
-         if (!addedCode && canonicalPlatform && candidates.length > 0) {
-           const matched = candidates.find(([plat]) => platformMatches(plat, canonicalPlatform));
-           const previewTarget = matched?.[1]?.code_ref || matched?.[1]?.target_file || matched?.[0] || targetFile;
-            addedCode = sprintf(__('/* Rules are deployed to %s.\n   Code preview is not available for this platform in the current schema. */', 'vaptsecure'), previewTarget);
-         }
-         if (!addedCode && candidates.length > 0) {
-           for (const [plat, details] of candidates) {
-             if (platformMatches(plat, preferredPlatform)) {
-               addedCode = details.wrapped_code || details.code;
-               break;
-             }
-           }
-         }
-         if (!addedCode && candidates.length > 0) {
-           addedCode = candidates[0][1].wrapped_code || candidates[0][1].code;
-         }
+            if (!implCode) continue;
 
-         if (!addedCode) return null;
+            const shortPath = implTargetFile.startsWith('/') || implTargetFile.includes('\\')
+              ? getShortPath(implTargetFile, vSettings)
+              : (implTargetFile.startsWith('./') ? implTargetFile : `./${implTargetFile}`);
 
-         const isCurrentlyEnforced = toBool(value);
-         // [v4.1.4] Get actual target file from live audit, fallback to enforcement driver
-         const liveTargetLabel = liveAudit?.audit_summary?.[0]?.label || '';
-         const targetFilePath = liveTargetLabel || (verificationFeatureData.enforcement?.driver === 'wp_config'
-           ? 'wp-config.php'
-           : (verificationFeatureData.enforcement?.driver === 'htaccess' || verificationFeatureData.enforcement?.driver === 'apache'
-             ? '.htaccess'
-             : 'vapt-functions.php'));
+            let borderColor = '#94a3b8';
+            const isCleaned = liveState === 'cleaned' || liveState === 'missing';
 
-         const shortPath = targetFilePath.startsWith('/') || targetFilePath.includes('\\')
-            ? getShortPath(targetFilePath)
-            : (targetFilePath.startsWith('./') ? targetFilePath : `./${targetFilePath}`);
+            if (isRemoving) {
+              borderColor = '#f59e0b';
+            } else if (isSelfHealed) {
+              borderColor = '#10b981';
+            } else if (liveState === 'present' && isCurrentlyEnforced) {
+              borderColor = '#22c55e';
+            } else if (isCurrentlyEnforced && liveState === 'missing') {
+              borderColor = '#ef4444';
+            } else if (!isCurrentlyEnforced && isCleaned) {
+              borderColor = '#64748b';
+            }
 
-         // [v4.1.4] Status based on ACTUAL live state, not just toggle
-         const liveState = liveAudit?.audit_summary?.[0]?.live_state;
-         const isSelfHealed = liveAudit?.was_self_healed || liveAudit?.audit_summary?.[0]?.self_healed;
-         const isRemoving = statusMap[key]?.message === __('Removing...', 'vaptsecure');
-         const isMissing = liveState === 'missing';
-         const isPresent = liveState === 'present';
-         const isCleaned = liveState === 'cleaned' || liveState === 'missing';
+            fileEntries.push({
+              key: matchedPlatform,
+              label: shortPath,
+              fullPath: implTargetFile,
+              code: implCode,
+              liveState,
+              borderColor,
+              isCleaned
+            });
+          }
 
-         // [v4.1.4] Fixed: status follows actual live state, not just toggle
-         let displayStatus = 'inactive';
-         let displayLabel = __('Status: Not Active', 'vaptsecure');
-         let statusColor = '#991b1b';
-         let statusBg = '#fef2f2';
-         let statusIcon = 'no';
-         let borderColor = '#94a3b8';
+          // [v4.1.6] Filter tabs based on detected webserver
+          const detectedServer = (vSettings.serverType || 'apache').toLowerCase();
+          const isApache = detectedServer === 'apache' || detectedServer === 'litespeed';
+          const isNginx = detectedServer === 'nginx';
+          
+          const filteredEntries = fileEntries.filter(entry => {
+            const label = (entry.label || '').toLowerCase();
+            const key = (entry.key || '').toLowerCase();
+            
+            // Filter out Nginx tabs on Apache servers
+            if (isApache && (label.includes('nginx') || key.includes('nginx'))) {
+              return false;
+            }
+            
+            // Filter out .htaccess tabs on Nginx servers
+            if (isNginx && (label.includes('.htaccess') || label.includes('htaccess') || key.includes('htaccess') || key.includes('apache'))) {
+              return false;
+            }
+            
+            return true;
+          });
 
-         if (isRemoving) {
-           displayStatus = 'removing';
-           displayLabel = __('Status: Removing Rules...', 'vaptsecure');
-           statusColor = '#92400e';
-           statusBg = '#fef3c7';
-           statusIcon = 'update';
-           borderColor = '#f59e0b';
-         } else if (isSelfHealed) {
-           displayStatus = 'recovered';
-           displayLabel = __('Status: Auto-Recovered', 'vaptsecure');
-           statusColor = '#065f46';
-           statusBg = '#d1fae5';
-           statusIcon = 'update';
-           borderColor = '#10b981';
-         } else if (isPresent && isCurrentlyEnforced) {
-           // Toggle ON + code present = Active
-           displayStatus = 'active';
-           displayLabel = __('Status: Active & Injected', 'vaptsecure');
-           statusColor = '#166534';
-           statusBg = '#f0fdf4';
-           statusIcon = 'yes';
-           borderColor = '#22c55e';
-         } else if (isCurrentlyEnforced && isMissing) {
-           // Toggle ON but code missing = Error state
-           displayStatus = 'missing';
-           displayLabel = __('Status: Missing (Not Injected)', 'vaptsecure');
-           statusColor = '#dc2626';
-           statusBg = '#fef2f2';
-           statusIcon = 'warning';
-           borderColor = '#ef4444';
-         } else if (!isCurrentlyEnforced && isCleaned) {
-           // Toggle OFF + code cleaned = Cleaned
-           displayStatus = 'cleaned';
-           displayLabel = __('Status: Cleaned', 'vaptsecure');
-           statusColor = '#166534';
-           statusBg = '#f0fafc';
-           statusIcon = 'yes';
-           borderColor = '#22c55e';
-         }
+          // [v4.1.6] Deduplicate entries by normalized label to prevent duplicate tabs
+          const uniqueEntries = [];
+          const seenLabels = new Set();
+          for (const entry of filteredEntries) {
+            const normalizedLabel = entry.label.trim().toLowerCase();
+            if (!seenLabels.has(normalizedLabel)) {
+              seenLabels.add(normalizedLabel);
+              uniqueEntries.push(entry);
+            }
+          }
+          const finalEntries = uniqueEntries.length > 0 ? uniqueEntries : filteredEntries;
 
-         const liveStateLabel = liveState || (isCurrentlyEnforced && !isMissing ? 'present' : 'missing');
-         const liveStateDisplay = liveStateLabel.charAt(0).toUpperCase() + liveStateLabel.slice(1);
+          if (finalEntries.length === 0) return null;
+
+          const defaultTabKey = preferredPlatform;
+          const currentTab = activeTabKey && finalEntries.some(e => e.key === activeTabKey)
+            ? activeTabKey
+            : (finalEntries.find(e => platformMatches(e.key, defaultTabKey))?.key || finalEntries[0].key);
+
+          const activeEntry = finalEntries.find(e => e.key === currentTab);
+          if (!activeEntry) return null;
+
+          const liveState = activeEntry.liveState;
+          const isMissing = liveState === 'missing';
+          const isPresent = liveState === 'present';
+          const isCleaned = liveState === 'cleaned' || liveState === 'missing';
+
+          let displayStatus = 'inactive';
+          let displayLabel = __('Status: Not Active', 'vaptsecure');
+          let statusColor = '#991b1b';
+          let statusBg = '#fef2f2';
+          let statusIcon = 'no';
+
+          if (isRemoving) {
+            displayStatus = 'removing';
+            displayLabel = __('Status: Removing Rules...', 'vaptsecure');
+            statusColor = '#92400e';
+            statusBg = '#fef3c7';
+            statusIcon = 'update';
+          } else if (isSelfHealed) {
+            displayStatus = 'recovered';
+            displayLabel = __('Status: Auto-Recovered', 'vaptsecure');
+            statusColor = '#065f46';
+            statusBg = '#d1fae5';
+            statusIcon = 'update';
+          } else if (isPresent && isCurrentlyEnforced) {
+            displayStatus = 'active';
+            displayLabel = __('Status: Active & Injected', 'vaptsecure');
+            statusColor = '#166534';
+            statusBg = '#f0fdf4';
+            statusIcon = 'yes';
+          } else if (isCurrentlyEnforced && isMissing) {
+            displayStatus = 'missing';
+            displayLabel = __('Status: Missing (Not Injected)', 'vaptsecure');
+            statusColor = '#dc2626';
+            statusBg = '#fef2f2';
+            statusIcon = 'warning';
+          } else if (!isCurrentlyEnforced && isCleaned) {
+            displayStatus = 'cleaned';
+            displayLabel = __('Status: Cleaned', 'vaptsecure');
+            statusColor = '#166534';
+            statusBg = '#f0fafc';
+            statusIcon = 'yes';
+          }
+
+          const liveStateDisplay = liveState.charAt(0).toUpperCase() + liveState.slice(1);
+
+          const tabBar = finalEntries.length > 1
+            ? el('div', {
+                style: {
+                  display: 'flex',
+                  gap: '4px',
+                  alignItems: 'center',
+                  flexWrap: 'wrap'
+                }
+              }, finalEntries.map(entry =>
+                el('button', {
+                  key: entry.key,
+                  onClick: (e) => {
+                    e.stopPropagation();
+                    setActiveTabKey(entry.key);
+                  },
+                  style: {
+                    fontSize: '10px',
+                    fontWeight: currentTab === entry.key ? '700' : '500',
+                    padding: '3px 8px',
+                    borderRadius: '3px',
+                    border: `1px solid ${currentTab === entry.key ? entry.borderColor : '#475569'}`,
+                    background: currentTab === entry.key ? '#334155' : 'transparent',
+                    color: currentTab === entry.key ? '#f8fafc' : '#94a3b8',
+                    cursor: 'pointer',
+                    fontFamily: 'monospace',
+                    lineHeight: '1.4'
+                  }
+                }, entry.label)
+              ))
+            : null;
 
           return el('div', {
             style: {
@@ -3088,22 +3153,22 @@ const resolvePrimaryPlatform = (featureData = {}) => {
               el('span', { style: { color: liveState === 'present' ? '#22c55e' : (liveState === 'recovered' ? '#10b981' : (liveState === 'missing' || liveState === 'cleaned' ? '#94a3b8' : '#f59e0b')) } }, liveStateDisplay)
             ]),
             el('div', {
-              title: targetFile,
               style: {
-                fontSize: '12px',
-                fontWeight: '700',
-                color: '#38bdf8',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
                 marginBottom: '0',
-                fontFamily: 'monospace',
-                cursor: 'help'
+                flexWrap: 'wrap'
               }
-            }, shortPath),
+            }, [
+              tabBar
+            ]),
             el('div', {
               style: {
                 position: 'relative',
                 background: '#0f172a',
                 borderRadius: '0 4px 4px 0',
-                borderLeft: `3px solid ${borderColor}`,
+                borderLeft: `3px solid ${activeEntry.borderColor}`,
                 overflow: 'hidden',
                 padding: '8px'
               }
@@ -3119,60 +3184,108 @@ const resolvePrimaryPlatform = (featureData = {}) => {
                   fontFamily: 'monospace',
                   lineHeight: '1.4'
                 }
-              }, addedCode)
+              }, activeEntry.code)
             ])
           ]);
        };
 
         const getPlainTooltipText = () => {
           const impls = verificationFeatureData.platform_implementations || {};
+          const auditSummary = Array.isArray(liveAudit?.audit_summary) ? liveAudit.audit_summary : [];
           const isCurrentlyEnforced = toBool(value);
-          const liveState = liveAudit?.audit_summary?.[0]?.live_state || (isCurrentlyEnforced ? 'present' : 'cleaned');
 
-          // [v4.1.4] Use actual target file path from live audit - not platform name
-          const liveTargetLabel = liveAudit?.audit_summary?.[0]?.label || '';
-          const targetFile = liveTargetLabel || (
-            /php functions|hook/i.test(String(verificationFeatureData.enforcement?.driver))
-              ? 'vapt-functions.php'
-              : /wp-config/i.test(String(verificationFeatureData.enforcement?.driver))
-                ? 'wp-config.php'
-                : /htaccess|apache/i.test(String(verificationFeatureData.enforcement?.driver))
-                  ? '.htaccess'
-                  : 'vapt-functions.php'
-          );
+          const removedPlatforms = ['fail2ban'];
+          const driverToPlatform = {
+            'htaccess': 'htaccess',
+            'apache': 'htaccess',
+            'litespeed': 'litespeed',
+            'wp_config': 'wp-config',
+            'php_functions': 'php_functions',
+            'hook': 'php_functions',
+            'universal': 'php_functions'
+          };
+          const activeDriver = schema.enforcement?.driver || schema.client_deployment?.enforcement?.driver || 'hook';
+          const preferredPlatform = driverToPlatform[activeDriver] || activeDriver;
 
-          // Simple text status - Injected / Removed
-          const statusText = isCurrentlyEnforced ? 'Injected' : 'Removed';
-          // Simple text Live State
-          const liveStateText = liveState.charAt(0).toUpperCase() + liveState.slice(1);
+          let lines = [];
+          let hasAny = false;
 
-          // [v4.1.4] Get code from resolved schema (platform_implementations) - not stale DB data
-          // Note: impls already declared on line 3094
-          let snippetSource = '';
-          // Get code from first platform implementation that has it
-          for (const [platform, impl] of Object.entries(impls)) {
-            if (impl?.wrapped_code) {
-              snippetSource = impl.wrapped_code;
-              break;
+          for (const audit of auditSummary) {
+            const targetKey = audit.target || '';
+            const label = audit.label || '';
+            const liveState = audit.live_state || 'missing';
+
+            let implCode = '';
+            let implTargetFile = label;
+
+            for (const [plat, details] of Object.entries(impls)) {
+              const p = plat.toLowerCase().replace(/\s+/g, '_');
+              if (removedPlatforms.some(rp => p.includes(rp))) continue;
+
+              if (platformMatches(plat, targetKey) || platformMatches(plat, label) ||
+                  (details.target_file && label.includes(details.target_file))) {
+                implCode = details.wrapped_code || details.code || '';
+                implTargetFile = details.target_file || label;
+                break;
+              }
             }
-            if (impl?.code) {
-              snippetSource = impl.code;
-              break;
-            }
-          }
-          // Fallback to localData
-          if (!snippetSource) {
-            snippetSource = localData?.wrapped_code || localData?.code || '';
-          }
-          const snippetPreview = String(snippetSource).trim();
 
-          // [v4.1.4] Use enforcement driver as implementation label
-          const implLabel = verificationFeatureData.enforcement?.driver || 'PHP Functions';
-          return `Implementation: ${implLabel}\nTarget File: ${targetFile}\nStatus: ${statusText}\nLive State: ${liveStateText}\n\nCode Preview:\n${snippetPreview || '(no snippet available)'}`;
+            if (!implCode) continue;
+
+            hasAny = true;
+            const statusText = isCurrentlyEnforced ? 'Injected' : 'Removed';
+            const liveStateText = liveState.charAt(0).toUpperCase() + liveState.slice(1);
+
+            if (lines.length > 0) lines.push('');
+            lines.push(`File: ${implTargetFile}`);
+            lines.push(`Status: ${statusText} | Live: ${liveStateText}`);
+            lines.push(`Code:\n${implCode.trim()}`);
+          }
+
+          if (!hasAny) {
+            let snippetSource = '';
+            for (const [platform, impl] of Object.entries(impls)) {
+              if (impl?.wrapped_code) {
+                snippetSource = impl.wrapped_code;
+                break;
+              }
+              if (impl?.code) {
+                snippetSource = impl.code;
+                break;
+              }
+            }
+            if (!snippetSource) {
+              snippetSource = localData?.wrapped_code || localData?.code || '';
+            }
+            const targetFile = (
+              /php functions|hook/i.test(String(verificationFeatureData.enforcement?.driver))
+                ? 'vapt-functions.php'
+                : /wp-config/i.test(String(verificationFeatureData.enforcement?.driver))
+                  ? 'wp-config.php'
+                  : /htaccess|apache/i.test(String(verificationFeatureData.enforcement?.driver))
+                    ? '.htaccess'
+                    : 'vapt-functions.php'
+            );
+            const statusText = isCurrentlyEnforced ? 'Injected' : 'Removed';
+            return `Implementation: ${preferredPlatform}\nTarget File: ${targetFile}\nStatus: ${statusText}\n\nCode Preview:\n${snippetSource.trim() || '(no snippet available)'}`;
+          }
+
+          return lines.join('\n');
         };
 
-       const tooltipContent = getTooltipContent();
-       const tooltipText = getPlainTooltipText(); // Used for clipboard copy
+       const tooltipContent = useMemo(() => getTooltipContent(), [
+          liveAudit?.audit_summary,
+          verificationFeatureData.platform_implementations,
+          value,
+          activeTabKey,
+          statusMap[key]?.message
+        ]);
+        const tooltipText = useMemo(() => getPlainTooltipText(), [
+          liveAudit?.audit_summary,
+          verificationFeatureData.platform_implementations,
+          value,
+          activeTabKey
+        ]);
         const updateTooltipPosition = () => {
           const anchor = tooltipAnchorRef.current;
           if (!anchor || typeof window === 'undefined') {
@@ -3182,68 +3295,50 @@ const resolvePrimaryPlatform = (featureData = {}) => {
           const rect = anchor.getBoundingClientRect();
           const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
           const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
-          const margin = 12;
-          const tooltipLines = String(tooltipText || '').split('\n');
-          const textLines = tooltipLines.length;
-          const longestLineLength = tooltipLines.reduce((max, line) => Math.max(max, String(line).length), 0);
-          const contentDrivenWidth = Math.round(longestLineLength * 5.8 + 58);
-          const viewportDrivenWidth = Math.round(viewportWidth * 0.22);
-          const desiredWidth = Math.max(
-            260,
-            Math.min(
-              340,
-              Math.max(280, contentDrivenWidth, viewportDrivenWidth)
-            )
-          );
-          const desiredHeight = Math.min(
-            Math.max(240, textLines * 18 + 112),
-            Math.max(240, viewportHeight - (margin * 2))
-          );
+          const gap = 8; // Gap between icon and tooltip
+          
+          const desiredWidth = 340;
+          const desiredHeight = 320;
 
-          const availableRight = Math.max(0, viewportWidth - rect.right - margin);
-          const availableLeft = Math.max(0, rect.left - margin);
-          const availableBelow = Math.max(0, viewportHeight - rect.bottom - margin);
-          const availableAbove = Math.max(0, rect.top - margin);
+          // Calculate available space in each direction
+          const spaceRight = viewportWidth - rect.right - gap;
+          const spaceLeft = rect.left - gap;
+          const spaceBelow = viewportHeight - rect.bottom - gap;
+          const spaceAbove = rect.top - gap;
 
-          let width = desiredWidth;
-          let left = rect.right + margin;
+          // Determine best position based on available space
+          let left, top;
 
-          if (availableRight >= desiredWidth) {
-            width = desiredWidth;
-            left = rect.right + margin;
-          } else if (availableLeft >= desiredWidth) {
-            width = desiredWidth;
-            left = rect.left - desiredWidth - margin;
-          } else if (availableRight >= availableLeft && availableRight > 0) {
-            width = Math.max(280, Math.min(desiredWidth, availableRight));
-            left = Math.min(Math.max(margin, rect.right + margin), viewportWidth - width - margin);
-          } else if (availableLeft > 0) {
-            width = Math.max(280, Math.min(desiredWidth, availableLeft));
-            left = Math.max(margin, rect.left - width - margin);
+          if (spaceRight >= desiredWidth) {
+            // Position to the RIGHT: left edge of tooltip adjacent to right edge of icon
+            left = rect.right + gap;
+            top = rect.top + (rect.height / 2) - (desiredHeight / 2);
+          } else if (spaceLeft >= desiredWidth) {
+            // Position to the LEFT: right edge of tooltip adjacent to left edge of icon
+            left = rect.left - desiredWidth - gap;
+            top = rect.top + (rect.height / 2) - (desiredHeight / 2);
+          } else if (spaceBelow >= desiredHeight) {
+            // Position BELOW: top edge of tooltip adjacent to bottom edge of icon
+            left = rect.left + (rect.width / 2) - (desiredWidth / 2);
+            top = rect.bottom + gap;
+          } else if (spaceAbove >= desiredHeight) {
+            // Position ABOVE: bottom edge of tooltip adjacent to top edge of icon
+            left = rect.left + (rect.width / 2) - (desiredWidth / 2);
+            top = rect.top - desiredHeight - gap;
           } else {
-            width = Math.max(280, Math.min(desiredWidth, viewportWidth - (margin * 2)));
-            left = margin;
+            // Fallback: position to the right, constrained by viewport
+            left = Math.min(rect.right + gap, viewportWidth - desiredWidth - gap);
+            top = Math.min(rect.top, viewportHeight - desiredHeight - gap);
           }
 
-          const maxHeight = Math.max(240, Math.min(desiredHeight, viewportHeight - (margin * 2)));
-          let top = rect.bottom + margin;
+          // Ensure tooltip stays within viewport bounds
+          left = Math.max(gap, Math.min(left, viewportWidth - desiredWidth - gap));
+          top = Math.max(gap, Math.min(top, viewportHeight - desiredHeight - gap));
 
-          if (availableBelow >= maxHeight) {
-            top = rect.bottom + margin;
-          } else if (availableAbove >= maxHeight) {
-            top = rect.top - maxHeight - margin;
-          } else {
-            top = Math.max(margin, Math.min(rect.bottom + margin, viewportHeight - maxHeight - margin));
-          }
-
-          left = Math.max(margin, Math.min(left, viewportWidth - width - margin));
-          top = Math.max(margin, Math.min(top, viewportHeight - maxHeight - margin));
-
-          setTooltipPosition({ top, left, width, maxHeight });
+          setTooltipPosition({ top, left, width: desiredWidth, maxHeight: desiredHeight });
         };
 
         const openTooltip = () => {
-          if (!tooltipText) return;
           if (tooltipCloseTimerRef.current) {
             clearTimeout(tooltipCloseTimerRef.current);
             tooltipCloseTimerRef.current = null;
@@ -3747,9 +3842,36 @@ return el('div', { id: control.id, key: uniqueKey, style: { marginBottom: isComp
                 // Client Dashboard: Strip them out
                 processedNotes = opNotes.substring(0, markerIndex).trim().replace(/\n+$/, '');
             } else {
-                // Workbench: Extract for styling and keep the rest as processedNotes
+                // Workbench: Extract for styling and filter based on detected webserver
                 processedNotes = opNotes.substring(0, markerIndex).trim().replace(/\n+$/, '');
-                const detailContent = opNotes.substring(markerIndex + marker.length).trim();
+                let detailContent = opNotes.substring(markerIndex + marker.length).trim();
+                
+                // [v4.1.6] Filter platforms based on detected webserver
+                const detectedServer = window.vaptSecureSettings?.serverType || 'apache';
+                const isApache = detectedServer === 'apache' || detectedServer === 'litespeed';
+                const isNginx = detectedServer === 'nginx';
+                
+                // Parse and filter platform mentions
+                const platformPatterns = [
+                    { regex: /\.htaccess\s*\(targets\s+\.htaccess\)/gi, keep: true, server: 'apache' },
+                    { regex: /Cloudflare\s*\(via\s+cloudflare\)/gi, keep: true, server: 'all' },
+                    { regex: /Nginx\s*\(targets\s+Nginx\)/gi, keep: true, server: 'nginx' },
+                    { regex: /PHP Functions\s*\(targets\s+PHP Functions\)/gi, keep: true, server: 'all' },
+                    { regex: /\.htaccess\s*\(targets\s+Apache\)/gi, keep: true, server: 'apache' },
+                    { regex: /wp-config\.php\s*\(targets\s+wp-config\.php\)/gi, keep: true, server: 'all' },
+                ];
+                
+                // Filter content based on server type
+                if (isApache) {
+                    detailContent = detailContent.replace(/Nginx\s*\(targets\s+Nginx\)[,.\s]*/gi, '');
+                } else if (isNginx) {
+                    detailContent = detailContent.replace(/\.htaccess\s*\(targets\s+\.htaccess\)[,.\s]*/gi, '');
+                    detailContent = detailContent.replace(/\.htaccess\s*\(targets\s+Apache\)[,.\s]*/gi, '');
+                }
+                
+                // Clean up extra commas and whitespace
+                detailContent = detailContent.replace(/,\s*,/g, ',');
+                detailContent = detailContent.replace(/\s+/g, ' ').trim();
                 
                 detailElement = el('div', {
                     style: {

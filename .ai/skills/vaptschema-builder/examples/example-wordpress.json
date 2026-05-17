@@ -11,7 +11,7 @@
   "enforcement": {
     "driver": "wordpress",
     "mappings": {
-      "UI-RISK-015-001": "// BEGIN VAPT RISK-015\nadd_action( 'init', 'vapt_disable_some_feature' );\n// END VAPT RISK-015"
+      "UI-RISK-015-001": "// BEGIN VAPT RISK-015\nadd_action( 'init', 'vapt_disable_some_feature' );\n// END Of RISK-015"
     }
   }
 }

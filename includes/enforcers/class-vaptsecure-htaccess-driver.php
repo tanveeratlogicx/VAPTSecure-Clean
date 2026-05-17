@@ -147,7 +147,7 @@ class VAPTSECURE_Htaccess_Driver implements VAPTSECURE_Driver_Interface
                 // [v3.12.7] Strip VAPTBuilder RISK-XXX comments
                 $directive = preg_replace('/^#\s*VAPTBuilder\s+RISK-\d+:.*$/m', '', $directive);
 
-                // [v1.8.x] Strip # BEGIN VAPT / # END VAPT pattern library markers from injected code
+                // [v1.8.x] Strip # BEGIN VAPT / # END Of pattern library markers from injected code
                 $directive = preg_replace('/^#\s*(BEGIN|END)\s+VAPT\s+\S+\s*$/mi', '', $directive);
                 $directive = trim($directive);
 
@@ -259,7 +259,7 @@ class VAPTSECURE_Htaccess_Driver implements VAPTSECURE_Driver_Interface
 
         // Prepare new VAPT block
         $start_marker = "# BEGIN VAPT SECURITY RULES";
-        $end_marker = "# END VAPT SECURITY RULES";
+        $end_marker = "# END Of SECURITY RULES";
         $rules_string = "";
 
         if (!empty($all_rules_array)) {
@@ -289,9 +289,9 @@ class VAPTSECURE_Htaccess_Driver implements VAPTSECURE_Driver_Interface
         // 1. Remove old block if exists (supporting both old/new markers)
         // [FIX v3.13.15] Robust string slicing instead of unreliable regex
         $start_marker_full = "# BEGIN VAPT SECURITY RULES";
-        $end_marker_full = "# END VAPT SECURITY RULES";
+        $end_marker_full = "# END Of SECURITY RULES";
         $legacy_start = "# BEGIN VAPTC SECURITY RULES";
-        $legacy_end = "# END VAPTC SECURITY RULES";
+        $legacy_end = "# END Of SECURITY RULES";
 
         $new_content = $content;
 

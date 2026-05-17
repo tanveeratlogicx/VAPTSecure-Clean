@@ -1,4 +1,5 @@
 # SOUL.md — Universal AI Configuration for VAPTSecure Plugin
+<!-- SSoT Bundle: fingerprint=ff9c076ae4b5fa95d818d4f66b9afd698a4675d268e03ca8d517fd3331bcbb0f features=133 synced=2026-05-17 08:00:19 -->
 
 > **⚠️ CRITICAL DOCUMENT**
 > This file is the **single source of truth** for all AI agent behavior in the VAPTSecure plugin project.
@@ -403,7 +404,7 @@ class VAPT_Lifecycle {
             $content = file_get_contents($htaccess_path);
             if ( strpos($content, '# BEGIN VAPT-') !== false ) {
                 // Force remove if auto-correct didn't catch it
-                $clean = preg_replace('/\n?# BEGIN VAPT-.*?# END VAPT-[^\n]*\n?/s', '', $content);
+                $clean = preg_replace('/\n?# BEGIN VAPT-.*?# END Of-[^\n]*\n?/s', '', $content);
                 file_put_contents($htaccess_path, $clean);
             }
         }
@@ -430,7 +431,7 @@ class VAPT_Lifecycle {
         $htaccess_path = ABSPATH . '.htaccess';
         if ( file_exists($htaccess_path) ) {
             $content = file_get_contents($htaccess_path);
-            $clean   = preg_replace('/\n?# BEGIN VAPT-.*?# END VAPT-[^\n]*\n?/s', '', $content);
+            $clean   = preg_replace('/\n?# BEGIN VAPT-.*?# END Of-[^\n]*\n?/s', '', $content);
             file_put_contents($htaccess_path, $clean);
         }
 
@@ -721,7 +722,7 @@ public function check_htaccess_integrity(): VAPT_Check_Item {
     $content = file_get_contents( $htaccess_path );
 
     preg_match_all( '/# BEGIN VAPT-RISK-([a-z0-9-]+)/', $content, $begin_matches );
-    preg_match_all( '/# END VAPT-RISK-([a-z0-9-]+)/',   $content, $end_matches   );
+    preg_match_all( '/# END Of-RISK-([a-z0-9-]+)/',   $content, $end_matches   );
 
     $orphaned_begin = array_diff( $begin_matches[1], $end_matches[1] );
     $orphaned_end   = array_diff( $end_matches[1],   $begin_matches[1] );
@@ -735,7 +736,7 @@ public function check_htaccess_integrity(): VAPT_Check_Item {
 
     foreach ( $begin_matches[1] as $feature_id ) {
         $id      = preg_quote( $feature_id, '/' );
-        $pattern = "/# BEGIN VAPT-RISK-{$id}\n(.*?)\n# END VAPT-RISK-{$id}/s";
+        $pattern = "/# BEGIN VAPT-RISK-{$id}\n(.*?)\n# END Of-RISK-{$id}/s";
 
         if ( preg_match( $pattern, $content, $block ) ) {
             if ( ! preg_match( "/\n\n$/", $block[1] ) ) {
@@ -764,7 +765,7 @@ public function check_htaccess_integrity(): VAPT_Check_Item {
  *   RewriteCond ...
  *   RewriteRule ...
  *                        ← exactly one blank line here
- *   # END VAPT-RISK-{FEATURE-ID}
+ *   # END Of-RISK-{FEATURE-ID}
  *                        ← exactly one blank line after END marker (between blocks)
  */
 public function check_rule_block_format(): VAPT_Check_Item {
@@ -774,7 +775,7 @@ public function check_rule_block_format(): VAPT_Check_Item {
     $corrections   = [];
 
     preg_match_all(
-        '/(# BEGIN VAPT-RISK-[a-z0-9-]+\n)(.*?)(\n# END VAPT-RISK-[a-z0-9-]+)/s',
+        '/(# BEGIN VAPT-RISK-[a-z0-9-]+\n)(.*?)(\n# END Of-RISK-[a-z0-9-]+)/s',
         $content, $blocks, PREG_SET_ORDER
     );
 
@@ -896,7 +897,7 @@ public function check_wordpress_whitelist_rules(): VAPT_Check_Item {
     ];
 
     preg_match_all(
-        '/(# BEGIN VAPT-RISK-[a-z0-9-]+\n)(.*?)(\n# END VAPT-RISK-[a-z0-9-]+)/s',
+        '/(# BEGIN VAPT-RISK-[a-z0-9-]+\n)(.*?)(\n# END Of-RISK-[a-z0-9-]+)/s',
         $content, $blocks, PREG_SET_ORDER
     );
 
@@ -1299,7 +1300,7 @@ public function check_rewrite_syntax(): VAPT_Check_Item {
     $issues        = [];
 
     preg_match_all(
-        '/(# BEGIN VAPT-RISK-[a-z0-9-]+\n)(.*?)(\n# END VAPT-RISK-[a-z0-9-]+)/s',
+        '/(# BEGIN VAPT-RISK-[a-z0-9-]+\n)(.*?)(\n# END Of-RISK-[a-z0-9-]+)/s',
         $content, $blocks, PREG_SET_ORDER
     );
 
@@ -1366,7 +1367,7 @@ public function check_blank_line_requirement(): VAPT_Check_Item {
     $corrections   = [];
 
     preg_match_all(
-        '/(# BEGIN VAPT-RISK-[a-z0-9-]+\n)(.*?)(\n# END VAPT-RISK-[a-z0-9-]+)(\n*)/s',
+        '/(# BEGIN VAPT-RISK-[a-z0-9-]+\n)(.*?)(\n# END Of-RISK-[a-z0-9-]+)(\n*)/s',
         $content, $blocks, PREG_SET_ORDER
     );
 
@@ -1581,7 +1582,7 @@ class VAPT_Auto_Correct {
         $content       = file_get_contents( $htaccess_path );
 
         $new_content = preg_replace_callback(
-            "/(# BEGIN VAPT-RISK-{$id}\n)(.*?)(\n# END VAPT-RISK-{$id})/s",
+            "/(# BEGIN VAPT-RISK-{$id}\n)(.*?)(\n# END Of-RISK-{$id})/s",
             function( $m ) { return $m[1] . rtrim( $m[2] ) . "\n\n" . ltrim( $m[3], "\n" ); },
             $content
         );
@@ -1598,7 +1599,7 @@ class VAPT_Auto_Correct {
         if ( $correction['backup'] ?? false ) {
             copy( $htaccess_path, $htaccess_path . '.vapt-backup-' . date( 'Ymd-His' ) );
         }
-        $new_content = preg_replace( '/\n?# BEGIN VAPT-.*?# END VAPT-[^\n]*\n?/s', '', $content );
+        $new_content = preg_replace( '/\n?# BEGIN VAPT-.*?# END Of-[^\n]*\n?/s', '', $content );
         file_put_contents( $htaccess_path, $new_content );
         return [ 'status' => 'success', 'type' => 'remove_all_htaccess' ];
     }
@@ -1691,11 +1692,11 @@ Every VAPT-managed `.htaccess` block **MUST** follow this exact structure:
 
 </IfModule>
 
-# END VAPT-RISK-{FEATURE-ID}
+# END Of-RISK-{FEATURE-ID}
 
 ```
 
-> **Blank line rule**: Exactly **one blank line** between last directive and `# END VAPT-RISK-...`, and **one blank line** after `# END VAPT-RISK-...`. No trailing whitespace. Self-check auto-corrects violations.
+> **Blank line rule**: Exactly **one blank line** between last directive and `# END Of-RISK-...`, and **one blank line** after `# END Of-RISK-...`. No trailing whitespace. Self-check auto-corrects violations.
 
 ---
 
@@ -1720,7 +1721,7 @@ Every VAPT-managed `.htaccess` block **MUST** follow this exact structure:
 
 </IfModule>
 
-# END VAPT-RISK-BOT-PROTECTION
+# END Of-RISK-BOT-PROTECTION
 
 ```
 **Remove on Disable:** Strip entire block including trailing blank line.
@@ -1747,7 +1748,7 @@ Every VAPT-managed `.htaccess` block **MUST** follow this exact structure:
 
 </IfModule>
 
-# END VAPT-RISK-REST-API-GUARD
+# END Of-RISK-REST-API-GUARD
 
 ```
 **Remove on Disable:** Strip entire block.
@@ -1769,7 +1770,7 @@ Every VAPT-managed `.htaccess` block **MUST** follow this exact structure:
 
 </IfModule>
 
-# END VAPT-RISK-XMLRPC-BLOCK
+# END Of-RISK-XMLRPC-BLOCK
 
 ```
 **Remove on Disable:** Strip entire block.
@@ -1793,7 +1794,7 @@ Every VAPT-managed `.htaccess` block **MUST** follow this exact structure:
 
 </IfModule>
 
-# END VAPT-RISK-ADMIN-AJAX-GUARD
+# END Of-RISK-ADMIN-AJAX-GUARD
 
 ```
 **Remove on Disable:** Strip entire block.
@@ -1819,7 +1820,7 @@ Every VAPT-managed `.htaccess` block **MUST** follow this exact structure:
 
 </IfModule>
 
-# END VAPT-RISK-FILE-PROTECT
+# END Of-RISK-FILE-PROTECT
 
 ```
 **Remove on Disable:** Strip entire block.
@@ -1844,7 +1845,7 @@ Every VAPT-managed `.htaccess` block **MUST** follow this exact structure:
 
 </IfModule>
 
-# END VAPT-RISK-WP-INCLUDES
+# END Of-RISK-WP-INCLUDES
 
 ```
 **Remove on Disable:** Strip entire block.
@@ -1866,7 +1867,7 @@ Every VAPT-managed `.htaccess` block **MUST** follow this exact structure:
 
 </IfModule>
 
-# END VAPT-RISK-SECURITY-HEADERS
+# END Of-RISK-SECURITY-HEADERS
 
 ```
 **Remove on Disable:** Strip entire block.
@@ -1884,11 +1885,11 @@ function vapt_htaccess_write( string $feature_id, string $rule_content ): VAPT_S
     $rule_content  = rtrim( $rule_content ) . "\n\n"; // exactly one blank line
 
     $block   = "# BEGIN VAPT-RISK-{$feature_id}\n" . $rule_content
-             . "# END VAPT-RISK-{$feature_id}\n\n"; // one blank line after END
+             . "# END Of-RISK-{$feature_id}\n\n"; // one blank line after END
 
     $existing = file_exists( $htaccess_path ) ? file_get_contents( $htaccess_path ) : '';
     $id       = preg_quote( $feature_id, '/' );
-    $pattern  = "/(# BEGIN VAPT-RISK-{$id}\n).*?(# END VAPT-RISK-{$id}\n\n?)/s";
+    $pattern  = "/(# BEGIN VAPT-RISK-{$id}\n).*?(# END Of-RISK-{$id}\n\n?)/s";
     $new      = preg_match( $pattern, $existing )
               ? preg_replace( $pattern, $block, $existing )
               : $existing . $block;
@@ -1912,7 +1913,7 @@ function vapt_htaccess_remove( string $feature_id, bool $backup = true ): VAPT_S
         copy( $htaccess_path, $htaccess_path . '.vapt-backup-' . date('Ymd-His') );
     }
     $id      = preg_quote( $feature_id, '/' );
-    $new     = preg_replace( "/# BEGIN VAPT-RISK-{$id}\n.*?# END VAPT-RISK-{$id}\n\n?/s", '', $content );
+    $new     = preg_replace( "/# BEGIN VAPT-RISK-{$id}\n.*?# END Of-RISK-{$id}\n\n?/s", '', $content );
     file_put_contents( $htaccess_path, $new );
 
     return VAPT_Self_Check::run('htaccess_modify', ['feature_id' => $feature_id, 'rules_removed' => true]);
@@ -1953,7 +1954,7 @@ function vapt_htaccess_remove( string $feature_id, bool $backup = true ): VAPT_S
 # CORRECT: VAPT rules ABOVE the WordPress block
 # BEGIN VAPT-RISK-{FEATURE-ID}
 ... your rules ...
-# END VAPT-RISK-{FEATURE-ID}
+# END Of-RISK-{FEATURE-ID}
 
 # BEGIN WordPress
 ...
@@ -1975,7 +1976,7 @@ function vapt_htaccess_remove( string $feature_id, bool $backup = true ): VAPT_S
 # BEGIN VAPT-RISK-{FEATURE-ID}     ← marker on its own line
 {directives}                        ← Apache rules
                                     ← ✅ exactly ONE blank line
-# END VAPT-RISK-{FEATURE-ID}       ← marker on its own line
+# END Of-RISK-{FEATURE-ID}       ← marker on its own line
                                     ← ✅ exactly ONE blank line (between blocks)
 ```
 
@@ -2138,7 +2139,7 @@ actions:
     # Rate limiting via environment variables
     RewriteRule .* - [E=VAPT_LOGIN_LIMIT:1]
 </IfModule>
-# END VAPT-RATE-LIMIT-LOGIN
+# END Of-RATE-LIMIT-LOGIN
 ```
 
 ---
@@ -2428,7 +2429,7 @@ $rest_users = vapt_get_fqdn( 'wp-json/wp/v2/users' );  // https://{domain}/wp-js
     RewriteCond %{REQUEST_URI} ^/xmlrpc\.php [NC]
     RewriteRule .* - [F,L]
 </IfModule>
-# END VAPT-RISK-ENDPOINT-PROTECTION
+# END Of-RISK-ENDPOINT-PROTECTION
 ```
 
 ---

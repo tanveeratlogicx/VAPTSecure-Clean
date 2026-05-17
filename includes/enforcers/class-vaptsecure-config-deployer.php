@@ -76,7 +76,7 @@ class VAPTSECURE_Config_Deployer implements VAPTSECURE_Driver_Interface
 
         $content = file_get_contents($wp_config_path);
         $start_marker = "// BEGIN VAPT FEATURE: {$feature_key}";
-        $end_marker = "// END VAPT FEATURE: {$feature_key}";
+        $end_marker = "// END Of {$feature_key}";
 
         // Remove old block for this feature
         $pattern = "/" . preg_quote($start_marker, '/') . ".*?" . preg_quote($end_marker, '/') . "/s";
@@ -114,7 +114,7 @@ class VAPTSECURE_Config_Deployer implements VAPTSECURE_Driver_Interface
 
         $content = file_get_contents($wp_config_path);
         $start_marker = "// BEGIN VAPT FEATURE: {$feature_key}";
-        $end_marker   = "// END VAPT FEATURE: {$feature_key}";
+        $end_marker   = "// END Of {$feature_key}";
 
         $pattern = "/" . preg_quote($start_marker, '/') . ".*?" . preg_quote($end_marker, '/') . "/s";
         $new_content = preg_replace($pattern, '', $content);

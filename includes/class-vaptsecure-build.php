@@ -436,7 +436,57 @@ class VAPTSECURE_Build
 
     public static function normalize_client_schema_controls($feature_key, array $schema = array(), array $feature_meta = array())
     {
-        if (empty($schema) || !is_array($schema) || empty($schema['controls']) || !is_array($schema['controls'])) {
+        if (empty($schema) || !is_array($schema)) {
+            return $schema;
+        }
+
+        // [v4.1.6] Convert legacy 'components' to 'controls' if needed
+        if (empty($schema['controls']) && !empty($schema['components']) && is_array($schema['components'])) {
+            $schema['controls'] = array();
+            foreach ($schema['components'] as $comp) {
+                if (!is_array($comp)) continue;
+                $control = array();
+                // Map component fields to control fields
+                $control['type'] = $comp['type'] ?? 'info';
+                $control['label'] = $comp['label'] ?? '';
+                $control['key'] = $comp['settings_key'] ?? $comp['component_id'] ?? '';
+                $control['default'] = $comp['default_value'] ?? null;
+                if (!empty($comp['test_logic'])) {
+                    $control['test_logic'] = $comp['test_logic'];
+                }
+                if (!empty($comp['test_config'])) {
+                    $control['test_config'] = $comp['test_config'];
+                }
+                if (!empty($comp['help'])) {
+                    $control['help'] = $comp['help'];
+                }
+                if (!empty($comp['on_change'])) {
+                    $control['on_change'] = $comp['on_change'];
+                }
+                if (!empty($comp['on_enable'])) {
+                    $control['on_enable'] = $comp['on_enable'];
+                }
+                if (!empty($comp['on_disable'])) {
+                    $control['on_disable'] = $comp['on_disable'];
+                }
+                if (!empty($comp['items'])) {
+                    $control['items'] = $comp['items'];
+                }
+                if (!empty($comp['tests'])) {
+                    $control['tests'] = $comp['tests'];
+                }
+                if (!empty($comp['checklist'])) {
+                    $control['checklist'] = $comp['checklist'];
+                }
+                if (!empty($comp['evidence'])) {
+                    $control['evidence'] = $comp['evidence'];
+                }
+                $schema['controls'][] = $control;
+            }
+            unset($schema['components']);
+        }
+
+        if (empty($schema['controls']) || !is_array($schema['controls'])) {
             return $schema;
         }
 

@@ -11,7 +11,7 @@
   "enforcement": {
     "driver": "wp_config",
     "mappings": {
-      "UI-RISK-001-001": "/* BEGIN VAPT RISK-001 */\ndefine( 'DISABLE_WP_CRON', true );\n/* END VAPT RISK-001 */"
+      "UI-RISK-001-001": "/* BEGIN VAPT RISK-001 */\ndefine( 'DISABLE_WP_CRON', true );\n/* END Of RISK-001 */"
     }
   }
 }
