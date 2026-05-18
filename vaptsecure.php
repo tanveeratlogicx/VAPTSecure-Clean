@@ -1039,12 +1039,11 @@ if (!vaptsecure_load_required_config()) {
 require_once VAPTSECURE_PATH . "includes/debug-utils.php";
 require_once VAPTSECURE_PATH . "includes/class-vaptsecure-auth.php";
 
-// P4.1: Driver Interface Contract - Load interface before drivers
-require_once VAPTSECURE_PATH .
-    "includes/interfaces/interface-vaptsecure-driver.php";
-
-// P4.2: Schema Validation Pipeline - Load validator before REST
 require_once VAPTSECURE_PATH . "includes/class-vaptsecure-schema-validator.php";
+
+require_once VAPTSECURE_PATH . "includes/class-vaptsecure-migrations.php";
+
+require_once VAPTSECURE_PATH . "includes/class-vaptsecure-backup.php";
 
 require_once VAPTSECURE_PATH . "includes/class-vaptsecure-rest.php";
 require_once VAPTSECURE_PATH . "includes/class-vaptsecure-db.php";
@@ -1053,6 +1052,10 @@ require_once VAPTSECURE_PATH . "includes/class-vaptsecure-ai-config.php";
 require_once VAPTSECURE_PATH . "includes/class-vaptsecure-build.php";
 require_once VAPTSECURE_PATH . "includes/class-vaptsecure-config-cleaner.php"; // Shared utility for config cleaning
 require_once VAPTSECURE_PATH . "includes/class-vaptsecure-bundle-sync.php"; // Canonical bundle snapshot and fingerprint helper
+
+// 🛡️ Load driver interface before enforcers
+require_once VAPTSECURE_PATH . "includes/interfaces/interface-vaptsecure-driver.php";
+
 require_once VAPTSECURE_PATH . "includes/class-vaptsecure-enforcer.php";
 require_once VAPTSECURE_PATH . "includes/class-vaptsecure-admin.php";
 require_once VAPTSECURE_PATH . "includes/class-vaptsecure-license-manager.php";
@@ -1603,6 +1606,15 @@ function vaptsecure_initialize_services()
 register_activation_hook(__FILE__, "vaptsecure_activate_plugin");
 register_deactivation_hook(__FILE__, ["VAPT_Lifecycle", "on_deactivate"]);
 register_uninstall_hook(__FILE__, ["VAPT_Lifecycle", "on_uninstall"]);
+
+/**
+ * 🛡️ Auto-run pending migrations on admin page load
+ */
+add_action('admin_init', function() {
+    if (class_exists('VAPTSECURE_Migrations')) {
+        VAPTSECURE_Migrations::run_all();
+    }
+});
 
 add_action("vapt_feature_enabled", function ($id) {
     if (class_exists("VAPT_Self_Check")) {
@@ -2292,6 +2304,16 @@ if (!function_exists("vaptsecure_add_admin_menu")) {
                 "vaptsecure-domain-admin",
                 "vaptsecure_render_admin_page",
             );
+
+            // Sub-menu 3: Backup Archive (Superadmin only)
+            add_submenu_page(
+                "vaptsecure",
+                __("Backup Archive", "vaptsecure"),
+                __("Backup Archive", "vaptsecure"),
+                "manage_options",
+                "vaptsecure-backup-archive",
+                "vaptsecure_render_backup_archive_page",
+            );
         }
 
         // Remove the default duplicate submenu item created by WordPress
@@ -2441,6 +2463,32 @@ if (!function_exists("vaptsecure_master_dashboard_page")) {
       <div style="padding: 20px; text-align: center;">
         <span class="spinner is-active" style="float: none; margin: 0 auto;"></span>
         <p><?php _e("Loading VAPTSecure Clean...", "vaptsecure"); ?></p>
+      </div>
+    </div>
+        <?php
+    }
+}
+
+/**
+ * Render Backup Archive Page (Superadmin only)
+ */
+if (!function_exists("vaptsecure_render_backup_archive_page")) {
+    function vaptsecure_render_backup_archive_page()
+    {
+        if (!is_vaptsecure_superadmin(true)) {
+            wp_die(
+                __(
+                    "You do not have permission to access the Backup Archive.",
+                    "vaptsecure",
+                ),
+            );
+        }
+        ?>
+    <div id="vapt-backup-archive-root" class="wrap">
+      <h1><?php _e("VAPTSecure Backup Archive", "vaptsecure"); ?></h1>
+      <div style="padding: 40px; text-align: center; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-radius: 4px;">
+        <span class="spinner is-active" style="float: none; margin: 0 auto;"></span>
+        <p><?php _e("Loading Backup Archive...", "vaptsecure"); ?></p>
       </div>
     </div>
         <?php
@@ -2753,6 +2801,28 @@ function vaptsecure_enqueue_admin_assets($hook)
         );
         wp_localize_script(
             "vapt-workbench-js",
+            "vaptSecureSettings",
+            $vapt_settings,
+        );
+    }
+
+    // 2c. Superadmin Backup Archive (admin-backup-archive.js)
+    if (strpos($screen->id, "vaptsecure-backup-archive") !== false) {
+        wp_enqueue_script(
+            "vapt-backup-archive-js",
+            plugin_dir_url(__FILE__) . "assets/js/admin-backup-archive.js",
+            [
+                "wp-element",
+                "wp-components",
+                "wp-api-fetch",
+                "wp-i18n",
+                "wp-dom-ready",
+            ],
+            VAPTSECURE_VERSION,
+            true,
+        );
+        wp_localize_script(
+            "vapt-backup-archive-js",
             "vaptSecureSettings",
             $vapt_settings,
         );

@@ -589,7 +589,7 @@ class VAPTSECURE_Enforcer
     /**
      * Load the canonical feature definition from the active catalog bundle.
      */
-    private static function load_catalog_feature_schema($feature_key)
+    public static function load_catalog_feature_schema($feature_key)
     {
         $feature_key = strtoupper(trim((string) $feature_key));
         if ($feature_key === '') {

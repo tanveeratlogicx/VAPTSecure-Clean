@@ -179,20 +179,14 @@ var vaptLog = window.vaptLog || {
 
     const statusFeatures = useMemo(() => {
         return features.filter(f => {
-            // In generated builds (Locked Mode), we trust the list returned by the scoped API
-            // which already filters by vaptsecure_is_feature_allowed().
-            // We still check for generated_schema to ensure the UI can render.
-            if (!f.generated_schema) return false;
-
+            // [FIX] Workbench should NEVER show Draft features
             const s = f.normalized_status || (f.status ? f.status.toLowerCase() : '');
+            if (s === 'draft' || s === 'available') return false;
             
-            // For Locked Builds (Client Side), we typically want to see "Release" features.
-            // However, the user might want to see what's implemented regardless of status 
-            // if it's explicitly included in the build.
             const active = activeStatus.toLowerCase();
 
             if (active === 'all') {
-                return true; // Trust the API's scoping
+                return true; // Show all non-Draft features
             }
 
             if (active === 'develop') return ['develop', 'in_progress'].includes(s);

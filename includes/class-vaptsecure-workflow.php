@@ -96,6 +96,12 @@ class VAPTSECURE_Workflow
 
         // Special Case: Reset if moving back to Draft
         if (strtolower($new_status) === 'draft') {
+            // 0. 🛡️ Archive Backup before wiping data
+            if (file_exists(VAPTSECURE_PATH . 'includes/class-vaptsecure-backup.php')) {
+                include_once VAPTSECURE_PATH . 'includes/class-vaptsecure-backup.php';
+                VAPTSECURE_Backup::archive_backup($feature_key);
+            }
+
             // 1. Wipe History
             $wpdb->delete($table_history, array('feature_key' => $feature_key));
 

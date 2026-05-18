@@ -427,6 +427,79 @@ class VAPTSECURE_REST
             'permission_callback' => array($this, 'check_read_permission'),
             )
         );
+
+        // 🛡️ SCHEMA PRESERVATION: BACKUP MANAGEMENT ROUTES
+        register_rest_route(
+            'vaptsecure/v1', '/backups/archived', array(
+            'methods'  => 'GET',
+            'callback' => array($this, 'get_archived_backups'),
+            'permission_callback' => array($this, 'check_permission'),
+            )
+        );
+
+        register_rest_route(
+            'vaptsecure/v1', '/backups/active', array(
+            'methods'  => 'GET',
+            'callback' => array($this, 'get_active_backups'),
+            'permission_callback' => array($this, 'check_permission'),
+            )
+        );
+
+        register_rest_route(
+            'vaptsecure/v1', '/backups/(?P<feature_key>[a-zA-Z0-9_-]+)/restore', array(
+            'methods'  => 'POST',
+            'callback' => array($this, 'restore_from_archive'),
+            'permission_callback' => array($this, 'check_permission'),
+            )
+        );
+
+        register_rest_route(
+            'vaptsecure/v1', '/backups/(?P<feature_key>[a-zA-Z0-9_-]+)/archive', array(
+            'methods'  => 'POST',
+            'callback' => array($this, 'archive_backup'),
+            'permission_callback' => array($this, 'check_permission'),
+            )
+        );
+
+        register_rest_route(
+            'vaptsecure/v1', '/backups/purge', array(
+            'methods'  => 'DELETE',
+            'callback' => array($this, 'purge_backups'),
+            'permission_callback' => array($this, 'check_permission'),
+            )
+        );
+
+        register_rest_route(
+            'vaptsecure/v1', '/backups/purge-archive', array(
+            'methods'  => 'DELETE',
+            'callback' => array($this, 'purge_archived_backups'),
+            'permission_callback' => array($this, 'check_permission'),
+            )
+        );
+
+        register_rest_route(
+            'vaptsecure/v1', '/backups/sync-existing', array(
+            'methods'  => 'POST',
+            'callback' => array($this, 'sync_existing_backups'),
+            'permission_callback' => array($this, 'check_permission'),
+            )
+        );
+
+        register_rest_route(
+            'vaptsecure/v1', '/backups/resync-titles', array(
+            'methods'  => 'POST',
+            'callback' => array($this, 'resync_backup_titles'),
+            'permission_callback' => array($this, 'check_permission'),
+            )
+        );
+
+        register_rest_route(
+            'vaptsecure/v1', '/backups/missing-count', array(
+            'methods'  => 'GET',
+            'callback' => array($this, 'get_missing_backup_count'),
+            'permission_callback' => array($this, 'check_permission'),
+            )
+        );
     }
 
     public function check_permission()
@@ -1211,6 +1284,44 @@ $runtime_verified = false;
                                 }
                             }
                         }
+                        
+                        // 🛡️ Schema Preservation: Try backup table if DB schema is empty
+                        if (empty($schema_data) && file_exists(VAPTSECURE_PATH . 'includes/class-vaptsecure-backup.php')) {
+                            include_once VAPTSECURE_PATH . 'includes/class-vaptsecure-backup.php';
+                            $backup = VAPTSECURE_Backup::load_backup($key);
+                            if ($backup && !empty($backup['generated_schema'])) {
+                                $schema_data = json_decode($backup['generated_schema'], true);
+                                
+                                // Auto-restore to DB
+                                VAPTSECURE_DB::update_feature_meta($key, array(
+                                    'generated_schema' => $backup['generated_schema'],
+                                    'implementation_data' => $backup['implementation_data'] ?? null
+                                ));
+                                
+                                // Notify Superadmin
+                                if ($is_superadmin) {
+                                    add_action('admin_notices', function() use ($key) {
+                                        echo '<div class="notice notice-warning is-dismissible"><p>VAPTSecure: Schema for <strong>' . esc_html($key) . '</strong> was restored from backup.</p></div>';
+                                    });
+                                }
+                                
+                                error_log("VAPT Backup: Auto-restored {$key} from backup table");
+                            }
+                        }
+
+                        // [FIX] Catalog fallback: If schema_data is empty, load from catalog
+                        if (empty($schema_data) && class_exists('VAPTSECURE_Enforcer') && method_exists('VAPTSECURE_Enforcer', 'load_catalog_feature_schema')) {
+                            $catalog_schema = VAPTSECURE_Enforcer::load_catalog_feature_schema($key);
+                            if (!empty($catalog_schema) && is_array($catalog_schema)) {
+                                $schema_data = $catalog_schema;
+                                // [v3.12.17] Translate URL placeholders when returning schema to UI
+                                $schema_data = VAPTSECURE_Schema_Validator::translate_url_placeholders($schema_data);
+                                if (class_exists('VAPTSECURE_Build') && method_exists('VAPTSECURE_Build', 'normalize_client_schema_controls')) {
+                                    $schema_data = VAPTSECURE_Build::normalize_client_schema_controls($key, $schema_data, is_array($meta) ? $meta : array());
+                                }
+                            }
+                        }
+                        
                         $feature['generated_schema'] = $schema_data;
                         $source_impl_json = (in_array($norm_status, ['test', 'release']) && !empty($meta['override_implementation_data'])) ? $meta['override_implementation_data'] : $meta['implementation_data'];
                         $feature['implementation_data'] = $source_impl_json ? json_decode($source_impl_json, true) : array();
@@ -1252,6 +1363,12 @@ $runtime_verified = false;
                 }
                 $is_config_build = defined('VAPTSECURE_BUILD_PROFILE') && VAPTSECURE_BUILD_PROFILE === 'client';
                 $is_builder_context = function_exists('vaptsecure_is_builder_context') && vaptsecure_is_builder_context();
+                
+                // Override: For Superadmin, never treat as config build (allows full workbench access)
+                if ($is_config_build && $is_superadmin) {
+                    $is_config_build = false;
+                }
+                
                 $features = array_filter(
                     $features, function ($f) use ($enabled_features, $is_superadmin, $is_config_build, $is_builder_context) {
                         $s = $f['normalized_status'];
@@ -1751,6 +1868,34 @@ $runtime_verified = false;
                 VAPTSECURE_DB::update_feature_meta($key, $meta_updates);
                 if ($wpdb->last_error) {
                     error_log("[VAPT Error] DB Update Failed for $key: " . $wpdb->last_error);
+                }
+
+                // 🛡️ Schema Preservation: Create backup on schema save
+                if (!empty($meta_updates['generated_schema']) && file_exists(VAPTSECURE_PATH . 'includes/class-vaptsecure-backup.php')) {
+                    include_once VAPTSECURE_PATH . 'includes/class-vaptsecure-backup.php';
+                    
+                    // Load from CATALOG, not generated_schema
+                    $catalog_item = array();
+                    if (method_exists('VAPTSECURE_Enforcer', 'load_catalog_feature_schema')) {
+                        $catalog_item = VAPTSECURE_Enforcer::load_catalog_feature_schema($key);
+                    }
+                    
+                    $feature_title = isset($catalog_item['title']) ? $catalog_item['title'] : 
+                                    (isset($catalog_item['name']) ? $catalog_item['name'] : $key);
+                    $feature_category = isset($catalog_item['category']) ? $catalog_item['category'] : null;
+                    
+                    VAPTSECURE_Backup::save_backup($key, array(
+                        'feature_title' => $feature_title,
+                        'feature_category' => $feature_category,
+                        'generated_schema' => $meta_updates['generated_schema'],
+                        'implementation_data' => $request->get_param('implementation_data'),
+                        'override_schema' => $meta_updates['override_schema'] ?? null,
+                        'override_implementation_data' => $meta_updates['override_implementation_data'] ?? null,
+                        'is_enabled' => $meta_updates['is_enabled'] ?? false,
+                        'is_enforced' => $meta_updates['is_enforced'] ?? false,
+                        'active_enforcer' => $meta_updates['active_enforcer'] ?? null,
+                        'include_verification_engine' => $meta_updates['include_verification_engine'] ?? false
+                    ), $initial_status);
                 }
             }
             // error_log("VAPT REST: Triggering vaptsecure_feature_saved hook for feature '{$key}'");
@@ -2890,6 +3035,308 @@ $runtime_verified = false;
     private static function translate_url_placeholders($schema)
     {
         return VAPTSECURE_Schema_Validator::translate_url_placeholders($schema);
+    }
+
+    // =========================================================================
+    // 🛡️ SCHEMA PRESERVATION: BACKUP MANAGEMENT ENDPOINTS
+    // =========================================================================
+
+    /**
+     * GET /vaptsecure/v1/backups/archived
+     * Returns paginated list of archived backups (Superadmin only).
+     */
+    public function get_archived_backups($request) {
+        if (!is_vaptsecure_superadmin()) {
+            return new WP_REST_Response(array('error' => 'Superadmin access required'), 403);
+        }
+
+        $page = (int) $request->get_param('page') ?: 1;
+        $per_page = (int) $request->get_param('per_page') ?: 20;
+        $offset = ($page - 1) * $per_page;
+
+        if (!file_exists(VAPTSECURE_PATH . 'includes/class-vaptsecure-backup.php')) {
+            return new WP_REST_Response(array('items' => array(), 'total' => 0), 200);
+        }
+
+        include_once VAPTSECURE_PATH . 'includes/class-vaptsecure-backup.php';
+        $items = VAPTSECURE_Backup::get_archived_backups($per_page, $offset);
+        $total = VAPTSECURE_Backup::get_archived_count();
+
+        return new WP_REST_Response(array(
+            'items' => $items,
+            'total' => $total,
+            'page' => $page,
+            'per_page' => $per_page
+        ), 200);
+    }
+
+    /**
+     * GET /vaptsecure/v1/backups/active
+     * Returns paginated list of active backups (Superadmin only).
+     */
+    public function get_active_backups($request) {
+        if (!is_vaptsecure_superadmin()) {
+            return new WP_REST_Response(array('error' => 'Superadmin access required'), 403);
+        }
+
+        $page = (int) $request->get_param('page') ?: 1;
+        $per_page = (int) $request->get_param('per_page') ?: 20;
+        $offset = ($page - 1) * $per_page;
+
+        if (!file_exists(VAPTSECURE_PATH . 'includes/class-vaptsecure-backup.php')) {
+            return new WP_REST_Response(array('items' => array(), 'total' => 0), 200);
+        }
+
+        include_once VAPTSECURE_PATH . 'includes/class-vaptsecure-backup.php';
+        $items = VAPTSECURE_Backup::get_active_backups($per_page, $offset);
+        $total = VAPTSECURE_Backup::get_active_count();
+
+        return new WP_REST_Response(array(
+            'items' => $items,
+            'total' => $total,
+            'page' => $page,
+            'per_page' => $per_page
+        ), 200);
+    }
+
+    /**
+     * POST /vaptsecure/v1/backups/{feature_key}/restore
+     * Restores feature from archive to original status (Superadmin only).
+     */
+    public function restore_from_archive($request) {
+        if (!is_vaptsecure_superadmin()) {
+            return new WP_REST_Response(array('error' => 'Superadmin access required'), 403);
+        }
+
+        $feature_key = $request->get_param('feature_key');
+        if (empty($feature_key)) {
+            return new WP_REST_Response(array('error' => 'Feature key required'), 400);
+        }
+
+        if (!file_exists(VAPTSECURE_PATH . 'includes/class-vaptsecure-backup.php')) {
+            return new WP_REST_Response(array('error' => 'Backup system not available'), 500);
+        }
+
+        include_once VAPTSECURE_PATH . 'includes/class-vaptsecure-backup.php';
+        $result = VAPTSECURE_Backup::restore_from_archive($feature_key);
+
+        if ($result['success']) {
+            return new WP_REST_Response($result, 200);
+        } else {
+            return new WP_REST_Response($result, 400);
+        }
+    }
+
+    /**
+     * POST /vaptsecure/v1/backups/{feature_key}/archive
+     * Manually moves a backup from active to archive (Superadmin only).
+     */
+    public function archive_backup($request) {
+        if (!is_vaptsecure_superadmin()) {
+            return new WP_REST_Response(array('error' => 'Superadmin access required'), 403);
+        }
+
+        $feature_key = $request->get_param('feature_key');
+        if (empty($feature_key)) {
+            return new WP_REST_Response(array('error' => 'Feature key required'), 400);
+        }
+
+        if (!file_exists(VAPTSECURE_PATH . 'includes/class-vaptsecure-backup.php')) {
+            return new WP_REST_Response(array('error' => 'Backup system not available'), 500);
+        }
+
+        include_once VAPTSECURE_PATH . 'includes/class-vaptsecure-backup.php';
+        $result = VAPTSECURE_Backup::manual_archive_backup($feature_key);
+
+        if ($result['success']) {
+            return new WP_REST_Response($result, 200);
+        } else {
+            return new WP_REST_Response($result, 400);
+        }
+    }
+
+    /**
+     * DELETE /vaptsecure/v1/backups/purge
+     * Purges selected active backups (Superadmin only).
+     */
+    public function purge_backups($request) {
+        if (!is_vaptsecure_superadmin()) {
+            return new WP_REST_Response(array('error' => 'Superadmin access required'), 403);
+        }
+
+        $feature_keys = $request->get_param('feature_keys');
+        if (empty($feature_keys) || !is_array($feature_keys)) {
+            return new WP_REST_Response(array('error' => 'Feature keys array required'), 400);
+        }
+
+        if (!file_exists(VAPTSECURE_PATH . 'includes/class-vaptsecure-backup.php')) {
+            return new WP_REST_Response(array('error' => 'Backup system not available'), 500);
+        }
+
+        include_once VAPTSECURE_PATH . 'includes/class-vaptsecure-backup.php';
+        $deleted = VAPTSECURE_Backup::purge_backups($feature_keys, false);
+
+        return new WP_REST_Response(array(
+            'success' => true,
+            'deleted_count' => $deleted
+        ), 200);
+    }
+
+    /**
+     * DELETE /vaptsecure/v1/backups/purge-archive
+     * Purges selected archived backups (Superadmin only).
+     */
+    public function purge_archived_backups($request) {
+        if (!is_vaptsecure_superadmin()) {
+            return new WP_REST_Response(array('error' => 'Superadmin access required'), 403);
+        }
+
+        $feature_keys = $request->get_param('feature_keys');
+        if (empty($feature_keys) || !is_array($feature_keys)) {
+            return new WP_REST_Response(array('error' => 'Feature keys array required'), 400);
+        }
+
+        if (!file_exists(VAPTSECURE_PATH . 'includes/class-vaptsecure-backup.php')) {
+            return new WP_REST_Response(array('error' => 'Backup system not available'), 500);
+        }
+
+        include_once VAPTSECURE_PATH . 'includes/class-vaptsecure-backup.php';
+        $deleted = VAPTSECURE_Backup::purge_backups($feature_keys, true);
+
+        return new WP_REST_Response(array(
+            'success' => true,
+            'deleted_count' => $deleted
+        ), 200);
+    }
+
+    /**
+     * POST /vaptsecure/v1/backups/sync-existing
+     * Generates backups for existing features missing them (Superadmin only).
+     */
+    public function sync_existing_backups($request) {
+        if (!is_vaptsecure_superadmin()) {
+            return new WP_REST_Response(array('error' => 'Superadmin access required'), 403);
+        }
+
+        if (!file_exists(VAPTSECURE_PATH . 'includes/class-vaptsecure-backup.php')) {
+            return new WP_REST_Response(array('error' => 'Backup system not available'), 500);
+        }
+
+        include_once VAPTSECURE_PATH . 'includes/class-vaptsecure-backup.php';
+        $missing_keys = VAPTSECURE_Backup::get_features_missing_backups();
+        $synced = 0;
+
+        foreach ($missing_keys as $key) {
+            $meta = VAPTSECURE_DB::get_feature_meta($key);
+            if ($meta && !empty($meta['generated_schema'])) {
+                $status_row = VAPTSECURE_DB::get_feature($key);
+                $status = $status_row ? strtolower($status_row->status ?? 'develop') : 'develop';
+                
+                // Load from CATALOG, not generated_schema
+                $catalog_item = array();
+                if (method_exists('VAPTSECURE_Enforcer', 'load_catalog_feature_schema')) {
+                    $catalog_item = VAPTSECURE_Enforcer::load_catalog_feature_schema($key);
+                }
+                
+                $feature_title = isset($catalog_item['title']) ? $catalog_item['title'] : 
+                                (isset($catalog_item['name']) ? $catalog_item['name'] : $key);
+                $feature_category = isset($catalog_item['category']) ? $catalog_item['category'] : null;
+                
+                VAPTSECURE_Backup::save_backup($key, array(
+                    'feature_title' => $feature_title,
+                    'feature_category' => $feature_category,
+                    'generated_schema' => $meta['generated_schema'],
+                    'implementation_data' => $meta['implementation_data'] ?? null,
+                    'override_schema' => $meta['override_schema'] ?? null,
+                    'override_implementation_data' => $meta['override_implementation_data'] ?? null,
+                    'is_enabled' => (bool) $meta['is_enabled'],
+                    'is_enforced' => (bool) $meta['is_enforced'],
+                    'active_enforcer' => $meta['active_enforcer'] ?? null,
+                    'include_verification_engine' => (bool) $meta['include_verification_engine']
+                ), $status);
+                $synced++;
+            }
+        }
+
+        return new WP_REST_Response(array(
+            'success' => true,
+            'synced_count' => $synced,
+            'missing_count' => count($missing_keys)
+        ), 200);
+    }
+
+    /**
+     * POST /vaptsecure/v1/backups/resync-titles
+     * Re-syncs feature_title and feature_category for all existing backups (Superadmin only).
+     */
+    public function resync_backup_titles($request) {
+        if (!is_vaptsecure_superadmin()) {
+            return new WP_REST_Response(array('error' => 'Superadmin access required'), 403);
+        }
+
+        if (!file_exists(VAPTSECURE_PATH . 'includes/class-vaptsecure-backup.php')) {
+            return new WP_REST_Response(array('error' => 'Backup system not available'), 500);
+        }
+
+        include_once VAPTSECURE_PATH . 'includes/class-vaptsecure-backup.php';
+        
+        global $wpdb;
+        $backups_table = $wpdb->prefix . 'vaptsecure_feature_backups';
+        
+        $backups = $wpdb->get_results("SELECT feature_key FROM $backups_table", ARRAY_A);
+        $updated = 0;
+
+        foreach ($backups as $backup) {
+            $key = $backup['feature_key'];
+            
+            // Load from CATALOG, not generated_schema
+            if (method_exists('VAPTSECURE_Enforcer', 'load_catalog_feature_schema')) {
+                $catalog_item = VAPTSECURE_Enforcer::load_catalog_feature_schema($key);
+                
+                if (!empty($catalog_item) && is_array($catalog_item)) {
+                    // Catalog has title and category at top level
+                    $feature_title = isset($catalog_item['title']) ? $catalog_item['title'] : 
+                                    (isset($catalog_item['name']) ? $catalog_item['name'] : $key);
+                    $feature_category = isset($catalog_item['category']) ? $catalog_item['category'] : null;
+                    
+                    $wpdb->update(
+                        $backups_table,
+                        array(
+                            'feature_title' => $feature_title,
+                            'feature_category' => $feature_category
+                        ),
+                        array('feature_key' => $key),
+                        array('%s', '%s'),
+                        array('%s')
+                    );
+                    $updated++;
+                }
+            }
+        }
+
+        return new WP_REST_Response(array(
+            'success' => true,
+            'updated_count' => $updated
+        ), 200);
+    }
+
+    /**
+     * GET /vaptsecure/v1/backups/missing-count
+     * Returns count of features missing backups (Superadmin only).
+     */
+    public function get_missing_backup_count($request) {
+        if (!is_vaptsecure_superadmin()) {
+            return new WP_REST_Response(array('error' => 'Superadmin access required'), 403);
+        }
+
+        if (!file_exists(VAPTSECURE_PATH . 'includes/class-vaptsecure-backup.php')) {
+            return new WP_REST_Response(array('count' => 0), 200);
+        }
+
+        include_once VAPTSECURE_PATH . 'includes/class-vaptsecure-backup.php';
+        $missing = VAPTSECURE_Backup::get_features_missing_backups();
+
+        return new WP_REST_Response(array('count' => count($missing)), 200);
     }
 
     // ========================================================================

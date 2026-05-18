@@ -100,6 +100,10 @@ class VAPTSECURE_Migrations
             "025_add_include_verification_guidance_to_meta",
             "026_add_include_manual_protocol_to_meta",
             "027_add_include_operational_notes_to_meta",
+            "028_create_feature_backups_table",
+            "029_create_feature_backup_archive_table",
+            "030_add_feature_title_to_backup_tables",
+            "031_add_feature_category_to_backup_tables",
         ];
     }
 
@@ -810,6 +814,120 @@ class VAPTSECURE_Migrations
             $wpdb->query(
                 "ALTER TABLE {$table_name} ADD COLUMN include_operational_notes TINYINT(1) DEFAULT 1",
             );
+        }
+    }
+
+    /**
+     * Migration 028: Create feature backups table
+     */
+    private static function migration_028_create_feature_backups_table()
+    {
+        global $wpdb;
+        $charset_collate = $wpdb->get_charset_collate();
+        $table_name = $wpdb->prefix . "vaptsecure_feature_backups";
+
+        $sql = "CREATE TABLE IF NOT EXISTS {$table_name} (
+            id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+            feature_key VARCHAR(100) NOT NULL UNIQUE,
+            generated_schema LONGTEXT DEFAULT NULL,
+            implementation_data LONGTEXT DEFAULT NULL,
+            override_schema LONGTEXT DEFAULT NULL,
+            override_implementation_data LONGTEXT DEFAULT NULL,
+            is_enabled TINYINT(1) DEFAULT 0,
+            is_enforced TINYINT(1) DEFAULT 0,
+            active_enforcer VARCHAR(50) DEFAULT NULL,
+            include_verification_engine TINYINT(1) DEFAULT 0,
+            backed_up_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            status_at_backup VARCHAR(20) DEFAULT NULL,
+            PRIMARY KEY (id),
+            INDEX idx_feature_key (feature_key)
+        ) {$charset_collate};";
+
+        require_once ABSPATH . "wp-admin/includes/upgrade.php";
+        dbDelta($sql);
+    }
+
+    /**
+     * Migration 029: Create feature backup archive table
+     */
+    private static function migration_029_create_feature_backup_archive_table()
+    {
+        global $wpdb;
+        $charset_collate = $wpdb->get_charset_collate();
+        $table_name = $wpdb->prefix . "vaptsecure_feature_backup_archive";
+
+        $sql = "CREATE TABLE IF NOT EXISTS {$table_name} (
+            id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+            feature_key VARCHAR(100) NOT NULL,
+            generated_schema LONGTEXT DEFAULT NULL,
+            implementation_data LONGTEXT DEFAULT NULL,
+            override_schema LONGTEXT DEFAULT NULL,
+            override_implementation_data LONGTEXT DEFAULT NULL,
+            is_enabled TINYINT(1) DEFAULT 0,
+            is_enforced TINYINT(1) DEFAULT 0,
+            active_enforcer VARCHAR(50) DEFAULT NULL,
+            include_verification_engine TINYINT(1) DEFAULT 0,
+            archived_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            status_at_archive VARCHAR(20) DEFAULT NULL,
+            original_backup_date DATETIME DEFAULT NULL,
+            PRIMARY KEY (id),
+            INDEX idx_feature_key (feature_key),
+            INDEX idx_archived_at (archived_at)
+        ) {$charset_collate};";
+
+        require_once ABSPATH . "wp-admin/includes/upgrade.php";
+        dbDelta($sql);
+    }
+
+    /**
+     * Migration 030: Add feature_title column to backup tables
+     */
+    private static function migration_030_add_feature_title_to_backup_tables()
+    {
+        global $wpdb;
+
+        // Add to active backups table
+        $backups_table = $wpdb->prefix . "vaptsecure_feature_backups";
+        $column = $wpdb->get_results(
+            $wpdb->prepare("SHOW COLUMNS FROM {$backups_table} LIKE %s", "feature_title")
+        );
+        if (empty($column)) {
+            $wpdb->query("ALTER TABLE {$backups_table} ADD COLUMN feature_title VARCHAR(255) DEFAULT NULL AFTER feature_key");
+        }
+
+        // Add to archive table
+        $archive_table = $wpdb->prefix . "vaptsecure_feature_backup_archive";
+        $column = $wpdb->get_results(
+            $wpdb->prepare("SHOW COLUMNS FROM {$archive_table} LIKE %s", "feature_title")
+        );
+        if (empty($column)) {
+            $wpdb->query("ALTER TABLE {$archive_table} ADD COLUMN feature_title VARCHAR(255) DEFAULT NULL AFTER feature_key");
+        }
+    }
+
+    /**
+     * Migration 031: Add feature_category column to backup tables
+     */
+    private static function migration_031_add_feature_category_to_backup_tables()
+    {
+        global $wpdb;
+
+        // Add to active backups table
+        $backups_table = $wpdb->prefix . "vaptsecure_feature_backups";
+        $column = $wpdb->get_results(
+            $wpdb->prepare("SHOW COLUMNS FROM {$backups_table} LIKE %s", "feature_category")
+        );
+        if (empty($column)) {
+            $wpdb->query("ALTER TABLE {$backups_table} ADD COLUMN feature_category VARCHAR(100) DEFAULT NULL AFTER feature_title");
+        }
+
+        // Add to archive table
+        $archive_table = $wpdb->prefix . "vaptsecure_feature_backup_archive";
+        $column = $wpdb->get_results(
+            $wpdb->prepare("SHOW COLUMNS FROM {$archive_table} LIKE %s", "feature_category")
+        );
+        if (empty($column)) {
+            $wpdb->query("ALTER TABLE {$archive_table} ADD COLUMN feature_category VARCHAR(100) DEFAULT NULL AFTER feature_title");
         }
     }
 }

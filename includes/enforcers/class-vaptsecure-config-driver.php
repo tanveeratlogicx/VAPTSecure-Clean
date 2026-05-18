@@ -174,6 +174,17 @@ class VAPTSECURE_Config_Driver implements VAPTSECURE_Driver_Interface
         }
 
         $content = file_get_contents($wp_config_path);
+
+        // [v4.1.7] Clean up legacy per-feature /* */ wrapped blocks (e.g., /* BEGIN VAPT RISK-008 */)
+        $content = preg_replace('/\/\*\s*BEGIN VAPT\s+RISK-[^\*]*\*\/.*?\/\*\s*END Of\s+RISK-[^\*]*\*\//s', '', $content);
+
+        // [v4.1.7] Clean up stray /* */ wrapper that commented out entire VAPT section
+        $content = preg_replace('/\/\*\s*\n(\s*\/\/\s*BEGIN VAPT)/', '$1', $content);
+        $content = preg_replace('/(\/\/\s*END Of[^\n]*)\s*\n\s*\*\//', '$1', $content);
+
+        // Collapse redundant blank lines left by legacy block removal
+        $content = preg_replace("/\n\s*\n(\s*\n)+/", "\n\n", $content);
+
         $line_ending = (strpos($content, "\r\n") !== false) ? "\r\n" : "\n";
         $lines = explode($line_ending, $content);
 

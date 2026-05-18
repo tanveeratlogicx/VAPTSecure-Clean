@@ -1722,3 +1722,68 @@
     border-left: 3px solid #3b82f6;
     border-radius: 0 4px 4px 0;
 }
+
+/* 🛡️ Backup Archive Page Styles */
+.vapt-backup-archive-wrap {
+    width: 100%;
+    max-width: 100%;
+}
+
+.vapt-backup-archive-wrap > div:first-child {
+    margin-bottom: 20px;
+}
+
+.vapt-backup-tabs {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.vapt-backup-tabs .components-tab-panel__tabs {
+    display: flex;
+    gap: 10px;
+}
+
+.vapt-backup-tabs .components-tab-panel__tabs-item {
+    padding: 10px 20px;
+    border: 1px solid #e2e8f0;
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+    background: #f8fafc;
+    font-weight: 500;
+    color: #64748b;
+}
+
+.vapt-backup-tabs .components-tab-panel__tabs-item.is-active {
+    background: #fff;
+    color: #0f172a;
+    border-bottom: 1px solid #fff;
+    margin-bottom: -1px;
+}
+
+.vapt-backup-tabs .components-tab-panel__tab-content {
+    padding-top: 20px;
+}
+
+.vapt-selected-row {
+    background-color: #eff6ff !important;
+}
+
+.vapt-backup-archive-wrap .wp-list-table th {
+    font-weight: 600;
+    color: #374151;
+    background: #f8fafc;
+}
+
+.vapt-backup-archive-wrap .wp-list-table td code {
+    font-size: 12px;
+    padding: 2px 6px;
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+.vapt-backup-archive-wrap .wp-list-table td:nth-child(4) {
+    white-space: nowrap;
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

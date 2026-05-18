@@ -2,12 +2,12 @@
 
 ## Project: VAPTSecure-Clean
 
-Generated: 2026-05-17 20:56:15
+Generated: 2026-05-18 11:01:18
 
 ### File Structure Summary
-- Total Files: 10233
+- Total Files: 10236
 - Total Directories: 1082
-- File Extensions: .rules: 25, .agrules: 20, .md: 312, .json: 530, .php: 207, .ps1: 32, .zip: 20, .yml: 6, .css: 10, .js: 2804, .jsx: 25, .clinerules: 5, .roorules: 5, .windsurfrules: 5, .mdc: 1, .cmd: 22, .ts: 3487, .node: 6, .cjs: 306, .cts: 306, .map: 1936, .npmignore: 4, .cpp: 3, .gyp: 3, .mjs: 6, .graphify_python: 1, .txt: 3, .html: 1, .htaccess: 1, .py: 10, .png: 2, .ftp: 1, .rar: 1
+- File Extensions: .rules: 25, .agrules: 20, .md: 313, .json: 530, .php: 208, .ps1: 32, .zip: 20, .yml: 6, .css: 10, .js: 2805, .jsx: 25, .clinerules: 5, .roorules: 5, .windsurfrules: 5, .mdc: 1, .cmd: 22, .ts: 3487, .node: 6, .cjs: 306, .cts: 306, .map: 1936, .npmignore: 4, .cpp: 3, .gyp: 3, .mjs: 6, .graphify_python: 1, .txt: 3, .html: 1, .htaccess: 1, .py: 10, .png: 2, .ftp: 1, .rar: 1
 
 ### Directory Tree
 ├── .agent
@@ -10985,6 +10985,7 @@ Generated: 2026-05-17 20:56:15
          ├── generated-interface.js
          ├── interface-generator.js
       ├── admin - Copy.js
+      ├── admin-backup-archive.js
       ├── admin.js
       ├── client.js
       ├── workbench.js
@@ -11259,6 +11260,7 @@ Generated: 2026-05-17 20:56:15
    ├── class-vaptsecure-ai-config.php
    ├── class-vaptsecure-ai-validator.php
    ├── class-vaptsecure-auth.php
+   ├── class-vaptsecure-backup.php
    ├── class-vaptsecure-build.php
    ├── class-vaptsecure-bundle-sync.php
    ├── class-vaptsecure-config-cleaner.php
@@ -11275,6 +11277,7 @@ Generated: 2026-05-17 20:56:15
 ├── Plans
    ├── Opencode
       ├── Master-Build-Gap-Analysis-Plan.md
+      ├── schema-preservation-plan.md
    ├── BuildGenerator-14-Develop-Features-Gap-Plan-942692.md
    ├── BuildGenerator-Plan.md
    ├── Data-Source-of-Truth-Autoheal-Execution-Plan.md
@@ -11378,7 +11381,7 @@ Generated: 2026-05-17 20:56:15
 - T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/vapt_driver_manifest_v2.0.json
 - T:\~\Local925 Sites\vaptsecure\app\public\wp-content\plugins\VAPTSecure-Clean/.ai/skills/vaptschema-builder/resources/vapt_platform_contract_v3.0.json
 
-... and 10183 more files
+... and 10186 more files
 
 ### Maintenance
 This file is auto-generated. To update it:

@@ -119,15 +119,18 @@ class VAPTSECURE_Config_Deployer implements VAPTSECURE_Driver_Interface
         $pattern = "/" . preg_quote($start_marker, '/') . ".*?" . preg_quote($end_marker, '/') . "/s";
         $new_content = preg_replace($pattern, '', $content);
 
+        // [v4.1.7] Also remove legacy /* */ wrapped blocks (e.g., /* BEGIN VAPT RISK-008 */)
+        $risk_id = str_replace('RISK-', 'RISK-', strtoupper($feature_key));
+        $legacy_pattern = '/\/\*\s*BEGIN VAPT\s+' . preg_quote($risk_id, '/') . '\s*\*\/.*?\/\*\s*END Of\s+' . preg_quote($risk_id, '/') . '\s*\*\//s';
+        $new_content = preg_replace($legacy_pattern, '', $new_content);
+
         if ($new_content !== $content) {
             $new_content = preg_replace("/\n\s*\n(\s*\n)+/", "\n\n", $new_content);
             @copy($wp_config_path, $wp_config_path . '.bak');
             file_put_contents($wp_config_path, trim($new_content) . "\n");
-            // error_log("VAPT CONFIG DEPLOYER: Removed block for {$feature_key} from wp-config.php");
             return true;
         }
 
-        // error_log("VAPT CONFIG DEPLOYER: No block found for {$feature_key} in wp-config.php");
         return true;
     }
 
