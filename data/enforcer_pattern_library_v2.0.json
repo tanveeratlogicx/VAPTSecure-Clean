@@ -1,6 +1,6 @@
 ﻿{
   "schema_version": "2.0.0",
-  "bundle_date": "2026-02-21",
+  "bundle_date": "2026-05-18",
   "file_role": "enforcer_pattern_library",
   "bundle_files": {
     "pattern_library": "enforcer_pattern_library_v2.0.json",
